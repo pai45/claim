@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #f1f1f1;
+  --color-pine: #0f3f37;
+  --color-pine-primary: #005656;
+  --color-pine-dark: #003434;
+  --color-mint: #36cc8b;
+  --color-input: #f4f8f6;
+  --color-input-border: #dce7e3;
+  --color-input-icon: #e9efea;
+  --color-muted: #8a9d99;
+  --color-body: #1c2725;
+  --color-subtle: #535862;
+  --color-border-soft: #edf0ee;
+  --font-sans: var(--font-lato), "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-pp-telegraf), "PP Telegraf", var(--font-lato),
+    ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: #e8ebe9;
+  color: var(--color-pine);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: PP Telegraf */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
+
+/* Everything else: Lato */
+p,
+span,
+button,
+input,
+textarea,
+label,
+a,
+li,
+td,
+th {
+  font-family: var(--font-sans);
+}
+
+button {
+  cursor: pointer;
+}
+
+button,
+input,
+textarea {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+}

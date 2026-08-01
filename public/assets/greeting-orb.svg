@@ -1,0 +1,16 @@
+<svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="orbGlow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(28 24) rotate(65) scale(48)">
+      <stop stop-color="#B8FFF7"/>
+      <stop offset="0.45" stop-color="#73BF99"/>
+      <stop offset="1" stop-color="#3A9E7A"/>
+    </radialGradient>
+    <radialGradient id="orbHighlight" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(24 20) rotate(40) scale(22)">
+      <stop stop-color="white" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="36" cy="36" r="34" fill="url(#orbGlow)" opacity="0.95"/>
+  <circle cx="36" cy="36" r="34" fill="url(#orbHighlight)"/>
+  <ellipse cx="26" cy="24" rx="10" ry="7" fill="white" opacity="0.35"/>
+</svg>
