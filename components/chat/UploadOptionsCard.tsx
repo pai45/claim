@@ -6,6 +6,8 @@ import type { UploadOptionId } from "@/features/chat/types";
 type UploadOptionsCardProps = {
   onFileSelected: (file: File) => void;
   disabled?: boolean;
+  title?: string;
+  subtitle?: string;
 };
 
 function DocumentIcon() {
@@ -123,6 +125,8 @@ const OPTIONS: {
 export function UploadOptionsCard({
   onFileSelected,
   disabled,
+  title = "Upload options",
+  subtitle = "PDF, JPG or PNG up to 10 MB",
 }: UploadOptionsCardProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
@@ -154,11 +158,9 @@ export function UploadOptionsCard({
         </div>
         <div className="min-w-0">
           <h3 className="font-display text-base font-bold text-pine">
-            Upload options
+            {title}
           </h3>
-          <p className="mt-0.5 font-sans text-xs text-subtle">
-            PDF, JPG or PNG up to 10 MB
-          </p>
+          <p className="mt-0.5 font-sans text-xs text-subtle">{subtitle}</p>
         </div>
       </div>
 

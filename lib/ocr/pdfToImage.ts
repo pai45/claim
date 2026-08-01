@@ -4,15 +4,14 @@ export async function pdfFileToImageBlob(file: File): Promise<Blob> {
   }
 
   const pdfjs = await import("pdfjs-dist");
-
-  // CDN worker is more reliable under Next.js bundlers than import.meta.url
   pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
   const data = new Uint8Array(await file.arrayBuffer());
   const pdf = await pdfjs.getDocument({ data }).promise;
   const page = await pdf.getPage(1);
-  // Higher scale improves OCR on text-heavy invoices
-  const viewport = page.getViewport({ scale: 2.5 });
+
+  // ~3x CSS scale ≈ strong DPI for scanned invoice pages
+  const viewport = page.getViewport({ scale: 3 });
 
   const canvas = document.createElement("canvas");
   canvas.width = viewport.width;

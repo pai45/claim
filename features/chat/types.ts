@@ -16,7 +16,26 @@ export type MessageKind =
   | "merchant_name_input"
   | "merchant_results"
   | "vehicle_number_input"
-  | "vehicle_details";
+  | "vehicle_details"
+  | "driver_name_input"
+  | "driver_dl_upload"
+  | "driver_dl_extract"
+  | "driver_salary_input"
+  | "driver_salary_review";
+
+export type DriverSalaryPayload = {
+  vehicleClaimId?: string;
+  driverName?: string;
+  dlFileName?: string;
+  dlNumber?: string;
+  dlRawText?: string;
+  dlConfidence?: number;
+  dlError?: string;
+  dlWarning?: string;
+  salary?: string;
+  startDate?: string;
+  submitted?: boolean;
+};
 
 export type BillExtract = {
   fileName: string;
@@ -46,13 +65,10 @@ export type MerchantLocatorPayload = {
 
 export type VehicleLookupPayload = {
   lookup?: VehicleLookup;
-  /** Set when the RC's registration number differs from the one entered. */
-  regMismatch?: string;
-  /** True while the RC image is being read. */
-  scanning?: boolean;
+  /** Set when the plate couldn't be parsed. */
   error?: string;
-  warning?: string;
-  confirmed?: boolean;
+  /** Mirrors BillExtract.submitted — hides the action once sent to HR. */
+  submitted?: boolean;
 };
 
 export type PolicyAnswerPayload = {
@@ -82,6 +98,7 @@ export type ChatMessage = {
   appDataAnswer?: AppDataAnswerPayload;
   merchantLocator?: MerchantLocatorPayload;
   vehicleLookup?: VehicleLookupPayload;
+  driverSalary?: DriverSalaryPayload;
 };
 
 export type ChatRequest = {

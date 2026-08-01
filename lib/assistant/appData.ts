@@ -226,9 +226,9 @@ function describeClaims(claims: BenefitClaimItem[]): string {
     .slice(0, 3)
     .map(
       (claim) =>
-        `${claim.id} (${claim.title}, ${formatINR(claim.amount)}, ${claim.status})`,
+        `- **${claim.id}** — ${claim.title}, ${formatINR(claim.amount)}, ${claim.status}`,
     )
-    .join("; ");
+    .join("\n");
 }
 
 export function createAppDataFallbackSummary(
@@ -240,14 +240,14 @@ export function createAppDataFallbackSummary(
   if (resolution.kind === "dashboard" && resolution.categoryId) {
     const dashboard = getBenefitClaimsDashboard(resolution.categoryId);
     if (/\b(pending|approved|total)\b/.test(normalized)) {
-      return `${dashboard.title} shows ${formatINR(dashboard.monthTotal)} in total claims for ${dashboard.monthLabel}: ${formatINR(dashboard.monthApproved)} approved and ${formatINR(dashboard.monthPending)} pending. It has ${formatINR(dashboard.availableLimit)} available.`;
+      return `**${dashboard.title} (${dashboard.monthLabel})**\n\n- **Total claims:** ${formatINR(dashboard.monthTotal)}\n- **Approved:** ${formatINR(dashboard.monthApproved)}\n- **Pending:** ${formatINR(dashboard.monthPending)}\n- **Available:** ${formatINR(dashboard.availableLimit)}`;
     }
 
-    return `${dashboard.title} has ${formatINR(dashboard.availableLimit)} available, with ${formatINR(dashboard.utilized)} utilized out of ${formatINR(dashboard.accrued)} accrued for ${BENEFIT_DASHBOARD_FY_LABEL}. Its ${dashboard.monthLabel} claims total ${formatINR(dashboard.monthTotal)}.`;
+    return `**${dashboard.title}**\n\n- **Available:** ${formatINR(dashboard.availableLimit)}\n- **Utilized:** ${formatINR(dashboard.utilized)} of ${formatINR(dashboard.accrued)} accrued (${BENEFIT_DASHBOARD_FY_LABEL})\n- **${dashboard.monthLabel} claims:** ${formatINR(dashboard.monthTotal)}`;
   }
 
   if (resolution.kind === "dashboard") {
-    return `Your ${FY_LABEL} dashboard shows ${formatINR(AVAILABLE_LIMIT)} available and ${formatINR(UTILIZED_AMOUNT)} utilized against a ${formatINR(FY_LIMIT)} limit. It includes ${DASHBOARD_CATEGORIES.length} benefit categories, each currently showing ${formatINR(DASHBOARD_CATEGORIES[0].amount)}.`;
+    return `**Claims dashboard (${FY_LABEL})**\n\n- **Available:** ${formatINR(AVAILABLE_LIMIT)}\n- **Utilized:** ${formatINR(UTILIZED_AMOUNT)}\n- **FY limit:** ${formatINR(FY_LIMIT)}\n- **Categories:** ${DASHBOARD_CATEGORIES.length} (each showing ${formatINR(DASHBOARD_CATEGORIES[0].amount)})`;
   }
 
   const claims = claimsForResolution(resolution);
@@ -259,13 +259,13 @@ export function createAppDataFallbackSummary(
 
   if (resolution.claimId) {
     const claim = claims[0];
-    return `${claim.id} for ${claim.title} is ${claim.status}. The amount is ${formatINR(claim.amount)}, dated ${claim.date}.`;
+    return `**Claim ${claim.id}**\n\n- **Title:** ${claim.title}\n- **Status:** ${claim.status}\n- **Amount:** ${formatINR(claim.amount)}\n- **Date:** ${claim.date}`;
   }
 
   const filterLabel = resolution.status
     ? `${resolution.status.toLowerCase()} `
     : "";
-  return `Your history has ${summary.totalCount} ${filterLabel}claims totaling ${formatINR(summary.totalAmount)}: ${summary.approvedCount} approved and ${summary.pendingCount} pending. The latest are ${describeClaims(claims)}.`;
+  return `**Your ${filterLabel}claims**\n\n- **Count:** ${summary.totalCount}\n- **Total:** ${formatINR(summary.totalAmount)}\n- **Approved:** ${summary.approvedCount}\n- **Pending:** ${summary.pendingCount}\n\n**Latest**\n${describeClaims(claims)}`;
 }
 
 function numericFacts(value: string): string[] {
@@ -286,7 +286,7 @@ export function isGroundedAppDataAnswer(
   source: GroundedAppData,
 ): boolean {
   const trimmed = answer.trim();
-  if (!trimmed || trimmed.length > 900) return false;
+  if (!trimmed || trimmed.length > 1600) return false;
 
   const serialized = JSON.stringify(source);
   const allowedFacts = new Set(numericFacts(serialized));
@@ -306,7 +306,7 @@ export function createAppDataPrompt(
     {
       role: "system",
       content:
-        "You are a private claims assistant. Answer only with facts present in the supplied app data JSON. Do not invent claims, IDs, statuses, amounts, dates, limits, categories, explanations, or a CTA, and do not use markdown. If the data does not contain the answer, say so. Respond in the user's language in 2 to 4 concise sentences.",
+        "You are a private claims assistant. Answer only with facts present in the supplied app data JSON. Do not invent claims, IDs, statuses, amounts, dates, limits, categories, explanations, or a CTA. If the data does not contain the answer, say so. Format the reply like a helpful chat answer using short markdown: a bold title line, then bullet lists for amounts, statuses, claim IDs, and dates. Keep it concise (about 80-160 words). Respond in the user's language.",
     },
     {
       role: "user",

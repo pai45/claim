@@ -22,7 +22,8 @@ type EditableFields = {
 
 function toFields(extract: BillExtract): EditableFields {
   return {
-    category: extract.category || CLAIM_CATEGORIES[0],
+    // Keep OCR category; never force "Professional Development"
+    category: extract.category || "Other",
     vendor: extract.vendor || extract.merchant || "",
     amount: extract.amount || "",
     billDate: extract.billDate || extract.date || "",
@@ -91,9 +92,10 @@ export function BillExtractCard({
   onUpdate,
   onSubmitted,
 }: BillExtractCardProps) {
-  const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
+  const [draftFields, setDraftFields] = useState<EditableFields | null>(null);
   const [editing, setEditing] = useState(false);
   const [changingCategory, setChangingCategory] = useState(false);
+  const fields = draftFields ?? toFields(extract);
 
   if (extract.error) {
     return (
@@ -115,18 +117,22 @@ export function BillExtractCard({
     key: K,
     value: EditableFields[K],
   ) {
-    setFields((prev) => ({ ...prev, [key]: value }));
+    setDraftFields((prev) => ({
+      ...(prev ?? toFields(extract)),
+      [key]: value,
+    }));
   }
 
   function handleSaveEdits() {
     setEditing(false);
     setChangingCategory(false);
     persist(fields);
+    setDraftFields(null);
   }
 
   function handleCategoryPick(category: string) {
     const next = { ...fields, category };
-    setFields(next);
+    setDraftFields(next);
     setChangingCategory(false);
     persist(next);
   }
@@ -255,6 +261,7 @@ export function BillExtractCard({
           disabled={extract.submitted}
           onClick={() => {
             setChangingCategory(false);
+            setDraftFields(null);
             setEditing((prev) => !prev);
           }}
           className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-50"
@@ -266,6 +273,7 @@ export function BillExtractCard({
           disabled={extract.submitted}
           onClick={() => {
             setEditing(false);
+            setDraftFields(null);
             setChangingCategory((prev) => !prev);
           }}
           className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-50"

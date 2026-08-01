@@ -23,25 +23,21 @@ import {
   generatePolicyAnswer,
   supportsOnDevicePolicyModel,
 } from "@/lib/assistant/policyModel";
-import { VEHICLE_REGISTRATION_INTENT } from "./constants";
+import { USER_DISPLAY_NAME, VEHICLE_REGISTRATION_INTENT } from "./constants";
 import {
   searchMerchantsByName,
   searchMerchantsNearby,
 } from "@/lib/merchants/openStreetMap";
+import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runBillOcr } from "@/lib/ocr/runOcr";
-import { runRcOcr } from "@/lib/ocr/runRcOcr";
-import {
-  applyManualIdentity,
-  applyRcToLookup,
-  describeVehicle,
-  isIdentified,
-  isVehicleApiConfigured,
-  resolveVehicle,
-} from "@/lib/vehicle/resolve";
+import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
+import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { BenefitType } from "@/lib/merchants/types";
+import type { VehicleLookup } from "@/lib/vehicle/types";
 import type {
   BillExtract,
   ChatMessage,
+  DriverSalaryPayload,
   PolicyModelStatus,
   VehicleLookupPayload,
 } from "./types";
@@ -56,6 +52,7 @@ function benefitLabel(benefitType: BenefitType): string {
 
 export function useChat() {
   const chatVersionRef = useRef(0);
+  const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -72,6 +69,7 @@ export function useChat() {
 
   const startNewChat = useCallback(() => {
     chatVersionRef.current += 1;
+    driverSalaryDraftRef.current = {};
     setMessages([]);
     setIsLoading(false);
     setIsScanning(false);
@@ -105,6 +103,13 @@ export function useChat() {
   const appendMerchantTypeOptions = useCallback(() => {
     setMessages((prev) => [
       ...prev,
+      {
+        id: createId(),
+        role: "assistant",
+        content: "Is this for fuel or meal benefits?",
+        createdAt: Date.now(),
+        kind: "text",
+      },
       {
         id: createId(),
         role: "assistant",
@@ -188,7 +193,7 @@ export function useChat() {
             try {
               const generated = await generateAppDataAnswer(
                 trimmed,
-                source,
+                appDataResolution,
                 (progress, file) => {
                   if (chatVersionRef.current !== chatVersion) return;
                   setPolicyModelStatus({ progress, file });
@@ -200,7 +205,7 @@ export function useChat() {
               }
             } catch (modelError) {
               console.warn(
-                "On-device model unavailable; using app-data fallback.",
+                "Backend assistant unavailable; using app-data fallback.",
                 modelError,
               );
             }
@@ -251,7 +256,7 @@ export function useChat() {
             try {
               const generated = await generatePolicyAnswer(
                 trimmed,
-                category,
+                category.id,
                 (progress, file) => {
                   if (chatVersionRef.current !== chatVersion) return;
                   setPolicyModelStatus({ progress, file });
@@ -263,7 +268,7 @@ export function useChat() {
               }
             } catch (modelError) {
               console.warn(
-                "On-device policy model unavailable; using policy fallback.",
+                "Backend assistant unavailable; using policy fallback.",
                 modelError,
               );
             }
@@ -363,7 +368,7 @@ export function useChat() {
         {
           id: createId(),
           role: "user",
-          content: `${benefitLabel(benefitType)} merchant`,
+          content: benefitLabel(benefitType),
           createdAt: Date.now(),
           kind: "text",
         },
@@ -732,16 +737,18 @@ export function useChat() {
   const submitBillClaim = useCallback(
     (messageId: string, extract: BillExtract) => {
       const claimId = createClaimId();
-      updateBillExtract(messageId, { ...extract, submitted: true });
+      const submittedExtract = { ...extract, submitted: true };
+      updateBillExtract(messageId, submittedExtract);
       setMessages((prev) => [
         ...prev,
         {
           id: createId(),
           role: "assistant",
-          content: `Claim ${claimId} submitted for ${extract.vendor || "your bill"} (${extract.amount || "amount pending"}) under ${extract.category || "selected category"}.`,
+          content: `Claim ${claimId} submitted.`,
           createdAt: Date.now(),
           kind: "claim_cta",
           claimId,
+          billExtract: submittedExtract,
         },
       ]);
     },
@@ -764,24 +771,13 @@ export function useChat() {
     [],
   );
 
-  const openVehicleLookup = useCallback(() => {
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: createId(),
-        role: "assistant",
-        content:
-          "Sure. Enter your vehicle number and I'll pull up the registration details.",
-        createdAt: Date.now(),
-        kind: "text",
-      },
-    ]);
-    appendVehicleNumberInput();
-  }, [appendVehicleNumberInput]);
-
   const submitVehicleNumber = useCallback(
-    async (regNumber: string) => {
+    (regNumber: string) => {
+      // The lookup itself is synchronous, but a bill OCR or geolocation call
+      // may be mid-flight and about to append — don't interleave with it.
       if (isLoading || isScanning || isLocating) return;
+
+      const result = buildVehicleLookup(regNumber, USER_DISPLAY_NAME);
 
       setMessages((prev) => [
         ...prev,
@@ -792,157 +788,314 @@ export function useChat() {
           createdAt: Date.now(),
           kind: "text",
         },
-      ]);
-
-      // Only the API call is slow; the offline decode is instant
-      const looksUpRemotely = isVehicleApiConfigured();
-      if (looksUpRemotely) setIsLoading(true);
-
-      try {
-        const resolution = await resolveVehicle(regNumber);
-
-        if (!resolution.ok) {
-          setMessages((prev) => [
-            ...prev,
-            {
+        result.ok
+          ? {
               id: createId(),
               role: "assistant",
-              content: resolution.message,
+              content: `That's a ${vehicleDisplayName(result.lookup.profile)}. Check the details and send them to HR.`,
               createdAt: Date.now(),
               kind: "vehicle_details",
-              vehicleLookup: { error: resolution.message },
+              vehicleLookup: { lookup: result.lookup },
+            }
+          : {
+              id: createId(),
+              role: "assistant",
+              content: result.message,
+              createdAt: Date.now(),
+              kind: "vehicle_details",
+              vehicleLookup: { error: result.message },
             },
-          ]);
-          return;
-        }
+      ]);
+    },
+    [isLoading, isLocating, isScanning],
+  );
 
-        const { lookup } = resolution;
-        const identified = isIdentified(lookup);
+  const submitVehicleToHr = useCallback(
+    (messageId: string, lookup: VehicleLookup) => {
+      // Takes `lookup` rather than searching `messages` for it: depending on
+      // `messages` would change this callback's identity on every append and
+      // push a new function reference through every MessageBubble each turn.
+      // submitBillClaim avoids that the same way.
+      const claimId = createClaimId();
+      patchVehicleLookup(messageId, { submitted: true });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "assistant",
+          content: `Claim ${claimId} submitted to HR.`,
+          createdAt: Date.now(),
+          kind: "claim_cta",
+          claimId,
+          vehicleLookup: { lookup, submitted: true },
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content:
+            "Next up — you can register your driver and claim Driver Salary.",
+          createdAt: Date.now(),
+          kind: "text",
+        },
+      ]);
+    },
+    [patchVehicleLookup],
+  );
+
+  const startDriverSalary = useCallback(
+    (vehicleClaimId?: string) => {
+      if (isLoading || isScanning || isLocating) return;
+
+      const draft: DriverSalaryPayload = {
+        vehicleClaimId: vehicleClaimId || undefined,
+      };
+      driverSalaryDraftRef.current = draft;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: "Driver Salary",
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Let's register your driver. What's the driver's full name?",
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Driver name",
+          createdAt: Date.now(),
+          kind: "driver_name_input",
+          driverSalary: draft,
+        },
+      ]);
+    },
+    [isLoading, isLocating, isScanning],
+  );
+
+  const submitDriverName = useCallback(
+    (name: string) => {
+      if (isLoading || isScanning || isLocating) return;
+
+      const draft: DriverSalaryPayload = {
+        ...driverSalaryDraftRef.current,
+        driverName: name.trim(),
+      };
+      driverSalaryDraftRef.current = draft;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: name.trim(),
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: `Thanks. Please upload ${name.trim()}'s driving licence so I can read the DL number.`,
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Upload driving licence",
+          createdAt: Date.now(),
+          kind: "driver_dl_upload",
+          driverSalary: draft,
+        },
+      ]);
+    },
+    [isLoading, isLocating, isScanning],
+  );
+
+  const processDlFile = useCallback(
+    async (file: File) => {
+      if (isScanning || isLoading || isLocating) return;
+
+      setIsScanning(true);
+      setError(null);
+
+      const draftBase = { ...driverSalaryDraftRef.current };
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: `Attached: ${file.name}`,
+          createdAt: Date.now(),
+          kind: "text",
+        },
+      ]);
+
+      try {
+        const ocr = await runDlOcr(file);
+        const draft: DriverSalaryPayload = {
+          ...draftBase,
+          ...ocr,
+        };
+        driverSalaryDraftRef.current = draft;
 
         setMessages((prev) => [
           ...prev,
           {
             id: createId(),
             role: "assistant",
-            content: identified
-              ? `That's a ${lookup.identity?.makerModel}.`
-              : "Here's what the number plate tells me. Scan your RC to confirm the make and model.",
+            content: ocr.dlError
+              ? ocr.dlError
+              : ocr.dlWarning
+                ? ocr.dlWarning
+                : "I found the DL number. Please confirm it before continuing.",
             createdAt: Date.now(),
-            kind: "vehicle_details",
-            vehicleLookup: { lookup, warning: lookup.warning },
+            kind: "driver_dl_extract",
+            driverSalary: draft,
+          },
+        ]);
+      } catch (err) {
+        console.error("DL OCR failed", err);
+        setError("OCR failed");
+        const draft: DriverSalaryPayload = {
+          ...draftBase,
+          dlFileName: file.name,
+          dlRawText: "",
+          dlError:
+            "I couldn't scan that file. Please try another clear photo or PDF.",
+        };
+        driverSalaryDraftRef.current = draft;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            role: "assistant",
+            content: draft.dlError || "OCR failed",
+            createdAt: Date.now(),
+            kind: "driver_dl_extract",
+            driverSalary: draft,
           },
         ]);
       } finally {
-        if (looksUpRemotely) setIsLoading(false);
+        setIsScanning(false);
       }
     },
     [isLoading, isLocating, isScanning],
   );
 
-  const scanRcForVehicle = useCallback(
-    async (messageId: string, file: File) => {
-      if (isScanning || isLoading || isLocating) return;
+  const confirmDriverDl = useCallback(
+    (payload: DriverSalaryPayload) => {
+      if (isLoading || isScanning || isLocating) return;
+      if (!payload.dlNumber?.trim()) return;
 
-      setIsScanning(true);
-      setError(null);
-      patchVehicleLookup(messageId, {
-        scanning: true,
-        warning: undefined,
-        regMismatch: undefined,
-      });
+      const draft: DriverSalaryPayload = {
+        ...driverSalaryDraftRef.current,
+        ...payload,
+        dlNumber: payload.dlNumber.trim(),
+        dlError: undefined,
+      };
+      driverSalaryDraftRef.current = draft;
 
-      try {
-        const rc = await runRcOcr(file);
-
-        setMessages((prev) =>
-          prev.map((message) => {
-            if (message.id !== messageId || !message.vehicleLookup?.lookup) {
-              return message;
-            }
-
-            if (rc.error) {
-              return {
-                ...message,
-                vehicleLookup: {
-                  ...message.vehicleLookup,
-                  scanning: false,
-                  warning: rc.error,
-                },
-              };
-            }
-
-            const merged = applyRcToLookup(message.vehicleLookup.lookup, rc);
-            return {
-              ...message,
-              vehicleLookup: {
-                ...message.vehicleLookup,
-                lookup: merged,
-                regMismatch: merged.regMismatch,
-                warning: rc.warning,
-                scanning: false,
-              },
-            };
-          }),
-        );
-      } catch (err) {
-        console.error("RC OCR failed", err);
-        setError("OCR failed");
-        patchVehicleLookup(messageId, {
-          scanning: false,
-          warning:
-            "I couldn't read that RC. Try a clearer photo, or enter the details manually.",
-        });
-      } finally {
-        setIsScanning(false);
-      }
-    },
-    [isLoading, isLocating, isScanning, patchVehicleLookup],
-  );
-
-  const setVehicleManually = useCallback(
-    (messageId: string, maker: string, model: string) => {
-      setMessages((prev) =>
-        prev.map((message) =>
-          message.id === messageId && message.vehicleLookup?.lookup
-            ? {
-                ...message,
-                vehicleLookup: {
-                  ...message.vehicleLookup,
-                  lookup: applyManualIdentity(
-                    message.vehicleLookup.lookup,
-                    maker,
-                    model,
-                  ),
-                  warning: undefined,
-                  regMismatch: undefined,
-                },
-              }
-            : message,
-        ),
-      );
-    },
-    [],
-  );
-
-  const confirmVehicle = useCallback(
-    (messageId: string) => {
-      const message = messages.find((item) => item.id === messageId);
-      const lookup = message?.vehicleLookup?.lookup;
-      if (!lookup) return;
-
-      patchVehicleLookup(messageId, { confirmed: true });
       setMessages((prev) => [
         ...prev,
         {
           id: createId(),
           role: "assistant",
-          content: `Vehicle confirmed — ${describeVehicle(lookup)}. I'll use this for your motor claim.`,
+          content:
+            "Got it. What's the monthly driver salary and employment start date?",
           createdAt: Date.now(),
           kind: "text",
         },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Salary details",
+          createdAt: Date.now(),
+          kind: "driver_salary_input",
+          driverSalary: draft,
+        },
       ]);
     },
-    [messages, patchVehicleLookup],
+    [isLoading, isLocating, isScanning],
+  );
+
+  const submitDriverSalaryDetails = useCallback(
+    (salary: string, startDate: string) => {
+      if (isLoading || isScanning || isLocating) return;
+
+      const draft: DriverSalaryPayload = {
+        ...driverSalaryDraftRef.current,
+        salary: salary.trim(),
+        startDate: startDate.trim(),
+      };
+      driverSalaryDraftRef.current = draft;
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: `${draft.salary} · starts ${draft.startDate}`,
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Here's a summary. Submit when everything looks right.",
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Review driver salary",
+          createdAt: Date.now(),
+          kind: "driver_salary_review",
+          driverSalary: draft,
+        },
+      ]);
+    },
+    [isLoading, isLocating, isScanning],
+  );
+
+  const submitDriverSalaryClaim = useCallback(
+    (payload: DriverSalaryPayload) => {
+      const claimId = createClaimId();
+      const submitted: DriverSalaryPayload = {
+        ...driverSalaryDraftRef.current,
+        ...payload,
+        submitted: true,
+      };
+      driverSalaryDraftRef.current = submitted;
+
+      setMessages((prev) =>
+        prev
+          .map((message) =>
+            message.kind === "driver_salary_review"
+              ? { ...message, driverSalary: submitted }
+              : message,
+          )
+          .concat({
+            id: createId(),
+            role: "assistant",
+            content: `Claim ${claimId} submitted.`,
+            createdAt: Date.now(),
+            kind: "claim_cta",
+            claimId,
+            driverSalary: submitted,
+          }),
+      );
+    },
+    [],
   );
 
   return {
@@ -954,17 +1107,20 @@ export function useChat() {
     error,
     sendMessage,
     processBillFile,
+    processDlFile,
     openUploadOptions,
     updateBillExtract,
     submitBillClaim,
     selectMerchantBenefitType,
     selectMerchantSearchMode,
     searchMerchantByName,
-    openVehicleLookup,
     submitVehicleNumber,
-    scanRcForVehicle,
-    setVehicleManually,
-    confirmVehicle,
+    submitVehicleToHr,
+    startDriverSalary,
+    submitDriverName,
+    confirmDriverDl,
+    submitDriverSalaryDetails,
+    submitDriverSalaryClaim,
     startNewChat,
     hasMessages: messages.length > 0,
   };

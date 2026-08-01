@@ -6,6 +6,8 @@ Mobile-only Next.js chatbot for tax-benefit reimbursements and vehicle registrat
 
 [https://pai45.github.io/claim/](https://pai45.github.io/claim/)
 
+The GitHub Pages build is static. Generative answers use deterministic fallbacks there. For backend AI, run the app locally with Node (below).
+
 ## Getting started
 
 ```bash
@@ -15,29 +17,35 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+This starts the Next.js server, including `POST /api/assistant`. Policy and claims questions go through that route; the server loads the Apache-2.0 Qwen3 0.6B Instruct ONNX model (about 570 MB on first use, then cached on disk). No API keys or third-party accounts are required.
+
+Production-style local run:
+
+```bash
+npm run build
+npm start
+```
+
 ## Updating assistant replies
 
-Edit [`lib/assistant/replies.ts`](lib/assistant/replies.ts) to change intents, keywords, and generic replies. The assistant runs in the browser so the app remains compatible with GitHub Pages.
+Edit [`lib/assistant/replies.ts`](lib/assistant/replies.ts) to change intents, keywords, and generic replies.
 
-## On-device policy answers
+## Backend policy / claims answers
 
-Policy questions are matched against the structured records in
-[`features/policy/constants.ts`](features/policy/constants.ts). On browsers with
-WebGPU, the app lazily loads the Apache-2.0-licensed Qwen3 0.6B Instruct ONNX
-model through Transformers.js. Its q4f16 weights are about 570 MB and are cached
-after the first successful download. Questions and policy content stay in the
-browser.
+Matching still uses the structured records in
+[`features/policy/constants.ts`](features/policy/constants.ts) and the dashboard /
+claims data. The browser calls `/api/assistant`; the server builds a grounded
+prompt and runs the model with ONNX Runtime (CPU).
 
-Browsers without WebGPU, interrupted model downloads, and devices without
-enough memory automatically use a deterministic summary built from the same
-policy record. A download that makes no progress for 30 seconds or takes longer
-than three minutes also falls back automatically. Both paths render an app-owned
-link to the complete policy page.
+If the API is unavailable (static Pages host, model download failure, or a
+timeout), the UI falls back to a deterministic summary from the same records.
+Grounding checks still reject invented numbers and claim IDs.
 
-## Claims and dashboard answers
+## Static GitHub Pages build
 
-The assistant also answers questions about the local claims history and claims
-dashboard records. It selects only the matching dashboard category, claim ID, or
-status-filtered claims before prompting the on-device model. Unsupported model
-output falls back to a summary calculated directly from the same records, and
-the app renders the dashboard, history, or claim-details link separately.
+```bash
+npm run build:pages
+```
+
+This removes `app/api` for the export-only build. CI does the same before
+deploying `./out` to Pages.

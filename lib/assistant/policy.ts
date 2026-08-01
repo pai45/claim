@@ -165,12 +165,6 @@ export function resolvePolicyQuestion(
   return null;
 }
 
-function joinNatural(items: string[]): string {
-  if (items.length <= 1) return items[0] ?? "";
-  if (items.length === 2) return `${items[0]} and ${items[1]}`;
-  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
-}
-
 function findBenefit(policy: PolicyCategory, pattern: RegExp) {
   return policy.benefits.find((benefit) => pattern.test(benefit.title));
 }
@@ -194,10 +188,11 @@ export function createPolicyFallbackSummary(
 
   if (/covered|cover|coverage|eligible|eligibility/.test(normalized)) {
     if (policy.covered?.length) {
-      return `${policy.tabLabel} covers ${joinNatural(policy.covered)}. ${policy.notes[0]}.`;
+      const covered = policy.covered.map((item) => `- ${item}`).join("\n");
+      return `**${policy.tabLabel} coverage**\n\n${covered}\n\n${policy.notes[0]}`;
     }
 
-    return `${policy.description} ${policy.notes[0]}.`;
+    return `**${policy.tabLabel}**\n\n${policy.description}\n\n${policy.notes[0]}`;
   }
 
   if (/proof|invoice|receipt|document/.test(normalized)) {
@@ -205,26 +200,31 @@ export function createPolicyFallbackSummary(
       proof?.detail ??
       policy.notes.find((note) => /invoice|receipt|proof|licence/i.test(note));
     return proofDetail
-      ? `${policy.tabLabel} requires ${proofDetail.replace(/\.$/, "")}. ${deadline ?? policy.notes[0]}.`
-      : `The ${policy.tabLabel} policy does not specify a separate proof requirement. ${policy.notes[0]}.`;
+      ? `**${policy.tabLabel} proof required**\n\n- ${proofDetail.replace(/\.$/, "")}\n\n${deadline ?? policy.notes[0]}`
+      : `**${policy.tabLabel}**\n\nThe policy does not specify a separate proof requirement.\n\n${policy.notes[0]}`;
   }
 
   if (/deadline|submit|submission|when/.test(normalized) && deadline) {
-    return `${deadline}. ${frequency ? `${frequency.title}: ${frequency.detail}.` : ""}`.trim();
+    const lines = [`**${policy.tabLabel} deadline**`, "", `- ${deadline}`];
+    if (frequency) {
+      lines.push(`- **${frequency.title}:** ${frequency.detail}`);
+    }
+    return lines.join("\n");
   }
 
   if (/how|step|process/.test(normalized)) {
-    return `${policy.tabLabel} works in these stages: ${joinNatural(
-      policy.steps.map((step) => step.title),
-    )}. ${policy.steps.map((step) => step.detail).join(" ")}`;
+    const steps = policy.steps
+      .map((step, index) => `${index + 1}. **${step.title}** — ${step.detail}`)
+      .join("\n");
+    return `**How ${policy.tabLabel} works**\n\n${steps}`;
   }
 
   const highlights = [tax, limit, proof, frequency]
     .filter((benefit): benefit is NonNullable<typeof benefit> => Boolean(benefit))
-    .map((benefit) => `${benefit.title}: ${benefit.detail}`);
+    .map((benefit) => `- **${benefit.title}:** ${benefit.detail}`);
   const importantNote = deadline ?? policy.notes[0];
 
-  return `${policy.description} ${highlights.join("; ")}. ${importantNote}.`;
+  return `**${policy.tabLabel}**\n\n${policy.description}\n\n${highlights.join("\n")}\n\n${importantNote}`;
 }
 
 function numericFacts(value: string): string[] {
@@ -239,7 +239,7 @@ export function isGroundedPolicyAnswer(
   policy: PolicyCategory,
 ): boolean {
   const trimmed = answer.trim();
-  if (!trimmed || trimmed.length > 900) return false;
+  if (!trimmed || trimmed.length > 1600) return false;
 
   const source = JSON.stringify(policy);
   const allowedFacts = new Set(numericFacts(source));
@@ -255,7 +255,7 @@ export function createPolicyPrompt(
     {
       role: "system",
       content:
-        "You are a policy assistant. Answer only with facts present in the supplied policy JSON. Do not use outside knowledge, infer legal or tax advice, invent limits, dates, eligibility, or coverage, and do not produce a CTA or markdown. If the policy does not contain the answer, say that it does not specify it. Respond in the user's language in 2 to 4 concise sentences.",
+        "You are a policy assistant. Answer only with facts present in the supplied policy JSON. Do not use outside knowledge, infer legal or tax advice, invent limits, dates, eligibility, or coverage, and do not produce a CTA. If the policy does not contain the answer, say that it does not specify it. Format the reply like a helpful chat answer using short markdown: a bold title line, then short paragraphs and bullet lists for key facts (limits, proof, deadlines, steps). Keep it concise (about 80-160 words). Respond in the user's language.",
     },
     {
       role: "user",

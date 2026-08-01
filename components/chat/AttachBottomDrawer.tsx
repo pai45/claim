@@ -156,7 +156,10 @@ export function AttachBottomDrawer({
     if (!open) return;
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") handleDrawerClose();
+      if (event.key !== "Escape") return;
+      setTab("upload");
+      setMessage("");
+      onClose();
     }
 
     document.addEventListener("keydown", onKeyDown);
@@ -190,10 +193,10 @@ export function AttachBottomDrawer({
       }`}
       aria-hidden={!open}
     >
-        <button
-          type="button"
-          aria-label="Close attach drawer"
-          onClick={handleDrawerClose}
+      <button
+        type="button"
+        aria-label="Close attach drawer"
+        onClick={handleDrawerClose}
         className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
           open ? "opacity-100" : "opacity-0"
         }`}

@@ -8,47 +8,31 @@ type MerchantSearchModeCardProps = {
   disabled?: boolean;
 };
 
+const OPTIONS: { id: "name" | "nearest"; label: string }[] = [
+  { id: "name", label: "Type merchant name" },
+  { id: "nearest", label: "Find nearest near you" },
+];
+
+const pillClass =
+  "rounded-tl rounded-tr-[20px] rounded-br-[20px] rounded-bl-[20px] border border-input-border bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-60";
+
 export function MerchantSearchModeCard({
   onSelect,
   disabled,
 }: MerchantSearchModeCardProps) {
   return (
-    <div className="w-full max-w-[340px] rounded-2xl border border-input-border bg-white p-4 shadow-[2px_2px_10px_rgba(0,42,25,0.05)]">
-      <h3 className="font-display text-base font-bold text-pine">
-        How do you want to search?
-      </h3>
-      <p className="mt-0.5 font-sans text-xs text-subtle">
-        Type a name or find merchants near you
-      </p>
-
-      <div className="mt-4 flex flex-col gap-2">
+    <div className="flex flex-wrap content-start gap-2">
+      {OPTIONS.map((option) => (
         <button
+          key={option.id}
           type="button"
           disabled={disabled}
-          onClick={() => onSelect("name")}
-          className="rounded-xl border border-input-border bg-[#F8FBFA] px-3 py-3 text-left disabled:opacity-50"
+          onClick={() => onSelect(option.id)}
+          className={pillClass}
         >
-          <span className="block font-sans text-sm font-semibold text-pine">
-            Type merchant name
-          </span>
-          <span className="mt-0.5 block font-sans text-[11px] text-subtle">
-            Match against allowed merchants
-          </span>
+          {option.label}
         </button>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onSelect("nearest")}
-          className="rounded-xl border border-input-border bg-[#F8FBFA] px-3 py-3 text-left disabled:opacity-50"
-        >
-          <span className="block font-sans text-sm font-semibold text-pine">
-            Find nearest near you
-          </span>
-          <span className="mt-0.5 block font-sans text-[11px] text-subtle">
-            Uses GPS to show 3 closest options
-          </span>
-        </button>
-      </div>
+      ))}
     </div>
   );
 }

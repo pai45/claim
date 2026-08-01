@@ -2,9 +2,12 @@ import type { BenefitType } from "@/lib/merchants/types";
 import type {
   BillExtract,
   ChatMessage,
+  DriverSalaryPayload,
   PolicyModelStatus,
 } from "@/features/chat/types";
+import type { VehicleLookup } from "@/lib/vehicle/types";
 import { MessageBubble } from "./MessageBubble";
+import { TypingIndicator } from "./TypingIndicator";
 
 type MessageListProps = {
   messages: ChatMessage[];
@@ -13,6 +16,7 @@ type MessageListProps = {
   isLocating?: boolean;
   policyModelStatus?: PolicyModelStatus | null;
   onFileSelected?: (file: File) => void;
+  onDlFileSelected?: (file: File) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
@@ -22,13 +26,12 @@ type MessageListProps = {
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
   onSubmitVehicleNumber?: (regNumber: string) => void;
-  onScanRc?: (messageId: string, file: File) => void;
-  onVehicleManualEntry?: (
-    messageId: string,
-    maker: string,
-    model: string,
-  ) => void;
-  onConfirmVehicle?: (messageId: string) => void;
+  onSubmitVehicleToHr?: (messageId: string, lookup: VehicleLookup) => void;
+  onStartDriverSalary?: (vehicleClaimId?: string) => void;
+  onSubmitDriverName?: (name: string) => void;
+  onConfirmDriverDl?: (payload: DriverSalaryPayload) => void;
+  onSubmitDriverSalaryDetails?: (salary: string, startDate: string) => void;
+  onSubmitDriverSalaryClaim?: (payload: DriverSalaryPayload) => void;
 };
 
 export function MessageList({
@@ -38,15 +41,19 @@ export function MessageList({
   isLocating,
   policyModelStatus,
   onFileSelected,
+  onDlFileSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
   onSelectMerchantBenefitType,
   onSelectMerchantSearchMode,
   onSearchMerchantByName,
   onSubmitVehicleNumber,
-  onScanRc,
-  onVehicleManualEntry,
-  onConfirmVehicle,
+  onSubmitVehicleToHr,
+  onStartDriverSalary,
+  onSubmitDriverName,
+  onConfirmDriverDl,
+  onSubmitDriverSalaryDetails,
+  onSubmitDriverSalaryClaim,
 }: MessageListProps) {
   if (messages.length === 0 && !isLoading && !isScanning && !isLocating)
     return null;
@@ -60,28 +67,34 @@ export function MessageList({
           key={message.id}
           message={message}
           onFileSelected={onFileSelected}
+          onDlFileSelected={onDlFileSelected}
           onUpdateBillExtract={onUpdateBillExtract}
           onSubmitBillClaim={onSubmitBillClaim}
           onSelectMerchantBenefitType={onSelectMerchantBenefitType}
           onSelectMerchantSearchMode={onSelectMerchantSearchMode}
           onSearchMerchantByName={onSearchMerchantByName}
           onSubmitVehicleNumber={onSubmitVehicleNumber}
-          onScanRc={onScanRc}
-          onVehicleManualEntry={onVehicleManualEntry}
-          onConfirmVehicle={onConfirmVehicle}
+          onSubmitVehicleToHr={onSubmitVehicleToHr}
+          onStartDriverSalary={onStartDriverSalary}
+          onSubmitDriverName={onSubmitDriverName}
+          onConfirmDriverDl={onConfirmDriverDl}
+          onSubmitDriverSalaryDetails={onSubmitDriverSalaryDetails}
+          onSubmitDriverSalaryClaim={onSubmitDriverSalaryClaim}
           uploadDisabled={interactionDisabled}
         />
       ))}
       {isLoading ? (
-        <div className="flex justify-start">
-          <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
-            {policyModelStatus
-              ? policyModelStatus.progress !== undefined
-                ? `Downloading private AI (about 570 MB)… ${policyModelStatus.progress}%`
-                : "Preparing private on-device AI…"
-              : "Thinking…"}
+        policyModelStatus ? (
+          <div className="flex justify-start">
+            <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+              {policyModelStatus.progress !== undefined
+                ? `Loading server AI (first run downloads about 570 MB)… ${policyModelStatus.progress}%`
+                : "Asking the server AI…"}
+            </div>
           </div>
-        </div>
+        ) : (
+          <TypingIndicator />
+        )
       ) : null}
       {isScanning ? (
         <div className="flex justify-start">

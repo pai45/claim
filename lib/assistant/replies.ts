@@ -33,7 +33,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "limits",
     ],
     reply:
-      "Here's what your claims dashboard typically shows:\n\n- Pending claims and their status\n- Approved reimbursements\n- Remaining tax-benefit limits\n\nAsk me about a specific claim, or say \"track claim\" to look one up.",
+      "**Claims dashboard**\n\nHere's what it typically shows:\n\n- Pending claims and their status\n- Approved reimbursements\n- Remaining tax-benefit limits\n\nAsk me about a specific claim, or say **track claim** to look one up.",
   },
   {
     id: "view_policy",
@@ -47,7 +47,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "benefits",
     ],
     reply:
-      "Your tax-benefit policy usually covers eligible reimbursements such as medical bills, fuel, and vehicle-related expenses (subject to your plan).\n\nTell me the expense type and I'll check typical eligibility and documents needed.",
+      "**Policy coverage**\n\nYour tax-benefit policy usually covers eligible reimbursements such as:\n\n- Medical bills\n- Fuel\n- Vehicle-related expenses\n\nTell me the expense type and I'll check typical eligibility and documents needed.",
   },
   {
     id: "claim_history",
@@ -59,7 +59,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "my claims",
     ],
     reply:
-      "I can help you review claim history.\n\nShare a claim ID, date range, or status (pending / approved / rejected), and I'll walk you through what to look for and next steps.",
+      "**Claim history**\n\nI can help you review past claims. Share one of these:\n\n- Claim ID\n- Date range\n- Status (pending / approved / rejected)\n\nThen I'll walk you through what to look for and next steps.",
   },
   {
     id: "track_claim",
@@ -72,7 +72,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "follow up",
     ],
     reply:
-      "Happy to help track a claim.\n\nPlease share your claim ID or the approximate submission date. Typical statuses are Submitted -> Under review -> Approved / Needs info -> Paid.",
+      "**Track a claim**\n\nPlease share your claim ID or the approximate submission date.\n\nTypical statuses:\n\n1. Submitted\n2. Under review\n3. Approved / Needs info\n4. Paid",
   },
   {
     id: "vehicle_registration",
@@ -86,7 +86,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "car",
     ],
     reply:
-      "Let's register your vehicle for tax benefits.\n\nYou'll typically need:\n- Vehicle registration number\n- Owner name as on RC\n- Fuel type and purchase year\n\nReply with your registration number to begin, or say \"what documents do I need?\"",
+      "**Vehicle registration**\n\nEnter your vehicle number below and I'll pull up the details.\n\nYou can review them and send the registration to HR for approval.",
   },
   {
     id: "merchant_locator",
@@ -104,13 +104,13 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "nearest merchant",
     ],
     reply:
-      "I can check if a merchant is allowed for meal or fuel benefits.\n\nFirst, choose Fuel or Meal merchant below.",
+      "**Merchant locator**\n\nI can check if a merchant is allowed for meal or fuel benefits.\n\nFirst, choose **Fuel** or **Meal** merchant below.",
   },
   {
     id: "greeting",
     keywords: ["hi", "hello", "hey", "good morning", "good evening", "help"],
     reply:
-      "Hi! I'm your Claims Assistant. I can help with uploading bills, tracking claims, viewing policy details, merchant locator, and vehicle registration for tax benefits.\n\nWhat would you like to do?",
+      "**Hi!** I'm your Claims Assistant.\n\nI can help with:\n\n- Uploading bills\n- Tracking claims\n- Policy details\n- Merchant locator\n- Vehicle registration for tax benefits\n\nWhat would you like to do?",
   },
 ];
 
@@ -118,5 +118,5 @@ export const FALLBACK_REPLY: AssistantIntent = {
   id: "fallback",
   keywords: [],
   reply:
-    'I can help with reimbursements, claim tracking, policy questions, merchant locator, and vehicle registration for tax benefits.\n\nTry one of the quick actions, or ask something like "upload a bill" or "track my claim".',
+    "**How I can help**\n\n- Reimbursements\n- Claim tracking\n- Policy questions\n- Merchant locator\n- Vehicle registration for tax benefits\n\nTry one of the quick actions, or ask something like **upload a bill** or **track my claim**.",
 };

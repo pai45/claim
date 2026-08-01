@@ -20,7 +20,7 @@ export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
           >
             <span
               aria-hidden="true"
-              className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_48.57%,#99E0C7_0deg,#73BF99_90deg,#B8FFF7_180deg,#73BF99_270deg,#99E0C7_360deg)]"
+              className="quick-action-featured-border absolute inset-0"
             />
             <span
               aria-hidden="true"

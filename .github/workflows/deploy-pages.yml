@@ -36,8 +36,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # GitHub Pages is static-only. Backend AI lives in app/api and requires
+      # `npm run dev` / `npm start` locally (or any Node host).
       - name: Build static site
-        run: npm run build
+        run: npm run build:pages
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4

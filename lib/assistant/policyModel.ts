@@ -1,191 +1,119 @@
-import type { PolicyCategory } from "@/features/policy/constants";
-import { createAppDataPrompt, type GroundedAppData } from "./appData";
-import { createPolicyPrompt } from "./policy";
+import type { PolicyTabId } from "@/features/policy/constants";
 import type {
-  ModelPromptMessage,
-  PolicyModelRequest,
-  PolicyModelResponse,
-} from "./policyModelTypes";
+  AssistantGenerateRequest,
+  AssistantStreamEvent,
+} from "./assistantApiTypes";
+import type { AppDataResolution } from "./appData";
 
-type PendingRequest = {
-  resolve: (answer: string) => void;
-  reject: (error: Error) => void;
-  onProgress?: (progress?: number, file?: string) => void;
-  stallTimer: ReturnType<typeof setTimeout>;
-  totalTimer: ReturnType<typeof setTimeout>;
-};
+type ProgressCallback = (progress?: number, file?: string) => void;
 
-const MODEL_STALL_TIMEOUT_MS = 30_000;
-const MODEL_TOTAL_TIMEOUT_MS = 180_000;
-let worker: Worker | undefined;
-let workerFailed = false;
-const pendingRequests = new Map<string, PendingRequest>();
-
-function clearRequestTimers(pending: PendingRequest) {
-  clearTimeout(pending.stallTimer);
-  clearTimeout(pending.totalTimer);
+function assistantApiUrl() {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  // next.config sets trailingSlash: true, so the route handler lives at …/assistant/
+  return `${basePath}/api/assistant/`;
 }
 
-function rejectPending(error: Error) {
-  for (const pending of pendingRequests.values()) {
-    clearRequestTimers(pending);
-    pending.reject(error);
-  }
-  pendingRequests.clear();
-}
-
-function markWorkerFailed(message: string) {
-  workerFailed = true;
-  worker?.terminate();
-  worker = undefined;
-  rejectPending(new Error(message));
-}
-
-function failTimedOutRequest(requestId: string, message: string) {
-  const pending = pendingRequests.get(requestId);
-  if (!pending) return;
-
-  pendingRequests.delete(requestId);
-  clearRequestTimers(pending);
-  pending.reject(new Error(message));
-  markWorkerFailed(message);
-}
-
-function resetStallTimer(requestId: string) {
-  const pending = pendingRequests.get(requestId);
-  if (!pending) return;
-
-  clearTimeout(pending.stallTimer);
-  pending.stallTimer = setTimeout(() => {
-    failTimedOutRequest(
-      requestId,
-      "The on-device AI download stopped making progress.",
-    );
-  }, MODEL_STALL_TIMEOUT_MS);
-}
-
-function getWorker(): Worker {
-  if (worker) return worker;
-
-  worker = new Worker(new URL("./policy.worker.ts", import.meta.url), {
-    type: "module",
-    name: "policy-assistant",
-  });
-
-  worker.addEventListener(
-    "message",
-    (event: MessageEvent<PolicyModelResponse>) => {
-      const message = event.data;
-      const pending = pendingRequests.get(message.requestId);
-      if (!pending) return;
-
-      if (message.type === "progress") {
-        resetStallTimer(message.requestId);
-        pending.onProgress?.(message.progress, message.file);
-        return;
-      }
-
-      pendingRequests.delete(message.requestId);
-      clearRequestTimers(pending);
-      if (message.type === "result") {
-        pending.resolve(message.answer);
-      } else {
-        pending.reject(new Error(message.message));
-        markWorkerFailed(message.message);
-      }
-    },
-  );
-
-  worker.addEventListener("error", () => {
-    markWorkerFailed("The on-device policy model is unavailable.");
-  });
-
-  worker.addEventListener("messageerror", () => {
-    markWorkerFailed("The on-device policy model could not be loaded.");
-  });
-
-  return worker;
-}
-
-export function supportsOnDevicePolicyModel(): boolean {
-  if (workerFailed || typeof window === "undefined" || typeof Worker === "undefined") {
-    return false;
-  }
-
-  return "gpu" in navigator;
-}
-
-function generateOnDeviceAnswer(
-  messages: ModelPromptMessage[],
-  onProgress?: (progress?: number, file?: string) => void,
+async function generateViaBackend(
+  request: AssistantGenerateRequest,
+  onProgress?: ProgressCallback,
 ): Promise<string> {
-  if (!supportsOnDevicePolicyModel()) {
-    return Promise.reject(
-      new Error("WebGPU is not available on this browser or device."),
+  const response = await fetch(assistantApiUrl(), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Assistant API unavailable (${response.status}). Run the app with npm run dev or npm start.`,
     );
   }
 
-  const requestId = crypto.randomUUID();
-  const request: PolicyModelRequest = {
-    type: "generate",
-    requestId,
-    messages,
-  };
+  if (!response.body) {
+    throw new Error("Assistant API returned an empty response.");
+  }
 
-  return new Promise((resolve, reject) => {
-    const stallTimer = setTimeout(() => {
-      failTimedOutRequest(
-        requestId,
-        "The on-device AI download did not start in time.",
-      );
-    }, MODEL_STALL_TIMEOUT_MS);
-    const totalTimer = setTimeout(() => {
-      failTimedOutRequest(
-        requestId,
-        "The on-device AI model took too long to load.",
-      );
-    }, MODEL_TOTAL_TIMEOUT_MS);
-    pendingRequests.set(requestId, {
-      resolve,
-      reject,
-      onProgress,
-      stallTimer,
-      totalTimer,
-    });
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let answer: string | undefined;
 
-    try {
-      getWorker().postMessage(request);
-    } catch (error) {
-      const pending = pendingRequests.get(requestId);
-      pendingRequests.delete(requestId);
-      if (pending) clearRequestTimers(pending);
-      reject(
-        error instanceof Error
-          ? error
-          : new Error("The policy model request could not be started."),
-      );
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      let event: AssistantStreamEvent;
+      try {
+        event = JSON.parse(trimmed) as AssistantStreamEvent;
+      } catch {
+        continue;
+      }
+
+      if (event.type === "progress") {
+        onProgress?.(event.progress, event.file);
+        continue;
+      }
+
+      if (event.type === "result") {
+        answer = event.answer;
+        continue;
+      }
+
+      if (event.type === "error") {
+        throw new Error(event.message);
+      }
     }
-  });
+  }
+
+  const trailing = buffer.trim();
+  if (trailing) {
+    try {
+      const event = JSON.parse(trailing) as AssistantStreamEvent;
+      if (event.type === "result") answer = event.answer;
+      if (event.type === "error") throw new Error(event.message);
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+    }
+  }
+
+  if (!answer) {
+    throw new Error("Assistant API finished without an answer.");
+  }
+
+  return answer;
+}
+
+/** Backend AI is available whenever the app is served by Next.js (not static Pages). */
+export function supportsOnDevicePolicyModel(): boolean {
+  return typeof window !== "undefined";
 }
 
 export function generatePolicyAnswer(
   question: string,
-  policy: PolicyCategory,
-  onProgress?: (progress?: number, file?: string) => void,
+  categoryId: PolicyTabId,
+  onProgress?: ProgressCallback,
 ): Promise<string> {
-  return generateOnDeviceAnswer(
-    createPolicyPrompt(question, policy),
+  return generateViaBackend(
+    { type: "policy", question, categoryId },
     onProgress,
   );
 }
 
 export function generateAppDataAnswer(
   question: string,
-  source: GroundedAppData,
-  onProgress?: (progress?: number, file?: string) => void,
+  resolution: AppDataResolution,
+  onProgress?: ProgressCallback,
 ): Promise<string> {
-  return generateOnDeviceAnswer(
-    createAppDataPrompt(question, source),
+  return generateViaBackend(
+    { type: "appData", question, resolution },
     onProgress,
   );
 }

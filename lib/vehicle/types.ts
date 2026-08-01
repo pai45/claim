@@ -1,7 +1,7 @@
 /**
- * A registration number encodes state + RTO office only. Make and model are not
- * derivable from it — they live in the VAHAN register. Everything a provider
- * cannot know offline is optional here on purpose.
+ * A registration number encodes state + RTO office only — make and model are
+ * not derivable from it. The state and RTO here are genuinely decoded from the
+ * plate; everything on `VehicleProfile` is demo data from the bundled roster.
  */
 
 export type RegNumberFormat = "standard" | "bharat" | "defence" | "diplomatic";
@@ -44,45 +44,36 @@ export type RtoLocation = {
   officeKnown: boolean;
 };
 
-/** Vehicle attributes that only VAHAN (or the RC document) can supply. */
-export type VehicleIdentity = {
-  maker?: string;
-  model?: string;
-  /** Maker + model as a single display string, e.g. "Maruti Suzuki Alto 800" */
-  makerModel?: string;
-  fuel?: string;
-  vehicleClass?: string;
-  registrationDate?: string;
-  chassisNumber?: string;
-  engineNumber?: string;
-  ownerName?: string;
-  insuranceValidTo?: string;
-  pucValidTo?: string;
+export type FuelType = "Petrol" | "Diesel" | "CNG" | "Electric" | "Hybrid";
+
+/**
+ * One of the demo vehicles in `roster.ts`. None of this comes from VAHAN — a
+ * plate is mapped onto a roster entry by hash, not looked up.
+ */
+export type VehicleProfile = {
+  /** Stable slug, e.g. "maruti-alto-800". React key and hash audit trail. */
+  id: string;
+  maker: string;
+  model: string;
+  /** Engine description, deliberately not the fuel: "3-cylinder petrol". */
+  engineType: string;
+  /** Absent for EVs, which have no displacement. */
+  engineCapacityCc?: number;
+  fuel: FuelType;
+  bodyType: string;
+  /** Wikimedia Commons filename with no "File:" prefix; the URL is derived. */
+  commonsFile: string;
+  /** Every roster image is CC BY or CC BY-SA, so these must be rendered. */
+  imageAuthor: string;
+  imageLicense: string;
+  imageLicenseUrl: string;
 };
 
 export type VehicleLookup = {
   regNumber: ParsedRegNumber;
   location?: RtoLocation;
-  identity?: VehicleIdentity;
-  /** Which provider supplied `identity`. */
-  source: VehicleSource;
-  /** 0-1. Only meaningful for OCR-derived identities. */
-  confidence?: number;
-  /** Non-fatal note for the user, e.g. partial OCR read or a failed API call. */
-  warning?: string;
-};
-
-export type VehicleSource = "offline" | "rc_ocr" | "manual" | "api";
-
-/**
- * Implemented by anything that can resolve a plate to vehicle details.
- * Swapping in a VAHAN-backed API later means adding one file here — the chat
- * flow talks to `resolveVehicle`, not to any single provider.
- */
-export type VehicleProvider = {
-  id: VehicleSource;
-  label: string;
-  /** Whether this provider can return make/model at all. */
-  providesIdentity: boolean;
-  lookup(regNumber: ParsedRegNumber): Promise<VehicleLookup>;
+  profile: VehicleProfile;
+  ownerName: string;
+  /** Pre-formatted and locale-independent, e.g. "14 Mar 2021". */
+  registrationDate: string;
 };
