@@ -10,7 +10,7 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
   return (
     <div className="px-4 pt-1">
       <article className="relative overflow-hidden rounded-xl bg-white/75 p-4 shadow-[4px_4px_8px_rgba(0,42,25,0.04)]">
-        <div className="relative z-10 flex max-w-[210px] flex-col gap-4">
+        <div className="relative z-10 flex max-w-[200px] flex-col gap-4">
           <div className="flex flex-col gap-2">
             <h3 className="font-display text-lg font-bold leading-6 text-pine">
               Vehicle Registration
@@ -30,11 +30,12 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
         </div>
 
         <Image
-          src={withBasePath("/assets/vehicle-promo.svg")}
+          src={withBasePath("/assets/vehicle-registration.png")}
           alt=""
-          width={142}
-          height={142}
-          className="pointer-events-none absolute -right-1 top-1"
+          width={160}
+          height={160}
+          className="pointer-events-none absolute -bottom-1 -right-2 h-[148px] w-[148px] object-contain"
+          priority
         />
       </article>
     </div>

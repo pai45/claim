@@ -1,48 +1,9 @@
 import { parseBill } from "./parseBill";
+import { isPdf, validateDocumentFile } from "./validateFile";
 import type { BillExtract } from "@/features/chat/types";
 
-const MAX_BYTES = 10 * 1024 * 1024;
-const ALLOWED_TYPES = new Set([
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-]);
-
-function isPdf(file: File) {
-  return (
-    file.type === "application/pdf" ||
-    file.name.toLowerCase().endsWith(".pdf")
-  );
-}
-
-function isImage(file: File) {
-  return (
-    file.type.startsWith("image/") || /\.(jpe?g|png|webp)$/i.test(file.name)
-  );
-}
-
-function isHeic(file: File) {
-  return (
-    /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)
-  );
-}
-
 export function validateBillFile(file: File): string | null {
-  if (file.size > MAX_BYTES) {
-    return "File is too large. Please upload a file up to 10 MB.";
-  }
-
-  if (isHeic(file)) {
-    return "HEIC photos aren't supported. Please upload a JPG or PNG, or take a new photo.";
-  }
-
-  if (!ALLOWED_TYPES.has(file.type) && !isPdf(file) && !isImage(file)) {
-    return "Unsupported file type. Please use PDF, JPG, or PNG.";
-  }
-
-  return null;
+  return validateDocumentFile(file, "bill");
 }
 
 function hasUsefulFields(fields: ReturnType<typeof parseBill>): boolean {

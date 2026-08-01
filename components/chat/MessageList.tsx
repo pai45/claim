@@ -1,5 +1,9 @@
 import type { BenefitType } from "@/lib/merchants/types";
-import type { BillExtract, ChatMessage } from "@/features/chat/types";
+import type {
+  BillExtract,
+  ChatMessage,
+  PolicyModelStatus,
+} from "@/features/chat/types";
 import { MessageBubble } from "./MessageBubble";
 
 type MessageListProps = {
@@ -7,6 +11,7 @@ type MessageListProps = {
   isLoading?: boolean;
   isScanning?: boolean;
   isLocating?: boolean;
+  policyModelStatus?: PolicyModelStatus | null;
   onFileSelected?: (file: File) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
@@ -16,6 +21,14 @@ type MessageListProps = {
     benefitType?: BenefitType,
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
+  onSubmitVehicleNumber?: (regNumber: string) => void;
+  onScanRc?: (messageId: string, file: File) => void;
+  onVehicleManualEntry?: (
+    messageId: string,
+    maker: string,
+    model: string,
+  ) => void;
+  onConfirmVehicle?: (messageId: string) => void;
 };
 
 export function MessageList({
@@ -23,12 +36,17 @@ export function MessageList({
   isLoading,
   isScanning,
   isLocating,
+  policyModelStatus,
   onFileSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
   onSelectMerchantBenefitType,
   onSelectMerchantSearchMode,
   onSearchMerchantByName,
+  onSubmitVehicleNumber,
+  onScanRc,
+  onVehicleManualEntry,
+  onConfirmVehicle,
 }: MessageListProps) {
   if (messages.length === 0 && !isLoading && !isScanning && !isLocating)
     return null;
@@ -47,20 +65,28 @@ export function MessageList({
           onSelectMerchantBenefitType={onSelectMerchantBenefitType}
           onSelectMerchantSearchMode={onSelectMerchantSearchMode}
           onSearchMerchantByName={onSearchMerchantByName}
+          onSubmitVehicleNumber={onSubmitVehicleNumber}
+          onScanRc={onScanRc}
+          onVehicleManualEntry={onVehicleManualEntry}
+          onConfirmVehicle={onConfirmVehicle}
           uploadDisabled={interactionDisabled}
         />
       ))}
       {isLoading ? (
         <div className="flex justify-start">
           <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
-            Thinking…
+            {policyModelStatus
+              ? policyModelStatus.progress !== undefined
+                ? `Downloading private AI (about 570 MB)… ${policyModelStatus.progress}%`
+                : "Preparing private on-device AI…"
+              : "Thinking…"}
           </div>
         </div>
       ) : null}
       {isScanning ? (
         <div className="flex justify-start">
           <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
-            Scanning bill with OCR…
+            Reading document with OCR…
           </div>
         </div>
       ) : null}

@@ -1,0 +1,23 @@
+name = "vehicle-lookup"
+main = "src/index.js"
+compatibility_date = "2026-01-15"
+
+[vars]
+# Which adapter in src/vendors.js to use: cashfree | surepass | custom
+VENDOR = "cashfree"
+# Sandbox until you are ready to be billed per lookup
+CASHFREE_ENV = "sandbox"
+# Comma-separated. Leave empty only for local development.
+ALLOWED_ORIGINS = "http://localhost:3000"
+
+# Caches RC results so a repeated plate doesn't bill twice.
+# Create with: npx wrangler kv namespace create VEHICLE_CACHE
+[[kv_namespaces]]
+binding = "VEHICLE_CACHE"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# Secrets are NOT set here — they would end up in git. Set them with:
+#   npx wrangler secret put CASHFREE_CLIENT_ID
+#   npx wrangler secret put CASHFREE_CLIENT_SECRET
+# or, for Surepass:
+#   npx wrangler secret put SUREPASS_TOKEN

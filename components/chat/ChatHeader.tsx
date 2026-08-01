@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { SideMenu } from "./SideMenu";
 
-export function ChatHeader() {
+type ChatHeaderProps = {
+  onNewChat: () => void;
+};
+
+export function ChatHeader({ onNewChat }: ChatHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -61,7 +65,11 @@ export function ChatHeader() {
         </button>
       </header>
 
-      <SideMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <SideMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onNewChat={onNewChat}
+      />
     </>
   );
 }

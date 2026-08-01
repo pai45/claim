@@ -1,37 +1,48 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
-  AVAILABLE_LIMIT,
-  BENEFIT_CATEGORIES,
-  FY_LABEL,
-  FY_LIMIT,
-  UTILIZED_AMOUNT,
+  CLAIM_HISTORY_ITEMS,
+  CLAIM_STATUS_STYLES,
+  CLAIM_STATUS_TABS,
   formatINR,
+  isClaimStatusFilter,
+  type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
 import { CategoryIcon } from "./CategoryIcon";
 
-function ChevronRight() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M9.5 6.5 15 12l-5.5 5.5"
-        stroke="#005656"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function ClaimsHistoryScreen() {
   const router = useRouter();
-  const utilizedPercent = Math.min(100, (UTILIZED_AMOUNT / FY_LIMIT) * 100);
+  const searchParams = useSearchParams();
+  const initialFilter = searchParams.get("status");
+  const [activeTab, setActiveTab] = useState<ClaimStatusFilter>(
+    isClaimStatusFilter(initialFilter) ? initialFilter : "all",
+  );
+
+  const claims = useMemo(() => {
+    if (activeTab === "all") return CLAIM_HISTORY_ITEMS;
+    return CLAIM_HISTORY_ITEMS.filter((claim) => claim.status === activeTab);
+  }, [activeTab]);
+
+  function handleTabChange(tab: ClaimStatusFilter) {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === "all") {
+      params.delete("status");
+    } else {
+      params.set("status", tab);
+    }
+    const query = params.toString();
+    router.replace(query ? `/claims-history?${query}` : "/claims-history", {
+      scroll: false,
+    });
+  }
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-bg shadow-[0_0_40px_rgba(0,42,25,0.08)]">
-      <header className="flex items-center gap-4 px-4 pb-4 pt-2">
+    <div className="mx-auto flex h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-[#F8FAF8] shadow-[0_0_40px_rgba(0,42,25,0.08)]">
+      <header className="flex items-center gap-4 bg-[#F8FAF8] px-4 pb-3 pt-2">
         <button
           type="button"
           aria-label="Go back"
@@ -61,77 +72,97 @@ export function ClaimsHistoryScreen() {
         </div>
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-2">
-        <section className="flex flex-col gap-5 rounded-2xl border border-[#36D7A6] bg-gradient-to-b from-[#FAFFF9] to-[#E8F2EE] p-5 shadow-[2px_3px_4px_rgba(0,0,0,0.04)]">
-          <div className="flex flex-col gap-3">
-            <p className="text-center font-sans text-xs font-bold leading-4 tracking-wide text-[#595E70]">
-              AVAILABLE LIMIT
-            </p>
-            <p className="font-sans text-[32px] font-bold leading-8 text-[#003434]">
-              {formatINR(AVAILABLE_LIMIT)}
-            </p>
-          </div>
-
-          <div className="flex w-full flex-col gap-3">
-            <div className="h-2 w-full overflow-hidden rounded bg-[#DCE8E4]">
-              <div
-                className="h-full rounded bg-[#2D6A4F]"
-                style={{ width: `${utilizedPercent}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col gap-0.5">
-                <span className="font-sans text-xs text-[#566B66]">
-                  Utilized for {FY_LABEL}:
-                </span>
-                <span className="font-sans text-sm font-bold text-[#0F2C25]">
-                  {formatINR(UTILIZED_AMOUNT)}
-                </span>
-              </div>
-              <div className="flex flex-col items-end gap-0.5">
-                <span className="font-sans text-xs text-[#566B66]">
-                  Limit for {FY_LABEL}:
-                </span>
-                <span className="font-sans text-sm font-bold text-[#2D6A4F]">
-                  {formatINR(FY_LIMIT)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="overflow-hidden rounded-2xl border border-black/5 bg-white">
-          {BENEFIT_CATEGORIES.map((category, index) => {
-            const isFirst = index === 0;
-            const isLast = index === BENEFIT_CATEGORIES.length - 1;
-
+      <div className="overflow-x-auto border-b border-[#D8DADF] bg-[#F8FAF8] pt-2">
+        <div className="flex min-w-max items-end">
+          {CLAIM_STATUS_TABS.map((tab) => {
+            const active = activeTab === tab.id;
             return (
               <button
-                key={category.id}
+                key={tab.id}
                 type="button"
-                className={`flex w-full items-center gap-3 px-4 py-4 text-left ${
-                  !isLast ? "border-b border-black/5" : ""
-                } ${isFirst ? "rounded-t-2xl" : ""} ${isLast ? "rounded-b-2xl" : ""}`}
+                onClick={() => handleTabChange(tab.id)}
+                className="flex items-center justify-center px-4 pt-2"
               >
-                <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg"
-                  style={{ background: category.iconBg }}
-                >
-                  <CategoryIcon icon={category.icon} color={category.iconColor} />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="font-sans text-[15px] font-bold leading-5 text-[#1E1F24]">
-                    {category.name}
+                <span className="flex flex-col items-center gap-2">
+                  <span
+                    className={`text-center font-sans text-[15px] leading-5 ${
+                      active
+                        ? "font-bold text-[#1E1F24]"
+                        : "font-normal text-[#595E70]"
+                    }`}
+                  >
+                    {tab.label}
                   </span>
-                  <span className="font-sans text-base font-normal text-[#595E70]">
-                    {formatINR(category.amount)}
-                  </span>
-                </div>
-                <ChevronRight />
+                  <span
+                    className={`h-0.5 w-full rounded-t-full ${
+                      active ? "bg-[#005656]" : "bg-transparent"
+                    }`}
+                  />
+                </span>
               </button>
             );
           })}
-        </section>
+        </div>
+      </div>
+
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-8 pt-2">
+        {claims.length === 0 ? (
+          <p className="px-2 py-8 text-center font-sans text-sm text-[#595E70]">
+            No claims in this status yet.
+          </p>
+        ) : (
+          <section className="overflow-hidden rounded-2xl border border-black/5 bg-white">
+            {claims.map((claim, index) => {
+              const status = CLAIM_STATUS_STYLES[claim.status];
+              const isLast = index === claims.length - 1;
+
+              return (
+                <Link
+                  key={claim.id}
+                  href={`/claim-details/?id=${encodeURIComponent(claim.id)}`}
+                  className={`flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[#F8FAF8] ${
+                    !isLast ? "border-b border-[#EDEDF1]" : ""
+                  }`}
+                >
+                  <div
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+                    style={{ background: claim.iconBg }}
+                  >
+                    <CategoryIcon icon={claim.icon} color={claim.iconColor} />
+                  </div>
+
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
+                    <h2 className="font-sans text-[15px] font-bold text-[#1E1F24]">
+                      {claim.merchant}
+                    </h2>
+                    <p className="font-sans text-[13px] text-[#8D92A3]">
+                      {claim.category}
+                    </p>
+                  </div>
+
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <p className="font-sans text-[17px] font-bold text-[#1E1F24]">
+                      {formatINR(claim.amount)}
+                    </p>
+                    <p className="font-sans text-[13px] text-[#8D92A3]">
+                      {claim.date}
+                    </p>
+                    <span
+                      className="rounded-full border px-2 py-0.5 text-center font-sans text-xs leading-4"
+                      style={{
+                        background: status.bg,
+                        borderColor: status.border,
+                        color: status.text,
+                      }}
+                    >
+                      {status.label}
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </section>
+        )}
       </main>
     </div>
   );

@@ -25,11 +25,6 @@ export const QUICK_ACTIONS: QuickAction[] = [
     intentId: "claim_history",
   },
   {
-    id: "track-claim",
-    label: "Track Claim",
-    intentId: "track_claim",
-  },
-  {
     id: "merchant-locator",
     label: "Merchant Locator",
     intentId: "merchant_locator",

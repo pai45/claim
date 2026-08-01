@@ -1,11 +1,16 @@
+import Link from "next/link";
 import type { BenefitType } from "@/lib/merchants/types";
 import type { BillExtract, ChatMessage } from "@/features/chat/types";
+import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
+import { getPolicyCategory } from "@/features/policy/constants";
 import { BillExtractCard } from "./BillExtractCard";
 import { MerchantNameInputCard } from "./MerchantNameInputCard";
 import { MerchantResultsCard } from "./MerchantResultsCard";
 import { MerchantSearchModeCard } from "./MerchantSearchModeCard";
 import { MerchantTypeCard } from "./MerchantTypeCard";
 import { UploadOptionsCard } from "./UploadOptionsCard";
+import { VehicleDetailsCard } from "./VehicleDetailsCard";
+import { VehicleNumberInputCard } from "./VehicleNumberInputCard";
 
 type MessageBubbleProps = {
   message: ChatMessage;
@@ -18,6 +23,14 @@ type MessageBubbleProps = {
     benefitType?: BenefitType,
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
+  onSubmitVehicleNumber?: (regNumber: string) => void;
+  onScanRc?: (messageId: string, file: File) => void;
+  onVehicleManualEntry?: (
+    messageId: string,
+    maker: string,
+    model: string,
+  ) => void;
+  onConfirmVehicle?: (messageId: string) => void;
   uploadDisabled?: boolean;
 };
 
@@ -36,6 +49,10 @@ export function MessageBubble({
   onSelectMerchantBenefitType,
   onSelectMerchantSearchMode,
   onSearchMerchantByName,
+  onSubmitVehicleNumber,
+  onScanRc,
+  onVehicleManualEntry,
+  onConfirmVehicle,
   uploadDisabled,
 }: MessageBubbleProps) {
   if (message.kind === "upload_options") {
@@ -108,6 +125,37 @@ export function MessageBubble({
     );
   }
 
+  if (message.kind === "vehicle_number_input") {
+    return (
+      <div className="flex w-full justify-start">
+        <VehicleNumberInputCard
+          onSubmit={(regNumber) => onSubmitVehicleNumber?.(regNumber)}
+          disabled={uploadDisabled}
+        />
+      </div>
+    );
+  }
+
+  if (message.kind === "vehicle_details" && message.vehicleLookup) {
+    return (
+      <div className="flex w-full flex-col items-start gap-2">
+        {message.content && !message.vehicleLookup.error ? (
+          <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm leading-5 text-body shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+            {message.content}
+          </div>
+        ) : null}
+        <VehicleDetailsCard
+          messageId={message.id}
+          payload={message.vehicleLookup}
+          onScanRc={onScanRc}
+          onManualEntry={onVehicleManualEntry}
+          onConfirm={onConfirmVehicle}
+          disabled={uploadDisabled}
+        />
+      </div>
+    );
+  }
+
   if (message.kind === "bill_extract" && message.billExtract) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
@@ -122,6 +170,77 @@ export function MessageBubble({
           onUpdate={onUpdateBillExtract}
           onSubmitted={onSubmitBillClaim}
         />
+      </div>
+    );
+  }
+
+  if (message.kind === "claim_cta" && message.claimId) {
+    return (
+      <div className="flex w-full flex-col items-start gap-2">
+        <div className="max-w-[85%] rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm leading-5 text-body shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+          {message.content}
+        </div>
+        <Link
+          href={`/claim-details/?id=${encodeURIComponent(message.claimId)}`}
+          className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine"
+        >
+          View claim details
+        </Link>
+      </div>
+    );
+  }
+
+  if (message.kind === "policy_answer" && message.policyAnswer) {
+    const policy = getPolicyCategory(message.policyAnswer.categoryId);
+
+    return (
+      <div className="flex w-full flex-col items-start gap-2">
+        <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm leading-5 text-body shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+          {message.content}
+        </div>
+        <Link
+          href={`/policy-details/${policy.id}/`}
+          className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine"
+        >
+          View all {policy.tabLabel} details
+        </Link>
+      </div>
+    );
+  }
+
+  if (message.kind === "app_data_answer" && message.appDataAnswer) {
+    const payload = message.appDataAnswer;
+    const category = DASHBOARD_CATEGORIES.find(
+      (item) => item.id === payload.categoryId,
+    );
+    const href =
+      payload.target === "claim" && payload.claimId
+        ? `/claim-details/?id=${encodeURIComponent(payload.claimId)}`
+        : payload.target === "category_dashboard" && category
+          ? `/dashboard/${category.id}/`
+          : payload.target === "claims_history"
+            ? "/claims-history/"
+            : "/dashboard/";
+    const label =
+      payload.target === "claim"
+        ? "View claim details"
+        : payload.target === "category_dashboard" && category
+          ? `View ${category.name} dashboard`
+          : payload.target === "claims_history"
+            ? "View claims history"
+            : "View claims dashboard";
+
+    return (
+      <div className="flex w-full flex-col items-start gap-2">
+        <div className="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm leading-5 text-body shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+          {message.content}
+        </div>
+        <Link
+          href={href}
+          className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine"
+        >
+          {label}
+        </Link>
       </div>
     );
   }

@@ -29,6 +29,7 @@ export type PolicyStep = {
 
 export type PolicyCategory = {
   id: PolicyTabId;
+  aliases: string[];
   tabLabel: string;
   title: string;
   eyebrow?: string;
@@ -78,6 +79,14 @@ export const POLICY_LIST_ITEMS: PolicyListItem[] = [
 export const POLICY_CATEGORIES: PolicyCategory[] = [
   {
     id: "meal",
+    aliases: [
+      "meal",
+      "meals",
+      "food",
+      "restaurant",
+      "cafeteria",
+      "meal wallet",
+    ],
     tabLabel: "Meal Wallet",
     title: "Meal Wallet Benefit",
     whatIsHeading: "What is Meal Wallet Benefit?",
@@ -140,6 +149,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
   {
     id: "gift",
+    aliases: ["gift", "gifts", "voucher", "festival gift", "gift wallet"],
     tabLabel: "Gift Wallet",
     title: "Gift Wallet Benefit",
     whatIsHeading: "What is Gift Wallet Benefit?",
@@ -202,6 +212,14 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
   {
     id: "fuel",
+    aliases: [
+      "fuel",
+      "petrol",
+      "diesel",
+      "vehicle maintenance",
+      "car maintenance",
+      "fuel and maintenance",
+    ],
     tabLabel: "Fuel & Maintenance",
     title: "Fuel & Maintenance Benefit",
     whatIsHeading: "What is Fuel & Maintenance Benefit?",
@@ -264,6 +282,16 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
   {
     id: "mobile",
+    aliases: [
+      "mobile",
+      "phone",
+      "telephone",
+      "internet",
+      "broadband",
+      "wifi",
+      "wi-fi",
+      "data plan",
+    ],
     tabLabel: "Mobile & Internet",
     title: "Mobile & Internet Benefit",
     whatIsHeading: "What is Mobile & Internet Benefit?",
@@ -326,6 +354,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
   {
     id: "driver",
+    aliases: ["driver", "chauffeur", "driver salary"],
     tabLabel: "Driver Salary",
     title: "Driver Salary Benefits",
     eyebrow: "Reimbursement Wallet",
@@ -382,6 +411,15 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
   {
     id: "books",
+    aliases: [
+      "book",
+      "books",
+      "periodical",
+      "periodicals",
+      "journal",
+      "journals",
+      "publication",
+    ],
     tabLabel: "Books & Periodicals",
     title: "Books & Periodicals Benefits",
     eyebrow: "Reimbursement Wallet",
@@ -437,6 +475,18 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
   {
     id: "professional",
+    aliases: [
+      "professional development",
+      "skill development",
+      "learning",
+      "course",
+      "courses",
+      "certification",
+      "certifications",
+      "workshop",
+      "training",
+      "conference",
+    ],
     tabLabel: "Professional Development",
     title: "Professional Development Benefit",
     whatIsHeading: "What is Professional Development Benefit?",

@@ -106,7 +106,7 @@ export function ClaimsDashboardScreen() {
             return (
               <Link
                 key={category.id}
-                href={`/policy-details/${category.id}`}
+                href={`/dashboard/${category.id}/`}
                 className={`flex w-full items-center gap-3 px-4 py-4 ${
                   !isLast ? "border-b border-black/5" : ""
                 }`}

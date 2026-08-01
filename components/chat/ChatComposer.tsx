@@ -22,9 +22,9 @@ export function ChatComposer({ onSend, onAttach, disabled }: ChatComposerProps) 
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-border-soft bg-white px-4 pb-8 pt-4"
+      className="w-full border-t border-border-soft bg-white px-0 pb-8 pt-4"
     >
-      <div className="flex h-[54px] items-center gap-3 rounded-full border border-input-border bg-input px-2">
+      <div className="flex h-[54px] w-full items-center gap-3 border-y border-input-border bg-input px-3">
         <button
           type="button"
           aria-label="Add attachment"

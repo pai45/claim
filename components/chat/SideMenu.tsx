@@ -6,7 +6,21 @@ import { useEffect, type ReactNode } from "react";
 type SideMenuProps = {
   open: boolean;
   onClose: () => void;
+  onNewChat: () => void;
 };
+
+function NewChatIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M10 4.17v11.66M4.17 10h11.66"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function DashboardIcon() {
   return (
@@ -110,7 +124,7 @@ const MENU_ITEMS: {
   },
 ];
 
-export function SideMenu({ open, onClose }: SideMenuProps) {
+export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
   useEffect(() => {
     if (!open) return;
 
@@ -181,6 +195,22 @@ export function SideMenu({ open, onClose }: SideMenuProps) {
             </li>
           ))}
         </ul>
+
+        <div className="mt-auto px-4 pb-5 pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              onNewChat();
+              onClose();
+            }}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#005656] px-3.5 py-3 text-white shadow-[0_6px_16px_rgba(0,86,86,0.18)] transition-colors hover:bg-[#004646] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#005656] focus-visible:ring-offset-2"
+          >
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center">
+              <NewChatIcon />
+            </span>
+            <span className="font-sans text-base font-semibold">New chat</span>
+          </button>
+        </div>
       </nav>
     </div>
   );
