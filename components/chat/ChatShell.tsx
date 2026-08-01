@@ -6,6 +6,7 @@ import {
   VEHICLE_REGISTRATION_INTENT,
 } from "@/features/chat/constants";
 import { useChat } from "@/features/chat/useChat";
+import { withBasePath } from "@/lib/basePath";
 import type { QuickAction } from "@/features/chat/types";
 import { ChatComposer } from "./ChatComposer";
 import { ChatGreeting } from "./ChatGreeting";
@@ -75,7 +76,7 @@ export function ChatShell() {
       <div className="flex flex-col items-center gap-1">
         <div className="flex justify-center py-2 opacity-25">
           <Image
-            src="/assets/pine-labs-mark.svg"
+            src={withBasePath("/assets/pine-labs-mark.svg")}
             alt="pine labs"
             width={95}
             height={24}

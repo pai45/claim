@@ -1,5 +1,3 @@
-import { CLAIM_CATEGORIES } from "@/features/chat/constants";
-
 export type ParsedBillFields = {
   category?: string;
   vendor?: string;

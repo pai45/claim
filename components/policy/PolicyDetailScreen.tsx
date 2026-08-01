@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   POLICY_CATEGORIES,
@@ -19,13 +19,9 @@ type PolicyDetailScreenProps = {
 
 export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<PolicyTabId>(initialTab);
+  const activeTab = initialTab;
   const tabsScrollerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
 
   useEffect(() => {
     activeTabRef.current?.scrollIntoView({
@@ -81,7 +77,6 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
                 ref={active ? activeTabRef : undefined}
                 type="button"
                 onClick={() => {
-                  setActiveTab(item.id);
                   router.replace(`/policy-details/${item.id}`, { scroll: false });
                 }}
                 className={`shrink-0 snap-start px-3 ${

@@ -1,9 +1,14 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { resolveAssistantReply } from "@/lib/assistant/engine";
+import {
+  searchMerchantsByName,
+  searchMerchantsNearby,
+} from "@/lib/merchants/openStreetMap";
 import { runBillOcr } from "@/lib/ocr/runOcr";
-import type { BenefitType, MerchantsApiResponse } from "@/lib/merchants/types";
-import type { BillExtract, ChatMessage, ChatResponse } from "./types";
+import type { BenefitType } from "@/lib/merchants/types";
+import type { BillExtract, ChatMessage } from "./types";
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -87,20 +92,7 @@ export function useChat() {
       setError(null);
 
       try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: trimmed,
-            intentId,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Assistant unavailable");
-        }
-
-        const data = (await response.json()) as ChatResponse;
+        const data = resolveAssistantReply(trimmed, intentId);
         const assistantMessage: ChatMessage = {
           id: createId(),
           role: "assistant",
@@ -274,21 +266,11 @@ export function useChat() {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            const response = await fetch("/api/merchants/nearby", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                benefitType: resolvedType,
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-              }),
-            });
-
-            const data = (await response.json()) as MerchantsApiResponse;
-
-            if (!response.ok || data.error) {
-              throw new Error(data.error || "Nearby search failed");
-            }
+            const results = await searchMerchantsNearby(
+              resolvedType,
+              position.coords.latitude,
+              position.coords.longitude,
+            );
 
             setMessages((prev) => [
               ...prev,
@@ -296,8 +278,8 @@ export function useChat() {
                 id: createId(),
                 role: "assistant",
                 content:
-                  data.results.length > 0
-                    ? `Here are the ${Math.min(3, data.results.length)} nearest ${benefitLabel(resolvedType).toLowerCase()} merchants:`
+                  results.length > 0
+                    ? `Here are the ${Math.min(3, results.length)} nearest ${benefitLabel(resolvedType).toLowerCase()} merchants:`
                     : `I couldn't find nearby ${benefitLabel(resolvedType).toLowerCase()} merchants. Try typing a merchant name.`,
                 createdAt: Date.now(),
                 kind: "text",
@@ -310,7 +292,7 @@ export function useChat() {
                 kind: "merchant_results",
                 merchantLocator: {
                   benefitType: resolvedType,
-                  results: data.results,
+                  results,
                 },
               },
             ]);
@@ -406,20 +388,7 @@ export function useChat() {
       setError(null);
 
       try {
-        const response = await fetch("/api/merchants/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            benefitType: resolvedType,
-            query: trimmed,
-          }),
-        });
-
-        const data = (await response.json()) as MerchantsApiResponse;
-
-        if (!response.ok || data.error) {
-          throw new Error(data.error || "Merchant search failed");
-        }
+        const results = await searchMerchantsByName(resolvedType, trimmed);
 
         setMessages((prev) => [
           ...prev,
@@ -427,7 +396,7 @@ export function useChat() {
             id: createId(),
             role: "assistant",
             content:
-              data.results.length > 0
+              results.length > 0
                 ? `Here's what I found for "${trimmed}":`
                 : `No matches for "${trimmed}". Try another name or find nearest merchants.`,
             createdAt: Date.now(),
@@ -441,7 +410,7 @@ export function useChat() {
             kind: "merchant_results",
             merchantLocator: {
               benefitType: resolvedType,
-              results: data.results,
+              results,
             },
           },
         ]);

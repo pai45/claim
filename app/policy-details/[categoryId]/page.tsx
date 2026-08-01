@@ -1,10 +1,19 @@
-import { redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { PolicyDetailScreen } from "@/components/policy/PolicyDetailScreen";
-import { isPolicyTabId } from "@/features/policy/constants";
+import {
+  isPolicyTabId,
+  POLICY_CATEGORIES,
+} from "@/features/policy/constants";
 
 type PolicyCategoryPageProps = {
   params: Promise<{ categoryId: string }>;
 };
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return POLICY_CATEGORIES.map(({ id }) => ({ categoryId: id }));
+}
 
 export default async function PolicyCategoryPage({
   params,
@@ -12,7 +21,7 @@ export default async function PolicyCategoryPage({
   const { categoryId } = await params;
 
   if (!isPolicyTabId(categoryId)) {
-    redirect("/policy-details");
+    notFound();
   }
 
   return (

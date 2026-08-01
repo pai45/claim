@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import type { BillExtract } from "@/features/chat/types";
 
@@ -94,10 +94,6 @@ export function BillExtractCard({
   const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
   const [editing, setEditing] = useState(false);
   const [changingCategory, setChangingCategory] = useState(false);
-
-  useEffect(() => {
-    setFields(toFields(extract));
-  }, [extract]);
 
   if (extract.error) {
     return (

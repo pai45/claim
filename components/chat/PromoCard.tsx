@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { withBasePath } from "@/lib/basePath";
 
 type PromoCardProps = {
   onStart: () => void;
@@ -29,7 +30,7 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
         </div>
 
         <Image
-          src="/assets/vehicle-promo.svg"
+          src={withBasePath("/assets/vehicle-promo.svg")}
           alt=""
           width={142}
           height={142}

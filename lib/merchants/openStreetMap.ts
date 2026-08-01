@@ -10,15 +10,11 @@ import {
 import type { BenefitType, MerchantResult } from "./types";
 
 const NOMINATIM_URL =
-  process.env.OSM_NOMINATIM_URL?.trim() ||
+  process.env.NEXT_PUBLIC_OSM_NOMINATIM_URL?.trim() ||
   "https://nominatim.openstreetmap.org/search";
 const OVERPASS_URL =
-  process.env.OSM_OVERPASS_URL?.trim() ||
+  process.env.NEXT_PUBLIC_OSM_OVERPASS_URL?.trim() ||
   "https://overpass-api.de/api/interpreter";
-
-const USER_AGENT =
-  process.env.OSM_USER_AGENT?.trim() ||
-  "EBClaimsMerchantLocator/1.0 (local; merchant eligibility)";
 
 const MEAL_AMENITIES = ["restaurant", "cafe", "fast_food", "food_court", "bakery"];
 const FUEL_AMENITIES = ["fuel"];
@@ -70,7 +66,6 @@ type OverpassResponse = {
 function osmHeaders(): HeadersInit {
   return {
     Accept: "application/json",
-    "User-Agent": USER_AGENT,
   };
 }
 
@@ -240,7 +235,7 @@ async function searchNominatim(
 
   const response = await fetch(`${NOMINATIM_URL}?${params.toString()}`, {
     headers: osmHeaders(),
-    next: { revalidate: 0 },
+    cache: "no-store",
   });
 
   if (!response.ok) {

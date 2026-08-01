@@ -1,11 +1,12 @@
 import Image from "next/image";
 import { USER_DISPLAY_NAME } from "@/features/chat/constants";
+import { withBasePath } from "@/lib/basePath";
 
 export function ChatGreeting() {
   return (
     <section className="flex flex-col gap-2.5 px-4">
       <Image
-        src="/assets/greeting-orb.svg"
+        src={withBasePath("/assets/greeting-orb.svg")}
         alt=""
         width={72}
         height={72}
