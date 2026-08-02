@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { POLICY_LIST_ITEMS } from "@/features/policy/constants";
+import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { BackChevronIcon } from "./PolicyIcons";
 import { PolicyListIcon } from "./PolicyListIcons";
 
@@ -46,8 +47,12 @@ export function PolicyBenefitsListScreen() {
           </h2>
 
           <ul className="flex flex-col gap-2">
-            {POLICY_LIST_ITEMS.map((item) => (
-              <li key={item.id}>
+            {POLICY_LIST_ITEMS.map((item, index) => (
+              <li
+                key={item.id}
+                className="animate-rise-in"
+                style={staggerStyle(index)}
+              >
                 <Link
                   href={`/policy-details/${item.id}`}
                   className="flex items-center gap-3 rounded-2xl border border-black/5 bg-white px-4 py-4"

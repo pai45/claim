@@ -6,6 +6,7 @@ import {
   POLICY_CATEGORIES,
   type PolicyTabId,
 } from "@/features/policy/constants";
+import { staggerStyle } from "@/lib/ui/staggerStyle";
 import {
   BackChevronIcon,
   BenefitIcon,
@@ -101,8 +102,14 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
         </div>
       </div>
 
-      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-8 pt-4">
-        <section className="flex flex-col gap-2 rounded-2xl border border-[#FEF0C7] bg-[#FFFBEB] p-4">
+      <main
+        key={policy.id}
+        className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-8 pt-4"
+      >
+        <section
+          className="animate-rise-in flex flex-col gap-2 rounded-2xl border border-[#FEF0C7] bg-[#FFFBEB] p-4"
+          style={staggerStyle(0)}
+        >
           <div className="flex items-center gap-1.5">
             <WarningIcon />
             <h2 className="font-sans text-xs font-bold text-[#B25E00]">
@@ -110,10 +117,11 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
             </h2>
           </div>
           <ul className="flex flex-col gap-1">
-            {policy.notes.map((note) => (
+            {policy.notes.map((note, index) => (
               <li
                 key={note}
-                className="font-sans text-[10px] font-normal leading-[14px] text-[#B25E00]"
+                className="animate-rise-in font-sans text-[10px] font-normal leading-[14px] text-[#B25E00]"
+                style={staggerStyle(index + 1)}
               >
                 • {note}
               </li>
@@ -121,7 +129,7 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
           </ul>
         </section>
 
-        <section className="flex flex-col gap-2">
+        <section className="animate-rise-in flex flex-col gap-2" style={staggerStyle(1)}>
           <h2 className="font-sans text-sm font-bold uppercase text-[#768E89]">
             {policy.whatIsHeading}
           </h2>
@@ -132,13 +140,17 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
           </div>
         </section>
 
-        <section className="flex flex-col gap-3">
+        <section className="animate-rise-in flex flex-col gap-3" style={staggerStyle(2)}>
           <h2 className="font-sans text-sm font-bold uppercase text-[#768E89]">
             Benefits & Limits
           </h2>
           <div className="flex flex-col gap-3 rounded-2xl border border-[#E5ECE8] bg-white p-4">
             {policy.benefits.map((benefit, index) => (
-              <div key={benefit.title} className="flex flex-col gap-3">
+              <div
+                key={benefit.title}
+                className="animate-rise-in flex flex-col gap-3"
+                style={staggerStyle(index + 3)}
+              >
                 <div className="flex items-start gap-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#E8F2EE] p-2">
                     <BenefitIcon type={benefit.icon} />
@@ -161,14 +173,21 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
         </section>
 
         {policy.covered && policy.covered.length > 0 ? (
-          <section className="flex flex-col gap-3 rounded-2xl border border-[#E5ECE8] bg-white p-4">
+          <section
+            className="animate-rise-in flex flex-col gap-3 rounded-2xl border border-[#E5ECE8] bg-white p-4"
+            style={staggerStyle(3)}
+          >
             <h2 className="font-sans text-sm font-bold text-[#0F2C25]">
               What is Covered?
             </h2>
             <div className="flex gap-4">
               <div className="flex flex-1 flex-col gap-2.5">
-                {coveredLeft.map((item) => (
-                  <div key={item} className="flex items-start gap-2">
+                {coveredLeft.map((item, index) => (
+                  <div
+                    key={item}
+                    className="animate-rise-in flex items-start gap-2"
+                    style={staggerStyle(index + 4)}
+                  >
                     <span className="mt-0.5 shrink-0">
                       <CheckIcon />
                     </span>
@@ -179,8 +198,12 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
                 ))}
               </div>
               <div className="flex flex-1 flex-col gap-2.5">
-                {coveredRight.map((item) => (
-                  <div key={item} className="flex items-start gap-2">
+                {coveredRight.map((item, index) => (
+                  <div
+                    key={item}
+                    className="animate-rise-in flex items-start gap-2"
+                    style={staggerStyle(index + 4)}
+                  >
                     <span className="mt-0.5 shrink-0">
                       <CheckIcon />
                     </span>
@@ -194,7 +217,7 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
           </section>
         ) : null}
 
-        <section className="flex flex-col gap-3">
+        <section className="animate-rise-in flex flex-col gap-3" style={staggerStyle(4)}>
           <h2 className="font-sans text-sm font-bold uppercase text-[#768E89]">
             How It Works
           </h2>
@@ -202,7 +225,11 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
             {policy.steps.map((step, index) => {
               const isLast = index === policy.steps.length - 1;
               return (
-                <div key={step.title} className="flex items-start gap-4">
+                <div
+                  key={step.title}
+                  className="animate-rise-in flex items-start gap-4"
+                  style={staggerStyle(index + 5)}
+                >
                   <div className="flex min-h-20 w-6 flex-col items-center">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1B5E4B]">
                       <span className="font-sans text-xs font-bold text-white">

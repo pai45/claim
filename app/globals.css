@@ -126,8 +126,88 @@ textarea {
   animation: quick-action-border-spin 2.4s linear infinite;
 }
 
+/* Shared enter animation for chat replies and list rows */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-rise-in {
+  animation: rise-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Magic text: char/word reveal + soft shimmer */
+@keyframes magic-unit-in {
+  from {
+    opacity: 0;
+    filter: blur(7px);
+    transform: translateY(0.4em) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes magic-shimmer {
+  0% {
+    background-position: 140% center;
+  }
+  100% {
+    background-position: -40% center;
+  }
+}
+
+.magic-text-unit {
+  display: inline-block;
+  will-change: opacity, transform, filter;
+  animation: magic-unit-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.magic-text-shimmer {
+  --magic-base: #005656;
+  --magic-shimmer-delay: 0.55s;
+  background-image: linear-gradient(
+    105deg,
+    var(--magic-base) 0%,
+    var(--magic-base) 38%,
+    #36cc8b 50%,
+    var(--magic-base) 62%,
+    var(--magic-base) 100%
+  );
+  background-size: 220% 100%;
+  background-position: 140% center;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: magic-shimmer 1.6s ease-in-out var(--magic-shimmer-delay) 1
+    forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .quick-action-featured-border {
     animation: none;
+  }
+
+  .animate-rise-in {
+    animation: none;
+  }
+
+  .magic-text-unit,
+  .magic-text-shimmer {
+    animation: none;
+    filter: none;
+    transform: none;
+    opacity: 1;
+    color: inherit;
+    background: none;
   }
 }

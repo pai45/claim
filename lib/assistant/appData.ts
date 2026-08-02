@@ -52,11 +52,16 @@ function includesPhrase(message: string, phrase: string): boolean {
 }
 
 function findDashboardCategory(message: string) {
-  return DASHBOARD_CATEGORIES.find((category) =>
-    getPolicyCategory(category.id).aliases.some((alias) =>
-      includesPhrase(message, alias),
-    ),
-  );
+  return DASHBOARD_CATEGORIES.find((category) => {
+    const policy = getPolicyCategory(category.id);
+    const phrases = [
+      ...policy.aliases,
+      policy.tabLabel,
+      policy.title,
+      category.name,
+    ];
+    return phrases.some((phrase) => includesPhrase(message, phrase));
+  });
 }
 
 function findClaimId(message: string): string | undefined {
@@ -95,19 +100,24 @@ export function resolveAppDataQuestion(
 
   const claimId = findClaimId(normalized);
   if (claimId) {
-    return { kind: "claims", claimId };
+    return category
+      ? { kind: "claims", claimId, categoryId: category.id }
+      : { kind: "claims", claimId };
   }
 
   if (DASHBOARD_QUESTION.test(normalized)) {
     return { kind: "dashboard", categoryId: category?.id };
   }
 
+  const mentionsClaimWord = /\bclaims?\b/.test(normalized);
   const asksAboutClaimCollection =
     CLAIM_QUESTION.test(normalized) ||
     (/\bclaims\b/.test(normalized) &&
       /\b(my|approved|pending|rejected|recent|latest|history|past|previous|show|list|many|status)\b/.test(
         normalized,
-      ));
+      )) ||
+    // "fuel claim", "meal claims", "status of my driver claim", etc.
+    (Boolean(category) && mentionsClaimWord);
   if (asksAboutClaimCollection) {
     return {
       kind: "claims",

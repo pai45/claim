@@ -11,6 +11,7 @@ import {
   UTILIZED_AMOUNT,
   formatINR,
 } from "@/features/dashboard/constants";
+import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 function ChevronRight() {
   return (
@@ -61,7 +62,7 @@ export function ClaimsDashboardScreen() {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-8">
-        <section className="flex flex-col gap-5 rounded-2xl border border-[#36D7A6] bg-gradient-to-b from-[#FAFFF9] to-[#E8F2EE] p-5 shadow-[2px_3px_4px_rgba(0,0,0,0.04)]">
+        <section className="animate-rise-in flex flex-col gap-5 rounded-2xl border border-[#36D7A6] bg-gradient-to-b from-[#FAFFF9] to-[#E8F2EE] p-5 shadow-[2px_3px_4px_rgba(0,0,0,0.04)]">
           <div className="flex flex-col gap-3">
             <p className="text-center font-sans text-xs font-bold leading-4 tracking-wide text-[#595E70]">
               AVAILABLE LIMIT
@@ -107,7 +108,8 @@ export function ClaimsDashboardScreen() {
               <Link
                 key={category.id}
                 href={`/dashboard/${category.id}/`}
-                className={`flex w-full items-center gap-3 px-4 py-4 ${
+                style={staggerStyle(index + 1)}
+                className={`animate-rise-in flex w-full items-center gap-3 px-4 py-4 ${
                   !isLast ? "border-b border-black/5" : ""
                 }`}
               >

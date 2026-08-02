@@ -133,7 +133,10 @@ export function ChatShell() {
 
         <div className="flex w-full flex-col items-stretch gap-1">
           {!hasMessages ? (
-            <div className="flex justify-center py-2 opacity-25">
+            <div
+              className="animate-rise-in flex justify-center py-2 opacity-25"
+              style={{ animationDelay: "2100ms" }}
+            >
               <Image
                 src={withBasePath("/assets/pine-labs-mark.svg")}
                 alt="pine labs"
@@ -143,11 +146,16 @@ export function ChatShell() {
             </div>
           ) : null}
           {!attachOpen ? (
-            <ChatComposer
-              onSend={(message) => void sendMessage(message)}
-              onAttach={() => setAttachOpen(true)}
-              disabled={busy}
-            />
+            <div
+              className="animate-rise-in"
+              style={{ animationDelay: hasMessages ? "0ms" : "2220ms" }}
+            >
+              <ChatComposer
+                onSend={(message) => void sendMessage(message)}
+                onAttach={() => setAttachOpen(true)}
+                disabled={busy}
+              />
+            </div>
           ) : null}
         </div>
 

@@ -13,6 +13,7 @@ import {
   DASHBOARD_CATEGORIES,
   formatINR,
 } from "@/features/dashboard/constants";
+import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 type BenefitClaimsScreenProps = {
   categoryId: string;
@@ -110,7 +111,7 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-10 pt-4">
-        <section className="relative flex flex-col gap-5 rounded-2xl border border-[#25B35B] bg-gradient-to-b from-[#FBFFF9] to-[#E9F2E8] p-5 shadow-[2px_3.17px_4.33px_rgba(0,0,0,0.04)]">
+        <section className="animate-rise-in relative flex flex-col gap-5 rounded-2xl border border-[#25B35B] bg-gradient-to-b from-[#FBFFF9] to-[#E9F2E8] p-5 shadow-[2px_3.17px_4.33px_rgba(0,0,0,0.04)]">
           <div className="absolute right-3 top-2.5">
             <span className="inline-flex min-h-[22px] min-w-[22px] items-center rounded-full bg-[#FAFAFA] px-1.5 py-0.5 shadow-[inset_0_0_0_1px_#E9EAEB]">
               <span className="text-center font-sans text-[10px] font-bold leading-[14px] text-[#595E70]">
@@ -159,7 +160,7 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
           </div>
         </section>
 
-        <section className="flex flex-col">
+        <section className="animate-rise-in flex flex-col" style={staggerStyle(1)}>
           <div className="flex flex-col gap-3 rounded-t-[20px] border border-[#E5ECE8] bg-white p-4">
             <div className="flex items-center justify-between">
               <h2 className="font-sans text-base font-bold text-[#1E1F24]">
@@ -197,11 +198,12 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
           </div>
 
           <div className="overflow-hidden rounded-b-2xl border border-t-0 border-black/5 bg-white">
-            {data.claims.map((claim) => (
+            {data.claims.map((claim, index) => (
               <Link
                 key={claim.id}
                 href={`/claim-details/?id=${encodeURIComponent(claim.id)}`}
-                className="flex w-full items-start gap-3 border-b border-[#EDEDF1] px-4 py-3 last:border-b-0"
+                style={staggerStyle(index + 2)}
+                className="animate-rise-in flex w-full items-start gap-3 border-b border-[#EDEDF1] px-4 py-3 last:border-b-0"
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#E8F2EE]">
                   <CategoryIcon icon={categoryMeta.icon} color="#114B4F" />

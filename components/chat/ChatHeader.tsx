@@ -12,7 +12,10 @@ export function ChatHeader({ onNewChat }: ChatHeaderProps) {
 
   return (
     <>
-      <header className="flex items-center gap-4 px-4 pb-4 pt-2">
+      <header
+        className="animate-rise-in flex items-center gap-4 px-4 pb-4 pt-2"
+        style={{ animationDelay: "0ms" }}
+      >
         <button
           type="button"
           aria-label="Go back"

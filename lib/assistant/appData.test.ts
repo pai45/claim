@@ -37,6 +37,28 @@ describe("app-data question routing", () => {
     });
   });
 
+  it("routes claim questions that name a category", () => {
+    expect(resolveAppDataQuestion("What is the status of my fuel claim?")).toEqual(
+      {
+        kind: "claims",
+        categoryId: "fuel",
+        status: undefined,
+      },
+    );
+    expect(resolveAppDataQuestion("Show mobile claims")).toEqual({
+      kind: "claims",
+      categoryId: "mobile",
+      status: undefined,
+    });
+    expect(
+      resolveAppDataQuestion("Tell me about my Books & Periodicals claims"),
+    ).toEqual({
+      kind: "claims",
+      categoryId: "books",
+      status: undefined,
+    });
+  });
+
   it("keeps explicit tracking in the existing deterministic workflow", () => {
     expect(resolveAppDataQuestion("Track claim")).toBeNull();
     expect(resolveAppDataQuestion("What is the status of my claim?")).toBeNull();

@@ -11,6 +11,7 @@ import {
   isClaimStatusFilter,
   type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
+import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { CategoryIcon } from "./CategoryIcon";
 
 export function ClaimsHistoryScreen() {
@@ -111,7 +112,10 @@ export function ClaimsHistoryScreen() {
             No claims in this status yet.
           </p>
         ) : (
-          <section className="overflow-hidden rounded-2xl border border-black/5 bg-white">
+          <section
+            key={activeTab}
+            className="overflow-hidden rounded-2xl border border-black/5 bg-white"
+          >
             {claims.map((claim, index) => {
               const status = CLAIM_STATUS_STYLES[claim.status];
               const isLast = index === claims.length - 1;
@@ -120,7 +124,8 @@ export function ClaimsHistoryScreen() {
                 <Link
                   key={claim.id}
                   href={`/claim-details/?id=${encodeURIComponent(claim.id)}`}
-                  className={`flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[#F8FAF8] ${
+                  style={staggerStyle(index)}
+                  className={`animate-rise-in flex items-start gap-3 px-4 py-3 transition-colors hover:bg-[#F8FAF8] ${
                     !isLast ? "border-b border-[#EDEDF1]" : ""
                   }`}
                 >

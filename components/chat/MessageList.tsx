@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import type { BenefitType } from "@/lib/merchants/types";
 import type {
   BillExtract,
@@ -55,6 +58,34 @@ export function MessageList({
   onSubmitDriverSalaryDetails,
   onSubmitDriverSalaryClaim,
 }: MessageListProps) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const lastMessage = messages[messages.length - 1];
+  const lastMessageId = lastMessage?.id;
+  const lastMessageKind = lastMessage?.kind;
+
+  useEffect(() => {
+    if (messages.length === 0 && !isLoading && !isScanning && !isLocating) {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    bottomRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "end",
+    });
+  }, [
+    messages.length,
+    lastMessageId,
+    lastMessageKind,
+    isLoading,
+    isScanning,
+    isLocating,
+    policyModelStatus?.progress,
+  ]);
+
   if (messages.length === 0 && !isLoading && !isScanning && !isLocating)
     return null;
 
@@ -63,29 +94,30 @@ export function MessageList({
   return (
     <div className="flex flex-col gap-3 px-4">
       {messages.map((message) => (
-        <MessageBubble
-          key={message.id}
-          message={message}
-          onFileSelected={onFileSelected}
-          onDlFileSelected={onDlFileSelected}
-          onUpdateBillExtract={onUpdateBillExtract}
-          onSubmitBillClaim={onSubmitBillClaim}
-          onSelectMerchantBenefitType={onSelectMerchantBenefitType}
-          onSelectMerchantSearchMode={onSelectMerchantSearchMode}
-          onSearchMerchantByName={onSearchMerchantByName}
-          onSubmitVehicleNumber={onSubmitVehicleNumber}
-          onSubmitVehicleToHr={onSubmitVehicleToHr}
-          onStartDriverSalary={onStartDriverSalary}
-          onSubmitDriverName={onSubmitDriverName}
-          onConfirmDriverDl={onConfirmDriverDl}
-          onSubmitDriverSalaryDetails={onSubmitDriverSalaryDetails}
-          onSubmitDriverSalaryClaim={onSubmitDriverSalaryClaim}
-          uploadDisabled={interactionDisabled}
-        />
+        <div key={message.id} className="animate-rise-in">
+          <MessageBubble
+            message={message}
+            onFileSelected={onFileSelected}
+            onDlFileSelected={onDlFileSelected}
+            onUpdateBillExtract={onUpdateBillExtract}
+            onSubmitBillClaim={onSubmitBillClaim}
+            onSelectMerchantBenefitType={onSelectMerchantBenefitType}
+            onSelectMerchantSearchMode={onSelectMerchantSearchMode}
+            onSearchMerchantByName={onSearchMerchantByName}
+            onSubmitVehicleNumber={onSubmitVehicleNumber}
+            onSubmitVehicleToHr={onSubmitVehicleToHr}
+            onStartDriverSalary={onStartDriverSalary}
+            onSubmitDriverName={onSubmitDriverName}
+            onConfirmDriverDl={onConfirmDriverDl}
+            onSubmitDriverSalaryDetails={onSubmitDriverSalaryDetails}
+            onSubmitDriverSalaryClaim={onSubmitDriverSalaryClaim}
+            uploadDisabled={interactionDisabled}
+          />
+        </div>
       ))}
       {isLoading ? (
         policyModelStatus ? (
-          <div className="flex justify-start">
+          <div className="animate-rise-in flex justify-start">
             <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
               {policyModelStatus.progress !== undefined
                 ? `Loading server AI (first run downloads about 570 MB)… ${policyModelStatus.progress}%`
@@ -93,23 +125,26 @@ export function MessageList({
             </div>
           </div>
         ) : (
-          <TypingIndicator />
+          <div className="animate-rise-in">
+            <TypingIndicator />
+          </div>
         )
       ) : null}
       {isScanning ? (
-        <div className="flex justify-start">
+        <div className="animate-rise-in flex justify-start">
           <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
             Reading document with OCR…
           </div>
         </div>
       ) : null}
       {isLocating ? (
-        <div className="flex justify-start">
+        <div className="animate-rise-in flex justify-start">
           <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
             Finding merchants…
           </div>
         </div>
       ) : null}
+      <div ref={bottomRef} aria-hidden className="h-px w-full shrink-0" />
     </div>
   );
 }
