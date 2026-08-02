@@ -257,7 +257,7 @@ export function createAppDataFallbackSummary(
   }
 
   if (resolution.kind === "dashboard") {
-    return `**Claims dashboard (${FY_LABEL})**\n\n- **Available:** ${formatINR(AVAILABLE_LIMIT)}\n- **Utilized:** ${formatINR(UTILIZED_AMOUNT)}\n- **FY limit:** ${formatINR(FY_LIMIT)}\n- **Categories:** ${DASHBOARD_CATEGORIES.length} (each showing ${formatINR(DASHBOARD_CATEGORIES[0].amount)})`;
+    return `**Claims dashboard (${FY_LABEL})**\n\n- **Available:** ${formatINR(AVAILABLE_LIMIT)}\n- **Utilized:** ${formatINR(UTILIZED_AMOUNT)}\n- **FY limit:** ${formatINR(FY_LIMIT)}\n- **Categories:** ${DASHBOARD_CATEGORIES.length}`;
   }
 
   const claims = claimsForResolution(resolution);

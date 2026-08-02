@@ -1,27 +1,27 @@
-import Image from "next/image";
 import { USER_DISPLAY_NAME } from "@/features/chat/constants";
-import { withBasePath } from "@/lib/basePath";
+import { BRAND_ASSETS } from "@/lib/ui/assets";
 import { MagicText } from "@/components/shared/MagicText";
+import { AppIcon } from "@/components/shared/AppIcon";
 import { colors } from "@/lib/ui/colors";
 
 export function ChatGreeting() {
   return (
-    <section className="flex flex-col gap-3 px-page">
-      <div className="animate-rise-in" style={{ animationDelay: "40ms" }}>
-        <Image
-          src={withBasePath("/assets/greeting-orb.svg")}
-          alt=""
-          width={72}
-          height={72}
+    <section className="flex flex-col gap-3.5 px-page pt-2">
+      <div className="animate-rise-in" style={{ animationDelay: "20ms" }}>
+        <AppIcon
+          src={BRAND_ASSETS.logo}
+          alt="Claims Assistant"
+          size={64}
           priority
+          className="object-contain"
         />
       </div>
       <MagicText
         as="h2"
-        text={`Hey ${USER_DISPLAY_NAME} 👋`}
+        text={`Hey ${USER_DISPLAY_NAME}`}
         mode="chars"
-        delayMs={120}
-        stepMs={32}
+        delayMs={30}
+        stepMs={14}
         shimmer
         shimmerBase={colors.pinePrimary}
         className="type-hero"
@@ -30,9 +30,9 @@ export function ChatGreeting() {
         as="p"
         text="I can help you claim reimbursements. What would you like to do?"
         mode="words"
-        delayMs={520}
-        stepMs={60}
-        className="type-body"
+        delayMs={120}
+        stepMs={22}
+        className="type-body max-w-[20rem]"
       />
     </section>
   );

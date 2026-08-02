@@ -10,7 +10,7 @@ describe("parseBill", () => {
     expect(result.amount).toBe("₹1,250");
     expect(result.billDate).toBe("12 March 2026");
     expect(result.invoiceNo).toBe("INV-2026-118");
-    expect(result.category).toBe("Medical");
+    expect(result.category).toBe("Other / HR review");
   });
 
   it("reads amount on the next line after Grand Total", () => {
@@ -20,7 +20,7 @@ describe("parseBill", () => {
     expect(result.vendor).toBe("Apollo Clinic");
     expect(result.amount).toBe("₹2,499");
     expect(result.billDate).toBe("1 August 2026");
-    expect(result.category).toBe("Medical");
+    expect(result.category).toBe("Other / HR review");
   });
 
   it("handles noisy OCR label and currency misreads", () => {
@@ -33,7 +33,7 @@ describe("parseBill", () => {
     expect(result.vendor).toBe("MEDPLUS STORE");
     expect(result.amount).toBe("₹640");
     expect(result.invoiceNo).toBe("MP/8821");
-    expect(result.category).toBe("Medical");
+    expect(result.category).toBe("Other / HR review");
   });
 
   it("handles glued TotalRs amounts", () => {
@@ -42,7 +42,7 @@ describe("parseBill", () => {
     );
     expect(result.amount).toBe("₹999");
     expect(result.invoiceNo).toBe("AB/2026/00991");
-    expect(result.category).toBe("Internet & Broadband");
+    expect(result.category).toBe("Mobile & Internet");
   });
 
   it("extracts fuel receipt fields", () => {
@@ -52,7 +52,7 @@ describe("parseBill", () => {
     expect(result.vendor).toContain("Indian Oil");
     expect(result.amount).toBe("₹2,180.50");
     expect(result.invoiceNo).toBe("IOC/77821");
-    expect(result.category).toBe("Fuel");
+    expect(result.category).toBe("Fuel & Maintenance");
   });
 
   it("does not put tax lines into Amount when Total exists", () => {

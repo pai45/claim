@@ -41,40 +41,45 @@ export type PolicyCategory = {
   steps: PolicyStep[];
 };
 
-export const POLICY_LIST_ITEMS: PolicyListItem[] = [
-  { id: "meal", label: "Meal Wallet", iconBg: "#FFE6BC", iconTone: "#B65400" },
-  { id: "gift", label: "Gift Wallet", iconBg: "#DAF7E7", iconTone: "#039258" },
-  {
-    id: "fuel",
-    label: "Fuel & Maintenance",
-    iconBg: "#FAFCFC",
-    iconTone: "#005656",
-  },
-  {
-    id: "mobile",
-    label: "Mobile & Internet",
-    iconBg: "#FFFCF5",
-    iconTone: "#B54708",
-  },
-  {
-    id: "driver",
-    label: "Driver Salary",
-    iconBg: "#FFFBFA",
-    iconTone: "#7F1D1D",
-  },
-  {
-    id: "books",
-    label: "Books & Periodicals",
-    iconBg: "#F6FEF9",
-    iconTone: "#166534",
-  },
-  {
-    id: "professional",
-    label: "Professional Development",
-    iconBg: "#F2F8FD",
-    iconTone: "#1D4ED8",
-  },
-];
+export type BenefitBalance = {
+  allocation: number;
+  utilized: number;
+  available: number;
+};
+
+export type BenefitTaxTreatment = {
+  label: string;
+  summary: string;
+  qualifier: string;
+  disclaimer: string;
+};
+
+export type BenefitClaimRules = {
+  proofRequired: string;
+  submissionDeadlineDay?: number;
+  requiredFields: Array<
+    "category" | "vendor" | "amount" | "billDate" | "invoiceNo"
+  >;
+};
+
+export type EmployerBenefit = PolicyCategory & {
+  display: PolicyListItem & {
+    dashboardEnabled: boolean;
+    dashboardIcon?: "fuel" | "mobile" | "driver" | "books" | "professional";
+  };
+  balance: BenefitBalance;
+  claimRules: BenefitClaimRules;
+  taxTreatment: BenefitTaxTreatment;
+};
+
+export type BenefitsPrivacyConfig = {
+  retentionDays: number;
+  processingLocation: "device";
+  originalFilesPersisted: false;
+  rawOcrPersisted: false;
+  recipients: string[];
+  demoSubmissionOnly: true;
+};
 
 export const POLICY_CATEGORIES: PolicyCategory[] = [
   {
@@ -100,8 +105,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     ],
     benefits: [
       {
-        title: "Tax Savings",
-        detail: "Structured as a tax-efficient meal allowance",
+        title: "Potential Tax Treatment",
+        detail: "Eligibility depends on employer policy and your applicable tax regime",
         icon: "tax",
       },
       {
@@ -142,8 +147,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
         detail: "Upload bills on the portal before the monthly deadline.",
       },
       {
-        title: "Get Tax Benefit",
-        detail: "Approved meal reimbursements are processed tax-efficiently in payroll.",
+        title: "Payroll Review",
+        detail: "Approved meal reimbursements are processed according to employer payroll policy.",
       },
     ],
   },
@@ -224,7 +229,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     title: "Fuel & Maintenance Benefit",
     whatIsHeading: "What is Fuel & Maintenance Benefit?",
     description:
-      "This employer reimbursement covers vehicle costs. Under Section 10(14) of the Income Tax Act, it's fully tax-exempt with valid bills.",
+      "This employer reimbursement can cover eligible vehicle costs when your company policy, documentation, and payroll review requirements are met.",
     notes: [
       "The vehicle must be registered in the employee's name",
       "Fuel bills must match the fuel type (Petrol/Diesel) declared",
@@ -233,8 +238,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     ],
     benefits: [
       {
-        title: "Tax Savings",
-        detail: "Save up to 30% tax (Section 10(14))",
+        title: "Potential Tax Treatment",
+        detail: "Eligibility depends on employer policy and your applicable tax regime",
         icon: "tax",
       },
       {
@@ -275,8 +280,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
         detail: "Upload bills on the portal before monthly deadline.",
       },
       {
-        title: "Get Tax Benefit",
-        detail: "Reimbursements are credited tax-free in your salary.",
+        title: "Payroll Review",
+        detail: "Approved reimbursements are processed according to employer payroll policy.",
       },
     ],
   },
@@ -305,8 +310,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     ],
     benefits: [
       {
-        title: "Tax Savings",
-        detail: "Save tax under Section 10(14) communication allowance",
+        title: "Potential Tax Treatment",
+        detail: "Eligibility depends on employer policy and your applicable tax regime",
         icon: "tax",
       },
       {
@@ -347,8 +352,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
         detail: "Upload the bill before the monthly reimbursement cutoff.",
       },
       {
-        title: "Get Tax Benefit",
-        detail: "Approved communication expenses are reimbursed tax-efficiently.",
+        title: "Payroll Review",
+        detail: "Approved communication expenses are processed according to employer payroll policy.",
       },
     ],
   },
@@ -360,7 +365,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     eyebrow: "Reimbursement Wallet",
     whatIsHeading: "What is Driver Salary Benefit?",
     description:
-      "Your company offers a driver salary allowance in your CTC, enabling tax exemption under Section 10(14) of the Income Tax Act.",
+      "Your company offers a driver salary allowance in your CTC. Eligibility and payroll treatment depend on company policy, documentation, and your applicable tax regime.",
     notes: [
       "Driver must have a valid driving licence",
       "Salary must be paid via bank transfer or cheque",
@@ -369,8 +374,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     ],
     benefits: [
       {
-        title: "Tax Savings",
-        detail: "Save up to 30% tax (Section 10(14))",
+        title: "Potential Tax Treatment",
+        detail: "Eligibility depends on employer policy and your applicable tax regime",
         icon: "tax",
       },
       {
@@ -404,8 +409,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
         detail: "Upload salary payment proof each month through the app",
       },
       {
-        title: "Get Tax Benefit",
-        detail: "The claimed amount is exempted from your taxable income",
+        title: "Payroll Review",
+        detail: "Approved claims are processed according to employer payroll policy",
       },
     ],
   },
@@ -434,8 +439,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
     ],
     benefits: [
       {
-        title: "Tax Savings",
-        detail: "Save up to 30% tax (Section 10(14))",
+        title: "Potential Tax Treatment",
+        detail: "Eligibility depends on employer policy and your applicable tax regime",
         icon: "tax",
       },
       {
@@ -468,8 +473,8 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
         detail: "Claims are checked against category rules and limits",
       },
       {
-        title: "Get Tax Benefit",
-        detail: "Approved reimbursements reduce your taxable income",
+        title: "Payroll Review",
+        detail: "Approved reimbursements are processed according to employer payroll policy",
       },
     ],
   },
@@ -549,12 +554,169 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
   },
 ];
 
+const QUALIFIED_TAX_TREATMENT: BenefitTaxTreatment = {
+  label: "Potential tax treatment",
+  summary:
+    "Eligible reimbursements may receive tax-efficient payroll treatment.",
+  qualifier:
+    "Eligibility depends on your employer policy, applicable tax regime, documentation, and payroll review.",
+  disclaimer: "This is policy guidance, not tax advice.",
+};
+
+const BENEFIT_CONFIGURATION: Record<
+  PolicyTabId,
+  Pick<EmployerBenefit, "display" | "balance" | "claimRules">
+> = {
+  meal: {
+    display: {
+      id: "meal",
+      label: "Meal Wallet",
+      iconBg: "#FFE6BC",
+      iconTone: "#B65400",
+      dashboardEnabled: false,
+    },
+    balance: { allocation: 30000, utilized: 0, available: 30000 },
+    claimRules: {
+      proofRequired: "GST food or restaurant invoice",
+      submissionDeadlineDay: 5,
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+  gift: {
+    display: {
+      id: "gift",
+      label: "Gift Wallet",
+      iconBg: "#DAF7E7",
+      iconTone: "#039258",
+      dashboardEnabled: false,
+    },
+    balance: { allocation: 5000, utilized: 0, available: 5000 },
+    claimRules: {
+      proofRequired: "Gift voucher or purchase invoice",
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+  fuel: {
+    display: {
+      id: "fuel",
+      label: "Fuel & Maintenance",
+      iconBg: "#FAFCFC",
+      iconTone: "#005656",
+      dashboardEnabled: true,
+      dashboardIcon: "fuel",
+    },
+    balance: { allocation: 60000, utilized: 18000, available: 42000 },
+    claimRules: {
+      proofRequired: "Original GST fuel or maintenance invoice",
+      submissionDeadlineDay: 5,
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+  mobile: {
+    display: {
+      id: "mobile",
+      label: "Mobile & Internet",
+      iconBg: "#FFFCF5",
+      iconTone: "#B54708",
+      dashboardEnabled: true,
+      dashboardIcon: "mobile",
+    },
+    balance: { allocation: 30000, utilized: 8000, available: 22000 },
+    claimRules: {
+      proofRequired: "Postpaid mobile or broadband GST invoice",
+      submissionDeadlineDay: 5,
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+  driver: {
+    display: {
+      id: "driver",
+      label: "Driver Salary",
+      iconBg: "#FFFBFA",
+      iconTone: "#7F1D1D",
+      dashboardEnabled: true,
+      dashboardIcon: "driver",
+    },
+    balance: { allocation: 90000, utilized: 35000, available: 55000 },
+    claimRules: {
+      proofRequired: "Monthly salary receipt and driver licence",
+      submissionDeadlineDay: 5,
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+  books: {
+    display: {
+      id: "books",
+      label: "Books & Periodicals",
+      iconBg: "#F6FEF9",
+      iconTone: "#166534",
+      dashboardEnabled: true,
+      dashboardIcon: "books",
+    },
+    balance: { allocation: 55000, utilized: 7000, available: 48000 },
+    claimRules: {
+      proofRequired: "Book or subscription invoice",
+      submissionDeadlineDay: 5,
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+  professional: {
+    display: {
+      id: "professional",
+      label: "Professional Development",
+      iconBg: "#F2F8FD",
+      iconTone: "#1D4ED8",
+      dashboardEnabled: true,
+      dashboardIcon: "professional",
+    },
+    balance: { allocation: 50000, utilized: 12000, available: 38000 },
+    claimRules: {
+      proofRequired: "Course or certification invoice",
+      requiredFields: ["category", "vendor", "amount", "billDate"],
+    },
+  },
+};
+
+export const EMPLOYER_BENEFITS_CATALOG = {
+  employerName: "Pine Labs",
+  financialYear: "FY 26/27",
+  policyVersion: "2026.1-demo",
+  effectiveDate: "2026-04-01",
+  reviewSla: "2–3 business days",
+  privacy: {
+    retentionDays: 7,
+    processingLocation: "device",
+    originalFilesPersisted: false,
+    rawOcrPersisted: false,
+    recipients: [],
+    demoSubmissionOnly: true,
+  } satisfies BenefitsPrivacyConfig,
+  benefits: POLICY_CATEGORIES.map((policy): EmployerBenefit => ({
+    ...policy,
+    ...BENEFIT_CONFIGURATION[policy.id],
+    taxTreatment: QUALIFIED_TAX_TREATMENT,
+  })),
+} as const;
+
+export const POLICY_LIST_ITEMS: PolicyListItem[] =
+  EMPLOYER_BENEFITS_CATALOG.benefits.map(({ display }) => ({
+    id: display.id,
+    label: display.label,
+    iconBg: display.iconBg,
+    iconTone: display.iconTone,
+  }));
+
+export function getEmployerBenefit(id: PolicyTabId): EmployerBenefit {
+  return (
+    EMPLOYER_BENEFITS_CATALOG.benefits.find((benefit) => benefit.id === id) ??
+    EMPLOYER_BENEFITS_CATALOG.benefits[0]
+  );
+}
+
 export function isPolicyTabId(value: string): value is PolicyTabId {
   return POLICY_LIST_ITEMS.some((item) => item.id === value);
 }
 
 export function getPolicyCategory(id: PolicyTabId): PolicyCategory {
-  return (
-    POLICY_CATEGORIES.find((item) => item.id === id) ?? POLICY_CATEGORIES[0]
-  );
+  return getEmployerBenefit(id);
 }

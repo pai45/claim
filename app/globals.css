@@ -151,6 +151,11 @@ textarea {
   line-height: inherit;
 }
 
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--color-pine-primary);
+  outline-offset: 2px;
+}
+
 /* —— Component type roles (repeating UI stays identical) —— */
 .type-screen-title {
   font-family: var(--font-display);
@@ -258,7 +263,8 @@ textarea {
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 9999px;
-  background: var(--color-muted);
+  background: var(--color-pine-primary);
+  opacity: 0.55;
   animation: typing-bounce 1.2s ease-in-out infinite;
 }
 
@@ -321,7 +327,16 @@ textarea {
 }
 
 .animate-rise-in {
-  animation: rise-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: rise-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Soft composer edge blend */
+.chat-composer-fade {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(238, 245, 242, 0.55) 100%
+  );
 }
 
 /* Magic text: char/word reveal + mint flash */

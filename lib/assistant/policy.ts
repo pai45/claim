@@ -1,5 +1,6 @@
 import {
-  POLICY_CATEGORIES,
+  EMPLOYER_BENEFITS_CATALOG,
+  getEmployerBenefit,
   getPolicyCategory,
   type PolicyCategory,
   type PolicyTabId,
@@ -141,7 +142,7 @@ export function resolvePolicyQuestion(
   const normalized = normalizeAssistantText(message);
   if (!normalized || isExplicitAssistantAction(normalized)) return null;
 
-  const matches = POLICY_CATEGORIES.filter((category) =>
+  const matches = EMPLOYER_BENEFITS_CATALOG.benefits.filter((category) =>
     category.aliases.some((alias) => includesPhrase(normalized, alias)),
   );
 
@@ -150,9 +151,11 @@ export function resolvePolicyQuestion(
   }
 
   if (matches.length === 1) {
-    const isDirectCategoryRequest = matches[0].aliases.some(
-      (alias) => normalizeAssistantText(alias) === normalized,
-    );
+    const isDirectCategoryRequest =
+      matches[0].aliases.some(
+        (alias) => normalizeAssistantText(alias) === normalized,
+      ) ||
+      normalizeAssistantText(matches[0].tabLabel) === normalized;
     if (isDirectCategoryRequest || containsPolicyQuestionTerm(normalized)) {
       return { type: "match", category: matches[0] };
     }
@@ -185,6 +188,7 @@ export function createPolicyFallbackSummary(
   const frequency = findBenefit(policy, /frequency/i);
   const tax = findBenefit(policy, /tax/i);
   const deadline = relevantDeadline(policy);
+  const taxTreatment = getEmployerBenefit(policy.id).taxTreatment;
 
   if (/covered|cover|coverage|eligible|eligibility/.test(normalized)) {
     if (policy.covered?.length) {
@@ -224,7 +228,7 @@ export function createPolicyFallbackSummary(
     .map((benefit) => `- **${benefit.title}:** ${benefit.detail}`);
   const importantNote = deadline ?? policy.notes[0];
 
-  return `**${policy.tabLabel}**\n\n${policy.description}\n\n${highlights.join("\n")}\n\n${importantNote}`;
+  return `**${policy.tabLabel}**\n\n${policy.description}\n\n${highlights.join("\n")}\n\n${importantNote}\n\n_${taxTreatment.qualifier} ${taxTreatment.disclaimer}_`;
 }
 
 function numericFacts(value: string): string[] {
@@ -255,7 +259,7 @@ export function createPolicyPrompt(
     {
       role: "system",
       content:
-        "You are a policy assistant. Answer only with facts present in the supplied policy JSON. Do not use outside knowledge, infer legal or tax advice, invent limits, dates, eligibility, or coverage, and do not produce a CTA. If the policy does not contain the answer, say that it does not specify it. Format the reply like a helpful chat answer using short markdown: a bold title line, then short paragraphs and bullet lists for key facts (limits, proof, deadlines, steps). Keep it concise (about 80-160 words). Respond in the user's language.",
+        "You are a policy assistant. Answer only with facts present in the supplied policy JSON. Do not use outside knowledge, infer legal or tax advice, invent limits, dates, eligibility, or coverage, and do not produce a CTA. Never turn conditional tax language into a guarantee, percentage saving, exemption, or tax-free claim. Preserve the supplied qualifier and disclaimer whenever tax treatment is discussed. If the policy does not contain the answer, say that it does not specify it. Format the reply like a helpful chat answer using short markdown: a bold title line, then short paragraphs and bullet lists for key facts (limits, proof, deadlines, steps). Keep it concise (about 80-160 words). Respond in the user's language.",
     },
     {
       role: "user",

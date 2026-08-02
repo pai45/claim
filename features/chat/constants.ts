@@ -1,4 +1,5 @@
 import type { QuickAction } from "./types";
+import { EMPLOYER_BENEFITS_CATALOG } from "@/features/policy/constants";
 
 export const USER_DISPLAY_NAME = "Akshay";
 
@@ -33,15 +34,9 @@ export const QUICK_ACTIONS: QuickAction[] = [
 
 export const VEHICLE_REGISTRATION_INTENT = "vehicle_registration";
 
-export const CLAIM_CATEGORIES = [
-  "Professional Development",
-  "Internet & Broadband",
-  "Medical",
-  "Fuel",
-  "Travel",
-  "Food & Entertainment",
-  "Office Supplies",
-  "Other",
-] as const;
+export const CLAIM_CATEGORIES = EMPLOYER_BENEFITS_CATALOG.benefits
+  .filter((benefit) => benefit.id !== "driver")
+  .map((benefit) => benefit.display.label)
+  .concat("Other / HR review");
 
 export type ClaimCategory = (typeof CLAIM_CATEGORIES)[number];

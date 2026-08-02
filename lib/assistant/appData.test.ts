@@ -83,9 +83,9 @@ describe("grounded app-data answers", () => {
     const resolution = { kind: "dashboard" as const };
     const answer = createAppDataFallbackSummary("Show my dashboard", resolution);
 
-    expect(answer).toContain("₹93,000");
-    expect(answer).toContain("₹7,000");
-    expect(answer).toContain("₹1,25,000");
+    expect(answer).toContain("2,05,000");
+    expect(answer).toContain("80,000");
+    expect(answer).toContain("2,85,000");
   });
 
   it("summarizes a specific claim", () => {

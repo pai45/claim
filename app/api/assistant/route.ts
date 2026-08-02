@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import {
-  POLICY_CATEGORIES,
+  EMPLOYER_BENEFITS_CATALOG,
   type PolicyTabId,
 } from "@/features/policy/constants";
 import type {
@@ -14,7 +14,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const POLICY_TAB_IDS = new Set<string>(
-  POLICY_CATEGORIES.map((category) => category.id),
+  EMPLOYER_BENEFITS_CATALOG.benefits.map((category) => category.id),
 );
 
 function isPolicyTabId(value: unknown): value is PolicyTabId {

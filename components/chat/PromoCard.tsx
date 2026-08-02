@@ -11,18 +11,18 @@ type PromoCardProps = {
 export function PromoCard({ onStart, disabled }: PromoCardProps) {
   return (
     <div
-      className="animate-rise-in px-4 pt-1"
-      style={{ animationDelay: "1380ms" }}
+      className="animate-rise-in px-page pt-0.5"
+      style={{ animationDelay: "240ms" }}
     >
-      <article className="relative overflow-hidden rounded-card bg-white/75 p-card shadow-promo">
+      <article className="relative overflow-hidden rounded-card border border-white/60 bg-white/70 p-card shadow-promo backdrop-blur-sm">
         <div className="relative z-10 flex max-w-[200px] flex-col gap-4">
           <div className="flex flex-col gap-2">
             <MagicText
               as="h3"
               text="Vehicle Registration"
               mode="chars"
-              delayMs={1480}
-              stepMs={24}
+              delayMs={300}
+              stepMs={10}
               shimmer
               shimmerBase={colors.pine}
               className="type-section-title text-pine"
@@ -31,8 +31,8 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
               as="p"
               text="Register your vehicle for tax benefits."
               mode="words"
-              delayMs={1720}
-              stepMs={50}
+              delayMs={360}
+              stepMs={20}
               className="type-body-secondary text-subtle"
             />
           </div>
@@ -40,8 +40,8 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
             type="button"
             disabled={disabled}
             onClick={onStart}
-            className="animate-rise-in w-fit min-w-[100px] rounded-control bg-pine-primary px-3 py-2 text-caption font-bold text-white disabled:opacity-60"
-            style={{ animationDelay: "1980ms" }}
+            className="animate-rise-in min-h-11 w-fit min-w-[100px] rounded-control bg-pine-primary px-3 py-2 text-caption font-bold text-white disabled:opacity-60"
+            style={{ animationDelay: "460ms" }}
           >
             Start registration
           </button>

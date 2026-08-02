@@ -1,16 +1,30 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import type { BenefitType } from "@/lib/merchants/types";
 import type {
   BillExtract,
   ChatMessage,
+  DocumentProcessingStage,
   DriverSalaryPayload,
   PolicyModelStatus,
 } from "@/features/chat/types";
+import type { PolicyTabId } from "@/features/policy/constants";
 import type { VehicleLookup } from "@/lib/vehicle/types";
+import { ChatStatusBubble } from "./ChatStatusBubble";
 import { MessageBubble } from "./MessageBubble";
-import { TypingIndicator } from "./TypingIndicator";
+
+export type MessageListHandle = {
+  scrollToBottom: (force?: boolean) => void;
+};
 
 type MessageListProps = {
   messages: ChatMessage[];
@@ -18,10 +32,16 @@ type MessageListProps = {
   isScanning?: boolean;
   isLocating?: boolean;
   policyModelStatus?: PolicyModelStatus | null;
+  onAwayFromBottomChange?: (away: boolean) => void;
   onFileSelected?: (file: File) => void;
   onDlFileSelected?: (file: File) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onReplaceBill?: (messageId: string) => void;
+  onStartAnotherBill?: () => void;
+  onClearSavedData?: () => void;
+  documentProcessingStage?: DocumentProcessingStage | null;
+  onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
   onSelectMerchantSearchMode?: (
     mode: "name" | "nearest",
@@ -37,114 +57,197 @@ type MessageListProps = {
   onSubmitDriverSalaryClaim?: (payload: DriverSalaryPayload) => void;
 };
 
-export function MessageList({
-  messages,
-  isLoading,
-  isScanning,
-  isLocating,
-  policyModelStatus,
-  onFileSelected,
-  onDlFileSelected,
-  onUpdateBillExtract,
-  onSubmitBillClaim,
-  onSelectMerchantBenefitType,
-  onSelectMerchantSearchMode,
-  onSearchMerchantByName,
-  onSubmitVehicleNumber,
-  onSubmitVehicleToHr,
-  onStartDriverSalary,
-  onSubmitDriverName,
-  onConfirmDriverDl,
-  onSubmitDriverSalaryDetails,
-  onSubmitDriverSalaryClaim,
-}: MessageListProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
-  const lastMessage = messages[messages.length - 1];
-  const lastMessageId = lastMessage?.id;
-  const lastMessageKind = lastMessage?.kind;
+const NEAR_BOTTOM_PX = 96;
 
-  useEffect(() => {
+function findScrollParent(node: HTMLElement | null): HTMLElement | null {
+  let current = node?.parentElement ?? null;
+  while (current) {
+    const style = window.getComputedStyle(current);
+    const overflowY = style.overflowY;
+    if (
+      (overflowY === "auto" || overflowY === "scroll") &&
+      current.scrollHeight > current.clientHeight
+    ) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
+function documentStageLabel(stage?: DocumentProcessingStage | null) {
+  if (stage === "preparing") return "Preparing document…";
+  if (stage === "checking") return "Checking claim details…";
+  if (stage === "reading") return "Reading claim details…";
+  return "Reading document…";
+}
+
+export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
+  function MessageList(
+    {
+      messages,
+      isLoading,
+      isScanning,
+      isLocating,
+      policyModelStatus,
+      onAwayFromBottomChange,
+      onFileSelected,
+      onDlFileSelected,
+      onUpdateBillExtract,
+      onSubmitBillClaim,
+      onReplaceBill,
+      onStartAnotherBill,
+      onClearSavedData,
+      documentProcessingStage,
+      onSelectPolicyCategory,
+      onSelectMerchantBenefitType,
+      onSelectMerchantSearchMode,
+      onSearchMerchantByName,
+      onSubmitVehicleNumber,
+      onSubmitVehicleToHr,
+      onStartDriverSalary,
+      onSubmitDriverName,
+      onConfirmDriverDl,
+      onSubmitDriverSalaryDetails,
+      onSubmitDriverSalaryClaim,
+    },
+    ref,
+  ) {
+    const bottomRef = useRef<HTMLDivElement>(null);
+    const listRef = useRef<HTMLDivElement>(null);
+    const nearBottomRef = useRef(true);
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageId = lastMessage?.id;
+    const lastMessageKind = lastMessage?.kind;
+
+    const updateNearBottom = useCallback(() => {
+      const scroller = findScrollParent(listRef.current);
+      if (!scroller) {
+        nearBottomRef.current = true;
+        onAwayFromBottomChange?.(false);
+        return;
+      }
+      const distance =
+        scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+      const near = distance <= NEAR_BOTTOM_PX;
+      nearBottomRef.current = near;
+      onAwayFromBottomChange?.(!near && messages.length > 0);
+    }, [messages.length, onAwayFromBottomChange]);
+
+    const scrollToBottom = useCallback((force = false) => {
+      if (!force && !nearBottomRef.current) return;
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      bottomRef.current?.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "end",
+      });
+      nearBottomRef.current = true;
+      onAwayFromBottomChange?.(false);
+    }, [onAwayFromBottomChange]);
+
+    useImperativeHandle(ref, () => ({ scrollToBottom }), [scrollToBottom]);
+
+    useEffect(() => {
+      const scroller = findScrollParent(listRef.current);
+      if (!scroller) return;
+      updateNearBottom();
+      scroller.addEventListener("scroll", updateNearBottom, { passive: true });
+      return () => scroller.removeEventListener("scroll", updateNearBottom);
+    }, [updateNearBottom, messages.length]);
+
+    useEffect(() => {
+      if (messages.length === 0 && !isLoading && !isScanning && !isLocating) {
+        return;
+      }
+      scrollToBottom();
+    }, [
+      messages.length,
+      lastMessageId,
+      lastMessageKind,
+      isLoading,
+      isScanning,
+      isLocating,
+      policyModelStatus?.progress,
+      scrollToBottom,
+    ]);
+
     if (messages.length === 0 && !isLoading && !isScanning && !isLocating) {
-      return;
+      return null;
     }
 
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
+    const interactionDisabled = Boolean(isScanning || isLoading || isLocating);
 
-    bottomRef.current?.scrollIntoView({
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-      block: "end",
-    });
-  }, [
-    messages.length,
-    lastMessageId,
-    lastMessageKind,
-    isLoading,
-    isScanning,
-    isLocating,
-    policyModelStatus?.progress,
-  ]);
+    let statusNode: ReactNode = null;
+    if (isLoading) {
+      statusNode = policyModelStatus ? (
+        <ChatStatusBubble
+          label="Preparing your policy answer…"
+          progress={policyModelStatus.progress}
+        />
+      ) : (
+        <ChatStatusBubble variant="typing" />
+      );
+    } else if (isScanning) {
+      statusNode = (
+        <ChatStatusBubble label={documentStageLabel(documentProcessingStage)} />
+      );
+    } else if (isLocating) {
+      statusNode = <ChatStatusBubble label="Finding merchants…" />;
+    }
 
-  if (messages.length === 0 && !isLoading && !isScanning && !isLocating)
-    return null;
-
-  const interactionDisabled = Boolean(isScanning || isLoading || isLocating);
-
-  return (
-    <div className="flex flex-col gap-3 px-4">
-      {messages.map((message) => (
-        <div key={message.id} className="animate-rise-in">
-          <MessageBubble
-            message={message}
-            onFileSelected={onFileSelected}
-            onDlFileSelected={onDlFileSelected}
-            onUpdateBillExtract={onUpdateBillExtract}
-            onSubmitBillClaim={onSubmitBillClaim}
-            onSelectMerchantBenefitType={onSelectMerchantBenefitType}
-            onSelectMerchantSearchMode={onSelectMerchantSearchMode}
-            onSearchMerchantByName={onSearchMerchantByName}
-            onSubmitVehicleNumber={onSubmitVehicleNumber}
-            onSubmitVehicleToHr={onSubmitVehicleToHr}
-            onStartDriverSalary={onStartDriverSalary}
-            onSubmitDriverName={onSubmitDriverName}
-            onConfirmDriverDl={onConfirmDriverDl}
-            onSubmitDriverSalaryDetails={onSubmitDriverSalaryDetails}
-            onSubmitDriverSalaryClaim={onSubmitDriverSalaryClaim}
-            uploadDisabled={interactionDisabled}
-          />
-        </div>
-      ))}
-      {isLoading ? (
-        policyModelStatus ? (
-          <div className="animate-rise-in flex justify-start">
-            <div className="rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 text-body-sm text-muted shadow-soft">
-              {policyModelStatus.progress !== undefined
-                ? `Loading server AI (first run downloads about 570 MB)… ${policyModelStatus.progress}%`
-                : "Asking the server AI…"}
+    return (
+      <div ref={listRef} className="flex flex-col gap-3.5 px-4">
+        {messages.map((message, index) => {
+          const isTrailing = index === messages.length - 1;
+          return (
+            <div
+              key={message.id}
+              className="animate-rise-in"
+              style={
+                isTrailing
+                  ? undefined
+                  : { animationDelay: `${Math.min(index, 6) * 18}ms` }
+              }
+            >
+              <MessageBubble
+                message={message}
+                reveal={
+                  isTrailing &&
+                  message.role === "assistant" &&
+                  Date.now() - message.createdAt < 4000
+                }
+                onFileSelected={onFileSelected}
+                onDlFileSelected={onDlFileSelected}
+                onUpdateBillExtract={onUpdateBillExtract}
+                onSubmitBillClaim={onSubmitBillClaim}
+                onReplaceBill={onReplaceBill}
+                onStartAnotherBill={onStartAnotherBill}
+                onClearSavedData={onClearSavedData}
+                onSelectPolicyCategory={onSelectPolicyCategory}
+                onSelectMerchantBenefitType={onSelectMerchantBenefitType}
+                onSelectMerchantSearchMode={onSelectMerchantSearchMode}
+                onSearchMerchantByName={onSearchMerchantByName}
+                onSubmitVehicleNumber={onSubmitVehicleNumber}
+                onSubmitVehicleToHr={onSubmitVehicleToHr}
+                onStartDriverSalary={onStartDriverSalary}
+                onSubmitDriverName={onSubmitDriverName}
+                onConfirmDriverDl={onConfirmDriverDl}
+                onSubmitDriverSalaryDetails={onSubmitDriverSalaryDetails}
+                onSubmitDriverSalaryClaim={onSubmitDriverSalaryClaim}
+                uploadDisabled={interactionDisabled}
+              />
             </div>
-          </div>
-        ) : (
-          <div className="animate-rise-in">
-            <TypingIndicator />
-          </div>
-        )
-      ) : null}
-      {isScanning ? (
-        <div className="animate-rise-in flex justify-start">
-          <div className="rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 text-body-sm text-muted shadow-soft">
-            Reading document with OCR…
-          </div>
-        </div>
-      ) : null}
-      {isLocating ? (
-        <div className="animate-rise-in flex justify-start">
-          <div className="rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 text-body-sm text-muted shadow-soft">
-            Finding merchants…
-          </div>
-        </div>
-      ) : null}
-      <div ref={bottomRef} aria-hidden className="h-px w-full shrink-0" />
-    </div>
-  );
-}
+          );
+        })}
+
+        {statusNode ? (
+          <div className="animate-rise-in">{statusNode}</div>
+        ) : null}
+
+        <div ref={bottomRef} aria-hidden className="h-px w-full shrink-0" />
+      </div>
+    );
+  },
+);

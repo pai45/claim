@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
-import type { BillExtract } from "@/features/chat/types";
-import { colors } from "@/lib/ui/colors";
+import type {
+  BillExtract,
+  ClaimFieldName,
+  ClaimFieldReviewState,
+} from "@/features/chat/types";
+import {
+  claimFieldReviewState,
+  evaluateClaimPrecheck,
+  parseClaimAmount,
+} from "@/lib/claims/precheck";
+import { formatINR } from "@/features/dashboard/constants";
+import { PrivacyNotice } from "./PrivacyNotice";
 
 type BillExtractCardProps = {
   messageId: string;
   extract: BillExtract;
   onUpdate?: (messageId: string, next: BillExtract) => void;
   onSubmitted?: (messageId: string, extract: BillExtract) => void;
+  onReplace?: (messageId: string) => void;
 };
 
 type EditableFields = {
@@ -21,67 +32,74 @@ type EditableFields = {
   invoiceNo: string;
 };
 
+function toDateInput(value?: string): string {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toISOString().slice(0, 10);
+}
+
+function toMonthInput(value?: string): string {
+  if (!value) return "";
+  if (/^\d{4}-\d{2}$/.test(value)) return value;
+  const parsed = new Date(`1 ${value}`);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toISOString().slice(0, 7);
+}
+
 function toFields(extract: BillExtract): EditableFields {
   return {
-    // Keep OCR category; never force "Professional Development"
-    category: extract.category || "Other",
+    category: extract.category ?? "",
     vendor: extract.vendor || extract.merchant || "",
-    amount: extract.amount || "",
-    billDate: extract.billDate || extract.date || "",
-    billingMonth: extract.billingMonth || "",
-    invoiceNo: extract.invoiceNo || "",
+    amount: extract.amount ?? "",
+    billDate: toDateInput(extract.billDate || extract.date),
+    billingMonth: toMonthInput(extract.billingMonth),
+    invoiceNo: extract.invoiceNo ?? "",
   };
 }
 
-function CreditCardIcon() {
+const FIELD_STATE_COPY: Record<ClaimFieldReviewState, string> = {
+  confirmed: "Confirmed",
+  review: "Review recommended",
+  missing: "Missing",
+};
+
+function FieldStatus({ state }: { state: ClaimFieldReviewState }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect
-        x="2"
-        y="5"
-        width="16"
-        height="11"
-        rx="2"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-      />
-      <path d="M2 9h16" stroke={colors.pine} strokeWidth="1.6" />
-      <path
-        d="M5 13h4"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
+    <span
+      className={`shrink-0 text-right text-caption ${
+        state === "confirmed"
+          ? "text-success"
+          : state === "missing"
+            ? "text-danger"
+            : "text-warning"
+      }`}
+    >
+      {FIELD_STATE_COPY[state]}
+    </span>
   );
 }
 
-function FieldBox({
+function Field({
   label,
-  value,
-  editing,
-  onChange,
+  name,
+  state,
+  children,
 }: {
   label: string;
-  value: string;
-  editing: boolean;
-  onChange: (value: string) => void;
+  name: ClaimFieldName;
+  state: ClaimFieldReviewState;
+  children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-1 rounded-control border border-border-soft bg-white p-3">
-      <span className="type-field-label">{label}</span>
-      {editing ? (
-        <input
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="w-full border-b border-input-border bg-transparent text-body-sm font-bold text-pine outline-none"
-        />
-      ) : (
-        <span className="truncate text-body-sm font-bold text-pine">
-          {value || "—"}
-        </span>
-      )}
-    </div>
+    <label className="flex min-w-0 flex-col gap-1" htmlFor={`claim-${name}`}>
+      <span className="flex items-center justify-between gap-1">
+        <span className="type-field-label truncate">{label}</span>
+        <FieldStatus state={state} />
+      </span>
+      {children}
+    </label>
   );
 }
 
@@ -90,79 +108,96 @@ export function BillExtractCard({
   extract,
   onUpdate,
   onSubmitted,
+  onReplace,
 }: BillExtractCardProps) {
-  const [draftFields, setDraftFields] = useState<EditableFields | null>(null);
-  const [editing, setEditing] = useState(false);
-  const [changingCategory, setChangingCategory] = useState(false);
-  const fields = draftFields ?? toFields(extract);
+  const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
+  const [manualMode, setManualMode] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(
+    Boolean(extract.warningAcknowledged),
+  );
 
-  if (extract.error) {
+  const workingExtract = useMemo<BillExtract>(
+    () => ({
+      ...extract,
+      ...fields,
+      error: manualMode ? undefined : extract.error,
+      warningAcknowledged: acknowledged,
+    }),
+    [acknowledged, extract, fields, manualMode],
+  );
+  const precheck = useMemo(
+    () => evaluateClaimPrecheck(workingExtract),
+    [workingExtract],
+  );
+
+  function updateField(key: keyof EditableFields, value: string) {
+    const next = { ...fields, [key]: value };
+    setFields(next);
+    onUpdate?.(messageId, {
+      ...extract,
+      ...next,
+      error: manualMode ? undefined : extract.error,
+      warningAcknowledged: acknowledged,
+    });
+  }
+
+  function fieldState(field: ClaimFieldName) {
+    return claimFieldReviewState(field, workingExtract);
+  }
+
+  function handleSubmit() {
+    if (
+      extract.submitted ||
+      precheck.status === "blocked" ||
+      (precheck.requiresAcknowledgement && !acknowledged)
+    ) {
+      return;
+    }
+    onUpdate?.(messageId, workingExtract);
+    onSubmitted?.(messageId, workingExtract);
+  }
+
+  const amount = parseClaimAmount(fields.amount);
+  const inputClass =
+    "min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm font-bold text-pine outline-none focus:border-pine disabled:opacity-50";
+  const secondaryActionClass =
+    "inline-flex min-h-11 items-center rounded-control border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
+
+  if (extract.error && !manualMode) {
     return (
-      <div className="w-full max-w-card rounded-bubble rounded-tl border border-border-line bg-white p-card">
-        <p className="type-body">{extract.error}</p>
+      <div className="flex w-full max-w-card flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card">
+        <div role="alert" className="rounded-control bg-danger-soft px-3 py-2 text-body-sm text-danger">
+          {extract.error}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setManualMode(true)}
+            className="min-h-11 rounded-control bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white"
+          >
+            Enter details manually
+          </button>
+          <button
+            type="button"
+            onClick={() => onReplace?.(messageId)}
+            className={secondaryActionClass}
+          >
+            Replace bill
+          </button>
+        </div>
+        <PrivacyNotice compact />
       </div>
     );
   }
 
-  function persist(next: EditableFields, extras?: Partial<BillExtract>) {
-    onUpdate?.(messageId, {
-      ...extract,
-      ...next,
-      ...extras,
-    });
-  }
-
-  function updateField<K extends keyof EditableFields>(
-    key: K,
-    value: EditableFields[K],
-  ) {
-    setDraftFields((prev) => ({
-      ...(prev ?? toFields(extract)),
-      [key]: value,
-    }));
-  }
-
-  function handleSaveEdits() {
-    setEditing(false);
-    setChangingCategory(false);
-    persist(fields);
-    setDraftFields(null);
-  }
-
-  function handleCategoryPick(category: string) {
-    const next = { ...fields, category };
-    setDraftFields(next);
-    setChangingCategory(false);
-    persist(next);
-  }
-
-  function handleSubmit() {
-    if (extract.submitted) return;
-    const nextExtract = { ...extract, ...fields, submitted: true };
-    persist(fields, { submitted: true });
-    onSubmitted?.(messageId, nextExtract);
-  }
-
-  const confidence =
-    typeof extract.confidence === "number"
-      ? Math.round(extract.confidence)
-      : null;
-
   return (
-    <div className="flex w-full max-w-card flex-col gap-4">
-      <div className="flex flex-col gap-2 rounded-bubble rounded-tl border border-border-line bg-white p-card">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-control bg-surface-tint-strong">
-            <CreditCardIcon />
-          </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <h3 className="text-body font-bold text-pine">
-              Claim details extracted
-            </h3>
-            <p className="type-body-secondary">
-              {confidence !== null ? `Confidence ${confidence}%` : "Confidence —"}
-            </p>
-          </div>
+    <div className="flex w-full max-w-card flex-col gap-3">
+      <div className="flex flex-col gap-4 rounded-bubble rounded-tl border border-border-line bg-white p-card">
+        <div>
+          <h3 className="text-body font-bold text-pine">Review claim details</h3>
+          <p className="type-body-secondary">
+            Check fields marked for review. Demo policy checks update as you edit.
+          </p>
         </div>
 
         {extract.warning ? (
@@ -171,113 +206,103 @@ export function BillExtractCard({
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-3">
-            <FieldBox
-              label="Category"
+        <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+          <Field label="Category" name="category" state={fieldState("category")}>
+            <select
+              id="claim-category"
               value={fields.category}
-              editing={editing}
-              onChange={(value) => updateField("category", value)}
-            />
-            <FieldBox
-              label="Vendor"
-              value={fields.vendor}
-              editing={editing}
-              onChange={(value) => updateField("vendor", value)}
-            />
-          </div>
-          <div className="flex gap-3">
-            <FieldBox
-              label="Amount"
-              value={fields.amount}
-              editing={editing}
-              onChange={(value) => updateField("amount", value)}
-            />
-            <FieldBox
-              label="Bill Date"
-              value={fields.billDate}
-              editing={editing}
-              onChange={(value) => updateField("billDate", value)}
-            />
-          </div>
-          <div className="flex gap-3">
-            <FieldBox
-              label="Billing Month"
-              value={fields.billingMonth}
-              editing={editing}
-              onChange={(value) => updateField("billingMonth", value)}
-            />
-            <FieldBox
-              label="Invoice No"
-              value={fields.invoiceNo}
-              editing={editing}
-              onChange={(value) => updateField("invoiceNo", value)}
-            />
-          </div>
+              onChange={(event) => updateField("category", event.target.value)}
+              className={inputClass}
+            >
+              <option value="">Select benefit category</option>
+              {CLAIM_CATEGORIES.map((category) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Vendor" name="vendor" state={fieldState("vendor")}>
+            <input id="claim-vendor" value={fields.vendor} onChange={(event) => updateField("vendor", event.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Amount" name="amount" state={fieldState("amount")}>
+            <div className="flex min-h-11 items-center rounded-control border border-input-border bg-input-soft px-3 focus-within:border-pine">
+              <span aria-hidden className="text-body-sm font-bold text-pine">₹</span>
+              <input id="claim-amount" inputMode="decimal" value={fields.amount.replace(/[^\d.,]/g, "")} onChange={(event) => updateField("amount", event.target.value)} className="min-w-0 flex-1 bg-transparent px-2 py-2.5 text-body-sm font-bold text-pine outline-none" />
+            </div>
+          </Field>
+          <Field label="Bill date" name="billDate" state={fieldState("billDate")}>
+            <input id="claim-billDate" type="date" value={fields.billDate} onChange={(event) => updateField("billDate", event.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Billing month" name="billingMonth" state={fieldState("billingMonth")}>
+            <input id="claim-billingMonth" type="month" value={fields.billingMonth} onChange={(event) => updateField("billingMonth", event.target.value)} className={inputClass} />
+          </Field>
+          <Field label="Invoice number" name="invoiceNo" state={fieldState("invoiceNo")}>
+            <input id="claim-invoiceNo" value={fields.invoiceNo} onChange={(event) => updateField("invoiceNo", event.target.value)} className={inputClass} />
+          </Field>
         </div>
 
-        {changingCategory ? (
-          <div className="mt-1 flex flex-wrap gap-2">
-            {CLAIM_CATEGORIES.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => handleCategoryPick(category)}
-                className={`rounded-pill border px-3 py-1.5 text-caption font-bold ${
-                  fields.category === category
-                    ? "border-pine-primary bg-surface-tint-strong text-pine"
-                    : "border-input-border bg-white text-pine"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+        <section aria-live="polite" className="rounded-control border border-border-line bg-surface p-3">
+          <div className="flex items-center justify-between gap-2">
+            <h4 className="text-body-sm font-bold text-pine">Demo claim check</h4>
+            <span className="rounded-pill bg-white px-2 py-1 text-caption font-bold text-ink-secondary">
+              {precheck.status === "blocked" ? "Action needed" : precheck.status === "warning" ? "Review" : "Ready"}
+            </span>
           </div>
+          <ul className="mt-2 flex flex-col gap-2">
+            {precheck.checks.map((check) => (
+              <li key={check.id} className="flex items-start gap-2 text-caption leading-4">
+                <span aria-hidden className={check.status === "pass" ? "text-success" : check.status === "warning" ? "text-warning" : "text-danger"}>
+                  {check.status === "pass" ? "✓" : check.status === "warning" ? "!" : "×"}
+                </span>
+                <span><strong>{check.label}:</strong> {check.detail}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {precheck.requiresAcknowledgement ? (
+          <label className="flex items-start gap-2 text-caption leading-4 text-ink-secondary">
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              onChange={(event) => {
+                setAcknowledged(event.target.checked);
+                onUpdate?.(messageId, { ...workingExtract, warningAcknowledged: event.target.checked });
+              }}
+              className="mt-0.5 h-4 w-4"
+            />
+            I reviewed the warnings and want to submit this demo claim.
+          </label>
         ) : null}
 
-        {editing ? (
-          <button
-            type="button"
-            onClick={handleSaveEdits}
-            className="mt-1 w-full rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white"
-          >
-            Save details
-          </button>
-        ) : null}
+        <PrivacyNotice compact />
       </div>
 
-      <div className="flex flex-wrap content-start gap-2">
+      <button
+        type="button"
+        disabled={extract.submitted || precheck.status === "blocked" || (precheck.requiresAcknowledgement && !acknowledged)}
+        onClick={handleSubmit}
+        className="min-h-14 w-full rounded-control bg-pine-primary px-4 py-3 text-body font-bold text-white disabled:opacity-50"
+      >
+        {extract.submitted ? "Submitted" : `Submit ${amount ? formatINR(amount) : ""} claim`.replace("  ", " ")}
+      </button>
+
+      <div className="flex flex-wrap gap-2">
+        {extract.previewUrl ? (
+          <a
+            href={extract.previewUrl}
+            target="_blank"
+            rel="noreferrer"
+            className={secondaryActionClass}
+          >
+            View original
+          </a>
+        ) : null}
         <button
           type="button"
-          disabled={extract.submitted}
-          onClick={handleSubmit}
-          className="rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-50"
+          onClick={() => onReplace?.(messageId)}
+          className={secondaryActionClass}
         >
-          {extract.submitted ? "Submitted" : "Submit claim"}
-        </button>
-        <button
-          type="button"
-          disabled={extract.submitted}
-          onClick={() => {
-            setChangingCategory(false);
-            setDraftFields(null);
-            setEditing((prev) => !prev);
-          }}
-          className="rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-50"
-        >
-          {editing ? "Cancel edit" : "Edit details"}
-        </button>
-        <button
-          type="button"
-          disabled={extract.submitted}
-          onClick={() => {
-            setEditing(false);
-            setDraftFields(null);
-            setChangingCategory((prev) => !prev);
-          }}
-          className="rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-50"
-        >
-          Change category
+          Replace bill
         </button>
       </div>
     </div>

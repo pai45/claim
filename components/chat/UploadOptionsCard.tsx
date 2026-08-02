@@ -3,12 +3,14 @@
 import { useRef, type ChangeEvent, type ReactNode } from "react";
 import type { UploadOptionId } from "@/features/chat/types";
 import { colors } from "@/lib/ui/colors";
+import { PrivacyNotice } from "./PrivacyNotice";
 
 type UploadOptionsCardProps = {
   onFileSelected: (file: File) => void;
   disabled?: boolean;
   title?: string;
   subtitle?: string;
+  onClearData?: () => void;
 };
 
 function DocumentIcon() {
@@ -128,6 +130,7 @@ export function UploadOptionsCard({
   disabled,
   title = "Upload options",
   subtitle = "PDF, JPG or PNG up to 10 MB",
+  onClearData,
 }: UploadOptionsCardProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
@@ -180,6 +183,10 @@ export function UploadOptionsCard({
             </span>
           </button>
         ))}
+      </div>
+
+      <div className="mt-3">
+        <PrivacyNotice onClearData={onClearData} />
       </div>
 
       <input

@@ -1,3 +1,5 @@
+import { getEmployerBenefit } from "@/features/policy/constants";
+
 export type ParsedBillFields = {
   category?: string;
   vendor?: string;
@@ -24,7 +26,7 @@ const MONTH_NAMES = [
 
 const CATEGORY_HINTS: { category: string; keywords: string[] }[] = [
   {
-    category: "Internet & Broadband",
+    category: getEmployerBenefit("mobile").display.label,
     keywords: [
       "airtel",
       "jio",
@@ -39,22 +41,7 @@ const CATEGORY_HINTS: { category: string; keywords: string[] }[] = [
     ],
   },
   {
-    category: "Medical",
-    keywords: [
-      "hospital",
-      "pharmacy",
-      "clinic",
-      "medical",
-      "doctor",
-      "chemist",
-      "apollo",
-      "medplus",
-      "diagnostic",
-      "pathology",
-    ],
-  },
-  {
-    category: "Fuel",
+    category: getEmployerBenefit("fuel").display.label,
     keywords: [
       "petrol",
       "diesel",
@@ -68,25 +55,7 @@ const CATEGORY_HINTS: { category: string; keywords: string[] }[] = [
     ],
   },
   {
-    category: "Travel",
-    keywords: [
-      "uber",
-      "ola",
-      "flight",
-      "airline",
-      "hotel",
-      "taxi",
-      "cab",
-      "irctc",
-      "makemytrip",
-      "goibibo",
-      "indigo",
-      "air india",
-      "booking.com",
-    ],
-  },
-  {
-    category: "Food & Entertainment",
+    category: getEmployerBenefit("meal").display.label,
     keywords: [
       "restaurant",
       "cafe",
@@ -102,7 +71,7 @@ const CATEGORY_HINTS: { category: string; keywords: string[] }[] = [
     ],
   },
   {
-    category: "Professional Development",
+    category: getEmployerBenefit("professional").display.label,
     keywords: [
       "course",
       "training",
@@ -115,16 +84,8 @@ const CATEGORY_HINTS: { category: string; keywords: string[] }[] = [
     ],
   },
   {
-    category: "Office Supplies",
-    keywords: [
-      "stationery",
-      "office",
-      "supplies",
-      "amazon business",
-      "staples",
-      "printer",
-      "toner",
-    ],
+    category: getEmployerBenefit("books").display.label,
+    keywords: ["book", "books", "journal", "periodical", "subscription"],
   },
 ];
 
@@ -558,7 +519,7 @@ function pickCategory(text: string, vendor?: string): string {
       return hint.category;
     }
   }
-  return "Other";
+  return "Other / HR review";
 }
 
 /**

@@ -1,5 +1,6 @@
 import type { BillExtract } from "@/features/chat/types";
 import { colors } from "@/lib/ui/colors";
+import { EMPLOYER_BENEFITS_CATALOG } from "@/features/policy/constants";
 
 type ClaimReceiptCardProps = {
   claimId: string;
@@ -72,7 +73,7 @@ export function ClaimReceiptCard({
   const invoiceNo = extract.invoiceNo || "";
 
   return (
-    <div className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
+    <div role="status" aria-live="polite" className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
       <div className="flex items-center justify-between gap-3 bg-success-soft px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <CheckIcon />
@@ -121,6 +122,11 @@ export function ClaimReceiptCard({
             label="Submitted"
             value={formatSubmittedAt(submittedAt)}
           />
+        </div>
+
+        <div className="rounded-control bg-surface-tint px-3 py-2 text-caption leading-4 text-ink-secondary">
+          Typical demo review: {EMPLOYER_BENEFITS_CATALOG.reviewSla}. This
+          local demo record is not sent to HR or your employer.
         </div>
       </div>
     </div>

@@ -6,8 +6,8 @@ type QuickActionsProps = {
   disabled?: boolean;
 };
 
-const START_MS = 980;
-const STEP_MS = 75;
+const START_MS = 100;
+const STEP_MS = 30;
 const ROW_SIZE = Math.ceil(QUICK_ACTIONS.length / 2);
 
 function QuickActionButton({
@@ -30,7 +30,7 @@ function QuickActionButton({
         disabled={disabled}
         onClick={() => onSelect(action)}
         style={style}
-        className="animate-rise-in relative overflow-hidden rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble px-4 py-2.5 disabled:opacity-60"
+        className="animate-rise-in relative min-h-11 overflow-hidden rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble px-4 py-2.5 disabled:opacity-60"
       >
         <span
           aria-hidden="true"
@@ -53,9 +53,9 @@ function QuickActionButton({
       disabled={disabled}
       onClick={() => onSelect(action)}
       style={style}
-      className="animate-rise-in rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-60"
+      className="animate-rise-in min-h-11 rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble border border-input-border bg-white px-4 py-2.5 disabled:opacity-60"
     >
-      {action.label}
+      <span className="text-body-sm font-bold text-pine">{action.label}</span>
     </button>
   );
 }
@@ -67,9 +67,9 @@ export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
   ];
 
   return (
-    <div className="flex flex-col gap-2 px-4">
+    <div className="flex flex-col gap-2.5 px-page">
       {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex flex-wrap content-start gap-2">
+        <div key={rowIndex} className="flex flex-wrap content-start gap-2.5">
           {row.map((action, indexInRow) => {
             const index = rowIndex * ROW_SIZE + indexInRow;
             return (

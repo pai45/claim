@@ -1,8 +1,11 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClaimId } from "@/features/claims/constants";
-import type { PolicyTabId } from "@/features/policy/constants";
+import {
+  getPolicyCategory,
+  type PolicyTabId,
+} from "@/features/policy/constants";
 import { resolveAssistantReply } from "@/lib/assistant/engine";
 import {
   appDataContextForResolution,
@@ -30,6 +33,7 @@ import {
 } from "@/lib/merchants/openStreetMap";
 import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runBillOcr } from "@/lib/ocr/runOcr";
+import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { BenefitType } from "@/lib/merchants/types";
@@ -37,10 +41,17 @@ import type { VehicleLookup } from "@/lib/vehicle/types";
 import type {
   BillExtract,
   ChatMessage,
+  DocumentProcessingStage,
   DriverSalaryPayload,
   PolicyModelStatus,
   VehicleLookupPayload,
 } from "./types";
+import {
+  clearChatSession,
+  createPersistedChatSession,
+  loadChatSession,
+  saveChatSession,
+} from "./persistence";
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -53,10 +64,14 @@ function benefitLabel(benefitType: BenefitType): string {
 export function useChat() {
   const chatVersionRef = useRef(0);
   const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
+  const previewUrlsRef = useRef(new Map<string, string>());
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  const [documentProcessingStage, setDocumentProcessingStage] =
+    useState<DocumentProcessingStage | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
   const [policyModelStatus, setPolicyModelStatus] =
     useState<PolicyModelStatus | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,18 +82,68 @@ export function useChat() {
   const [activeAppDataContext, setActiveAppDataContext] =
     useState<AppDataContext | null>(null);
 
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const saved = loadChatSession();
+      if (saved) {
+        driverSalaryDraftRef.current = saved.driverSalaryDraft;
+        setMessages(saved.messages);
+        setActiveBenefitType(saved.activeBenefitType);
+        setActivePolicyCategory(saved.activePolicyCategory);
+        setActiveAppDataContext(saved.activeAppDataContext);
+      }
+      setIsHydrated(true);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (messages.length === 0) {
+      clearChatSession();
+      return;
+    }
+    saveChatSession(
+      createPersistedChatSession({
+        messages,
+        driverSalaryDraft: driverSalaryDraftRef.current,
+        activeBenefitType,
+        activePolicyCategory,
+        activeAppDataContext,
+      }),
+    );
+  }, [
+    activeAppDataContext,
+    activeBenefitType,
+    activePolicyCategory,
+    isHydrated,
+    messages,
+  ]);
+
+  useEffect(
+    () => () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current.clear();
+    },
+    [],
+  );
+
   const startNewChat = useCallback(() => {
     chatVersionRef.current += 1;
+    previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    previewUrlsRef.current.clear();
     driverSalaryDraftRef.current = {};
     setMessages([]);
     setIsLoading(false);
     setIsScanning(false);
     setIsLocating(false);
+    setDocumentProcessingStage(null);
     setPolicyModelStatus(null);
     setError(null);
     setActiveBenefitType(null);
     setActivePolicyCategory(null);
     setActiveAppDataContext(null);
+    clearChatSession();
   }, []);
 
   const appendUploadOptions = useCallback(() => {
@@ -116,6 +181,19 @@ export function useChat() {
         content: "Choose merchant type",
         createdAt: Date.now(),
         kind: "merchant_type_options",
+      },
+    ]);
+  }, []);
+
+  const appendPolicyOptions = useCallback(() => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: createId(),
+        role: "assistant",
+        content: "Choose a benefit policy",
+        createdAt: Date.now(),
+        kind: "policy_options",
       },
     ]);
   }, []);
@@ -325,6 +403,10 @@ export function useChat() {
           appendMerchantTypeOptions();
         }
 
+        if (data.intentId === "view_policy") {
+          appendPolicyOptions();
+        }
+
         if (data.intentId === VEHICLE_REGISTRATION_INTENT) {
           appendVehicleNumberInput();
         }
@@ -348,6 +430,7 @@ export function useChat() {
     },
     [
       appendMerchantTypeOptions,
+      appendPolicyOptions,
       appendUploadOptions,
       appendVehicleNumberInput,
       activePolicyCategory,
@@ -356,6 +439,15 @@ export function useChat() {
       isLocating,
       isScanning,
     ],
+  );
+
+  const selectPolicyCategory = useCallback(
+    (categoryId: PolicyTabId) => {
+      if (isLoading || isScanning || isLocating) return;
+      const policy = getPolicyCategory(categoryId);
+      void sendMessage(policy.tabLabel);
+    },
+    [isLoading, isLocating, isScanning, sendMessage],
   );
 
   const selectMerchantBenefitType = useCallback(
@@ -659,48 +751,65 @@ export function useChat() {
   );
 
   const processBillFile = useCallback(
-    async (file: File) => {
+    async (file: File, replaceMessageId?: string) => {
       if (isScanning || isLoading || isLocating) return;
 
       setIsScanning(true);
+      setDocumentProcessingStage("preparing");
       setError(null);
 
-      setMessages((prev) => [
-        ...prev,
-        {
+      const billMessageId = replaceMessageId ?? createId();
+      const previousPreview = previewUrlsRef.current.get(billMessageId);
+      if (previousPreview) URL.revokeObjectURL(previousPreview);
+      const previewUrl = URL.createObjectURL(file);
+      previewUrlsRef.current.set(billMessageId, previewUrl);
+
+      setMessages((prev) =>
+        prev.concat({
           id: createId(),
           role: "user",
-          content: `Attached: ${file.name}`,
+          content: `${replaceMessageId ? "Replaced with" : "Attached"}: ${file.name}`,
           createdAt: Date.now(),
           kind: "text",
-        },
-      ]);
+        }),
+      );
 
       try {
+        setDocumentProcessingStage("reading");
         const extract = await runBillOcr(file);
+        const nextExtract: BillExtract = {
+          ...extract,
+          previewUrl,
+          previewType: file.type,
+        };
+        setDocumentProcessingStage("checking");
+        await new Promise((resolve) => window.setTimeout(resolve, 180));
 
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: createId(),
+        setMessages((prev) => {
+          const nextMessage: ChatMessage = {
+            id: billMessageId,
             role: "assistant",
             content: extract.error
               ? extract.error
               : extract.warning
                 ? extract.warning
-                : "I've extracted the claim details from your bill. Please review them before submitting.",
+                : "I've extracted the claim details. Review the highlighted fields and demo checks before submitting.",
             createdAt: Date.now(),
             kind: "bill_extract",
-            billExtract: extract,
-          },
-        ]);
+            billExtract: nextExtract,
+          };
+          return replaceMessageId
+            ? prev.map((message) =>
+                message.id === replaceMessageId ? nextMessage : message,
+              )
+            : [...prev, nextMessage];
+        });
       } catch (err) {
         console.error("OCR failed", err);
         setError("OCR failed");
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: createId(),
+        setMessages((prev) => {
+          const nextMessage: ChatMessage = {
+            id: billMessageId,
             role: "assistant",
             content:
               "I couldn't scan that file. Please try another clear photo or PDF.",
@@ -709,16 +818,31 @@ export function useChat() {
             billExtract: {
               fileName: file.name,
               rawText: "",
+              previewUrl,
+              previewType: file.type,
               error:
                 "I couldn't scan that file. Please try another clear photo or PDF.",
             },
-          },
-        ]);
+          };
+          return replaceMessageId
+            ? prev.map((message) =>
+                message.id === replaceMessageId ? nextMessage : message,
+              )
+            : [...prev, nextMessage];
+        });
       } finally {
         setIsScanning(false);
+        setDocumentProcessingStage(null);
       }
     },
     [isLoading, isLocating, isScanning],
+  );
+
+  const replaceBillFile = useCallback(
+    async (messageId: string, file: File) => {
+      await processBillFile(file, messageId);
+    },
+    [processBillFile],
   );
 
   const updateBillExtract = useCallback(
@@ -736,6 +860,13 @@ export function useChat() {
 
   const submitBillClaim = useCallback(
     (messageId: string, extract: BillExtract) => {
+      const precheck = evaluateClaimPrecheck(extract);
+      if (
+        precheck.status === "blocked" ||
+        (precheck.requiresAcknowledgement && !extract.warningAcknowledged)
+      ) {
+        return;
+      }
       const claimId = createClaimId();
       const submittedExtract = { ...extract, submitted: true };
       updateBillExtract(messageId, submittedExtract);
@@ -1103,14 +1234,18 @@ export function useChat() {
     isLoading,
     isScanning,
     isLocating,
+    documentProcessingStage,
+    isHydrated,
     policyModelStatus,
     error,
     sendMessage,
     processBillFile,
+    replaceBillFile,
     processDlFile,
     openUploadOptions,
     updateBillExtract,
     submitBillClaim,
+    selectPolicyCategory,
     selectMerchantBenefitType,
     selectMerchantSearchMode,
     searchMerchantByName,

@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, type ReactNode } from "react";
+import { useCallback, useRef, type ReactNode } from "react";
+import { AppIcon } from "@/components/shared/AppIcon";
+import { UI_ICONS } from "@/lib/ui/assets";
 import { colors } from "@/lib/ui/colors";
+import { useModalFocus } from "@/lib/ui/useModalFocus";
 
 type SideMenuProps = {
   open: boolean;
@@ -11,16 +14,7 @@ type SideMenuProps = {
 };
 
 function NewChatIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path
-        d="M10 4.17v11.66M4.17 10h11.66"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
+  return <AppIcon src={UI_ICONS.plus} size={20} alt="" className="brightness-0 invert" />;
 }
 
 function DashboardIcon() {
@@ -126,28 +120,26 @@ const MENU_ITEMS: {
 ];
 
 export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
-  useEffect(() => {
-    if (!open) return;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const handleClose = useCallback(() => onClose(), [onClose]);
+  useModalFocus(modalRef, open, handleClose);
 
   return (
     <div
+      ref={modalRef}
       className={`fixed inset-0 z-50 mx-auto max-w-phone overflow-hidden ${
         open ? "pointer-events-auto" : "pointer-events-none"
       }`}
       aria-hidden={!open}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="side-menu-title"
     >
       <button
         type="button"
+        tabIndex={-1}
         aria-label="Close menu"
-        onClick={onClose}
+        onClick={handleClose}
         className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
           open ? "opacity-100" : "opacity-0"
         }`}
@@ -160,12 +152,12 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
         aria-label="Main menu"
       >
         <div className="flex items-center justify-between px-5 py-5">
-          <h2 className="type-screen-title">Menu</h2>
+          <h2 id="side-menu-title" className="type-screen-title">Menu</h2>
           <button
             type="button"
             aria-label="Close menu"
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white"
+            onClick={handleClose}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
@@ -183,7 +175,7 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
             <li key={item.id}>
               <Link
                 href={item.href}
-                onClick={onClose}
+                onClick={handleClose}
                 className="flex w-full items-center gap-2 rounded-control border border-border-muted bg-white px-3.5 py-3"
               >
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -202,14 +194,14 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
             type="button"
             onClick={() => {
               onNewChat();
-              onClose();
+              handleClose();
             }}
             className="flex w-full items-center justify-center gap-2 rounded-control bg-pine-primary px-3.5 py-3 text-white shadow-cta transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine-primary focus-visible:ring-offset-2"
           >
             <span className="flex h-5 w-5 shrink-0 items-center justify-center">
               <NewChatIcon />
             </span>
-            <span className="text-body font-bold">New chat</span>
+            <span className="font-bold text-white">New chat</span>
           </button>
         </div>
       </nav>

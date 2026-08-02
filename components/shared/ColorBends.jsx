@@ -127,6 +127,7 @@ void main() {
  * @property {number} [iterations]
  * @property {number} [intensity]
  * @property {number} [bandWidth]
+ * @property {boolean} [paused]
  */
 
 /** @param {ColorBendsProps} props */
@@ -147,6 +148,7 @@ export default function ColorBends({
   iterations = 1,
   intensity = 1.5,
   bandWidth = 6,
+  paused = false,
 }) {
   const containerRef = useRef(null);
   const rendererRef = useRef(null);
@@ -248,7 +250,15 @@ export default function ColorBends({
       renderer.render(scene, camera);
       rafRef.current = requestAnimationFrame(loop);
     };
-    rafRef.current = requestAnimationFrame(loop);
+    if (paused) {
+      const radians = ((rotationRef.current % 360) * Math.PI) / 180;
+      material.uniforms.uTime.value = 0;
+      material.uniforms.uRot.value.set(Math.cos(radians), Math.sin(radians));
+      renderer.render(scene, camera);
+      rafRef.current = null;
+    } else {
+      rafRef.current = requestAnimationFrame(loop);
+    }
 
     return () => {
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
@@ -269,6 +279,7 @@ export default function ColorBends({
     iterations,
     mouseInfluence,
     noise,
+    paused,
     parallax,
     scale,
     speed,

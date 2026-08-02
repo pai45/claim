@@ -79,6 +79,8 @@ describe("policy answer grounding", () => {
     expect(answer).toContain("₹2,500");
     expect(answer).toContain("GST food / restaurant invoices");
     expect(answer).toContain("5th");
+    expect(answer).toContain("applicable tax regime");
+    expect(answer).toContain("not tax advice");
   });
 
   it("accepts numeric facts that exist in the policy", () => {

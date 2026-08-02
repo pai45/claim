@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  useEffect,
+  useCallback,
   useRef,
   useState,
   type ChangeEvent,
@@ -13,7 +13,11 @@ import {
   type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
 import type { UploadOptionId } from "@/features/chat/types";
+import { UI_ICONS } from "@/lib/ui/assets";
 import { colors } from "@/lib/ui/colors";
+import { ChatComposer } from "./ChatComposer";
+import { PrivacyNotice } from "./PrivacyNotice";
+import { useModalFocus } from "@/lib/ui/useModalFocus";
 
 type DrawerTab = "upload" | "history";
 
@@ -23,6 +27,7 @@ type AttachBottomDrawerProps = {
   onFileSelected: (file: File) => void;
   onSend: (message: string) => void;
   disabled?: boolean;
+  onClearData?: () => void;
 };
 
 function CameraIcon() {
@@ -122,20 +127,22 @@ export function AttachBottomDrawer({
   onFileSelected,
   onSend,
   disabled,
+  onClearData,
 }: AttachBottomDrawerProps) {
   const router = useRouter();
   const [tab, setTab] = useState<DrawerTab>("upload");
   const [activeFilter, setActiveFilter] = useState<ClaimStatusFilter>("all");
-  const [message, setMessage] = useState("");
   const cameraRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
-  function handleDrawerClose() {
+  const handleDrawerClose = useCallback(() => {
     setTab("upload");
-    setMessage("");
     onClose();
-  }
+  }, [onClose]);
+
+  useModalFocus(modalRef, open, handleDrawerClose);
 
   function openClaimHistory(filter: ClaimStatusFilter) {
     setActiveFilter(filter);
@@ -153,20 +160,6 @@ export function AttachBottomDrawer({
     gallery: galleryRef,
   } as const;
 
-  useEffect(() => {
-    if (!open) return;
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
-      setTab("upload");
-      setMessage("");
-      onClose();
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
-
   function handlePick(optionId: UploadOptionId) {
     if (disabled) return;
     refs[optionId].current?.click();
@@ -180,15 +173,15 @@ export function AttachBottomDrawer({
     handleDrawerClose();
   }
 
-  function handleSend() {
-    const next = message.trim();
-    if (!next || disabled) return;
+  function handleSend(next: string) {
+    if (!next.trim() || disabled) return;
     onSend(next);
     handleDrawerClose();
   }
 
   return (
     <div
+      ref={modalRef}
       className={`fixed inset-0 z-50 mx-auto max-w-phone overflow-hidden ${
         open ? "pointer-events-auto" : "pointer-events-none"
       }`}
@@ -196,6 +189,7 @@ export function AttachBottomDrawer({
     >
       <button
         type="button"
+        tabIndex={-1}
         aria-label="Close attach drawer"
         onClick={handleDrawerClose}
         className={`absolute inset-0 bg-black/30 transition-opacity duration-200 ${
@@ -207,7 +201,7 @@ export function AttachBottomDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Upload bill and claim history"
-        className={`absolute inset-x-0 bottom-0 flex flex-col gap-2 rounded-t-3xl bg-white px-4 pb-8 pt-3 shadow-drawer transition-transform duration-200 ease-out ${
+        className={`absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col gap-2 overflow-y-auto rounded-t-3xl bg-white px-4 pb-8 pt-3 shadow-drawer transition-transform duration-200 ease-out ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
@@ -243,8 +237,9 @@ export function AttachBottomDrawer({
             </div>
 
             {tab === "upload" ? (
-              <div className="flex gap-2">
-                {UPLOAD_OPTIONS.map((option) => (
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2">
+                  {UPLOAD_OPTIONS.map((option) => (
                   <button
                     key={option.id}
                     type="button"
@@ -259,7 +254,9 @@ export function AttachBottomDrawer({
                       {option.label}
                     </span>
                   </button>
-                ))}
+                  ))}
+                </div>
+                <PrivacyNotice onClearData={onClearData} />
               </div>
             ) : (
               <div className="flex min-h-[104px] flex-wrap content-start gap-2">
@@ -284,67 +281,18 @@ export function AttachBottomDrawer({
             )}
           </div>
 
-          <div className="flex items-center gap-3 rounded-pill border border-border-line bg-white p-1.5">
-            <button
-              type="button"
-              aria-label="Close attach options"
-              onClick={handleDrawerClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-tint"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M9 3.75v10.5M3.75 9h10.5"
-                  stroke={colors.pineDark}
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-
-            <input
-              type="text"
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Message Claims Assistant..."
-              disabled={disabled}
-              className="min-w-0 flex-1 bg-transparent text-body-sm text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
-            />
-
-            <button
-              type="button"
-              aria-label="Send message"
-              disabled={disabled || !message.trim()}
-              onClick={handleSend}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-input-icon disabled:opacity-50"
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 18 18"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3.5 9.2 14.5 3.5l-3.2 11.2-2.4-4.3L3.5 9.2z"
-                  stroke={colors.pineDark}
-                  strokeWidth="1.5"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </button>
-          </div>
+          <ChatComposer
+            variant="solid"
+            onSend={handleSend}
+            disabled={disabled}
+            autoFocus={open}
+            leadingAction={{
+              label: "Close attach options",
+              onClick: handleDrawerClose,
+              iconSrc: UI_ICONS.plus,
+            }}
+            className="px-0 pb-0 pt-0"
+          />
         </div>
 
         <input

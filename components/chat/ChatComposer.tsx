@@ -1,149 +1,155 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { colors } from "@/lib/ui/colors";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
+import { AppIcon } from "@/components/shared/AppIcon";
+import { UI_ICONS } from "@/lib/ui/assets";
 
 type ChatComposerProps = {
   onSend: (message: string) => void;
   onAttach?: () => void;
   disabled?: boolean;
+  /** Visual variant for the attach drawer composer */
+  variant?: "glass" | "solid";
+  /** When set, replaces the attach button (e.g. close in drawer) */
+  leadingAction?: {
+    label: string;
+    onClick: () => void;
+    iconSrc?: string;
+  };
+  autoFocus?: boolean;
+  className?: string;
 };
 
-function PlusIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M10 4.25v11.5M4.25 10h11.5"
-        stroke={colors.pineDark}
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
+const MAX_TEXTAREA_PX = 120; // ~5 rows
 
-function WaveformIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3.5 8.25v3.5"
-        stroke={colors.pineDark}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M7 5.75v9"
-        stroke={colors.pineDark}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M10.5 4v12.5"
-        stroke={colors.pineDark}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M14 6.5v7.5"
-        stroke={colors.pineDark}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M17.5 8.25v3.5"
-        stroke={colors.pineDark}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function SendIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 18 18"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3.5 9.2 14.5 3.5l-3.2 11.2-2.4-4.3L3.5 9.2z"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export function ChatComposer({ onSend, onAttach, disabled }: ChatComposerProps) {
+export function ChatComposer({
+  onSend,
+  onAttach,
+  disabled,
+  variant = "glass",
+  leadingAction,
+  autoFocus,
+  className = "",
+}: ChatComposerProps) {
   const [value, setValue] = useState("");
-  const canSend = Boolean(value.trim()) && !disabled;
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  function resizeTextarea() {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, MAX_TEXTAREA_PX)}px`;
+  }
+
+  useEffect(() => {
+    resizeTextarea();
+  }, [value]);
+
+  useEffect(() => {
+    if (autoFocus) textareaRef.current?.focus();
+  }, [autoFocus]);
+
+  function submit() {
     const next = value.trim();
     if (!next || disabled) return;
     onSend(next);
     setValue("");
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.style.height = "auto";
+      el.focus();
+    });
   }
+
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    submit();
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      submit();
+    }
+  }
+
+  const canSend = Boolean(value.trim()) && !disabled;
+  const shell =
+    variant === "glass"
+      ? "border-white/50 bg-white/55 shadow-soft backdrop-blur-xl"
+      : "border-border-line bg-white";
+  const attachShell =
+    variant === "glass"
+      ? "border-white/50 bg-white/55 shadow-soft backdrop-blur-xl"
+      : "border-transparent bg-surface-tint";
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full bg-transparent px-4 pb-7 pt-2"
+      className={`w-full bg-transparent px-4 pb-7 pt-2 ${className}`}
     >
-      <div className="flex items-center gap-2.5">
-        <button
-          type="button"
-          aria-label="Add attachment"
-          disabled={disabled}
-          onClick={() => onAttach?.()}
-          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/50 bg-white/55 shadow-soft backdrop-blur-xl transition-opacity disabled:opacity-50"
-        >
-          <PlusIcon />
-        </button>
+      <div className="flex items-end gap-2.5">
+        {leadingAction ? (
+          <button
+            type="button"
+            aria-label={leadingAction.label}
+            onClick={leadingAction.onClick}
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${attachShell} transition-opacity`}
+          >
+            <AppIcon
+              src={leadingAction.iconSrc ?? UI_ICONS.plus}
+              size={20}
+              alt=""
+            />
+          </button>
+        ) : onAttach ? (
+          <button
+            type="button"
+            aria-label="Add attachment"
+            aria-disabled={disabled}
+            disabled={disabled}
+            onClick={() => onAttach()}
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${attachShell} transition-opacity disabled:opacity-45`}
+          >
+            <AppIcon src={UI_ICONS.plus} size={20} alt="" />
+          </button>
+        ) : null}
 
-        <div className="flex h-12 min-w-0 flex-1 items-center gap-2 rounded-full border border-white/50 bg-white/55 pl-4 pr-2 shadow-soft backdrop-blur-xl">
-          <input
-            type="text"
+        <div
+          className={`flex min-h-12 min-w-0 flex-1 items-end gap-2 rounded-pill border py-1.5 pl-4 pr-1.5 ${shell}`}
+        >
+          <textarea
+            ref={textareaRef}
+            rows={1}
             value={value}
             onChange={(event) => setValue(event.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Message Claims Assistant..."
             disabled={disabled}
-            className="min-w-0 flex-1 bg-transparent text-body text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
+            aria-disabled={disabled}
+            className="max-h-[120px] min-h-[28px] min-w-0 flex-1 resize-none bg-transparent py-1.5 text-body leading-5 text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
           />
 
-          {canSend ? (
-            <button
-              type="submit"
-              aria-label="Send message"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-opacity"
-            >
-              <SendIcon />
-            </button>
-          ) : (
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center opacity-80"
-              aria-hidden="true"
-            >
-              <WaveformIcon />
-            </span>
-          )}
+          <button
+            type="submit"
+            aria-label="Send message"
+            aria-disabled={!canSend}
+            disabled={!canSend}
+            className={`mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-45 ${
+              canSend
+                ? "bg-pine-primary text-white shadow-cta"
+                : "bg-input-icon text-pine"
+            }`}
+          >
+            <AppIcon src={UI_ICONS.send} size={18} alt="" />
+          </button>
         </div>
       </div>
     </form>

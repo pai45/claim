@@ -40,17 +40,17 @@ export function AssistantMarkdown({
             </h3>
           ),
           ul: ({ children }) => (
-            <ul className="mb-2.5 list-disc space-y-1 pl-5 last:mb-0">
+            <ul className="mb-2.5 list-disc space-y-1.5 pl-5 last:mb-0">
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="mb-2.5 list-decimal space-y-1 pl-5 last:mb-0">
+            <ol className="mb-2.5 list-decimal space-y-1.5 pl-5 last:mb-0">
               {children}
             </ol>
           ),
           li: ({ children }) => (
-            <li className="leading-5 marker:text-muted">{children}</li>
+            <li className="leading-5 marker:text-mint">{children}</li>
           ),
           strong: ({ children }) => (
             <strong className="font-bold text-pine">{children}</strong>
@@ -70,13 +70,13 @@ export function AssistantMarkdown({
             const isBlock = Boolean(codeClassName);
             if (isBlock) {
               return (
-                <code className="block overflow-x-auto rounded-control bg-input px-3 py-2 font-mono text-caption leading-5 text-body">
+                <code className="block overflow-x-auto rounded-control bg-surface-tint-strong px-3 py-2.5 font-mono text-caption leading-5 text-body ring-1 ring-border-soft">
                   {children}
                 </code>
               );
             }
             return (
-              <code className="rounded bg-input px-1 py-0.5 font-mono text-caption text-pine">
+              <code className="rounded bg-surface-tint px-1 py-0.5 font-mono text-caption text-pine ring-1 ring-border-soft/80">
                 {children}
               </code>
             );
@@ -85,28 +85,28 @@ export function AssistantMarkdown({
             <pre className="mb-2.5 overflow-x-auto last:mb-0">{children}</pre>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="mb-2.5 border-l-2 border-input-border pl-3 text-subtle last:mb-0">
+            <blockquote className="mb-2.5 border-l-2 border-mint/50 pl-3 text-subtle last:mb-0">
               {children}
             </blockquote>
           ),
           hr: () => <hr className="my-3 border-border-soft" />,
           table: ({ children }) => (
-            <div className="mb-2.5 overflow-x-auto last:mb-0">
+            <div className="mb-2.5 overflow-x-auto rounded-control ring-1 ring-border-soft last:mb-0">
               <table className="w-full border-collapse text-left text-body-sm">
                 {children}
               </table>
             </div>
           ),
           thead: ({ children }) => (
-            <thead className="border-b border-border-soft text-pine">
-              {children}
-            </thead>
+            <thead className="bg-surface-tint text-pine">{children}</thead>
           ),
           th: ({ children }) => (
-            <th className="px-2 py-1.5 font-bold">{children}</th>
+            <th className="border-b border-border-line px-2.5 py-1.5 font-bold">
+              {children}
+            </th>
           ),
           td: ({ children }) => (
-            <td className="border-t border-border-soft px-2 py-1.5 align-top">
+            <td className="border-t border-border-soft px-2.5 py-1.5 align-top">
               {children}
             </td>
           ),

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PolicyDetailScreen } from "@/components/policy/PolicyDetailScreen";
 import {
   isPolicyTabId,
-  POLICY_CATEGORIES,
+  EMPLOYER_BENEFITS_CATALOG,
 } from "@/features/policy/constants";
 
 type PolicyCategoryPageProps = {
@@ -12,7 +12,7 @@ type PolicyCategoryPageProps = {
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return POLICY_CATEGORIES.map(({ id }) => ({ categoryId: id }));
+  return EMPLOYER_BENEFITS_CATALOG.benefits.map(({ id }) => ({ categoryId: id }));
 }
 
 export default async function PolicyCategoryPage({

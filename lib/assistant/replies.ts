@@ -47,7 +47,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "benefits",
     ],
     reply:
-      "**Policy coverage**\n\nYour tax-benefit policy usually covers eligible reimbursements such as:\n\n- Medical bills\n- Fuel\n- Vehicle-related expenses\n\nTell me the expense type and I'll check typical eligibility and documents needed.",
+      "**Policy coverage**\n\nPick a benefit below and I'll share limits, proof needed, and how claims work for that wallet.",
   },
   {
     id: "claim_history",

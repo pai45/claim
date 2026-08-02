@@ -1,4 +1,8 @@
-import type { PolicyTabId } from "@/features/policy/constants";
+import {
+  EMPLOYER_BENEFITS_CATALOG,
+  getEmployerBenefit,
+  type PolicyTabId,
+} from "@/features/policy/constants";
 import { DASHBOARD_CATEGORIES } from "./constants";
 
 export type BenefitClaimStatus = "Approved" | "Pending" | "Under review";
@@ -26,7 +30,7 @@ export type BenefitClaimsDashboard = {
   claims: BenefitClaimItem[];
 };
 
-const FY = "FY 26/27";
+const FY = EMPLOYER_BENEFITS_CATALOG.financialYear;
 
 function booksDashboard(): BenefitClaimsDashboard {
   return {
@@ -276,7 +280,15 @@ export function getBenefitClaimsDashboard(
   categoryId: string,
 ): BenefitClaimsDashboard {
   const known = DASHBOARDS[categoryId];
-  if (known) return known;
+  if (known) {
+    const policy = getEmployerBenefit(known.categoryId);
+    return {
+      ...known,
+      availableLimit: policy.balance.available,
+      utilized: policy.balance.utilized,
+      accrued: policy.balance.allocation,
+    };
+  }
 
   const fallback =
     DASHBOARD_CATEGORIES.find((item) => item.id === categoryId) ??

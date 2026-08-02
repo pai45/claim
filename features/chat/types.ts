@@ -4,12 +4,44 @@ import type { PolicyTabId } from "@/features/policy/constants";
 
 export type MessageRole = "user" | "assistant";
 
+export type DocumentProcessingStage =
+  | "preparing"
+  | "reading"
+  | "checking";
+
+export type ClaimFieldName =
+  | "category"
+  | "vendor"
+  | "amount"
+  | "billDate"
+  | "billingMonth"
+  | "invoiceNo";
+
+export type ClaimFieldReviewState = "confirmed" | "review" | "missing";
+
+export type ClaimCheckStatus = "pass" | "warning" | "blocked";
+
+export type ClaimPrecheckItem = {
+  id: string;
+  label: string;
+  detail: string;
+  status: ClaimCheckStatus;
+};
+
+export type ClaimPrecheck = {
+  status: ClaimCheckStatus;
+  benefitId?: PolicyTabId;
+  checks: ClaimPrecheckItem[];
+  requiresAcknowledgement: boolean;
+};
+
 export type MessageKind =
   | "text"
   | "upload_options"
   | "bill_extract"
   | "claim_cta"
   | "policy_answer"
+  | "policy_options"
   | "app_data_answer"
   | "merchant_type_options"
   | "merchant_search_options"
@@ -47,6 +79,10 @@ export type BillExtract = {
   billingMonth?: string;
   invoiceNo?: string;
   confidence?: number;
+  /** Transient object URL. It is deliberately removed before persistence. */
+  previewUrl?: string;
+  previewType?: string;
+  warningAcknowledged?: boolean;
   submitted?: boolean;
   error?: string;
   /** Soft hint when OCR text exists but fields are incomplete */

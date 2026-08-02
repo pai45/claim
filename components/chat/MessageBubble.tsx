@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { colors } from "@/lib/ui/colors";
 import type { BenefitType } from "@/lib/merchants/types";
@@ -8,9 +10,13 @@ import type {
 } from "@/features/chat/types";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
-import { getPolicyCategory } from "@/features/policy/constants";
+import {
+  getPolicyCategory,
+  type PolicyTabId,
+} from "@/features/policy/constants";
 import { AssistantMarkdown } from "./AssistantMarkdown";
 import { BillExtractCard } from "./BillExtractCard";
+import { ChatAvatar } from "./ChatAvatar";
 import { ClaimReceiptCard } from "./ClaimReceiptCard";
 import { DriverDlExtractCard } from "./DriverDlExtractCard";
 import { DriverNameInputCard } from "./DriverNameInputCard";
@@ -21,31 +27,65 @@ import { MerchantNameInputCard } from "./MerchantNameInputCard";
 import { MerchantResultsCard } from "./MerchantResultsCard";
 import { MerchantSearchModeCard } from "./MerchantSearchModeCard";
 import { MerchantTypeCard } from "./MerchantTypeCard";
+import { PolicyOptionsCard } from "./PolicyOptionsCard";
 import { UploadOptionsCard } from "./UploadOptionsCard";
 import { VehicleClaimReceiptCard } from "./VehicleClaimReceiptCard";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
 import { VehicleNumberInputCard } from "./VehicleNumberInputCard";
+import { useRevealText } from "./useRevealText";
 
 const assistantBubbleClass =
-  "max-w-[85%] rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 shadow-soft";
+  "rounded-bubble rounded-bl-md border border-border-soft bg-white/95 px-3 py-2.5 shadow-soft";
 
 const pillClass =
-  "rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
+  "inline-flex min-h-11 items-center rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
 
-function AssistantText({ content }: { content: string }) {
+function formatTime(timestamp: number) {
+  return new Date(timestamp).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function AssistantText({
+  content,
+  createdAt,
+  reveal = false,
+}: {
+  content: string;
+  createdAt?: number;
+  reveal?: boolean;
+}) {
+  const { visible } = useRevealText({ text: content, enabled: reveal });
+
   return (
-    <div className={assistantBubbleClass}>
-      <AssistantMarkdown content={content} />
+    <div className="flex max-w-[92%] items-end gap-2">
+      <ChatAvatar role="assistant" />
+      <div className="flex min-w-0 flex-col gap-1">
+        <div className={assistantBubbleClass}>
+          <AssistantMarkdown content={visible} />
+        </div>
+        {createdAt ? (
+          <span className="px-1 text-caption text-muted">
+            {formatTime(createdAt)}
+          </span>
+        ) : null}
+      </div>
     </div>
   );
 }
 
 type MessageBubbleProps = {
   message: ChatMessage;
+  reveal?: boolean;
   onFileSelected?: (file: File) => void;
   onDlFileSelected?: (file: File) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onReplaceBill?: (messageId: string) => void;
+  onStartAnotherBill?: () => void;
+  onClearSavedData?: () => void;
+  onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
   onSelectMerchantSearchMode?: (
     mode: "name" | "nearest",
@@ -62,19 +102,17 @@ type MessageBubbleProps = {
   uploadDisabled?: boolean;
 };
 
-function formatTime(timestamp: number) {
-  return new Date(timestamp).toLocaleTimeString([], {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
 export function MessageBubble({
   message,
+  reveal = false,
   onFileSelected,
   onDlFileSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
+  onReplaceBill,
+  onStartAnotherBill,
+  onClearSavedData,
+  onSelectPolicyCategory,
   onSelectMerchantBenefitType,
   onSelectMerchantSearchMode,
   onSearchMerchantByName,
@@ -87,11 +125,29 @@ export function MessageBubble({
   onSubmitDriverSalaryClaim,
   uploadDisabled,
 }: MessageBubbleProps) {
+  const textReveal =
+    reveal &&
+    (message.kind === "text" ||
+      message.kind === "policy_answer" ||
+      message.kind === "app_data_answer");
+
   if (message.kind === "upload_options") {
     return (
       <div className="flex w-full justify-start">
         <UploadOptionsCard
           onFileSelected={(file) => onFileSelected?.(file)}
+          disabled={uploadDisabled}
+          onClearData={onClearSavedData}
+        />
+      </div>
+    );
+  }
+
+  if (message.kind === "policy_options") {
+    return (
+      <div className="flex w-full justify-start">
+        <PolicyOptionsCard
+          onSelect={(categoryId) => onSelectPolicyCategory?.(categoryId)}
           disabled={uploadDisabled}
         />
       </div>
@@ -172,7 +228,7 @@ export function MessageBubble({
     return (
       <div className="flex w-full flex-col items-start gap-2">
         {message.content && !message.vehicleLookup.error ? (
-          <AssistantText content={message.content} />
+          <AssistantText content={message.content} createdAt={message.createdAt} />
         ) : null}
         <VehicleDetailsCard
           messageId={message.id}
@@ -188,13 +244,14 @@ export function MessageBubble({
     return (
       <div className="flex w-full flex-col items-start gap-2">
         {!message.billExtract.error ? (
-          <AssistantText content={message.content} />
+          <AssistantText content={message.content} createdAt={message.createdAt} />
         ) : null}
         <BillExtractCard
           messageId={message.id}
           extract={message.billExtract}
           onUpdate={onUpdateBillExtract}
           onSubmitted={onSubmitBillClaim}
+          onReplace={onReplaceBill}
         />
       </div>
     );
@@ -219,6 +276,7 @@ export function MessageBubble({
           subtitle="Photo or PDF of the DL, up to 10 MB"
           onFileSelected={(file) => onDlFileSelected?.(file)}
           disabled={uploadDisabled}
+          onClearData={onClearSavedData}
         />
       </div>
     );
@@ -228,7 +286,7 @@ export function MessageBubble({
     return (
       <div className="flex w-full flex-col items-start gap-2">
         {!message.driverSalary.dlError ? (
-          <AssistantText content={message.content} />
+          <AssistantText content={message.content} createdAt={message.createdAt} />
         ) : null}
         <DriverDlExtractCard
           payload={message.driverSalary}
@@ -255,7 +313,7 @@ export function MessageBubble({
   if (message.kind === "driver_salary_review" && message.driverSalary) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText content={message.content} />
+        <AssistantText content={message.content} createdAt={message.createdAt} />
         <DriverSalaryReviewCard
           payload={message.driverSalary}
           onSubmit={(payload) => onSubmitDriverSalaryClaim?.(payload)}
@@ -280,6 +338,13 @@ export function MessageBubble({
           >
             View claim details
           </Link>
+          <button
+            type="button"
+            onClick={onStartAnotherBill}
+            className={pillClass}
+          >
+            Claim another bill
+          </button>
         </div>
       );
     }
@@ -332,7 +397,11 @@ export function MessageBubble({
 
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText content={message.content} />
+        <AssistantText
+          content={message.content}
+          createdAt={message.createdAt}
+          reveal={textReveal}
+        />
         <Link
           href={`/claim-details/?id=${encodeURIComponent(message.claimId)}`}
           className={pillClass}
@@ -348,11 +417,12 @@ export function MessageBubble({
 
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText content={message.content} />
-        <Link
-          href={`/policy-details/${policy.id}/`}
-          className={pillClass}
-        >
+        <AssistantText
+          content={message.content}
+          createdAt={message.createdAt}
+          reveal={textReveal}
+        />
+        <Link href={`/policy-details/${policy.id}/`} className={pillClass}>
           View all {policy.tabLabel} details
         </Link>
       </div>
@@ -383,7 +453,11 @@ export function MessageBubble({
 
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText content={message.content} />
+        <AssistantText
+          content={message.content}
+          createdAt={message.createdAt}
+          reveal={textReveal}
+        />
         <Link href={href} className={pillClass}>
           {label}
         </Link>
@@ -393,19 +467,13 @@ export function MessageBubble({
 
   const isUser = message.role === "user";
 
-  return (
-    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className="flex max-w-[85%] flex-col gap-1">
-        {isUser ? (
-          <div className="whitespace-pre-wrap rounded-bubble rounded-br-md bg-pine-primary px-3.5 py-2.5 text-body-sm leading-5 text-white">
+  if (isUser) {
+    return (
+      <div className="flex w-full justify-end gap-2">
+        <div className="flex max-w-[85%] flex-col items-end gap-1">
+          <div className="whitespace-pre-wrap rounded-bubble rounded-br-md bg-pine-primary px-3.5 py-2.5 text-body-sm leading-5 text-white shadow-soft">
             {message.content}
           </div>
-        ) : (
-          <div className={assistantBubbleClass}>
-            <AssistantMarkdown content={message.content} />
-          </div>
-        )}
-        {isUser ? (
           <div className="flex items-center justify-end gap-1 px-1">
             <span className="text-caption text-muted">
               {formatTime(message.createdAt)}
@@ -433,8 +501,17 @@ export function MessageBubble({
               />
             </svg>
           </div>
-        ) : null}
+        </div>
+        <ChatAvatar role="user" className="mb-5" />
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <AssistantText
+      content={message.content}
+      createdAt={message.createdAt}
+      reveal={textReveal}
+    />
   );
 }

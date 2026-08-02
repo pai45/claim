@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import {
-  POLICY_CATEGORIES,
+  EMPLOYER_BENEFITS_CATALOG,
+  getEmployerBenefit,
   type PolicyTabId,
 } from "@/features/policy/constants";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
@@ -26,19 +27,17 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
   const activeTabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     activeTabRef.current?.scrollIntoView({
-      behavior: "smooth",
+      behavior: reduceMotion ? "auto" : "smooth",
       inline: "center",
       block: "nearest",
     });
   }, [activeTab]);
 
-  const policy = useMemo(
-    () =>
-      POLICY_CATEGORIES.find((item) => item.id === activeTab) ??
-      POLICY_CATEGORIES[0],
-    [activeTab],
-  );
+  const policy = useMemo(() => getEmployerBenefit(activeTab), [activeTab]);
 
   const coveredLeft = policy.covered?.slice(0, 3) ?? [];
   const coveredRight = policy.covered?.slice(3) ?? [];
@@ -67,7 +66,7 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
           ref={tabsScrollerRef}
           className="flex w-full min-w-0 snap-x snap-mandatory touch-pan-x overflow-x-auto overscroll-x-contain border-b border-border-tab bg-surface px-2 pt-5 pb-0 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {POLICY_CATEGORIES.map((item) => {
+          {EMPLOYER_BENEFITS_CATALOG.benefits.map((item) => {
             const active = item.id === activeTab;
             return (
               <button
@@ -154,6 +153,17 @@ export function PolicyDetailScreen({ initialTab }: PolicyDetailScreenProps) {
                 ) : null}
               </div>
             ))}
+          </div>
+          <div className="rounded-control border border-input-border bg-surface-tint px-3 py-2.5">
+            <p className="text-body-sm font-bold text-pine">
+              {policy.taxTreatment.label}
+            </p>
+            <p className="mt-1 type-body-secondary">
+              {policy.taxTreatment.summary} {policy.taxTreatment.qualifier}
+            </p>
+            <p className="mt-1 text-caption text-ink-secondary">
+              {policy.taxTreatment.disclaimer} Policy version {EMPLOYER_BENEFITS_CATALOG.policyVersion}.
+            </p>
           </div>
         </section>
 
