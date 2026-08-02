@@ -1,4 +1,5 @@
 import type { BillExtract } from "@/features/chat/types";
+import { colors } from "@/lib/ui/colors";
 
 type ClaimReceiptCardProps = {
   claimId: string;
@@ -9,7 +10,7 @@ type ClaimReceiptCardProps = {
 function CheckIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="9" cy="9" r="9" fill="#279E6C" />
+      <circle cx="9" cy="9" r="9" fill={colors.success} />
       <path
         d="M5.5 9.2 7.6 11.2 12.5 6.5"
         stroke="white"
@@ -32,14 +33,14 @@ function ReceiptRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
-      <span className="shrink-0 font-sans text-[11px] font-medium text-[#768783]">
+      <span className="shrink-0 text-caption text-ink-secondary">
         {label}
       </span>
       <span
-        className={`truncate text-right font-sans ${
+        className={`truncate text-right ${
           emphasize
-            ? "text-base font-bold text-pine"
-            : "text-sm font-bold text-pine"
+            ? "text-body font-bold text-pine"
+            : "text-body-sm font-bold text-pine"
         }`}
       >
         {value}
@@ -71,30 +72,30 @@ export function ClaimReceiptCard({
   const invoiceNo = extract.invoiceNo || "";
 
   return (
-    <div className="w-full max-w-[340px] overflow-hidden rounded-[18px] rounded-tl border border-[#E6ECE8] bg-white">
-      <div className="flex items-center justify-between gap-3 bg-[#F3FCF6] px-4 py-3">
+    <div className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
+      <div className="flex items-center justify-between gap-3 bg-success-soft px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <CheckIcon />
           <div className="flex min-w-0 flex-col">
-            <span className="font-sans text-xs font-bold uppercase tracking-[0.3px] text-[#279E6C]">
+            <span className="text-caption font-bold uppercase tracking-[0.3px] text-success">
               Claim submitted
             </span>
-            <span className="truncate font-sans text-sm font-bold text-pine">
+            <span className="truncate text-body-sm font-bold text-pine">
               {claimId}
             </span>
           </div>
         </div>
-        <span className="shrink-0 rounded-full border border-[#D1F3DF] bg-white px-2 py-0.5 font-sans text-[11px] font-medium text-[#279E6C]">
+        <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
           Submitted
         </span>
       </div>
 
       <div className="flex flex-col gap-3 px-4 py-4">
         <div className="flex flex-col gap-0.5">
-          <p className="truncate font-sans text-base font-bold text-pine">
+          <p className="truncate text-body font-bold text-pine">
             {vendor}
           </p>
-          <p className="truncate font-sans text-xs font-medium text-[#768783]">
+          <p className="truncate type-body-secondary">
             {category}
           </p>
         </div>
@@ -103,7 +104,7 @@ export function ClaimReceiptCard({
           className="h-px w-full"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(90deg, #DCE7E3 0 6px, transparent 6px 10px)",
+              "repeating-linear-gradient(90deg, var(--color-input-border) 0 6px, transparent 6px 10px)",
           }}
         />
 

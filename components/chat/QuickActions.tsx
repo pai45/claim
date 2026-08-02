@@ -30,7 +30,7 @@ function QuickActionButton({
         disabled={disabled}
         onClick={() => onSelect(action)}
         style={style}
-        className="animate-rise-in relative overflow-hidden rounded-tl rounded-tr-[20px] rounded-br-[20px] rounded-bl-[20px] px-4 py-2.5 disabled:opacity-60"
+        className="animate-rise-in relative overflow-hidden rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble px-4 py-2.5 disabled:opacity-60"
       >
         <span
           aria-hidden="true"
@@ -38,9 +38,9 @@ function QuickActionButton({
         />
         <span
           aria-hidden="true"
-          className="absolute inset-[1.5px] rounded-tl rounded-tr-[18.5px] rounded-br-[18.5px] rounded-bl-[18.5px] bg-white"
+          className="absolute inset-[1.5px] rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble bg-white"
         />
-        <span className="relative font-sans text-sm font-bold text-pine">
+        <span className="relative text-body-sm font-bold text-pine">
           {action.label}
         </span>
       </button>
@@ -53,7 +53,7 @@ function QuickActionButton({
       disabled={disabled}
       onClick={() => onSelect(action)}
       style={style}
-      className="animate-rise-in rounded-tl rounded-tr-[20px] rounded-br-[20px] rounded-bl-[20px] border border-input-border bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-60"
+      className="animate-rise-in rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-60"
     >
       {action.label}
     </button>

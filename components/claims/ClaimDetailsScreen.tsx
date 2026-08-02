@@ -1,10 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { AppShell } from "@/components/shared/AppShell";
 import {
   getClaimDetails,
   type ClaimProgressStep,
 } from "@/features/claims/constants";
+import { colors } from "@/lib/ui/colors";
 
 type ClaimDetailsScreenProps = {
   claimId: string;
@@ -15,10 +17,10 @@ function DocumentIcon() {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"
-        stroke="#252B37"
+        stroke={colors.ink}
         strokeWidth="1.5"
       />
-      <path d="M14 3v4h4" stroke="#252B37" strokeWidth="1.5" />
+      <path d="M14 3v4h4" stroke={colors.ink} strokeWidth="1.5" />
     </svg>
   );
 }
@@ -26,7 +28,7 @@ function DocumentIcon() {
 function CheckCircleIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" fill="#005656" />
+      <circle cx="12" cy="12" r="10" fill={colors.pinePrimary} />
       <path
         d="M8 12.2 10.6 14.7 16 9.5"
         stroke="white"
@@ -41,10 +43,10 @@ function CheckCircleIcon() {
 function UpcomingCircleIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9.25" stroke="#DFE5E2" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="9.25" stroke={colors.borderMuted} strokeWidth="1.5" />
       <path
         d="M12 8v4.2l2.4 1.4"
-        stroke="#DFE5E2"
+        stroke={colors.borderMuted}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -55,11 +57,9 @@ function UpcomingCircleIcon() {
 
 function DetailField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-1 flex-col gap-1 rounded-xl border border-[#EDF1EF] bg-white p-3">
-      <span className="font-sans text-[10px] font-bold uppercase tracking-[0.2px] text-[#667A74]">
-        {label}
-      </span>
-      <span className="font-sans text-sm font-bold text-[#132D27]">{value}</span>
+    <div className="flex flex-1 flex-col gap-1 rounded-control border border-border-soft bg-white p-3">
+      <span className="type-field-label">{label}</span>
+      <span className="text-body-sm font-bold text-ink">{value}</span>
     </div>
   );
 }
@@ -75,27 +75,27 @@ function ProgressRow({
 
   return (
     <div className="flex w-full items-start gap-4">
-      <div className="flex min-h-[56px] w-6 flex-col items-center">
+      <div className="flex min-h-14 w-6 flex-col items-center">
         {done ? <CheckCircleIcon /> : <UpcomingCircleIcon />}
         {!isLast ? (
           done ? (
-            <div className="mt-1 w-0.5 flex-1 bg-[#DFE5E2]" />
+            <div className="mt-1 w-0.5 flex-1 bg-border-muted" />
           ) : (
-            <div className="mt-1 w-0 flex-1 border-l-2 border-dashed border-[#DFE5E2]" />
+            <div className="mt-1 w-0 flex-1 border-l-2 border-dashed border-border-muted" />
           )
         ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-0.5 pb-5">
         <p
-          className={`font-sans text-sm font-bold ${
-            done ? "text-[#132D27]" : "text-[#667A74]"
+          className={`text-body-sm font-bold ${
+            done ? "text-ink" : "text-ink-secondary"
           }`}
         >
           {step.title}
         </p>
         <p
-          className={`font-sans text-xs ${
-            done ? "text-[#667A74]" : "text-[#8D92A3]"
+          className={`text-caption ${
+            done ? "text-ink-secondary" : "text-ink-tertiary"
           }`}
         >
           {step.detail}
@@ -110,51 +110,45 @@ export function ClaimDetailsScreen({ claimId }: ClaimDetailsScreenProps) {
   const claim = getClaimDetails(claimId);
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-[#F8FAF8] shadow-[0_0_40px_rgba(0,42,25,0.08)]">
-      <header className="flex items-center gap-4 bg-white px-4 pb-4 pt-2">
+    <AppShell className="overflow-hidden">
+      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
         <button
           type="button"
           aria-label="Go back"
           onClick={() => router.back()}
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-[4px_4px_12px_rgba(0,42,25,0.08)]"
+          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M14.5 6.5L9 12l5.5 5.5"
-              stroke="#1E1F24"
+              stroke={colors.ink}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
         </button>
-        <h1 className="flex-1 truncate font-sans text-xl font-bold text-pine">
-          Claim details
-        </h1>
+        <h1 className="type-screen-title flex-1 truncate">Claim details</h1>
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-8 pt-4">
-        <section className="flex flex-col gap-4 rounded-3xl border border-[#E5ECE8] bg-white p-4">
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-8 pt-4">
+        <section className="flex flex-col gap-4 rounded-bubble border border-border-line bg-white p-card">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#EAF3F0]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-surface-tint">
                 <DocumentIcon />
               </div>
               <div className="flex min-w-0 flex-col gap-0.5">
-                <p className="font-sans text-base font-bold text-[#132D27]">
-                  {claim.id}
-                </p>
-                <p className="truncate font-sans text-sm text-[#667A74]">
-                  {claim.vendor}
-                </p>
+                <p className="type-body font-bold text-ink">{claim.id}</p>
+                <p className="type-body-secondary truncate">{claim.vendor}</p>
               </div>
             </div>
-            <span className="shrink-0 rounded-full border border-[#D1F3DF] bg-[#F3FCF6] px-2 py-0.5 font-sans text-xs font-medium leading-4 text-[#279E6C]">
+            <span className="shrink-0 rounded-full border border-success-border bg-success-soft px-2 py-0.5 text-caption font-normal leading-4 text-success">
               {claim.status}
             </span>
           </div>
 
-          <div className="h-px w-full bg-[#EDF1EF]" />
+          <div className="h-px w-full bg-border-soft" />
 
           <div className="flex flex-col gap-2">
             <div className="flex gap-2">
@@ -169,10 +163,8 @@ export function ClaimDetailsScreen({ claimId }: ClaimDetailsScreenProps) {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-[19px] font-semibold text-[#003434]">
-            Claim Progress
-          </h2>
-          <div className="flex flex-col gap-2 rounded-3xl border border-[#EDF1EF] bg-white p-4">
+          <h2 className="type-section-title">Claim Progress</h2>
+          <div className="flex flex-col gap-2 rounded-bubble border border-border-soft bg-white p-card">
             <div className="flex flex-col py-2">
               {claim.progress.map((step, index) => (
                 <ProgressRow
@@ -182,27 +174,20 @@ export function ClaimDetailsScreen({ claimId }: ClaimDetailsScreenProps) {
                 />
               ))}
             </div>
-            <p className="pt-2 font-sans text-[13px] font-bold text-[#667A74]">
-              {claim.notifyNote}
-            </p>
+            <p className="type-body-secondary pt-2 font-bold">{claim.notifyNote}</p>
           </div>
         </section>
 
         <section className="flex flex-col gap-3 pt-4">
-          <button
-            type="button"
-            className="flex h-[51px] w-full items-center justify-center rounded-lg bg-[#005656] px-5 font-sans text-base font-bold text-white"
-          >
+          <button type="button" className="btn-primary">
             Contact Support
           </button>
-          <button
-            type="button"
-            className="flex h-[51px] w-full items-center justify-center rounded-lg border border-[#005656] bg-white px-5 font-sans text-base font-bold text-[#1E4E45]"
-          >
+          <button type="button" className="btn-secondary">
             Download Receipt
           </button>
         </section>
       </main>
-    </div>
+    </AppShell>
   );
 }
+

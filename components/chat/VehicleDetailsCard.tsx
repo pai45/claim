@@ -9,6 +9,7 @@ import {
   vehicleImageUrl,
 } from "@/lib/vehicle/roster";
 import type { VehicleLookup } from "@/lib/vehicle/types";
+import { colors } from "@/lib/ui/colors";
 
 type VehicleDetailsCardProps = {
   messageId: string;
@@ -22,18 +23,18 @@ function CarIcon() {
     <svg width="28" height="28" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <path
         d="M3 12.5h14M4.5 12.5V15a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5v-2.5m13 0V15a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-2.5"
-        stroke="#8A9D99"
+        stroke={colors.muted}
         strokeWidth="1.4"
         strokeLinecap="round"
       />
       <path
         d="M3 12.5 4.2 8a1.5 1.5 0 0 1 1.45-1.1h8.7A1.5 1.5 0 0 1 15.8 8L17 12.5"
-        stroke="#8A9D99"
+        stroke={colors.muted}
         strokeWidth="1.4"
         strokeLinejoin="round"
       />
-      <circle cx="6" cy="10.6" r="0.9" fill="#8A9D99" />
-      <circle cx="14" cy="10.6" r="0.9" fill="#8A9D99" />
+      <circle cx="6" cy="10.6" r="0.9" fill={colors.muted} />
+      <circle cx="14" cy="10.6" r="0.9" fill={colors.muted} />
     </svg>
   );
 }
@@ -42,10 +43,8 @@ function Row({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
-      <span className="shrink-0 font-sans text-[10px] font-bold uppercase tracking-wide text-[#768783]">
-        {label}
-      </span>
-      <span className="truncate text-right font-sans text-sm font-bold text-pine">
+      <span className="type-field-label shrink-0">{label}</span>
+      <span className="truncate text-right text-body-sm font-bold text-pine">
         {value}
       </span>
     </div>
@@ -64,8 +63,8 @@ export function VehicleDetailsCard({
 
   if (payload.error) {
     return (
-      <div className="w-full max-w-[340px] rounded-[18px] rounded-tl border border-[#E6ECE8] bg-white p-4">
-        <p className="font-sans text-sm text-body">{payload.error}</p>
+      <div className="w-full max-w-card rounded-bubble rounded-tl border border-border-line bg-white p-card">
+        <p className="type-body">{payload.error}</p>
       </div>
     );
   }
@@ -77,11 +76,11 @@ export function VehicleDetailsCard({
   const name = vehicleDisplayName(profile);
 
   return (
-    <div className="flex w-full max-w-[340px] flex-col gap-4">
-      <div className="flex flex-col gap-3 rounded-[18px] rounded-tl border border-[#E6ECE8] bg-white p-4">
+    <div className="flex w-full max-w-card flex-col gap-4">
+      <div className="flex flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card">
         {/* Commons photos vary wildly in aspect ratio, so the frame is fixed
             and the image is cropped into it rather than letterboxed. */}
-        <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-xl bg-[#F3F7F5]">
+        <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-control bg-input">
           {imageFailed ? (
             <CarIcon />
           ) : (
@@ -97,13 +96,13 @@ export function VehicleDetailsCard({
         </div>
 
         <div className="flex flex-col gap-0.5">
-          <h3 className="font-sans text-base font-bold text-pine">{name}</h3>
-          <p className="font-sans text-xs font-medium tracking-wide text-[#768783]">
+          <h3 className="text-body font-bold text-pine">{name}</h3>
+          <p className="type-body-secondary tracking-wide">
             {lookup.regNumber.formatted}
           </p>
         </div>
 
-        <div className="divide-y divide-[#EDF2EE] rounded-xl border border-[#EDF2EE] px-3 py-1">
+        <div className="divide-y divide-border-soft rounded-control border border-border-soft px-3 py-1">
           <Row label="Owner" value={lookup.ownerName} />
           <Row label="Engine" value={profile.engineType} />
           <Row
@@ -132,7 +131,7 @@ export function VehicleDetailsCard({
         {/* Attribution is a licence condition on every roster image, not a
             courtesy — CC BY and CC BY-SA both require author and licence. */}
         {imageFailed ? null : (
-          <p className="font-sans text-[10px] leading-3 text-[#768783]">
+          <p className="text-caption leading-3 text-ink-secondary">
             Photo:{" "}
             <a
               href={vehicleImagePageUrl(profile)}
@@ -161,7 +160,7 @@ export function VehicleDetailsCard({
           type="button"
           disabled={disabled || payload.submitted}
           onClick={() => onSubmitToHr?.(messageId, lookup)}
-          className="rounded-full bg-pine-primary px-4 py-2.5 font-sans text-sm font-bold text-white disabled:opacity-50"
+          className="rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
         >
           {payload.submitted ? "Submitted to HR" : "Submit to HR"}
         </button>

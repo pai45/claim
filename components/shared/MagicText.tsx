@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties, ElementType } from "react";
+import { colors } from "@/lib/ui/colors";
 
 type MagicTextProps = {
   text: string;
@@ -10,7 +11,7 @@ type MagicTextProps = {
   delayMs?: number;
   stepMs?: number;
   shimmer?: boolean;
-  /** Base text color used by the shimmer gradient. */
+  /** Final text color used by the magic shimmer reveal. */
   shimmerBase?: string;
 };
 
@@ -22,44 +23,36 @@ export function MagicText({
   delayMs = 0,
   stepMs = mode === "words" ? 55 : 28,
   shimmer = false,
-  shimmerBase,
+  shimmerBase = colors.pinePrimary,
 }: MagicTextProps) {
-  const units =
-    mode === "words" ? text.split(/(\s+)/) : Array.from(text);
-
+  const units = mode === "words" ? text.split(/(\s+)/) : Array.from(text);
   const Component = Tag as ElementType;
-  const unitCount = units.filter((unit) =>
-    mode === "words" ? !/^\s+$/.test(unit) : true,
-  ).length;
-  const shimmerStyle = {
-    ...(shimmerBase ? { "--magic-base": shimmerBase } : null),
-    ...(shimmer
-      ? {
-          "--magic-shimmer-delay": `${delayMs + Math.max(unitCount - 1, 0) * stepMs * 0.55}ms`,
-        }
-      : null),
-  } as CSSProperties;
 
   return (
     <Component className={className}>
       <span className="sr-only">{text}</span>
-      <span
-        aria-hidden="true"
-        className={shimmer ? "magic-text-shimmer" : undefined}
-        style={shimmer ? shimmerStyle : undefined}
-      >
+      <span aria-hidden="true">
         {units.map((unit, index) => {
           if (mode === "words" && /^\s+$/.test(unit)) {
             return <span key={`space-${index}`}>{unit}</span>;
           }
 
+          const style = {
+            "--magic-unit-delay": `${delayMs + index * stepMs}ms`,
+            ...(shimmer && shimmerBase
+              ? { "--magic-base": shimmerBase }
+              : null),
+          } as CSSProperties;
+
           return (
             <span
               key={`${unit}-${index}`}
-              className="magic-text-unit"
-              style={{
-                animationDelay: `${delayMs + index * stepMs}ms`,
-              }}
+              className={
+                shimmer
+                  ? "magic-text-unit magic-text-shimmer"
+                  : "magic-text-unit"
+              }
+              style={style}
             >
               {unit === " " ? "\u00A0" : unit}
             </span>

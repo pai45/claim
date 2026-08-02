@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
+import { AppShell } from "@/components/shared/AppShell";
 import {
   AVAILABLE_LIMIT,
   DASHBOARD_CATEGORIES,
@@ -11,6 +12,7 @@ import {
   UTILIZED_AMOUNT,
   formatINR,
 } from "@/features/dashboard/constants";
+import { colors } from "@/lib/ui/colors";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 function ChevronRight() {
@@ -18,7 +20,7 @@ function ChevronRight() {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M9.5 6.5 15 12l-5.5 5.5"
-        stroke="#005656"
+        stroke={colors.pinePrimary}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -32,13 +34,13 @@ export function ClaimsDashboardScreen() {
   const utilizedPercent = Math.min(100, (UTILIZED_AMOUNT / FY_LIMIT) * 100);
 
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-[#F8FAF8] shadow-[0_0_40px_rgba(0,42,25,0.08)]">
-      <header className="flex items-center gap-4 bg-white px-4 pb-4 pt-2">
+    <AppShell className="overflow-hidden">
+      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
         <button
           type="button"
           aria-label="Go back"
           onClick={() => router.push("/")}
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-[4px_4px_12px_rgba(0,42,25,0.08)]"
+          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
         >
           <svg
             width="24"
@@ -49,50 +51,44 @@ export function ClaimsDashboardScreen() {
           >
             <path
               d="M14.5 6.5L9 12l5.5 5.5"
-              stroke="#1E1F24"
+              stroke={colors.ink}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
           </svg>
         </button>
-        <h1 className="flex-1 truncate font-sans text-xl font-bold text-pine">
-          Claims Dashboard
-        </h1>
+        <h1 className="type-screen-title flex-1 truncate">Claims Dashboard</h1>
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-24 pt-8">
-        <section className="animate-rise-in flex flex-col gap-5 rounded-2xl border border-[#36D7A6] bg-gradient-to-b from-[#FAFFF9] to-[#E8F2EE] p-5 shadow-[2px_3px_4px_rgba(0,0,0,0.04)]">
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-24 pt-8">
+        <section className="animate-rise-in flex flex-col gap-5 rounded-card border border-mint bg-gradient-to-b from-white to-surface-tint-strong p-card shadow-soft">
           <div className="flex flex-col gap-3">
-            <p className="text-center font-sans text-xs font-bold leading-4 tracking-wide text-[#595E70]">
-              AVAILABLE LIMIT
-            </p>
-            <p className="font-sans text-[32px] font-bold leading-8 text-[#003434]">
-              {formatINR(AVAILABLE_LIMIT)}
-            </p>
+            <p className="type-field-label text-center tracking-wide">AVAILABLE LIMIT</p>
+            <p className="type-amount">{formatINR(AVAILABLE_LIMIT)}</p>
           </div>
 
           <div className="flex w-full flex-col gap-3">
-            <div className="h-2 w-full overflow-hidden rounded bg-[#DCE8E4]">
+            <div className="h-2 w-full overflow-hidden rounded bg-border-muted">
               <div
-                className="h-full rounded bg-[#2D6A4F]"
+                className="h-full rounded bg-success"
                 style={{ width: `${utilizedPercent}%` }}
               />
             </div>
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
-                <span className="font-sans text-xs text-[#566B66]">
+                <span className="text-caption text-ink-secondary">
                   Utilized for {FY_LABEL}:
                 </span>
-                <span className="font-sans text-sm font-bold text-[#0F2C25]">
+                <span className="text-body-sm font-bold text-ink">
                   {formatINR(UTILIZED_AMOUNT)}
                 </span>
               </div>
               <div className="flex flex-col items-end gap-0.5">
-                <span className="font-sans text-xs text-[#566B66]">
+                <span className="text-caption text-ink-secondary">
                   Limit for {FY_LABEL}:
                 </span>
-                <span className="font-sans text-sm font-bold text-[#2D6A4F]">
+                <span className="text-body-sm font-bold text-success">
                   {formatINR(FY_LIMIT)}
                 </span>
               </div>
@@ -100,7 +96,7 @@ export function ClaimsDashboardScreen() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-black/5 bg-white">
+        <section className="overflow-hidden rounded-card border border-border-line bg-white">
           {DASHBOARD_CATEGORIES.map((category, index) => {
             const isLast = index === DASHBOARD_CATEGORIES.length - 1;
 
@@ -109,23 +105,19 @@ export function ClaimsDashboardScreen() {
                 key={category.id}
                 href={`/dashboard/${category.id}/`}
                 style={staggerStyle(index + 1)}
-                className={`animate-rise-in flex w-full items-center gap-3 px-4 py-4 ${
-                  !isLast ? "border-b border-black/5" : ""
+                className={`animate-rise-in flex w-full items-center gap-3 px-page py-4 ${
+                  !isLast ? "border-b border-border-line" : ""
                 }`}
               >
                 <div
-                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control"
                   style={{ background: category.iconBg }}
                 >
                   <CategoryIcon icon={category.icon} color={category.iconColor} />
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="font-sans text-[15px] font-semibold leading-5 text-[#1E1F24]">
-                    {category.name}
-                  </span>
-                  <span className="font-sans text-base font-medium text-[#595E70]">
-                    {formatINR(category.amount)}
-                  </span>
+                  <span className="type-body font-bold">{category.name}</span>
+                  <span className="type-body-secondary font-bold">{formatINR(category.amount)}</span>
                 </div>
                 <ChevronRight />
               </Link>
@@ -133,6 +125,7 @@ export function ClaimsDashboardScreen() {
           })}
         </section>
       </main>
-    </div>
+    </AppShell>
   );
 }
+

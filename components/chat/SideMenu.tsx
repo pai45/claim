@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
+import { colors } from "@/lib/ui/colors";
 
 type SideMenuProps = {
   open: boolean;
@@ -31,7 +32,7 @@ function DashboardIcon() {
         width="6.67"
         height="6.67"
         rx="2"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
       />
       <rect
@@ -40,7 +41,7 @@ function DashboardIcon() {
         width="6.67"
         height="6.67"
         rx="2"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
       />
       <rect
@@ -49,7 +50,7 @@ function DashboardIcon() {
         width="6.67"
         height="6.67"
         rx="2"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
       />
       <rect
@@ -58,7 +59,7 @@ function DashboardIcon() {
         width="6.67"
         height="6.67"
         rx="2"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
       />
     </svg>
@@ -70,15 +71,15 @@ function PolicyIcon() {
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
       <path
         d="M2.5 6.5c0-1.2.9-2.2 2.1-2.2h8.8c1.2 0 2.1 1 2.1 2.2v7.1c0 1.2-.9 2.2-2.1 2.2H4.6c-1.2 0-2.1-1-2.1-2.2V6.5z"
-        stroke="#005656"
+        stroke={colors.pinePrimary}
         strokeWidth="1.25"
       />
       <path
         d="M13.5 7.5h2.2c.7 0 1.3.6 1.3 1.3v.7c0 .7-.6 1.3-1.3 1.3H13.5"
-        stroke="#005656"
+        stroke={colors.pinePrimary}
         strokeWidth="1.25"
       />
-      <circle cx="15" cy="9.8" r="0.85" fill="#005656" />
+      <circle cx="15" cy="9.8" r="0.85" fill={colors.pinePrimary} />
     </svg>
   );
 }
@@ -86,10 +87,10 @@ function PolicyIcon() {
 function HistoryIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.5" stroke="#003434" strokeWidth="1.5" />
+      <circle cx="10" cy="10" r="7.5" stroke={colors.pineDark} strokeWidth="1.5" />
       <path
         d="M10 6.7V10l3.3 1.7"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -138,7 +139,7 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 mx-auto max-w-[402px] ${
+      className={`fixed inset-0 z-50 mx-auto max-w-phone overflow-hidden ${
         open ? "pointer-events-auto" : "pointer-events-none"
       }`}
       aria-hidden={!open}
@@ -153,13 +154,13 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
       />
 
       <nav
-        className={`absolute right-0 top-0 flex h-full w-[300px] flex-col bg-[#F1F1F1] shadow-[-8px_0_24px_rgba(0,42,25,0.12)] transition-transform duration-200 ease-out ${
+        className={`absolute right-0 top-0 flex h-full w-[300px] flex-col bg-bg shadow-menu transition-transform duration-200 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         aria-label="Main menu"
       >
         <div className="flex items-center justify-between px-5 py-5">
-          <h2 className="font-display text-lg font-bold text-pine">Menu</h2>
+          <h2 className="type-screen-title">Menu</h2>
           <button
             type="button"
             aria-label="Close menu"
@@ -169,7 +170,7 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path
                 d="M4 4l8 8M12 4l-8 8"
-                stroke="#0F3F37"
+                stroke={colors.pine}
                 strokeWidth="1.6"
                 strokeLinecap="round"
               />
@@ -183,12 +184,12 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
               <Link
                 href={item.href}
                 onClick={onClose}
-                className="flex w-full items-center gap-2 rounded-xl border border-[#DFE5E2] bg-white px-3.5 py-3"
+                className="flex w-full items-center gap-2 rounded-control border border-border-muted bg-white px-3.5 py-3"
               >
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                   {item.icon}
                 </span>
-                <span className="font-sans text-base font-semibold text-[#114B4F]">
+                <span className="text-body font-bold text-cta-ink">
                   {item.label}
                 </span>
               </Link>
@@ -203,12 +204,12 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
               onNewChat();
               onClose();
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#005656] px-3.5 py-3 text-white shadow-[0_6px_16px_rgba(0,86,86,0.18)] transition-colors hover:bg-[#004646] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#005656] focus-visible:ring-offset-2"
+            className="flex w-full items-center justify-center gap-2 rounded-control bg-pine-primary px-3.5 py-3 text-white shadow-cta transition-colors hover:bg-pine-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pine-primary focus-visible:ring-offset-2"
           >
             <span className="flex h-5 w-5 shrink-0 items-center justify-center">
               <NewChatIcon />
             </span>
-            <span className="font-sans text-base font-semibold">New chat</span>
+            <span className="text-body font-bold">New chat</span>
           </button>
         </div>
       </nav>

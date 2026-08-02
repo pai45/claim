@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { colors } from "@/lib/ui/colors";
 import { SideMenu } from "./SideMenu";
 
 type ChatHeaderProps = {
@@ -13,13 +14,13 @@ export function ChatHeader({ onNewChat }: ChatHeaderProps) {
   return (
     <>
       <header
-        className="animate-rise-in flex items-center gap-4 px-4 pb-4 pt-2"
+        className="animate-rise-in flex items-center gap-4 px-page pb-4 pt-2"
         style={{ animationDelay: "0ms" }}
       >
         <button
           type="button"
           aria-label="Go back"
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-[4px_4px_12px_rgba(0,42,25,0.08)]"
+          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
         >
           <svg
             width="24"
@@ -30,7 +31,7 @@ export function ChatHeader({ onNewChat }: ChatHeaderProps) {
           >
             <path
               d="M14.5 6.5L9 12l5.5 5.5"
-              stroke="#1E1F24"
+              stroke={colors.ink}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -39,9 +40,7 @@ export function ChatHeader({ onNewChat }: ChatHeaderProps) {
         </button>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <h1 className="truncate font-display text-xl font-bold text-pine">
-            Claims Assistant
-          </h1>
+          <h1 className="type-screen-title truncate">Claims Assistant</h1>
         </div>
 
         <button
@@ -49,7 +48,7 @@ export function ChatHeader({ onNewChat }: ChatHeaderProps) {
           aria-label="Open menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(true)}
-          className="flex h-6 w-6 items-center justify-center"
+          className="flex h-6 w-6 items-center justify-center text-pine"
         >
           <svg
             width="24"
@@ -60,7 +59,7 @@ export function ChatHeader({ onNewChat }: ChatHeaderProps) {
           >
             <path
               d="M4 7h16M4 12h16M4 17h16"
-              stroke="#0F3F37"
+              stroke="currentColor"
               strokeWidth="1.8"
               strokeLinecap="round"
             />

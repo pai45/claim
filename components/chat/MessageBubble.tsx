@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { colors } from "@/lib/ui/colors";
 import type { BenefitType } from "@/lib/merchants/types";
 import type {
   BillExtract,
@@ -26,10 +27,10 @@ import { VehicleDetailsCard } from "./VehicleDetailsCard";
 import { VehicleNumberInputCard } from "./VehicleNumberInputCard";
 
 const assistantBubbleClass =
-  "max-w-[85%] rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 shadow-[2px_2px_8px_rgba(0,42,25,0.06)]";
+  "max-w-[85%] rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 shadow-soft";
 
 const pillClass =
-  "rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine";
+  "rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
 
 function AssistantText({ content }: { content: string }) {
   return (
@@ -396,7 +397,7 @@ export function MessageBubble({
     <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       <div className="flex max-w-[85%] flex-col gap-1">
         {isUser ? (
-          <div className="whitespace-pre-wrap rounded-2xl rounded-br-md bg-pine-primary px-3.5 py-2.5 font-sans text-sm leading-5 text-white">
+          <div className="whitespace-pre-wrap rounded-bubble rounded-br-md bg-pine-primary px-3.5 py-2.5 text-body-sm leading-5 text-white">
             {message.content}
           </div>
         ) : (
@@ -406,7 +407,7 @@ export function MessageBubble({
         )}
         {isUser ? (
           <div className="flex items-center justify-end gap-1 px-1">
-            <span className="font-sans text-[10px] text-muted">
+            <span className="text-caption text-muted">
               {formatTime(message.createdAt)}
             </span>
             <svg
@@ -418,14 +419,14 @@ export function MessageBubble({
             >
               <path
                 d="M1.5 6.5 3.5 8.5 7 4.5"
-                stroke="#8A9D99"
+                stroke={colors.muted}
                 strokeWidth="1.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
               <path
                 d="M4.5 6.5 6.5 8.5 10 4.5"
-                stroke="#8A9D99"
+                stroke={colors.muted}
                 strokeWidth="1.2"
                 strokeLinecap="round"
                 strokeLinejoin="round"

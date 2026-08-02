@@ -118,7 +118,7 @@ export function MessageList({
       {isLoading ? (
         policyModelStatus ? (
           <div className="animate-rise-in flex justify-start">
-            <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+            <div className="rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 text-body-sm text-muted shadow-soft">
               {policyModelStatus.progress !== undefined
                 ? `Loading server AI (first run downloads about 570 MB)… ${policyModelStatus.progress}%`
                 : "Asking the server AI…"}
@@ -132,14 +132,14 @@ export function MessageList({
       ) : null}
       {isScanning ? (
         <div className="animate-rise-in flex justify-start">
-          <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+          <div className="rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 text-body-sm text-muted shadow-soft">
             Reading document with OCR…
           </div>
         </div>
       ) : null}
       {isLocating ? (
         <div className="animate-rise-in flex justify-start">
-          <div className="rounded-2xl rounded-bl-md bg-white px-3.5 py-2.5 font-sans text-sm text-muted shadow-[2px_2px_8px_rgba(0,42,25,0.06)]">
+          <div className="rounded-bubble rounded-bl-md bg-white px-3.5 py-2.5 text-body-sm text-muted shadow-soft">
             Finding merchants…
           </div>
         </div>

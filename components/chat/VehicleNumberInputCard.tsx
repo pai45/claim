@@ -39,11 +39,11 @@ export function VehicleNumberInputCard({
   }
 
   return (
-    <div className="w-full max-w-[340px] rounded-2xl border border-input-border bg-white p-4 shadow-[2px_2px_10px_rgba(0,42,25,0.05)]">
-      <h3 className="font-display text-base font-bold text-pine">
+    <div className="w-full max-w-card rounded-card border border-input-border bg-white p-card shadow-card">
+      <h3 className="type-section-title text-pine">
         Vehicle number
       </h3>
-      <p className="mt-0.5 font-sans text-xs text-subtle">
+      <p className="mt-0.5 type-body-secondary text-subtle">
         Enter the number on your number plate
       </p>
 
@@ -61,16 +61,16 @@ export function VehicleNumberInputCard({
           disabled={disabled}
           aria-invalid={showError}
           aria-describedby="vehicle-number-hint"
-          className="w-full rounded-xl border border-input-border bg-[#F8FBFA] px-3 py-2.5 font-sans text-sm font-bold uppercase tracking-wider text-body outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-muted focus:border-pine disabled:opacity-50"
+          className="w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm font-bold uppercase tracking-wider text-body outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-muted focus:border-pine disabled:opacity-50"
         />
 
-        <p id="vehicle-number-hint" className="min-h-[16px] font-sans text-xs">
+        <p id="vehicle-number-hint" className="min-h-[16px] text-caption">
           {showError ? (
-            <span className="text-[#B3261E]">{parsed.message}</span>
+            <span className="text-danger">{parsed.message}</span>
           ) : location ? (
             <span className="text-subtle">
               Registered in{" "}
-              <span className="font-semibold text-pine">
+              <span className="font-bold text-pine">
                 {location.officeKnown
                   ? `${location.office}, ${location.stateName}`
                   : location.stateName}
@@ -82,7 +82,7 @@ export function VehicleNumberInputCard({
         <button
           type="submit"
           disabled={disabled || !parsed.ok}
-          className="rounded-xl bg-pine-primary px-3 py-2.5 font-sans text-sm font-semibold text-white disabled:opacity-50"
+          className="rounded-control bg-pine-primary px-3 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
         >
           Continue
         </button>

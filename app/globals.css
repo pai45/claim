@@ -1,21 +1,102 @@
 @import "tailwindcss";
 
+/*
+  Design system tokens (Tailwind v4 @theme)
+  Naming: --{type}-{role} → utilities like bg-surface, text-ink, p-page, rounded-card
+  Spacing: 4pt grid (4px base). Prefer spacing 1–12 (4–48px).
+*/
+
 @theme inline {
-  --color-bg: #f1f1f1;
+  /* —— Brand colors —— */
   --color-pine: #0f3f37;
   --color-pine-primary: #005656;
   --color-pine-dark: #003434;
   --color-mint: #36cc8b;
+
+  /* —— Surfaces —— */
+  --color-bg: #f1f1f1;
+  --color-surface: #f8faf8;
+  --color-surface-chat: #eef5f2;
+  --color-surface-muted: #e8ebe9;
+  --color-surface-tint: #eaf3f0;
+  --color-surface-tint-strong: #e8f2ee;
   --color-input: #f4f8f6;
-  --color-input-border: #dce7e3;
   --color-input-icon: #e9efea;
-  --color-muted: #8a9d99;
+  --color-input-soft: #f8fbfa;
+
+  /* —— Ink / text —— */
+  --color-ink: #1c2725;
+  --color-ink-secondary: #667a74;
+  --color-ink-tertiary: #8d92a3;
   --color-body: #1c2725;
+  --color-muted: #8a9d99;
   --color-subtle: #535862;
+  --color-placeholder: #829490;
+
+  /* —— Borders —— */
   --color-border-soft: #edf0ee;
+  --color-border-line: #e5ece8;
+  --color-border-muted: #dfe5e2;
+  --color-input-border: #dce7e3;
+  --color-border-tab: #d8dadf;
+
+  /* —— Status —— */
+  --color-success: #279e6c;
+  --color-success-soft: #f3fcf6;
+  --color-success-border: #d1f3df;
+  --color-success-tint: #e7f6ef;
+  --color-warning: #b25e00;
+  --color-warning-soft: #fffbeb;
+  --color-warning-border: #fef0c7;
+  --color-warning-tint: #fff8e8;
+  --color-warning-ink: #7a5a00;
+  --color-danger: #7a2e24;
+  --color-danger-soft: #f4e8e6;
+  --color-cta-ink: #1e4e45;
+
+  /* —— Typography scale (4pt-friendly) —— */
+  --text-caption: 12px;
+  --text-caption--line-height: 1.33;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 1.43;
+  --text-body: 16px;
+  --text-body--line-height: 1.5;
+  --text-title-sm: 18px;
+  --text-title-sm--line-height: 1.33;
+  --text-title: 20px;
+  --text-title--line-height: 1.4;
+  --text-display: 32px;
+  --text-display--line-height: 1.25;
+
+  /* —— Font families —— */
   --font-sans: var(--font-lato), "Lato", ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-pp-telegraf), "PP Telegraf", var(--font-lato),
     ui-sans-serif, system-ui, sans-serif;
+
+  /* —— Spacing (named layout on 4pt grid) —— */
+  --spacing-page: 16px;
+  --spacing-card: 16px;
+  --spacing-section: 24px;
+
+  /* —— Radius (4pt) —— */
+  --radius-card: 16px;
+  --radius-bubble: 20px;
+  --radius-pill: 32px;
+  --radius-control: 12px;
+
+  /* —— Layout —— */
+  --max-width-phone: 402px;
+  --max-width-card: 340px;
+
+  /* —— Shadows —— */
+  --shadow-phone: 0 0 40px rgba(0, 42, 25, 0.08);
+  --shadow-icon: 4px 4px 12px rgba(0, 42, 25, 0.08);
+  --shadow-card: 2px 2px 10px rgba(0, 42, 25, 0.05);
+  --shadow-soft: 2px 2px 8px rgba(0, 42, 25, 0.06);
+  --shadow-promo: 4px 4px 8px rgba(0, 42, 25, 0.04);
+  --shadow-drawer: 0 -8px 32px rgba(0, 42, 25, 0.12);
+  --shadow-menu: -8px 0 24px rgba(0, 42, 25, 0.12);
+  --shadow-cta: 0 6px 16px rgba(0, 86, 86, 0.18);
 }
 
 * {
@@ -27,7 +108,7 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: #e8ebe9;
+  background: var(--color-surface-muted);
   color: var(--color-pine);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -70,13 +151,114 @@ textarea {
   line-height: inherit;
 }
 
+/* —— Component type roles (repeating UI stays identical) —— */
+.type-screen-title {
+  font-family: var(--font-display);
+  font-size: var(--text-title);
+  line-height: var(--text-title--line-height);
+  font-weight: 700;
+  color: var(--color-pine);
+}
+
+.type-hero {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  font-weight: 700;
+  color: var(--color-pine-primary);
+}
+
+.type-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-title-sm);
+  line-height: var(--text-title-sm--line-height);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.type-body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  font-weight: 400;
+  color: var(--color-ink);
+}
+
+.type-body-secondary {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 400;
+  color: var(--color-ink-secondary);
+}
+
+.type-field-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  color: var(--color-ink-secondary);
+}
+
+.type-amount {
+  font-family: var(--font-display);
+  font-size: var(--text-display);
+  line-height: var(--text-display--line-height);
+  font-weight: 700;
+  color: var(--color-pine-dark);
+}
+
+.type-section-label {
+  font-family: var(--font-sans);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-ink-secondary);
+}
+
+.btn-primary {
+  display: flex;
+  height: 56px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  background: var(--color-pine-primary);
+  padding-left: 20px;
+  padding-right: 20px;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: #fff;
+}
+
+.btn-secondary {
+  display: flex;
+  height: 56px;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-pine-primary);
+  background: #fff;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  font-weight: 700;
+  color: var(--color-cta-ink);
+}
+
 /* Chat typing / thinking indicator */
 .typing-dot {
   display: block;
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 9999px;
-  background: #9aaba7;
+  background: var(--color-muted);
   animation: typing-bounce 1.2s ease-in-out infinite;
 }
 
@@ -142,54 +324,48 @@ textarea {
   animation: rise-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Magic text: char/word reveal + soft shimmer */
+/* Magic text: char/word reveal + mint flash */
 @keyframes magic-unit-in {
   from {
     opacity: 0;
-    filter: blur(7px);
-    transform: translateY(0.4em) scale(0.96);
+    transform: translateY(0.35em) scale(0.98);
   }
   to {
     opacity: 1;
-    filter: blur(0);
     transform: translateY(0) scale(1);
   }
 }
 
-@keyframes magic-shimmer {
-  0% {
-    background-position: 140% center;
+@keyframes magic-shimmer-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em) scale(0.98);
+    color: var(--color-mint);
   }
-  100% {
-    background-position: -40% center;
+  55% {
+    opacity: 1;
+    color: var(--color-mint);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    color: var(--magic-base, var(--color-pine-primary));
   }
 }
 
 .magic-text-unit {
+  --magic-unit-delay: 0ms;
   display: inline-block;
-  will-change: opacity, transform, filter;
-  animation: magic-unit-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform, color;
+  animation: magic-unit-in 0.5s cubic-bezier(0.22, 1, 0.36, 1)
+    var(--magic-unit-delay) both;
 }
 
-.magic-text-shimmer {
-  --magic-base: #005656;
-  --magic-shimmer-delay: 0.55s;
-  background-image: linear-gradient(
-    105deg,
-    var(--magic-base) 0%,
-    var(--magic-base) 38%,
-    #36cc8b 50%,
-    var(--magic-base) 62%,
-    var(--magic-base) 100%
-  );
-  background-size: 220% 100%;
-  background-position: 140% center;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: magic-shimmer 1.6s ease-in-out var(--magic-shimmer-delay) 1
-    forwards;
+.magic-text-unit.magic-text-shimmer {
+  --magic-base: var(--color-pine-primary);
+  color: var(--magic-base);
+  animation: magic-shimmer-in 0.62s cubic-bezier(0.22, 1, 0.36, 1)
+    var(--magic-unit-delay) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -202,12 +378,10 @@ textarea {
   }
 
   .magic-text-unit,
-  .magic-text-shimmer {
+  .magic-text-unit.magic-text-shimmer {
     animation: none;
-    filter: none;
     transform: none;
     opacity: 1;
     color: inherit;
-    background: none;
   }
 }

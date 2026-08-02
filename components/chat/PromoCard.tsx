@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { withBasePath } from "@/lib/basePath";
 import { MagicText } from "@/components/shared/MagicText";
+import { colors } from "@/lib/ui/colors";
 
 type PromoCardProps = {
   onStart: () => void;
@@ -13,7 +14,7 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
       className="animate-rise-in px-4 pt-1"
       style={{ animationDelay: "1380ms" }}
     >
-      <article className="relative overflow-hidden rounded-xl bg-white/75 p-4 shadow-[4px_4px_8px_rgba(0,42,25,0.04)]">
+      <article className="relative overflow-hidden rounded-card bg-white/75 p-card shadow-promo">
         <div className="relative z-10 flex max-w-[200px] flex-col gap-4">
           <div className="flex flex-col gap-2">
             <MagicText
@@ -23,8 +24,8 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
               delayMs={1480}
               stepMs={24}
               shimmer
-              shimmerBase="#0F3F37"
-              className="font-display text-lg font-bold leading-6 text-pine"
+              shimmerBase={colors.pine}
+              className="type-section-title text-pine"
             />
             <MagicText
               as="p"
@@ -32,14 +33,14 @@ export function PromoCard({ onStart, disabled }: PromoCardProps) {
               mode="words"
               delayMs={1720}
               stepMs={50}
-              className="font-sans text-xs font-normal leading-4 text-subtle"
+              className="type-body-secondary text-subtle"
             />
           </div>
           <button
             type="button"
             disabled={disabled}
             onClick={onStart}
-            className="animate-rise-in w-fit min-w-[100px] rounded-md bg-pine-primary px-3 py-2 font-sans text-xs font-bold leading-4 text-white disabled:opacity-60"
+            className="animate-rise-in w-fit min-w-[100px] rounded-control bg-pine-primary px-3 py-2 text-caption font-bold text-white disabled:opacity-60"
             style={{ animationDelay: "1980ms" }}
           >
             Start registration

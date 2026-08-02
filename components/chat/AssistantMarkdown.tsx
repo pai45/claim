@@ -16,7 +16,7 @@ export function AssistantMarkdown({
 }: AssistantMarkdownProps) {
   return (
     <div
-      className={`assistant-markdown font-sans text-sm leading-6 text-body ${className}`}
+      className={`assistant-markdown text-body-sm leading-6 text-body ${className}`}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
@@ -25,17 +25,17 @@ export function AssistantMarkdown({
             <p className="mb-2.5 last:mb-0 whitespace-pre-wrap">{children}</p>
           ),
           h1: ({ children }) => (
-            <h1 className="mb-2 mt-1 font-display text-base font-semibold leading-6 text-pine first:mt-0">
+            <h1 className="type-section-title mb-2 mt-1 text-pine first:mt-0">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="mb-2 mt-1 font-display text-[15px] font-semibold leading-6 text-pine first:mt-0">
+            <h2 className="type-section-title mb-2 mt-1 text-pine first:mt-0">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className="mb-1.5 mt-1 font-display text-sm font-semibold leading-5 text-pine first:mt-0">
+            <h3 className="mb-1.5 mt-1 text-body-sm font-bold leading-5 text-pine first:mt-0">
               {children}
             </h3>
           ),
@@ -53,13 +53,13 @@ export function AssistantMarkdown({
             <li className="leading-5 marker:text-muted">{children}</li>
           ),
           strong: ({ children }) => (
-            <strong className="font-semibold text-pine">{children}</strong>
+            <strong className="font-bold text-pine">{children}</strong>
           ),
           em: ({ children }) => <em className="italic">{children}</em>,
           a: ({ href, children }) => (
             <a
               href={href}
-              className="font-semibold text-pine-primary underline underline-offset-2"
+              className="font-bold text-pine-primary underline underline-offset-2"
               target="_blank"
               rel="noreferrer"
             >
@@ -70,13 +70,13 @@ export function AssistantMarkdown({
             const isBlock = Boolean(codeClassName);
             if (isBlock) {
               return (
-                <code className="block overflow-x-auto rounded-lg bg-[#F4F8F6] px-3 py-2 font-mono text-[12px] leading-5 text-body">
+                <code className="block overflow-x-auto rounded-control bg-input px-3 py-2 font-mono text-caption leading-5 text-body">
                   {children}
                 </code>
               );
             }
             return (
-              <code className="rounded bg-[#F4F8F6] px-1 py-0.5 font-mono text-[12px] text-pine">
+              <code className="rounded bg-input px-1 py-0.5 font-mono text-caption text-pine">
                 {children}
               </code>
             );
@@ -92,7 +92,7 @@ export function AssistantMarkdown({
           hr: () => <hr className="my-3 border-border-soft" />,
           table: ({ children }) => (
             <div className="mb-2.5 overflow-x-auto last:mb-0">
-              <table className="w-full border-collapse text-left text-[13px]">
+              <table className="w-full border-collapse text-left text-body-sm">
                 {children}
               </table>
             </div>
@@ -103,7 +103,7 @@ export function AssistantMarkdown({
             </thead>
           ),
           th: ({ children }) => (
-            <th className="px-2 py-1.5 font-semibold">{children}</th>
+            <th className="px-2 py-1.5 font-bold">{children}</th>
           ),
           td: ({ children }) => (
             <td className="border-t border-border-soft px-2 py-1.5 align-top">

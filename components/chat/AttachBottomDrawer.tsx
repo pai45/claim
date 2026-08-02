@@ -13,6 +13,7 @@ import {
   type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
 import type { UploadOptionId } from "@/features/chat/types";
+import { colors } from "@/lib/ui/colors";
 
 type DrawerTab = "upload" | "history";
 
@@ -29,11 +30,11 @@ function CameraIcon() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M2.5 5.2A1.7 1.7 0 0 1 4.2 3.5h1.1l.7-1.1h4l.7 1.1h1.1A1.7 1.7 0 0 1 13.5 5.2v6.1a1.7 1.7 0 0 1-1.7 1.7H4.2a1.7 1.7 0 0 1-1.7-1.7V5.2Z"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      <circle cx="8" cy="8.2" r="2.1" stroke="#003434" strokeWidth="1.5" />
+      <circle cx="8" cy="8.2" r="2.1" stroke={colors.pineDark} strokeWidth="1.5" />
     </svg>
   );
 }
@@ -43,11 +44,11 @@ function PdfIcon() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M4 2.5h5.2L12.5 6v7.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1Z"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
-      <path d="M9.2 2.5V6H12.5" stroke="#003434" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M9.2 2.5V6H12.5" stroke={colors.pineDark} strokeWidth="1.5" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -61,13 +62,13 @@ function GalleryIcon() {
         width="12"
         height="11"
         rx="1.5"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
       />
-      <circle cx="5.5" cy="6" r="1.2" stroke="#003434" strokeWidth="1.3" />
+      <circle cx="5.5" cy="6" r="1.2" stroke={colors.pineDark} strokeWidth="1.3" />
       <path
         d="M2.5 11.5 5.8 8.5l2.4 2.2 1.8-1.5L13.5 12"
-        stroke="#003434"
+        stroke={colors.pineDark}
         strokeWidth="1.5"
         strokeLinejoin="round"
       />
@@ -188,7 +189,7 @@ export function AttachBottomDrawer({
 
   return (
     <div
-      className={`fixed inset-0 z-50 mx-auto max-w-[402px] ${
+      className={`fixed inset-0 z-50 mx-auto max-w-phone overflow-hidden ${
         open ? "pointer-events-auto" : "pointer-events-none"
       }`}
       aria-hidden={!open}
@@ -206,24 +207,24 @@ export function AttachBottomDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Upload bill and claim history"
-        className={`absolute inset-x-0 bottom-0 flex flex-col gap-2 rounded-t-3xl bg-white px-4 pb-8 pt-3 shadow-[0_-8px_32px_rgba(0,42,25,0.12)] transition-transform duration-200 ease-out ${
+        className={`absolute inset-x-0 bottom-0 flex flex-col gap-2 rounded-t-3xl bg-white px-4 pb-8 pt-3 shadow-drawer transition-transform duration-200 ease-out ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
         <div className="flex justify-center pb-1">
-          <div className="h-1 w-11 rounded-sm bg-[#E2E8F0]" />
+          <div className="h-1 w-11 rounded-sm bg-border-tab" />
         </div>
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <div className="flex overflow-hidden rounded-[20px] border border-[#DCE7E3]">
+            <div className="flex overflow-hidden rounded-bubble border border-input-border">
               <button
                 type="button"
                 onClick={() => setTab("upload")}
-                className={`flex flex-1 items-center justify-center px-4 py-2.5 font-sans text-sm font-bold ${
+                className={`flex flex-1 items-center justify-center px-4 py-2.5 text-body-sm font-bold ${
                   tab === "upload"
                     ? "bg-pine-primary text-white"
-                    : "bg-white text-[#003434]"
+                    : "bg-white text-pine-dark"
                 }`}
               >
                 Upload bill
@@ -231,10 +232,10 @@ export function AttachBottomDrawer({
               <button
                 type="button"
                 onClick={() => setTab("history")}
-                className={`flex flex-1 items-center justify-center border-l border-[#DCE7E3] px-4 py-2.5 font-sans text-sm font-bold ${
+                className={`flex flex-1 items-center justify-center border-l border-input-border px-4 py-2.5 text-body-sm font-bold ${
                   tab === "history"
                     ? "bg-pine-primary text-white"
-                    : "bg-white text-[#003434]"
+                    : "bg-white text-pine-dark"
                 }`}
               >
                 Claim history
@@ -249,19 +250,19 @@ export function AttachBottomDrawer({
                     type="button"
                     disabled={disabled}
                     onClick={() => handlePick(option.id)}
-                    className="flex h-[102px] flex-1 flex-col items-center justify-center gap-2 rounded-2xl border border-[#EBECEB] bg-white p-3 text-center disabled:opacity-50"
+                    className="flex h-[104px] flex-1 flex-col items-center justify-center gap-2 rounded-card border border-border-soft bg-white p-3 text-center disabled:opacity-50"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF5F1]">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-tint">
                       {option.icon}
                     </span>
-                    <span className="w-full font-sans text-xs font-bold leading-tight text-[#003434]">
+                    <span className="w-full text-caption font-bold leading-tight text-pine-dark">
                       {option.label}
                     </span>
                   </button>
                 ))}
               </div>
             ) : (
-              <div className="flex min-h-[102px] flex-wrap content-start gap-2">
+              <div className="flex min-h-[104px] flex-wrap content-start gap-2">
                 {CLAIM_STATUS_TABS.map((filter) => {
                   const active = activeFilter === filter.id;
                   return (
@@ -269,10 +270,10 @@ export function AttachBottomDrawer({
                       key={filter.id}
                       type="button"
                       onClick={() => openClaimHistory(filter.id)}
-                      className={`rounded-[20px] border px-4 py-2.5 font-sans text-sm font-bold ${
+                      className={`rounded-bubble border px-4 py-2.5 text-body-sm font-bold ${
                         active
                           ? "border-pine-primary bg-pine-primary text-white"
-                          : "border-[#DCE7E3] bg-white text-[#003434]"
+                          : "border-input-border bg-white text-pine-dark"
                       }`}
                     >
                       {filter.label}
@@ -283,12 +284,12 @@ export function AttachBottomDrawer({
             )}
           </div>
 
-          <div className="flex items-center gap-3 rounded-[32px] border border-[#E5ECE8] bg-white p-1.5">
+          <div className="flex items-center gap-3 rounded-pill border border-border-line bg-white p-1.5">
             <button
               type="button"
               aria-label="Close attach options"
               onClick={handleDrawerClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EBF5F2]"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-tint"
             >
               <svg
                 width="18"
@@ -299,7 +300,7 @@ export function AttachBottomDrawer({
               >
                 <path
                   d="M9 3.75v10.5M3.75 9h10.5"
-                  stroke="#003434"
+                  stroke={colors.pineDark}
                   strokeWidth="1.8"
                   strokeLinecap="round"
                 />
@@ -318,7 +319,7 @@ export function AttachBottomDrawer({
               }}
               placeholder="Message Claims Assistant..."
               disabled={disabled}
-              className="min-w-0 flex-1 bg-transparent font-sans text-sm text-pine outline-none placeholder:text-[#829490] disabled:opacity-60"
+              className="min-w-0 flex-1 bg-transparent text-body-sm text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
             />
 
             <button
@@ -326,7 +327,7 @@ export function AttachBottomDrawer({
               aria-label="Send message"
               disabled={disabled || !message.trim()}
               onClick={handleSend}
-              className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full bg-[#E9EFEA] disabled:opacity-50"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-input-icon disabled:opacity-50"
             >
               <svg
                 width="18"
@@ -337,7 +338,7 @@ export function AttachBottomDrawer({
               >
                 <path
                   d="M3.5 9.2 14.5 3.5l-3.2 11.2-2.4-4.3L3.5 9.2z"
-                  stroke="#003434"
+                  stroke={colors.pineDark}
                   strokeWidth="1.5"
                   strokeLinejoin="round"
                 />

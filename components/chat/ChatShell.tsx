@@ -10,6 +10,7 @@ import {
 import { useChat } from "@/features/chat/useChat";
 import { withBasePath } from "@/lib/basePath";
 import type { QuickAction } from "@/features/chat/types";
+import { colors } from "@/lib/ui/colors";
 import { AttachBottomDrawer } from "./AttachBottomDrawer";
 import { ChatComposer } from "./ChatComposer";
 import { ChatGreeting } from "./ChatGreeting";
@@ -22,7 +23,12 @@ const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
   ssr: false,
 });
 
-const COLOR_BENDS_PALETTE = ["#005656", "#36CC8B", "#9DDBC1", "#E7F4EE"];
+const COLOR_BENDS_PALETTE = [
+  colors.pinePrimary,
+  colors.mint,
+  colors.mintSoft,
+  colors.mintWash,
+];
 
 export function ChatShell() {
   const [attachOpen, setAttachOpen] = useState(false);
@@ -62,7 +68,7 @@ export function ChatShell() {
   const busy = isLoading || isScanning || isLocating;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-[#EEF5F2]">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-surface-chat">
       <div
         className="pointer-events-none fixed inset-0"
         aria-hidden
@@ -92,7 +98,7 @@ export function ChatShell() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-[402px] flex-col overflow-hidden bg-white/10 shadow-[0_0_40px_rgba(0,42,25,0.08)]">
+      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-white/10 shadow-phone">
         <ChatHeader onNewChat={startNewChat} />
 
         <main className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-4 pt-2">

@@ -14,7 +14,7 @@ const OPTIONS: { id: "name" | "nearest"; label: string }[] = [
 ];
 
 const pillClass =
-  "rounded-tl rounded-tr-[20px] rounded-br-[20px] rounded-bl-[20px] border border-input-border bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-60";
+  "rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-60";
 
 export function MerchantSearchModeCard({
   onSelect,

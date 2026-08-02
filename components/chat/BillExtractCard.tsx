@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import type { BillExtract } from "@/features/chat/types";
+import { colors } from "@/lib/ui/colors";
 
 type BillExtractCardProps = {
   messageId: string;
@@ -41,13 +42,13 @@ function CreditCardIcon() {
         width="16"
         height="11"
         rx="2"
-        stroke="#0F3F37"
+        stroke={colors.pine}
         strokeWidth="1.6"
       />
-      <path d="M2 9h16" stroke="#0F3F37" strokeWidth="1.6" />
+      <path d="M2 9h16" stroke={colors.pine} strokeWidth="1.6" />
       <path
         d="M5 13h4"
-        stroke="#0F3F37"
+        stroke={colors.pine}
         strokeWidth="1.6"
         strokeLinecap="round"
       />
@@ -67,18 +68,16 @@ function FieldBox({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-1 rounded-xl border border-[#EDF2EE] bg-white p-3">
-      <span className="font-sans text-[10px] font-bold uppercase text-[#768783]">
-        {label}
-      </span>
+    <div className="flex flex-1 flex-col gap-1 rounded-control border border-border-soft bg-white p-3">
+      <span className="type-field-label">{label}</span>
       {editing ? (
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full border-b border-input-border bg-transparent font-sans text-sm font-bold text-pine outline-none"
+          className="w-full border-b border-input-border bg-transparent text-body-sm font-bold text-pine outline-none"
         />
       ) : (
-        <span className="truncate font-sans text-sm font-bold text-pine">
+        <span className="truncate text-body-sm font-bold text-pine">
           {value || "—"}
         </span>
       )}
@@ -99,8 +98,8 @@ export function BillExtractCard({
 
   if (extract.error) {
     return (
-      <div className="w-full max-w-[340px] rounded-[18px] rounded-tl border border-[#E6ECE8] bg-white p-4">
-        <p className="font-sans text-sm text-body">{extract.error}</p>
+      <div className="w-full max-w-card rounded-bubble rounded-tl border border-border-line bg-white p-card">
+        <p className="type-body">{extract.error}</p>
       </div>
     );
   }
@@ -150,30 +149,30 @@ export function BillExtractCard({
       : null;
 
   return (
-    <div className="flex w-full max-w-[340px] flex-col gap-4">
-      <div className="flex flex-col gap-2 rounded-[18px] rounded-tl border border-[#E6ECE8] bg-white p-4">
+    <div className="flex w-full max-w-card flex-col gap-4">
+      <div className="flex flex-col gap-2 rounded-bubble rounded-tl border border-border-line bg-white p-card">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#E9F6F2]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-control bg-surface-tint-strong">
             <CreditCardIcon />
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <h3 className="font-sans text-base font-bold text-pine">
+            <h3 className="text-body font-bold text-pine">
               Claim details extracted
             </h3>
-            <p className="font-sans text-xs font-medium text-[#768783]">
+            <p className="type-body-secondary">
               {confidence !== null ? `Confidence ${confidence}%` : "Confidence —"}
             </p>
           </div>
         </div>
 
         {extract.warning ? (
-          <p className="rounded-lg bg-[#FFF8E8] px-3 py-2 font-sans text-xs font-medium text-[#7A5A00]">
+          <p className="rounded-control bg-warning-tint px-3 py-2 text-caption text-warning-ink">
             {extract.warning}
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-2.5">
-          <div className="flex gap-2.5">
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
             <FieldBox
               label="Category"
               value={fields.category}
@@ -187,7 +186,7 @@ export function BillExtractCard({
               onChange={(value) => updateField("vendor", value)}
             />
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex gap-3">
             <FieldBox
               label="Amount"
               value={fields.amount}
@@ -201,7 +200,7 @@ export function BillExtractCard({
               onChange={(value) => updateField("billDate", value)}
             />
           </div>
-          <div className="flex gap-2.5">
+          <div className="flex gap-3">
             <FieldBox
               label="Billing Month"
               value={fields.billingMonth}
@@ -224,10 +223,10 @@ export function BillExtractCard({
                 key={category}
                 type="button"
                 onClick={() => handleCategoryPick(category)}
-                className={`rounded-full border px-3 py-1.5 font-sans text-xs font-bold ${
+                className={`rounded-pill border px-3 py-1.5 text-caption font-bold ${
                   fields.category === category
-                    ? "border-pine-primary bg-[#E9F6F2] text-pine"
-                    : "border-[#DCE7E3] bg-white text-pine"
+                    ? "border-pine-primary bg-surface-tint-strong text-pine"
+                    : "border-input-border bg-white text-pine"
                 }`}
               >
                 {category}
@@ -240,7 +239,7 @@ export function BillExtractCard({
           <button
             type="button"
             onClick={handleSaveEdits}
-            className="mt-1 w-full rounded-full bg-pine-primary px-4 py-2.5 font-sans text-sm font-bold text-white"
+            className="mt-1 w-full rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white"
           >
             Save details
           </button>
@@ -252,7 +251,7 @@ export function BillExtractCard({
           type="button"
           disabled={extract.submitted}
           onClick={handleSubmit}
-          className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-50"
+          className="rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-50"
         >
           {extract.submitted ? "Submitted" : "Submit claim"}
         </button>
@@ -264,7 +263,7 @@ export function BillExtractCard({
             setDraftFields(null);
             setEditing((prev) => !prev);
           }}
-          className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-50"
+          className="rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-50"
         >
           {editing ? "Cancel edit" : "Edit details"}
         </button>
@@ -276,7 +275,7 @@ export function BillExtractCard({
             setDraftFields(null);
             setChangingCategory((prev) => !prev);
           }}
-          className="rounded-full border border-[#DCE7E3] bg-white px-4 py-2.5 font-sans text-sm font-bold text-pine disabled:opacity-50"
+          className="rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine disabled:opacity-50"
         >
           Change category
         </button>
