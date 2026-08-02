@@ -121,10 +121,6 @@ export function ChatShell() {
   const busy = isLoading || isScanning || isLocating;
   const showEmptyState = isHydrated && !hasMessages;
 
-  useEffect(() => {
-    if (!hasMessages) setAwayFromBottom(false);
-  }, [hasMessages]);
-
   return (
     <div className="relative min-h-dvh w-full overflow-hidden bg-surface-chat">
       <div className="pointer-events-none fixed inset-0" aria-hidden>

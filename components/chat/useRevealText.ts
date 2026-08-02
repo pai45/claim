@@ -17,33 +17,35 @@ export function useRevealText({
   enabled = true,
   durationMs = 480,
 }: UseRevealTextOptions) {
-  const [visible, setVisible] = useState(() =>
-    !enabled || text.length === 0 ? text : "",
-  );
-  const [done, setDone] = useState(() => !enabled || text.length === 0);
+  const instant = !enabled || text.length === 0;
+  const [visible, setVisible] = useState(() => (instant ? text : ""));
+  const [done, setDone] = useState(() => instant);
+  const [source, setSource] = useState({ text, enabled });
+
+  // Reset reveal state when inputs change (render-time adjustment).
+  if (source.text !== text || source.enabled !== enabled) {
+    setSource({ text, enabled });
+    setVisible(instant ? text : "");
+    setDone(instant);
+  }
 
   useEffect(() => {
-    if (!enabled || text.length === 0) {
+    if (instant || done) return;
+
+    let frame = 0;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const finish = () => {
       setVisible(text);
       setDone(true);
-      return;
+    };
+
+    if (media.matches) {
+      frame = requestAnimationFrame(finish);
+      return () => cancelAnimationFrame(frame);
     }
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (prefersReducedMotion) {
-      setVisible(text);
-      setDone(true);
-      return;
-    }
-
-    setVisible("");
-    setDone(false);
 
     const started = performance.now();
-    let frame = 0;
 
     const tick = (now: number) => {
       const t = Math.min(1, (now - started) / durationMs);
@@ -54,14 +56,13 @@ export function useRevealText({
       if (t < 1) {
         frame = requestAnimationFrame(tick);
       } else {
-        setVisible(text);
-        setDone(true);
+        finish();
       }
     };
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [text, enabled, durationMs]);
+  }, [text, enabled, durationMs, instant, done]);
 
   return { visible, done };
 }

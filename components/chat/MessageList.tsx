@@ -6,7 +6,6 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
-  useState,
   type ReactNode,
 } from "react";
 import type { BenefitType } from "@/lib/merchants/types";
