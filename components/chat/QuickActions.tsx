@@ -1,5 +1,6 @@
 import { QUICK_ACTIONS } from "@/features/chat/constants";
 import type { QuickAction } from "@/features/chat/types";
+import { ChatOptionButton } from "./ChatOptionButton";
 
 type QuickActionsProps = {
   onSelect: (action: QuickAction) => void;
@@ -23,40 +24,16 @@ function QuickActionButton({
 }) {
   const style = { animationDelay: `${START_MS + index * STEP_MS}ms` };
 
-  if (action.featured) {
-    return (
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => onSelect(action)}
-        style={style}
-        className="animate-rise-in relative min-h-11 overflow-hidden rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble px-4 py-2.5 disabled:opacity-60"
-      >
-        <span
-          aria-hidden="true"
-          className="quick-action-featured-border absolute inset-0"
-        />
-        <span
-          aria-hidden="true"
-          className="absolute inset-[1.5px] rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble bg-white"
-        />
-        <span className="relative text-body-sm font-bold text-pine">
-          {action.label}
-        </span>
-      </button>
-    );
-  }
-
   return (
-    <button
-      type="button"
+    <ChatOptionButton
+      featured={action.featured}
       disabled={disabled}
       onClick={() => onSelect(action)}
       style={style}
-      className="animate-rise-in min-h-11 rounded-tl rounded-tr-bubble rounded-br-bubble rounded-bl-bubble border border-input-border bg-white px-4 py-2.5 disabled:opacity-60"
+      className="animate-rise-in"
     >
-      <span className="text-body-sm font-bold text-pine">{action.label}</span>
-    </button>
+      {action.label}
+    </ChatOptionButton>
   );
 }
 

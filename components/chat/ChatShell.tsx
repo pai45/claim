@@ -11,7 +11,6 @@ import type { QuickAction } from "@/features/chat/types";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
 import { colors } from "@/lib/ui/colors";
-import { ActiveChatShortcuts } from "./ActiveChatShortcuts";
 import { AttachBottomDrawer } from "./AttachBottomDrawer";
 import { ChatComposer } from "./ChatComposer";
 import { ChatGreeting } from "./ChatGreeting";
@@ -152,14 +151,6 @@ export function ChatShell() {
 
       <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-white/10 shadow-phone">
         <ChatHeader onNewChat={requestClear} />
-
-        {isHydrated && hasMessages ? (
-          <ActiveChatShortcuts
-            onSelect={handleQuickAction}
-            onNewChat={requestClear}
-            disabled={busy}
-          />
-        ) : null}
 
         <main
           className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-2 pt-1"

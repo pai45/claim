@@ -60,7 +60,7 @@ function AssistantText({
 
   return (
     <div className="flex max-w-[92%] items-end gap-2">
-      <ChatAvatar role="assistant" />
+      <ChatAvatar />
       <div className="flex min-w-0 flex-col gap-1">
         <div className={assistantBubbleClass}>
           <AssistantMarkdown content={visible} />
@@ -469,7 +469,7 @@ export function MessageBubble({
 
   if (isUser) {
     return (
-      <div className="flex w-full justify-end gap-2">
+      <div className="flex w-full justify-end">
         <div className="flex max-w-[85%] flex-col items-end gap-1">
           <div className="whitespace-pre-wrap rounded-bubble rounded-br-md bg-pine-primary px-3.5 py-2.5 text-body-sm leading-5 text-white shadow-soft">
             {message.content}
@@ -502,7 +502,6 @@ export function MessageBubble({
             </svg>
           </div>
         </div>
-        <ChatAvatar role="user" className="mb-5" />
       </div>
     );
   }

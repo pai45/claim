@@ -15,7 +15,7 @@ export function ChatStatusBubble({
   if (variant === "typing") {
     return (
       <div className="flex items-end gap-2">
-        <ChatAvatar role="assistant" />
+        <ChatAvatar />
         <TypingIndicator bare />
       </div>
     );
@@ -29,7 +29,7 @@ export function ChatStatusBubble({
       role="status"
       aria-live="polite"
     >
-      <ChatAvatar role="assistant" />
+      <ChatAvatar />
       <div className="min-w-[140px] max-w-[85%] rounded-bubble rounded-bl-md border border-border-soft bg-white/95 px-3.5 py-2.5 shadow-soft">
         <p className="text-body-sm text-muted">
           {label}
