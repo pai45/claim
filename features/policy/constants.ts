@@ -600,7 +600,7 @@ const BENEFIT_CONFIGURATION: Record<
     display: {
       id: "fuel",
       label: "Fuel & Maintenance",
-      iconBg: "#FAFCFC",
+      iconBg: "#EAF3F0",
       iconTone: "#005656",
       dashboardEnabled: true,
       dashboardIcon: "fuel",
@@ -616,8 +616,8 @@ const BENEFIT_CONFIGURATION: Record<
     display: {
       id: "mobile",
       label: "Mobile & Internet",
-      iconBg: "#FFFCF5",
-      iconTone: "#B54708",
+      iconBg: "#FFF8E8",
+      iconTone: "#B25E00",
       dashboardEnabled: true,
       dashboardIcon: "mobile",
     },
@@ -632,8 +632,8 @@ const BENEFIT_CONFIGURATION: Record<
     display: {
       id: "driver",
       label: "Driver Salary",
-      iconBg: "#FFFBFA",
-      iconTone: "#7F1D1D",
+      iconBg: "#F4E8E6",
+      iconTone: "#7A2E24",
       dashboardEnabled: true,
       dashboardIcon: "driver",
     },
@@ -648,8 +648,8 @@ const BENEFIT_CONFIGURATION: Record<
     display: {
       id: "books",
       label: "Books & Periodicals",
-      iconBg: "#F6FEF9",
-      iconTone: "#166534",
+      iconBg: "#F3FCF6",
+      iconTone: "#279E6C",
       dashboardEnabled: true,
       dashboardIcon: "books",
     },
@@ -664,8 +664,8 @@ const BENEFIT_CONFIGURATION: Record<
     display: {
       id: "professional",
       label: "Professional Development",
-      iconBg: "#F2F8FD",
-      iconTone: "#1D4ED8",
+      iconBg: "#E7F6EF",
+      iconTone: "#003434",
       dashboardEnabled: true,
       dashboardIcon: "professional",
     },

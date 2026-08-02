@@ -59,24 +59,36 @@ function toFields(extract: BillExtract): EditableFields {
   };
 }
 
-const FIELD_STATE_COPY: Record<ClaimFieldReviewState, string> = {
-  confirmed: "Confirmed",
-  review: "Review recommended",
-  missing: "Missing",
-};
-
 function FieldStatus({ state }: { state: ClaimFieldReviewState }) {
+  if (state === "confirmed") {
+    return (
+      <span className="shrink-0 text-success" aria-label="Confirmed">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M2.5 7.25 5.5 10.25 11.5 3.75"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </span>
+    );
+  }
+
   return (
     <span
       className={`shrink-0 text-right text-caption ${
-        state === "confirmed"
-          ? "text-success"
-          : state === "missing"
-            ? "text-danger"
-            : "text-warning"
+        state === "missing" ? "text-danger" : "text-warning"
       }`}
     >
-      {FIELD_STATE_COPY[state]}
+      {state === "missing" ? "Missing" : "Review recommended"}
     </span>
   );
 }
@@ -161,7 +173,7 @@ export function BillExtractCard({
   const inputClass =
     "min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm font-bold text-pine outline-none focus:border-pine disabled:opacity-50";
   const secondaryActionClass =
-    "inline-flex min-h-11 items-center rounded-control border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
+    "inline-flex min-h-11 items-center rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
 
   if (extract.error && !manualMode) {
     return (
@@ -206,7 +218,7 @@ export function BillExtractCard({
           </p>
         ) : null}
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-3">
+        <div className="grid grid-cols-1 gap-y-3">
           <Field label="Category" name="category" state={fieldState("category")}>
             <select
               id="claim-category"

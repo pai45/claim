@@ -28,33 +28,26 @@ export const CLAIM_STATUS_TABS: { id: ClaimStatusFilter; label: string }[] = [
   { id: "rejected", label: "Rejected" },
 ];
 
+/** Token-based chip classes — keep aligned with `@theme` status colors in app/globals.css */
 export const CLAIM_STATUS_STYLES: Record<
   ClaimStatus,
-  { label: string; bg: string; border: string; text: string }
+  { label: string; className: string }
 > = {
   under_review: {
     label: "Under review",
-    bg: "#F3FCF6",
-    border: "#D1F3DF",
-    text: "#279E6C",
+    className: "border-success-border bg-success-soft text-success",
   },
   needs_info: {
     label: "Needs info",
-    bg: "#FFFAEB",
-    border: "#FEDF89",
-    text: "#B37727",
+    className: "border-warning-border bg-warning-soft text-warning",
   },
   approved: {
     label: "Approved",
-    bg: "#ECFDF3",
-    border: "#A9EFC5",
-    text: "#085D3A",
+    className: "border-success-border bg-success-tint text-pine-dark",
   },
   rejected: {
     label: "Rejected",
-    bg: "#FEF3F2",
-    border: "#FECDCA",
-    text: "#912018",
+    className: "border-transparent bg-danger-soft text-danger",
   },
 };
 
@@ -67,8 +60,8 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "12 May 2026",
     status: "under_review",
     icon: "mobile",
-    iconBg: "#FFFCF5",
-    iconColor: "#B54708",
+    iconBg: "#FFF8E8",
+    iconColor: "#B25E00",
   },
   {
     id: "CLM-45188",
@@ -78,7 +71,7 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "11 May 2026",
     status: "needs_info",
     icon: "fuel",
-    iconBg: "#FAFCFC",
+    iconBg: "#EAF3F0",
     iconColor: "#005656",
   },
   {
@@ -89,8 +82,8 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "03 May 2026",
     status: "approved",
     icon: "professional",
-    iconBg: "#F2F8FD",
-    iconColor: "#1D4ED8",
+    iconBg: "#E7F6EF",
+    iconColor: "#003434",
   },
   {
     id: "CLM-45092",
@@ -100,7 +93,7 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "28 Apr 2026",
     status: "approved",
     icon: "fuel",
-    iconBg: "#FAFCFC",
+    iconBg: "#EAF3F0",
     iconColor: "#005656",
   },
   {
@@ -111,8 +104,8 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "25 Apr 2026",
     status: "approved",
     icon: "mobile",
-    iconBg: "#FFFCF5",
-    iconColor: "#B54708",
+    iconBg: "#FFF8E8",
+    iconColor: "#B25E00",
   },
   {
     id: "CLM-45033",
@@ -122,7 +115,7 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "20 Apr 2026",
     status: "rejected",
     icon: "fuel",
-    iconBg: "#FAFCFC",
+    iconBg: "#EAF3F0",
     iconColor: "#005656",
   },
   {
@@ -133,8 +126,8 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
     date: "15 Apr 2026",
     status: "approved",
     icon: "professional",
-    iconBg: "#F2F8FD",
-    iconColor: "#1D4ED8",
+    iconBg: "#E7F6EF",
+    iconColor: "#003434",
   },
 ];
 

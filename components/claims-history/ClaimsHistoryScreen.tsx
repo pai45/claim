@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
+import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   CLAIM_HISTORY_ITEMS,
   CLAIM_STATUS_STYLES,
@@ -12,7 +13,6 @@ import {
   isClaimStatusFilter,
   type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
-import { colors } from "@/lib/ui/colors";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { CategoryIcon } from "./CategoryIcon";
 
@@ -45,48 +45,24 @@ export function ClaimsHistoryScreen() {
 
   return (
     <AppShell className="overflow-hidden">
-      <header className="flex items-center gap-4 bg-surface px-page pb-3 pt-2">
-        <button
-          type="button"
-          aria-label="Go back"
-          onClick={() => router.push("/")}
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M14.5 6.5L9 12l5.5 5.5"
-              stroke={colors.ink}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <div className="flex min-w-0 flex-1 flex-col">
-          <h1 className="type-screen-title truncate">Claims History</h1>
-        </div>
-      </header>
+      <ScreenHeader title="Claims History" onBack={() => router.push("/")} />
 
-      <div className="overflow-x-auto border-b border-border-tab bg-surface pt-2">
-        <div className="flex min-w-max items-end">
+      <div className="overflow-x-auto border-b border-border-tab bg-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-max items-end px-2 pt-1" role="tablist" aria-label="Claim status">
           {CLAIM_STATUS_TABS.map((tab) => {
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 type="button"
+                role="tab"
+                aria-selected={active}
                 onClick={() => handleTabChange(tab.id)}
-                className="flex items-center justify-center px-page pt-2"
+                className="flex min-h-11 items-center justify-center px-3 pt-2"
               >
                 <span className="flex flex-col items-center gap-2">
                   <span
-                    className={`type-body text-center ${
+                    className={`type-body whitespace-nowrap text-center ${
                       active
                         ? "font-bold text-ink"
                         : "font-normal text-ink-secondary"
@@ -95,7 +71,7 @@ export function ClaimsHistoryScreen() {
                     {tab.label}
                   </span>
                   <span
-                    className={`h-0.5 w-full rounded-t-full ${
+                    className={`h-0.5 w-full rounded-pill ${
                       active ? "bg-pine-primary" : "bg-transparent"
                     }`}
                   />
@@ -106,15 +82,17 @@ export function ClaimsHistoryScreen() {
         </div>
       </div>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-8 pt-2">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-8 pt-4">
         {claims.length === 0 ? (
-          <p className="type-body-secondary px-2 py-8 text-center">
-            No claims in this status yet.
-          </p>
+          <div className="rounded-card border border-border-line bg-white p-card shadow-card">
+            <p className="type-body-secondary py-6 text-center">
+              No claims in this status yet.
+            </p>
+          </div>
         ) : (
           <section
             key={activeTab}
-            className="overflow-hidden rounded-card border border-border-line bg-white"
+            className="overflow-hidden rounded-card border border-border-line bg-white shadow-card"
           >
             {claims.map((claim, index) => {
               const status = CLAIM_STATUS_STYLES[claim.status];
@@ -125,7 +103,7 @@ export function ClaimsHistoryScreen() {
                   key={claim.id}
                   href={`/claim-details/?id=${encodeURIComponent(claim.id)}`}
                   style={staggerStyle(index)}
-                  className={`animate-rise-in flex items-start gap-3 px-page py-3 transition-colors hover:bg-surface ${
+                  className={`animate-rise-in flex min-h-11 items-start gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
                     !isLast ? "border-b border-border-line" : ""
                   }`}
                 >
@@ -139,23 +117,18 @@ export function ClaimsHistoryScreen() {
                   <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <h2 className="type-body font-bold">{claim.merchant}</h2>
                     <p className="type-body-secondary">{claim.category}</p>
-                  </div>
-
-                  <div className="flex shrink-0 flex-col items-end gap-1">
-                    <p className="text-title-sm font-bold text-ink">
-                      {formatINR(claim.amount)}
-                    </p>
-                    <p className="type-body-secondary">{claim.date}</p>
                     <span
-                      className="rounded-full border px-2 py-0.5 text-center text-caption leading-4"
-                      style={{
-                        background: status.bg,
-                        borderColor: status.border,
-                        color: status.text,
-                      }}
+                      className={`mt-0.5 w-fit rounded-pill border px-2 py-0.5 text-center text-caption leading-4 ${status.className}`}
                     >
                       {status.label}
                     </span>
+                  </div>
+
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <p className="text-body-sm font-bold text-pine">
+                      {formatINR(claim.amount)}
+                    </p>
+                    <p className="text-caption text-ink-secondary">{claim.date}</p>
                   </div>
                 </Link>
               );
@@ -166,4 +139,3 @@ export function ClaimsHistoryScreen() {
     </AppShell>
   );
 }
-
