@@ -1,5 +1,6 @@
 export type ModelPromptMessage = {
-  role: "system" | "user";
+  /** `assistant` turns carry prior replies when a prompt includes chat history. */
+  role: "system" | "user" | "assistant";
   content: string;
 };
 

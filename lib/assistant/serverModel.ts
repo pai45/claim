@@ -7,6 +7,7 @@ import { getPolicyCategory } from "@/features/policy/constants";
 import { buildGroundedAppData, createAppDataPrompt } from "./appData";
 import type { AssistantGenerateRequest } from "./assistantApiTypes";
 import { createPolicyPrompt } from "./policy";
+import { createRoutePrompt } from "./route";
 import type { ModelPromptMessage } from "./policyModelTypes";
 
 const MODEL_ID = "onnx-community/Qwen3-0.6B-ONNX";
@@ -72,15 +73,25 @@ function stripThinking(value: string): string {
 function messagesForRequest(
   request: AssistantGenerateRequest,
 ): ModelPromptMessage[] {
+  if (request.type === "route") {
+    return createRoutePrompt(request.question, request.history);
+  }
+
   if (request.type === "policy") {
     return createPolicyPrompt(
       request.question,
-      getPolicyCategory(request.categoryId),
+      request.categoryIds.map(getPolicyCategory),
+      request.history,
     );
   }
 
   const source = buildGroundedAppData(request.resolution);
-  return createAppDataPrompt(request.question, source);
+  return createAppDataPrompt(request.question, source, request.history);
+}
+
+/** Routing emits one small JSON object; answers need room for markdown. */
+function maxNewTokensFor(request: AssistantGenerateRequest): number {
+  return request.type === "route" ? 160 : 320;
 }
 
 export async function generateAssistantAnswer(
@@ -90,7 +101,7 @@ export async function generateAssistantAnswer(
   const messages = messagesForRequest(request);
   const generator = await loadRuntime(onProgress);
   const output = await generator(messages, {
-    max_new_tokens: 280,
+    max_new_tokens: maxNewTokensFor(request),
     do_sample: false,
     tokenizer_encode_kwargs: { enable_thinking: false },
   });

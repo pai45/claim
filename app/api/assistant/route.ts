@@ -6,8 +6,13 @@ import {
 import type {
   AssistantGenerateRequest,
   AssistantStreamEvent,
+  AssistantTurn,
 } from "@/lib/assistant/assistantApiTypes";
-import type { AppDataResolution } from "@/lib/assistant/appData";
+import type {
+  AppDataResolution,
+  ClaimAnswerStatus,
+} from "@/lib/assistant/appData";
+import { MAX_HISTORY_TURNS } from "@/lib/assistant/history";
 import { generateAssistantAnswer } from "@/lib/assistant/serverModel";
 
 export const runtime = "nodejs";
@@ -17,56 +22,120 @@ const POLICY_TAB_IDS = new Set<string>(
   EMPLOYER_BENEFITS_CATALOG.benefits.map((category) => category.id),
 );
 
+const CLAIM_STATUSES = new Set<string>([
+  "Approved",
+  "Pending",
+  "Needs info",
+  "Rejected",
+]);
+
+const MAX_QUESTION_CHARS = 1000;
+const MAX_TURN_CHARS = 800;
+const MAX_CATEGORY_IDS = 3;
+
 function isPolicyTabId(value: unknown): value is PolicyTabId {
   return typeof value === "string" && POLICY_TAB_IDS.has(value);
+}
+
+function parseClaimStatus(value: unknown): ClaimAnswerStatus | undefined {
+  return typeof value === "string" && CLAIM_STATUSES.has(value)
+    ? (value as ClaimAnswerStatus)
+    : undefined;
+}
+
+function parseHistory(value: unknown): AssistantTurn[] | undefined {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) return undefined;
+
+  const turns: AssistantTurn[] = [];
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object") continue;
+    const record = entry as Record<string, unknown>;
+    if (record.role !== "user" && record.role !== "assistant") continue;
+    if (typeof record.content !== "string" || !record.content.trim()) continue;
+    turns.push({
+      role: record.role,
+      content: record.content.slice(0, MAX_TURN_CHARS),
+    });
+  }
+
+  return turns.slice(-MAX_HISTORY_TURNS);
+}
+
+function parseCategoryIds(value: unknown): PolicyTabId[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const ids: PolicyTabId[] = [];
+  for (const entry of value) {
+    if (!isPolicyTabId(entry)) return null;
+    if (!ids.includes(entry)) ids.push(entry);
+  }
+  return ids.length > 0 ? ids.slice(0, MAX_CATEGORY_IDS) : null;
+}
+
+function parseOptionalCategoryId(
+  value: unknown,
+): { ok: true; id?: PolicyTabId } | { ok: false } {
+  if (value === undefined) return { ok: true };
+  if (!isPolicyTabId(value)) return { ok: false };
+  return { ok: true, id: value };
 }
 
 function parseAppDataResolution(value: unknown): AppDataResolution | null {
   if (!value || typeof value !== "object") return null;
 
   const record = value as Record<string, unknown>;
-  if (record.kind === "dashboard") {
+
+  if (record.kind === "wallets") {
+    return { kind: "wallets" };
+  }
+
+  if (record.kind === "merchants") {
     if (
-      record.categoryId !== undefined &&
-      !isPolicyTabId(record.categoryId)
+      record.benefitType !== undefined &&
+      record.benefitType !== "meal" &&
+      record.benefitType !== "fuel"
     ) {
       return null;
     }
     return {
-      kind: "dashboard",
-      categoryId: isPolicyTabId(record.categoryId)
-        ? record.categoryId
-        : undefined,
+      kind: "merchants",
+      benefitType:
+        record.benefitType === "meal" || record.benefitType === "fuel"
+          ? record.benefitType
+          : undefined,
+      query:
+        typeof record.query === "string"
+          ? record.query.slice(0, 60)
+          : undefined,
     };
   }
 
+  if (record.kind === "rules") {
+    const category = parseOptionalCategoryId(record.categoryId);
+    if (!category.ok) return null;
+    return { kind: "rules", categoryId: category.id };
+  }
+
+  if (record.kind === "dashboard") {
+    const category = parseOptionalCategoryId(record.categoryId);
+    if (!category.ok) return null;
+    return { kind: "dashboard", categoryId: category.id };
+  }
+
   if (record.kind === "claims") {
-    if (
-      record.categoryId !== undefined &&
-      !isPolicyTabId(record.categoryId)
-    ) {
-      return null;
-    }
+    const category = parseOptionalCategoryId(record.categoryId);
+    if (!category.ok) return null;
     if (
       record.status !== undefined &&
-      record.status !== "Approved" &&
-      record.status !== "Pending" &&
-      record.status !== "Rejected"
+      parseClaimStatus(record.status) === undefined
     ) {
       return null;
     }
     return {
       kind: "claims",
-      categoryId: isPolicyTabId(record.categoryId)
-        ? record.categoryId
-        : undefined,
+      categoryId: category.id,
       claimId: typeof record.claimId === "string" ? record.claimId : undefined,
-      status:
-        record.status === "Approved" ||
-        record.status === "Pending" ||
-        record.status === "Rejected"
-          ? record.status
-          : undefined,
+      status: parseClaimStatus(record.status),
     };
   }
 
@@ -81,17 +150,23 @@ function parseRequest(body: unknown): AssistantGenerateRequest | null {
     return null;
   }
 
-  const question = record.question.trim();
+  const question = record.question.trim().slice(0, MAX_QUESTION_CHARS);
+  const history = parseHistory(record.history);
+
+  if (record.type === "route") {
+    return { type: "route", question, history };
+  }
 
   if (record.type === "policy") {
-    if (!isPolicyTabId(record.categoryId)) return null;
-    return { type: "policy", question, categoryId: record.categoryId };
+    const categoryIds = parseCategoryIds(record.categoryIds);
+    if (!categoryIds) return null;
+    return { type: "policy", question, categoryIds, history };
   }
 
   if (record.type === "appData") {
     const resolution = parseAppDataResolution(record.resolution);
     if (!resolution) return null;
-    return { type: "appData", question, resolution };
+    return { type: "appData", question, resolution, history };
   }
 
   return null;
@@ -108,7 +183,7 @@ export async function POST(request: Request) {
   const parsed = parseRequest(body);
   if (!parsed) {
     return NextResponse.json(
-      { error: "Expected a policy or appData assistant request." },
+      { error: "Expected a policy, appData, or route assistant request." },
       { status: 400 },
     );
   }

@@ -5,6 +5,7 @@ import {
   type PolicyCategory,
   type PolicyTabId,
 } from "@/features/policy/constants";
+import type { AssistantTurn } from "./assistantApiTypes";
 
 const POLICY_QUESTION_TERMS = [
   "benefit",
@@ -90,9 +91,20 @@ const EXPLICIT_ACTION_PHRASES = [
   "start registration",
 ] as const;
 
-export type PolicyQuestionResolution =
-  | { type: "match"; category: PolicyCategory }
-  | { type: "ambiguous"; categories: PolicyCategory[] };
+/**
+ * A question can now name more than one benefit — "compare meal and fuel"
+ * resolves to both categories instead of being refused as ambiguous.
+ */
+export type PolicyQuestionResolution = {
+  type: "match";
+  categories: PolicyCategory[];
+};
+
+type PolicyInput = PolicyCategory | PolicyCategory[];
+
+function asCategories(policy: PolicyInput): PolicyCategory[] {
+  return Array.isArray(policy) ? policy : [policy];
+}
 
 export function normalizeAssistantText(value: string): string {
   return value
@@ -146,23 +158,23 @@ export function resolvePolicyQuestion(
     category.aliases.some((alias) => includesPhrase(normalized, alias)),
   );
 
-  if (matches.length > 1) {
-    return { type: "ambiguous", categories: matches };
-  }
-
-  if (matches.length === 1) {
-    const isDirectCategoryRequest =
-      matches[0].aliases.some(
-        (alias) => normalizeAssistantText(alias) === normalized,
-      ) ||
-      normalizeAssistantText(matches[0].tabLabel) === normalized;
+  if (matches.length > 0) {
+    const isDirectCategoryRequest = matches.some(
+      (category) =>
+        category.aliases.some(
+          (alias) => normalizeAssistantText(alias) === normalized,
+        ) || normalizeAssistantText(category.tabLabel) === normalized,
+    );
     if (isDirectCategoryRequest || containsPolicyQuestionTerm(normalized)) {
-      return { type: "match", category: matches[0] };
+      return { type: "match", categories: matches };
     }
   }
 
   if (activeCategoryId && containsPolicyFollowUpTerm(normalized)) {
-    return { type: "match", category: getPolicyCategory(activeCategoryId) };
+    return {
+      type: "match",
+      categories: [getPolicyCategory(activeCategoryId)],
+    };
   }
 
   return null;
@@ -178,7 +190,7 @@ function relevantDeadline(policy: PolicyCategory): string | undefined {
   );
 }
 
-export function createPolicyFallbackSummary(
+function summarizeOneCategory(
   question: string,
   policy: PolicyCategory,
 ): string {
@@ -231,6 +243,32 @@ export function createPolicyFallbackSummary(
   return `**${policy.tabLabel}**\n\n${policy.description}\n\n${highlights.join("\n")}\n\n${importantNote}\n\n_${taxTreatment.qualifier} ${taxTreatment.disclaimer}_`;
 }
 
+/** Side-by-side facts when a question names more than one benefit. */
+function compareCategories(policies: PolicyCategory[]): string {
+  const rows = policies.map((policy) => {
+    const benefit = getEmployerBenefit(policy.id);
+    const limit = findBenefit(policy, /limit/i);
+    const frequency = findBenefit(policy, /frequency/i);
+    const parts = [
+      limit ? `${limit.title.toLowerCase()} ${limit.detail}` : undefined,
+      frequency ? frequency.detail.toLowerCase() : undefined,
+      benefit.claimRules.proofRequired,
+    ].filter(Boolean);
+    return `- **${policy.tabLabel}:** ${parts.join(" · ")}`;
+  });
+
+  return `**Comparing ${policies.map((policy) => policy.tabLabel).join(" and ")}**\n\n${rows.join("\n")}\n\n_${getEmployerBenefit(policies[0].id).taxTreatment.qualifier} ${getEmployerBenefit(policies[0].id).taxTreatment.disclaimer}_`;
+}
+
+export function createPolicyFallbackSummary(
+  question: string,
+  policy: PolicyInput,
+): string {
+  const categories = asCategories(policy);
+  if (categories.length > 1) return compareCategories(categories);
+  return summarizeOneCategory(question, categories[0]);
+}
+
 function numericFacts(value: string): string[] {
   return Array.from(
     value.matchAll(/\d[\d,]*(?:\.\d+)?(?:\(\d+\))?%?(?:st|nd|rd|th)?/gi),
@@ -238,32 +276,67 @@ function numericFacts(value: string): string[] {
   );
 }
 
+export type GroundingCheck = {
+  grounded: boolean;
+  offendingFacts: string[];
+  reason?: "empty" | "too_long" | "ungrounded";
+};
+
+/** Reports which facts failed so a discarded answer is diagnosable. */
+export function checkPolicyGrounding(
+  answer: string,
+  policy: PolicyInput,
+): GroundingCheck {
+  const trimmed = answer.trim();
+  if (!trimmed) return { grounded: false, offendingFacts: [], reason: "empty" };
+  if (trimmed.length > 1600) {
+    return { grounded: false, offendingFacts: [], reason: "too_long" };
+  }
+
+  const source = JSON.stringify(asCategories(policy));
+  const allowedFacts = new Set(numericFacts(source));
+  const offendingFacts = numericFacts(trimmed).filter(
+    (fact) => !allowedFacts.has(fact),
+  );
+
+  return {
+    grounded: offendingFacts.length === 0,
+    offendingFacts,
+    reason: offendingFacts.length === 0 ? undefined : "ungrounded",
+  };
+}
+
 export function isGroundedPolicyAnswer(
   answer: string,
-  policy: PolicyCategory,
+  policy: PolicyInput,
 ): boolean {
-  const trimmed = answer.trim();
-  if (!trimmed || trimmed.length > 1600) return false;
-
-  const source = JSON.stringify(policy);
-  const allowedFacts = new Set(numericFacts(source));
-
-  return numericFacts(trimmed).every((fact) => allowedFacts.has(fact));
+  return checkPolicyGrounding(answer, policy).grounded;
 }
 
 export function createPolicyPrompt(
   question: string,
-  policy: PolicyCategory,
-): Array<{ role: "system" | "user"; content: string }> {
+  policy: PolicyInput,
+  history: AssistantTurn[] = [],
+): Array<{ role: "system" | "user" | "assistant"; content: string }> {
+  const categories = asCategories(policy);
+  const multi = categories.length > 1;
+
   return [
     {
       role: "system",
       content:
-        "You are a policy assistant. Answer only with facts present in the supplied policy JSON. Do not use outside knowledge, infer legal or tax advice, invent limits, dates, eligibility, or coverage, and do not produce a CTA. Never turn conditional tax language into a guarantee, percentage saving, exemption, or tax-free claim. Preserve the supplied qualifier and disclaimer whenever tax treatment is discussed. If the policy does not contain the answer, say that it does not specify it. Format the reply like a helpful chat answer using short markdown: a bold title line, then short paragraphs and bullet lists for key facts (limits, proof, deadlines, steps). Keep it concise (about 80-160 words). Respond in the user's language.",
+        "You are a policy assistant. Answer only with facts present in the supplied policy JSON. Each entry also carries `balance` (allocation, utilized, available for this employee), `claimRules` (proofRequired, submissionDeadlineDay, requiredFields), and `taxTreatment` — use them when the question is about remaining balance, proof, or deadlines. Do not use outside knowledge, infer legal or tax advice, invent limits, dates, eligibility, or coverage, and do not produce a CTA. Every number you write must already appear in the JSON — never add, subtract, or convert amounts yourself. Never turn conditional tax language into a guarantee, percentage saving, exemption, or tax-free claim. Preserve the supplied qualifier and disclaimer whenever tax treatment is discussed. If the policy does not contain the answer, say that it does not specify it." +
+        (multi
+          ? " The JSON is an array of benefits: cover each one the question names, keeping them clearly separated."
+          : "") +
+        " Format the reply like a helpful chat answer using short markdown: a bold title line, then short paragraphs and bullet lists for key facts (limits, proof, deadlines, steps). Keep it concise (about 80-160 words). Respond in the user's language.",
     },
+    ...history,
     {
       role: "user",
-      content: `Question: ${question}\n\nPolicy JSON:\n${JSON.stringify(policy)}`,
+      content: `Question: ${question}\n\nPolicy JSON:\n${JSON.stringify(
+        multi ? categories : categories[0],
+      )}`,
     },
   ];
 }

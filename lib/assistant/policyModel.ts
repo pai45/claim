@@ -2,10 +2,19 @@ import type { PolicyTabId } from "@/features/policy/constants";
 import type {
   AssistantGenerateRequest,
   AssistantStreamEvent,
+  AssistantTurn,
 } from "./assistantApiTypes";
 import type { AppDataResolution } from "./appData";
+import { parseAssistantRoute, type AssistantRoute } from "./route";
 
 type ProgressCallback = (progress?: number, file?: string) => void;
+
+/**
+ * Null until the first call resolves. Set to false when the backend answers
+ * with a non-2xx (the static Pages export has no `/api/assistant`), so we stop
+ * paying for a request that can only fail.
+ */
+let backendAvailable: boolean | null = null;
 
 function assistantApiUrl() {
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -17,17 +26,30 @@ async function generateViaBackend(
   request: AssistantGenerateRequest,
   onProgress?: ProgressCallback,
 ): Promise<string> {
-  const response = await fetch(assistantApiUrl(), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request),
-  });
+  let response: Response;
+  try {
+    response = await fetch(assistantApiUrl(), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+  } catch (error) {
+    backendAvailable = false;
+    throw error;
+  }
 
   if (!response.ok) {
+    // A 4xx/5xx from a served route is a bad request, not a missing backend —
+    // only treat "not routed here at all" as the static-host signal.
+    if (response.status === 404 || response.status === 405) {
+      backendAvailable = false;
+    }
     throw new Error(
       `Assistant API unavailable (${response.status}). Run the app with npm run dev or npm start.`,
     );
   }
+
+  backendAvailable = true;
 
   if (!response.body) {
     throw new Error("Assistant API returned an empty response.");
@@ -91,18 +113,26 @@ async function generateViaBackend(
   return answer;
 }
 
-/** Backend AI is available whenever the app is served by Next.js (not static Pages). */
+/**
+ * Backend AI is available whenever the app is served by Next.js. On the static
+ * Pages export the first call fails and every later call short-circuits.
+ */
 export function supportsOnDevicePolicyModel(): boolean {
-  return typeof window !== "undefined";
+  return typeof window !== "undefined" && backendAvailable !== false;
+}
+
+export function resetAssistantBackendAvailability() {
+  backendAvailable = null;
 }
 
 export function generatePolicyAnswer(
   question: string,
-  categoryId: PolicyTabId,
+  categoryIds: PolicyTabId[],
+  history?: AssistantTurn[],
   onProgress?: ProgressCallback,
 ): Promise<string> {
   return generateViaBackend(
-    { type: "policy", question, categoryId },
+    { type: "policy", question, categoryIds, history },
     onProgress,
   );
 }
@@ -110,10 +140,24 @@ export function generatePolicyAnswer(
 export function generateAppDataAnswer(
   question: string,
   resolution: AppDataResolution,
+  history?: AssistantTurn[],
   onProgress?: ProgressCallback,
 ): Promise<string> {
   return generateViaBackend(
-    { type: "appData", question, resolution },
+    { type: "appData", question, resolution, history },
     onProgress,
   );
+}
+
+/** Returns null when the model replies with something that isn't a valid route. */
+export async function generateAssistantRoute(
+  question: string,
+  history?: AssistantTurn[],
+  onProgress?: ProgressCallback,
+): Promise<AssistantRoute | null> {
+  const raw = await generateViaBackend(
+    { type: "route", question, history },
+    onProgress,
+  );
+  return parseAssistantRoute(raw);
 }

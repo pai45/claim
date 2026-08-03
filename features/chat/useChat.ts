@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createClaimId } from "@/features/claims/constants";
 import {
   getPolicyCategory,
+  type PolicyCategory,
   type PolicyTabId,
 } from "@/features/policy/constants";
 import { resolveAssistantReply } from "@/lib/assistant/engine";
@@ -11,21 +12,26 @@ import {
   appDataContextForResolution,
   appDataPayloadForResolution,
   buildGroundedAppData,
+  checkAppDataGrounding,
   createAppDataFallbackSummary,
-  isGroundedAppDataAnswer,
   resolveAppDataQuestion,
   type AppDataContext,
+  type AppDataResolution,
 } from "@/lib/assistant/appData";
 import {
+  checkPolicyGrounding,
   createPolicyFallbackSummary,
-  isGroundedPolicyAnswer,
+  isExplicitAssistantAction,
   resolvePolicyQuestion,
 } from "@/lib/assistant/policy";
 import {
   generateAppDataAnswer,
+  generateAssistantRoute,
   generatePolicyAnswer,
   supportsOnDevicePolicyModel,
 } from "@/lib/assistant/policyModel";
+import { buildAssistantHistory } from "@/lib/assistant/history";
+import { routePlanFor } from "@/lib/assistant/route";
 import { USER_DISPLAY_NAME, VEHICLE_REGISTRATION_INTENT } from "./constants";
 import {
   searchMerchantsByName,
@@ -65,6 +71,9 @@ export function useChat() {
   const chatVersionRef = useRef(0);
   const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
   const previewUrlsRef = useRef(new Map<string, string>());
+  // Lets sendMessage read the transcript for prompt history without taking
+  // `messages` as a dependency, which would change its identity every append.
+  const messagesRef = useRef<ChatMessage[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -96,6 +105,10 @@ export function useChat() {
     });
     return () => window.cancelAnimationFrame(frame);
   }, []);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     if (!isHydrated) return;
@@ -133,6 +146,7 @@ export function useChat() {
     previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     previewUrlsRef.current.clear();
     driverSalaryDraftRef.current = {};
+    messagesRef.current = [];
     setMessages([]);
     setIsLoading(false);
     setIsScanning(false);
@@ -244,131 +258,112 @@ export function useChat() {
       setIsLoading(true);
       setError(null);
 
-      try {
-        const appDataResolution = resolveAppDataQuestion(
-          trimmed,
-          intentId,
-          activeAppDataContext,
-        );
-        const policyResolution = intentId
-          ? null
-          : resolvePolicyQuestion(trimmed, activePolicyCategory);
+      // Captured before the user turn is appended so the prompt sees prior
+      // context without the question repeated back to it.
+      const history = buildAssistantHistory(messagesRef.current);
+      const trackProgress = (progress?: number, file?: string) => {
+        if (chatVersionRef.current !== chatVersion) return;
+        setPolicyModelStatus({ progress, file });
+      };
 
-        if (appDataResolution) {
-          const source = buildGroundedAppData(appDataResolution);
-          setActiveAppDataContext(
-            appDataContextForResolution(appDataResolution),
-          );
-          setActivePolicyCategory(null);
+      const answerFromAppData = async (resolution: AppDataResolution) => {
+        const source = buildGroundedAppData(resolution);
+        setActiveAppDataContext(appDataContextForResolution(resolution));
+        setActivePolicyCategory(null);
 
-          let reply = createAppDataFallbackSummary(
-            trimmed,
-            appDataResolution,
-          );
+        let reply = createAppDataFallbackSummary(trimmed, resolution);
 
-          if (supportsOnDevicePolicyModel()) {
-            setPolicyModelStatus({});
-            try {
-              const generated = await generateAppDataAnswer(
-                trimmed,
-                appDataResolution,
-                (progress, file) => {
-                  if (chatVersionRef.current !== chatVersion) return;
-                  setPolicyModelStatus({ progress, file });
-                },
-              );
-
-              if (isGroundedAppDataAnswer(generated, source)) {
-                reply = generated;
-              }
-            } catch (modelError) {
+        if (supportsOnDevicePolicyModel()) {
+          setPolicyModelStatus({});
+          try {
+            const generated = await generateAppDataAnswer(
+              trimmed,
+              resolution,
+              history,
+              trackProgress,
+            );
+            const check = checkAppDataGrounding(generated, source);
+            if (check.grounded) {
+              reply = generated;
+            } else {
               console.warn(
-                "Backend assistant unavailable; using app-data fallback.",
-                modelError,
+                "Discarded an ungrounded app-data answer; using the deterministic summary.",
+                check,
               );
             }
+          } catch (modelError) {
+            console.warn(
+              "Backend assistant unavailable; using app-data fallback.",
+              modelError,
+            );
           }
-
-          if (chatVersionRef.current !== chatVersion) return;
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: createId(),
-              role: "assistant",
-              content: reply,
-              createdAt: Date.now(),
-              kind: "app_data_answer",
-              appDataAnswer: appDataPayloadForResolution(appDataResolution),
-            },
-          ]);
-          return;
         }
 
-        if (policyResolution?.type === "ambiguous") {
-          setActivePolicyCategory(null);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: createId(),
-              role: "assistant",
-              content: `I found more than one matching policy: ${policyResolution.categories
-                .map((category) => category.tabLabel)
-                .join(", ")}. Please ask about one benefit at a time.`,
-              createdAt: Date.now(),
-              kind: "text",
-            },
-          ]);
-          return;
-        }
+        if (chatVersionRef.current !== chatVersion) return;
 
-        if (policyResolution?.type === "match") {
-          const { category } = policyResolution;
-          setActivePolicyCategory(category.id);
-          setActiveAppDataContext(null);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            role: "assistant",
+            content: reply,
+            createdAt: Date.now(),
+            kind: "app_data_answer",
+            appDataAnswer: appDataPayloadForResolution(resolution),
+          },
+        ]);
+      };
 
-          let reply = createPolicyFallbackSummary(trimmed, category);
+      const answerFromPolicy = async (categories: PolicyCategory[]) => {
+        const categoryIds = categories.map((category) => category.id);
+        setActivePolicyCategory(categoryIds[0]);
+        setActiveAppDataContext(null);
 
-          if (supportsOnDevicePolicyModel()) {
-            setPolicyModelStatus({});
-            try {
-              const generated = await generatePolicyAnswer(
-                trimmed,
-                category.id,
-                (progress, file) => {
-                  if (chatVersionRef.current !== chatVersion) return;
-                  setPolicyModelStatus({ progress, file });
-                },
-              );
+        let reply = createPolicyFallbackSummary(trimmed, categories);
 
-              if (isGroundedPolicyAnswer(generated, category)) {
-                reply = generated;
-              }
-            } catch (modelError) {
+        if (supportsOnDevicePolicyModel()) {
+          setPolicyModelStatus({});
+          try {
+            const generated = await generatePolicyAnswer(
+              trimmed,
+              categoryIds,
+              history,
+              trackProgress,
+            );
+            const check = checkPolicyGrounding(generated, categories);
+            if (check.grounded) {
+              reply = generated;
+            } else {
               console.warn(
-                "Backend assistant unavailable; using policy fallback.",
-                modelError,
+                "Discarded an ungrounded policy answer; using the deterministic summary.",
+                check,
               );
             }
+          } catch (modelError) {
+            console.warn(
+              "Backend assistant unavailable; using policy fallback.",
+              modelError,
+            );
           }
-
-          if (chatVersionRef.current !== chatVersion) return;
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: createId(),
-              role: "assistant",
-              content: reply,
-              createdAt: Date.now(),
-              kind: "policy_answer",
-              policyAnswer: { categoryId: category.id },
-            },
-          ]);
-          return;
         }
 
-        const data = resolveAssistantReply(trimmed, intentId);
+        if (chatVersionRef.current !== chatVersion) return;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            role: "assistant",
+            content: reply,
+            createdAt: Date.now(),
+            kind: "policy_answer",
+            policyAnswer: { categoryId: categoryIds[0], categoryIds },
+          },
+        ]);
+      };
+
+      const answerFromIntent = (resolvedIntentId?: string) => {
+        const data = resolveAssistantReply(trimmed, resolvedIntentId);
         const assistantMessage: ChatMessage = {
           id: createId(),
           role: "assistant",
@@ -410,6 +405,71 @@ export function useChat() {
         if (data.intentId === VEHICLE_REGISTRATION_INTENT) {
           appendVehicleNumberInput();
         }
+      };
+
+      try {
+        // Deterministic matchers stay the fast path: they are instant, they
+        // keep working on the static export, and they cover the phrasings the
+        // quick actions produce.
+        const appDataResolution = resolveAppDataQuestion(
+          trimmed,
+          intentId,
+          activeAppDataContext,
+        );
+
+        if (appDataResolution) {
+          await answerFromAppData(appDataResolution);
+          return;
+        }
+
+        const policyResolution = intentId
+          ? null
+          : resolvePolicyQuestion(trimmed, activePolicyCategory);
+
+        if (policyResolution) {
+          await answerFromPolicy(policyResolution.categories);
+          return;
+        }
+
+        // Anything the matchers missed goes to the model for classification.
+        // It only picks which grounded source to build — never the facts.
+        if (
+          !intentId &&
+          trimmed &&
+          !isExplicitAssistantAction(trimmed) &&
+          supportsOnDevicePolicyModel()
+        ) {
+          setPolicyModelStatus({});
+          try {
+            const route = await generateAssistantRoute(
+              trimmed,
+              history,
+              trackProgress,
+            );
+            if (chatVersionRef.current !== chatVersion) return;
+
+            const plan = route ? routePlanFor(route) : null;
+            if (plan?.kind === "appData") {
+              await answerFromAppData(plan.resolution);
+              return;
+            }
+            if (plan?.kind === "policy") {
+              await answerFromPolicy(plan.categories);
+              return;
+            }
+            if (plan?.kind === "intent") {
+              answerFromIntent(plan.intentId);
+              return;
+            }
+          } catch (routeError) {
+            console.warn(
+              "Assistant routing unavailable; using keyword intents.",
+              routeError,
+            );
+          }
+        }
+
+        answerFromIntent(intentId);
       } catch {
         setError("Something went wrong. Please try again.");
         const fallbackMessage: ChatMessage = {

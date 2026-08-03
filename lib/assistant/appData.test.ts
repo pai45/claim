@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   appDataPayloadForResolution,
   buildGroundedAppData,
+  checkAppDataGrounding,
   createAppDataFallbackSummary,
   isGroundedAppDataAnswer,
   resolveAppDataQuestion,
@@ -76,6 +77,80 @@ describe("app-data question routing", () => {
       status: "Approved",
     });
   });
+
+  it("routes rejected and needs-info questions to real claims", () => {
+    expect(resolveAppDataQuestion("Show my rejected claims")).toEqual({
+      kind: "claims",
+      categoryId: undefined,
+      status: "Rejected",
+    });
+    expect(resolveAppDataQuestion("Why was my claim rejected?")).toEqual({
+      kind: "claims",
+      categoryId: undefined,
+      status: "Rejected",
+    });
+  });
+
+  it("routes cross-benefit questions to the wallet overview", () => {
+    expect(resolveAppDataQuestion("Which wallet has the most left?")).toEqual({
+      kind: "wallets",
+    });
+  });
+
+  it("routes generic rule questions without stealing personal ones", () => {
+    expect(resolveAppDataQuestion("What makes a claim fail?")).toEqual({
+      kind: "rules",
+      categoryId: undefined,
+    });
+  });
+
+  it("routes merchant eligibility questions", () => {
+    expect(resolveAppDataQuestion("Is Shell allowed for fuel?")).toEqual({
+      kind: "merchants",
+      benefitType: "fuel",
+      query: "Shell",
+    });
+  });
+});
+
+describe("grounded sources beyond the dashboard", () => {
+  it("returns the rejected claim that used to be filtered out entirely", () => {
+    const source = buildGroundedAppData({
+      kind: "claims",
+      status: "Rejected",
+    }) as { claims: Array<{ id: string }>; summary: { totalCount: number } };
+
+    expect(source.summary.totalCount).toBe(1);
+    expect(source.claims.map((claim) => claim.id)).toEqual(["CLM-45033"]);
+  });
+
+  it("covers every wallet in the overview, including the ones without a dashboard", () => {
+    const source = buildGroundedAppData({ kind: "wallets" }) as {
+      wallets: Array<{ categoryId: string }>;
+    };
+
+    expect(source.wallets.map((wallet) => wallet.categoryId)).toEqual(
+      expect.arrayContaining(["meal", "gift", "professional"]),
+    );
+  });
+
+  it("summarizes wallets deterministically when the model is unavailable", () => {
+    const answer = createAppDataFallbackSummary("Where do I have room left?", {
+      kind: "wallets",
+    });
+
+    expect(answer).toContain("Meal Wallet");
+    expect(answer).toContain("Total available");
+  });
+
+  it("links rule answers to the policy screen and merchant answers nowhere", () => {
+    expect(appDataPayloadForResolution({ kind: "rules", categoryId: "fuel" })).toEqual(
+      { target: "policy", categoryId: "fuel" },
+    );
+    expect(appDataPayloadForResolution({ kind: "merchants" })).toEqual({
+      target: "none",
+    });
+  });
 });
 
 describe("grounded app-data answers", () => {
@@ -98,6 +173,22 @@ describe("grounded app-data answers", () => {
     expect(answer).toContain("CLM-44088");
     expect(answer).toContain("Pending");
     expect(answer).toContain("₹3,200");
+  });
+
+  it("reports which facts failed instead of only that grounding failed", () => {
+    const source = buildGroundedAppData({
+      kind: "claims",
+      claimId: "CLM-44088",
+    });
+    const check = checkAppDataGrounding(
+      "CLM-99999 is pending for ₹9,999.",
+      source,
+    );
+
+    expect(check.grounded).toBe(false);
+    expect(check.reason).toBe("ungrounded");
+    expect(check.offendingFacts).toContain("9999");
+    expect(check.offendingClaimIds).toEqual(["CLM-99999"]);
   });
 
   it("rejects numbers and claim IDs absent from the selected source", () => {

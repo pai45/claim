@@ -434,22 +434,40 @@ export function MessageBubble({
     const category = DASHBOARD_CATEGORIES.find(
       (item) => item.id === payload.categoryId,
     );
+    const policy = payload.categoryId
+      ? getPolicyCategory(payload.categoryId)
+      : undefined;
     const href =
       payload.target === "claim" && payload.claimId
         ? `/claim-details/?id=${encodeURIComponent(payload.claimId)}`
-        : payload.target === "category_dashboard" && category
-          ? `/dashboard/${category.id}/`
-          : payload.target === "claims_history"
-            ? "/claims-history/"
-            : "/dashboard/";
+        : payload.target === "policy" && policy
+          ? `/policy-details/${policy.id}/`
+          : payload.target === "category_dashboard" && category
+            ? `/dashboard/${category.id}/`
+            : payload.target === "claims_history"
+              ? "/claims-history/"
+              : "/dashboard/";
     const label =
       payload.target === "claim"
         ? "View claim details"
-        : payload.target === "category_dashboard" && category
-          ? `View ${category.name} dashboard`
-          : payload.target === "claims_history"
-            ? "View claims history"
-            : "View claims dashboard";
+        : payload.target === "policy" && policy
+          ? `View all ${policy.tabLabel} details`
+          : payload.target === "category_dashboard" && category
+            ? `View ${category.name} dashboard`
+            : payload.target === "claims_history"
+              ? "View claims history"
+              : "View claims dashboard";
+
+    // Merchant and catalog-wide answers have no single screen to deep-link to.
+    if (payload.target === "none") {
+      return (
+        <AssistantText
+          content={message.content}
+          createdAt={message.createdAt}
+          reveal={textReveal}
+        />
+      );
+    }
 
     return (
       <div className="flex w-full flex-col items-start gap-2">

@@ -1,0 +1,116 @@
+import { describe, expect, it } from "vitest";
+import { createAppDataFallbackSummary, resolveAppDataQuestion } from "./appData";
+import { createPolicyFallbackSummary, resolvePolicyQuestion } from "./policy";
+
+/**
+ * Pins the answers quoted in LLM-CAPABILITIES.md. That document previously
+ * drifted from the code (it advertised "When must I submit books claims?" as a
+ * policy answer while the router sent it to the claims list), so the headline
+ * numbers are asserted here rather than trusted to stay accurate.
+ *
+ * If one of these fails, either the app data changed — update the doc — or a
+ * routing change moved the question somewhere unintended.
+ */
+function answer(question: string): string {
+  const appData = resolveAppDataQuestion(question);
+  if (appData) return createAppDataFallbackSummary(question, appData);
+
+  const policy = resolvePolicyQuestion(question);
+  if (policy) return createPolicyFallbackSummary(question, policy.categories);
+
+  throw new Error(`"${question}" no longer resolves to a grounded answer`);
+}
+
+describe("documented answers", () => {
+  it("Show my dashboard", () => {
+    expect(answer("Show my dashboard")).toBe(
+      [
+        "**Claims dashboard (FY 26/27)**",
+        "",
+        "- **Available:** ₹2,05,000",
+        "- **Utilized:** ₹80,000",
+        "- **FY limit:** ₹2,85,000",
+        "- **Categories:** 5",
+      ].join("\n"),
+    );
+  });
+
+  it("Which wallet has the most left?", () => {
+    const reply = answer("Which wallet has the most left?");
+
+    // Ranked by available balance, and covers the wallets with no dashboard.
+    expect(reply).toContain("- **Driver Salary:** ₹55,000 available of ₹90,000");
+    expect(reply).toContain("- **Gift Wallet:** ₹5,000 available of ₹5,000");
+    expect(reply).toContain("**Total available:** ₹2,40,000");
+  });
+
+  it("How many claims do I have?", () => {
+    const reply = answer("How many claims do I have?");
+
+    expect(reply).toContain("- **Count:** 25");
+    expect(reply).toContain("- **Approved:** 18");
+    expect(reply).toContain("- **Pending:** 5");
+    expect(reply).toContain("- **Needs info:** 1");
+    expect(reply).toContain("- **Rejected:** 1");
+  });
+
+  it("Why was my claim rejected?", () => {
+    expect(answer("Why was my claim rejected?")).toContain(
+      "- **CLM-45033** — Shell Aundh - 20 Apr 2026, ₹1,100, Rejected",
+    );
+  });
+
+  it("Which claims need more information?", () => {
+    expect(answer("Which claims need more information?")).toContain(
+      "- **CLM-45188** — Indian Oil - 11 May 2026, ₹3,400, Needs info",
+    );
+  });
+
+  it("Show mobile claims merges both datasets", () => {
+    const reply = answer("Show mobile claims");
+
+    // 4 dashboard rows + 2 from the claims-history screen.
+    expect(reply).toContain("- **Count:** 6");
+    expect(reply).toContain("- **Total:** ₹5,995");
+  });
+
+  it("When must I submit books claims?", () => {
+    expect(answer("When must I submit books claims?")).toBe(
+      [
+        "**Books & Periodicals deadline**",
+        "",
+        "- Claims must be submitted before the 5th of next month",
+        "- **Claim Frequency:** Monthly",
+      ].join("\n"),
+    );
+  });
+
+  it("Compare the meal and fuel benefits", () => {
+    const reply = answer("Compare the meal and fuel benefits");
+
+    expect(reply).toContain(
+      "- **Meal Wallet:** monthly limit ₹2,500 · monthly · GST food or restaurant invoice",
+    );
+    expect(reply).toContain("- **Fuel & Maintenance:** monthly limit ₹15,000");
+  });
+
+  it("Is Shell allowed?", () => {
+    const reply = answer("Is Shell allowed?");
+
+    expect(reply).toContain("- **Fuel:** Shell");
+    expect(reply).toContain(
+      "Brands outside this list are not automatically rejected; they need HR review.",
+    );
+  });
+
+  it("What makes a claim fail?", () => {
+    const reply = answer("What makes a claim fail?");
+
+    expect(reply).toContain(
+      "Every claim is checked for required fields, a valid amount and bill date, available balance, attached proof, duplicates, and the submission deadline.",
+    );
+    expect(reply).toContain(
+      "- **Meal Wallet:** GST food or restaurant invoice, submit by the 5th of the next month",
+    );
+  });
+});

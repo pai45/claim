@@ -1,16 +1,29 @@
 import type { AppDataResolution } from "./appData";
 import type { PolicyTabId } from "@/features/policy/constants";
 
+/** A prior chat turn, trimmed for prompt context. */
+export type AssistantTurn = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 export type AssistantGenerateRequest =
   | {
       type: "policy";
       question: string;
-      categoryId: PolicyTabId;
+      categoryIds: PolicyTabId[];
+      history?: AssistantTurn[];
     }
   | {
       type: "appData";
       question: string;
       resolution: AppDataResolution;
+      history?: AssistantTurn[];
+    }
+  | {
+      type: "route";
+      question: string;
+      history?: AssistantTurn[];
     };
 
 export type AssistantStreamEvent =

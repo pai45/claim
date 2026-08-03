@@ -108,7 +108,10 @@ export type VehicleLookupPayload = {
 };
 
 export type PolicyAnswerPayload = {
+  /** Primary category — drives the "view details" link. */
   categoryId: PolicyTabId;
+  /** Every category the answer covered, when the question named more than one. */
+  categoryIds?: PolicyTabId[];
 };
 
 export type PolicyModelStatus = {
@@ -117,7 +120,14 @@ export type PolicyModelStatus = {
 };
 
 export type AppDataAnswerPayload = {
-  target: "dashboard" | "category_dashboard" | "claims_history" | "claim";
+  target:
+    | "dashboard"
+    | "category_dashboard"
+    | "claims_history"
+    | "claim"
+    | "policy"
+    /** Answer stands alone — render no follow-up link. */
+    | "none";
   categoryId?: PolicyTabId;
   claimId?: string;
 };

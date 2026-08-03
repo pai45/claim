@@ -13,10 +13,9 @@ describe("policy question routing", () => {
   it("routes a natural meal-benefit question", () => {
     const resolution = resolvePolicyQuestion("Tell me benefits about meals");
 
-    expect(resolution?.type).toBe("match");
-    if (resolution?.type === "match") {
-      expect(resolution.category.id).toBe("meal");
-    }
+    expect(resolution?.categories.map((category) => category.id)).toEqual([
+      "meal",
+    ]);
   });
 
   it.each(POLICY_CATEGORIES)(
@@ -26,10 +25,9 @@ describe("policy question routing", () => {
         `What are the benefits for ${category.aliases[0]}?`,
       );
 
-      expect(resolution?.type).toBe("match");
-      if (resolution?.type === "match") {
-        expect(resolution.category.id).toBe(category.id);
-      }
+      expect(resolution?.categories.map((item) => item.id)).toContain(
+        category.id,
+      );
     },
   );
 
@@ -39,22 +37,37 @@ describe("policy question routing", () => {
       "meal",
     );
 
-    expect(resolution?.type).toBe("match");
-    if (resolution?.type === "match") {
-      expect(resolution.category.id).toBe("meal");
-    }
+    expect(resolution?.categories.map((category) => category.id)).toEqual([
+      "meal",
+    ]);
   });
 
   it("does not mistake claim tracking for a policy follow-up", () => {
     expect(resolvePolicyQuestion("Where is my claim?", "meal")).toBeNull();
   });
 
-  it("asks for one category when multiple policies match", () => {
+  it("keeps every named benefit when a question compares two", () => {
     const resolution = resolvePolicyQuestion(
       "Compare the meal and fuel benefits",
     );
 
-    expect(resolution?.type).toBe("ambiguous");
+    expect(resolution?.categories.map((category) => category.id)).toEqual([
+      "meal",
+      "fuel",
+    ]);
+  });
+
+  it("summarizes both benefits side by side", () => {
+    const resolution = resolvePolicyQuestion(
+      "Compare the meal and fuel benefits",
+    );
+    const answer = createPolicyFallbackSummary(
+      "Compare the meal and fuel benefits",
+      resolution!.categories,
+    );
+
+    expect(answer).toContain("Meal Wallet");
+    expect(answer).toContain("Fuel & Maintenance");
   });
 
   it.each([
