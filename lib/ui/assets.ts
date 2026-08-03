@@ -8,6 +8,9 @@ export const UI_ICONS = {
   send: "/assets/icons/send.svg",
   menu: "/assets/icons/menu.svg",
   card: "/assets/icons/card.svg",
+  claimsDashboard: "/assets/icons/claims-dashboard.svg",
+  policyDetails: "/assets/icons/policy-details.svg",
+  claimHistory: "/assets/icons/claim-history.svg",
 } as const;
 
 export const CATEGORY_ICONS = {

@@ -80,7 +80,7 @@ export function VehicleDetailsCard({
       <div className="flex flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card">
         {/* Commons photos vary wildly in aspect ratio, so the frame is fixed
             and the image is cropped into it rather than letterboxed. */}
-        <div className="relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-control bg-input">
+        <div className="relative flex aspect-16/10 w-full items-center justify-center overflow-hidden rounded-control bg-input">
           {imageFailed ? (
             <CarIcon />
           ) : (

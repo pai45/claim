@@ -111,7 +111,7 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
       </header>
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-10 pt-4">
-        <section className="animate-rise-in relative flex flex-col gap-5 rounded-card border border-success bg-gradient-to-b from-white to-success-tint p-card shadow-soft">
+        <section className="animate-rise-in relative flex flex-col gap-5 rounded-card border border-success bg-linear-to-b from-white to-success-tint p-card shadow-soft">
           <div className="absolute right-3 top-2.5">
             <span className="inline-flex min-h-6 min-w-6 items-center rounded-full bg-surface px-1.5 py-0.5 shadow-[inset_0_0_0_1px_var(--color-border-muted)]">
               <span className="type-field-label text-center normal-case">

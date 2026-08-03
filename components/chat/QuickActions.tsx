@@ -30,7 +30,7 @@ function QuickActionButton({
       disabled={disabled}
       onClick={() => onSelect(action)}
       style={style}
-      className="animate-rise-in"
+      className="animate-rise-in shrink-0 whitespace-nowrap !px-2 min-[390px]:!px-3"
     >
       {action.label}
     </ChatOptionButton>
@@ -46,7 +46,7 @@ export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
   return (
     <div className="flex flex-col gap-2.5 px-page">
       {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex flex-wrap content-start gap-2.5">
+        <div key={rowIndex} className="flex flex-nowrap content-start gap-2">
           {row.map((action, indexInRow) => {
             const index = rowIndex * ROW_SIZE + indexInRow;
             return (

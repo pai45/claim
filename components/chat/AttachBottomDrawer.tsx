@@ -245,7 +245,7 @@ export function AttachBottomDrawer({
                     type="button"
                     disabled={disabled}
                     onClick={() => handlePick(option.id)}
-                    className="flex h-[104px] flex-1 flex-col items-center justify-center gap-2 rounded-card border border-border-soft bg-white p-3 text-center disabled:opacity-50"
+                    className="flex h-26 flex-1 flex-col items-center justify-center gap-2 rounded-card border border-border-soft bg-white p-3 text-center disabled:opacity-50"
                   >
                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-tint">
                       {option.icon}
@@ -259,7 +259,7 @@ export function AttachBottomDrawer({
                 <PrivacyNotice onClearData={onClearData} />
               </div>
             ) : (
-              <div className="flex min-h-[104px] flex-wrap content-start gap-2">
+              <div className="flex min-h-26 flex-wrap content-start gap-2">
                 {CLAIM_STATUS_TABS.map((filter) => {
                   const active = activeFilter === filter.id;
                   return (

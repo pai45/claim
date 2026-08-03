@@ -134,7 +134,7 @@ export function ChatComposer({
             placeholder="Message Claims Assistant..."
             disabled={disabled}
             aria-disabled={disabled}
-            className="max-h-[120px] min-h-[28px] min-w-0 flex-1 resize-none bg-transparent py-1.5 text-body leading-5 text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
+            className="max-h-30 min-h-7 min-w-0 flex-1 resize-none bg-transparent py-1.5 text-body leading-5 text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
           />
 
           <button

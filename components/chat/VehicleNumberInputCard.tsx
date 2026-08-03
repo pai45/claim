@@ -64,7 +64,7 @@ export function VehicleNumberInputCard({
           className="w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm font-bold uppercase tracking-wider text-body outline-none placeholder:font-normal placeholder:tracking-normal placeholder:text-muted focus:border-pine disabled:opacity-50"
         />
 
-        <p id="vehicle-number-hint" className="min-h-[16px] text-caption">
+        <p id="vehicle-number-hint" className="min-h-4 text-caption">
           {showError ? (
             <span className="text-danger">{parsed.message}</span>
           ) : location ? (

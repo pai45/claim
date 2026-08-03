@@ -17,82 +17,6 @@ function NewChatIcon() {
   return <AppIcon src={UI_ICONS.plus} size={20} alt="" className="brightness-0 invert" />;
 }
 
-function DashboardIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect
-        x="2.08"
-        y="2.08"
-        width="6.67"
-        height="6.67"
-        rx="2"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-      />
-      <rect
-        x="11.25"
-        y="2.08"
-        width="6.67"
-        height="6.67"
-        rx="2"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-      />
-      <rect
-        x="2.08"
-        y="11.25"
-        width="6.67"
-        height="6.67"
-        rx="2"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-      />
-      <rect
-        x="11.25"
-        y="11.25"
-        width="6.67"
-        height="6.67"
-        rx="2"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-function PolicyIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path
-        d="M2.5 6.5c0-1.2.9-2.2 2.1-2.2h8.8c1.2 0 2.1 1 2.1 2.2v7.1c0 1.2-.9 2.2-2.1 2.2H4.6c-1.2 0-2.1-1-2.1-2.2V6.5z"
-        stroke={colors.pinePrimary}
-        strokeWidth="1.25"
-      />
-      <path
-        d="M13.5 7.5h2.2c.7 0 1.3.6 1.3 1.3v.7c0 .7-.6 1.3-1.3 1.3H13.5"
-        stroke={colors.pinePrimary}
-        strokeWidth="1.25"
-      />
-      <circle cx="15" cy="9.8" r="0.85" fill={colors.pinePrimary} />
-    </svg>
-  );
-}
-
-function HistoryIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <circle cx="10" cy="10" r="7.5" stroke={colors.pineDark} strokeWidth="1.5" />
-      <path
-        d="M10 6.7V10l3.3 1.7"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 const MENU_ITEMS: {
   id: string;
   label: string;
@@ -103,19 +27,19 @@ const MENU_ITEMS: {
     id: "dashboard",
     label: "Claims Dashboard",
     href: "/dashboard",
-    icon: <DashboardIcon />,
+    icon: <AppIcon src={UI_ICONS.claimsDashboard} size={20} alt="" />,
   },
   {
     id: "policy-details",
     label: "Policy details",
     href: "/policy-details",
-    icon: <PolicyIcon />,
+    icon: <AppIcon src={UI_ICONS.policyDetails} size={20} alt="" />,
   },
   {
     id: "claim-history",
     label: "Claim history",
     href: "/claims-history",
-    icon: <HistoryIcon />,
+    icon: <AppIcon src={UI_ICONS.claimHistory} size={20} alt="" />,
   },
 ];
 
@@ -146,7 +70,7 @@ export function SideMenu({ open, onClose, onNewChat }: SideMenuProps) {
       />
 
       <nav
-        className={`absolute right-0 top-0 flex h-full w-[300px] flex-col bg-bg shadow-menu transition-transform duration-200 ease-out ${
+        className={`absolute right-0 top-0 flex h-full w-75 flex-col bg-bg shadow-menu transition-transform duration-200 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
         aria-label="Main menu"
