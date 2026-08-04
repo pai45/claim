@@ -113,37 +113,55 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
   ) {
     const bottomRef = useRef<HTMLDivElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
-    const nearBottomRef = useRef(true);
+    const autoFollowRef = useRef(true);
+    const programmaticScrollRef = useRef(false);
+    const programmaticScrollTimerRef = useRef<number | null>(null);
+    const previousLastMessageIdRef = useRef<string | undefined>(undefined);
     const lastMessage = messages[messages.length - 1];
     const lastMessageId = lastMessage?.id;
     const lastMessageKind = lastMessage?.kind;
+    const lastMessageRole = lastMessage?.role;
 
-    const updateNearBottom = useCallback(() => {
+    const updateNearBottom = useCallback((fromScrollEvent = false) => {
       const scroller = findScrollParent(listRef.current);
       if (!scroller) {
-        nearBottomRef.current = true;
+        autoFollowRef.current = true;
         onAwayFromBottomChange?.(false);
         return;
       }
       const distance =
         scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
       const near = distance <= NEAR_BOTTOM_PX;
-      nearBottomRef.current = near;
-      onAwayFromBottomChange?.(!near && messages.length > 0);
+      if (near) autoFollowRef.current = true;
+      else if (fromScrollEvent && !programmaticScrollRef.current) {
+        autoFollowRef.current = false;
+      }
+      onAwayFromBottomChange?.(
+        !near && !autoFollowRef.current && messages.length > 0,
+      );
     }, [messages.length, onAwayFromBottomChange]);
 
     const scrollToBottom = useCallback((force = false) => {
-      if (!force && !nearBottomRef.current) return;
+      if (!force && !autoFollowRef.current) return;
       const prefersReducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
+      programmaticScrollRef.current = true;
+      if (programmaticScrollTimerRef.current !== null) {
+        window.clearTimeout(programmaticScrollTimerRef.current);
+      }
       bottomRef.current?.scrollIntoView({
         behavior: prefersReducedMotion ? "auto" : "smooth",
         block: "end",
       });
-      nearBottomRef.current = true;
+      autoFollowRef.current = true;
       onAwayFromBottomChange?.(false);
-    }, [onAwayFromBottomChange]);
+      programmaticScrollTimerRef.current = window.setTimeout(() => {
+        programmaticScrollRef.current = false;
+        programmaticScrollTimerRef.current = null;
+        updateNearBottom();
+      }, prefersReducedMotion ? 0 : 700);
+    }, [onAwayFromBottomChange, updateNearBottom]);
 
     useImperativeHandle(ref, () => ({ scrollToBottom }), [scrollToBottom]);
 
@@ -151,25 +169,61 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       const scroller = findScrollParent(listRef.current);
       if (!scroller) return;
       updateNearBottom();
-      scroller.addEventListener("scroll", updateNearBottom, { passive: true });
-      return () => scroller.removeEventListener("scroll", updateNearBottom);
+      const handleScroll = () => updateNearBottom(true);
+      const cancelProgrammaticScroll = () => {
+        programmaticScrollRef.current = false;
+        if (programmaticScrollTimerRef.current !== null) {
+          window.clearTimeout(programmaticScrollTimerRef.current);
+          programmaticScrollTimerRef.current = null;
+        }
+      };
+      scroller.addEventListener("scroll", handleScroll, { passive: true });
+      scroller.addEventListener("wheel", cancelProgrammaticScroll, {
+        passive: true,
+      });
+      scroller.addEventListener("touchstart", cancelProgrammaticScroll, {
+        passive: true,
+      });
+      scroller.addEventListener("pointerdown", cancelProgrammaticScroll, {
+        passive: true,
+      });
+      return () => {
+        scroller.removeEventListener("scroll", handleScroll);
+        scroller.removeEventListener("wheel", cancelProgrammaticScroll);
+        scroller.removeEventListener("touchstart", cancelProgrammaticScroll);
+        scroller.removeEventListener("pointerdown", cancelProgrammaticScroll);
+      };
     }, [updateNearBottom, messages.length]);
 
     useEffect(() => {
       if (messages.length === 0 && !isLoading && !isScanning && !isLocating) {
         return;
       }
-      scrollToBottom();
+      const isNewUserMessage =
+        lastMessageRole === "user" &&
+        lastMessageId !== previousLastMessageIdRef.current;
+      scrollToBottom(isNewUserMessage);
+      previousLastMessageIdRef.current = lastMessageId;
     }, [
       messages.length,
       lastMessageId,
       lastMessageKind,
+      lastMessageRole,
       isLoading,
       isScanning,
       isLocating,
       policyModelStatus?.progress,
       scrollToBottom,
     ]);
+
+    useEffect(
+      () => () => {
+        if (programmaticScrollTimerRef.current !== null) {
+          window.clearTimeout(programmaticScrollTimerRef.current);
+        }
+      },
+      [],
+    );
 
     if (messages.length === 0 && !isLoading && !isScanning && !isLocating) {
       return null;

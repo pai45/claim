@@ -92,25 +92,22 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
     id: "merchant_locator",
     keywords: [
       "merchant locator",
+      "meals merchant",
       "merchant",
-      "petrol pump",
-      "fuel station",
-      "gas station",
       "meal merchant",
       "meal benefit",
-      "fuel benefit",
       "allowed merchant",
       "find merchant",
       "nearest merchant",
     ],
     reply:
-      "**Merchant locator**\n\nI can check if a merchant is allowed for meal or fuel benefits.\n\nFirst, choose **Fuel** or **Meal** merchant below.",
+      "**Meals merchant**\n\nType a merchant name or choose **Find near you**.",
   },
   {
     id: "greeting",
     keywords: ["hi", "hello", "hey", "good morning", "good evening", "help"],
     reply:
-      "**Hi!** I'm your Benefits Assistant.\n\nI can help with:\n\n- Uploading bills\n- Tracking claims\n- Policy details\n- Merchant locator\n- Vehicle registration for tax benefits\n\nWhat would you like to do?",
+      "**Hi!** I'm your Benefits Assistant.\n\nI can help with:\n\n- Uploading bills\n- Tracking claims\n- Policy details\n- Meals merchants\n- Vehicle registration for tax benefits\n\nWhat would you like to do?",
   },
 ];
 
@@ -118,5 +115,5 @@ export const FALLBACK_REPLY: AssistantIntent = {
   id: "fallback",
   keywords: [],
   reply:
-    "**How I can help**\n\n- Reimbursements\n- Claim tracking\n- Policy questions\n- Merchant locator\n- Vehicle registration for tax benefits\n\nTry one of the quick actions, or ask something like **upload a bill** or **track my claim**.",
+    "**How I can help**\n\n- Reimbursements\n- Claim tracking\n- Policy questions\n- Meals merchants\n- Vehicle registration for tax benefits\n\nTry one of the quick actions, or ask something like **upload a bill** or **track my claim**.",
 };

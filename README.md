@@ -11,6 +11,15 @@ The GitHub Pages build is static. Generative answers use deterministic fallbacks
 The site is also an installable PWA: open it on a phone and choose "Add to Home
 Screen" to launch it standalone, without browser chrome.
 
+iOS has no `beforeinstallprompt`, so Safari cannot be asked to install a web app
+programmatically. Instead
+[`AddToHomeScreenPrompt`](components/shared/AddToHomeScreenPrompt.tsx) shows
+instructions for the Share sheet. It appears on every fresh page load until it
+is dismissed, which snoozes it for 14 days
+([`lib/pwa/installNudge.ts`](lib/pwa/installNudge.ts)). It stays hidden on
+Android, inside the native shell, in in-app browsers with no Share sheet, and
+once the app is already installed.
+
 ## Getting started
 
 ```bash
@@ -101,6 +110,22 @@ re-run `prebuild` rather than editing native files directly.
 The APK is ~70 MB because it carries native libraries for all four ABIs. The
 `x86` and `x86_64` slices are ~31 MB of that and are only used by emulators, so
 restricting the build to ARM roughly halves the download for real devices.
+
+### iOS
+
+Not built. An IPA requires Apple's toolchain, so it cannot be produced on
+Windows — `expo prebuild -p ios` refuses outright and asks to be re-run from
+macOS. The iOS config in [`app.json`](mobile/app.json) is complete and validated
+(bundle identifier, portrait lock, and the camera and photo-library usage
+strings the App Store requires), so a build on Apple hardware should work
+unchanged.
+
+[`eas.json`](mobile/eas.json) has profiles ready for when it is wanted:
+`simulator` needs no Apple account but yields a Mac-only `.app`; `preview`
+produces an installable IPA and needs a paid Apple Developer membership.
+
+iPhone users are covered in the meantime by the PWA — Safari's "Add to Home
+Screen" gives a fullscreen app with no App Store involved.
 
 **This APK is signed with the shared Android debug keystore**, which is the
 React Native template default. That is fine for sideloading onto your own

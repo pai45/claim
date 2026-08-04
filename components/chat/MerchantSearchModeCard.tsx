@@ -11,7 +11,7 @@ type MerchantSearchModeCardProps = {
 
 const OPTIONS: { id: "name" | "nearest"; label: string }[] = [
   { id: "name", label: "Type merchant name" },
-  { id: "nearest", label: "Find nearest near you" },
+  { id: "nearest", label: "Find near you" },
 ];
 
 export function MerchantSearchModeCard({

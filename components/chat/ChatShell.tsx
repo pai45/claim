@@ -24,10 +24,10 @@ const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
 });
 
 const COLOR_BENDS_PALETTE = [
-  "#fbfff3",
-  "#f2fbdc",
-  "#eaf7d1",
-  "#f6fce8",
+  "#fbffe8",
+  "#dcf6c8",
+  "#ccefe5",
+  "#fff1c9",
 ];
 
 type ChatShellProps = {
@@ -120,22 +120,22 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const showEmptyState = isHydrated && !hasMessages;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-[#f5fae9]">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-[#f8fce9]">
       <div className="pointer-events-none fixed inset-0" aria-hidden>
         <ColorBends
           colors={COLOR_BENDS_PALETTE}
           rotation={112}
-          autoRotate={0.3}
-          speed={0.11}
-          scale={1.25}
-          frequency={0.62}
-          warpStrength={0.5}
+          autoRotate={1.1}
+          speed={0.42}
+          scale={1.15}
+          frequency={0.78}
+          warpStrength={0.82}
           mouseInfluence={0}
           parallax={0}
-          noise={0.012}
-          iterations={2}
-          intensity={0.48}
-          bandWidth={5.5}
+          noise={0.008}
+          iterations={3}
+          intensity={0.72}
+          bandWidth={4.6}
           transparent
           paused={reduceMotion}
         />
@@ -143,7 +143,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 68% 32%, rgba(255,255,250,0.46) 0%, rgba(247,252,231,0.4) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,253,0.82) 0%, rgba(247,252,235,0.68) 46%, rgba(251,253,248,0.84) 100%)",
+              "radial-gradient(circle at 68% 30%, rgba(255,255,250,0.18) 0%, rgba(247,252,231,0.12) 40%, transparent 70%), linear-gradient(180deg, rgba(255,255,253,0.2) 0%, rgba(247,252,235,0.1) 48%, rgba(251,253,248,0.22) 100%)",
           }}
         />
       </div>
@@ -198,7 +198,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
           </div>
         </main>
 
-        <div className="relative flex w-full flex-col items-stretch border-t border-white/60 bg-white/55 backdrop-blur-xl">
+        <div className="relative flex w-full flex-col items-stretch">
           <div
             className="pointer-events-none absolute inset-x-0 -top-8 h-8 chat-composer-fade"
             aria-hidden

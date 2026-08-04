@@ -164,7 +164,6 @@ svg {
 .utility-panel,
 .transactions-section,
 .bottom-nav,
-.home-indicator,
 .toast {
   position: relative;
   z-index: 1;
@@ -1077,9 +1076,9 @@ body.is-pluspay .transactions-section {
   display: grid;
   gap: 12px;
   width: 100%;
-  min-height: 122px;
+  min-height: 0;
   margin-top: 2px;
-  padding: 14px 16px;
+  padding: 16px;
   border: 1.5px solid rgba(198, 224, 182, 0.9);
   border-radius: 20px;
   background: linear-gradient(
@@ -2290,6 +2289,7 @@ body.is-pluspay .transactions-section {
   font-size: var(--text-12);
 }
 
+body.is-overlay-open .bottom-nav,
 body.is-merchant-directory-open .bottom-nav {
   display: none;
 }
@@ -4981,25 +4981,13 @@ body.is-merchant-directory-open .bottom-nav {
   align-items: start;
   width: min(100%, 402px);
   max-width: 100vw;
-  height: 76px;
-  padding: 0 0 8px;
+  height: 68px;
+  padding: 0;
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   background: #ffffff;
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(17.5px);
   overflow: visible;
-}
-
-.bottom-nav::before {
-  content: "";
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 8px;
-  background: #ffffff;
-  backdrop-filter: blur(17.5px);
-  pointer-events: none;
 }
 
 .bottom-nav button {
@@ -5008,7 +4996,7 @@ body.is-merchant-directory-open .bottom-nav {
   justify-items: center;
   gap: 8px;
   min-width: 0;
-  min-height: 73px;
+  min-height: 68px;
   color: #595e70;
   font-family:
     "Lato",
@@ -5137,18 +5125,6 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.home-indicator {
-  position: fixed;
-  right: 50%;
-  bottom: 8px;
-  transform: translateX(50%);
-  z-index: 21;
-  width: 135px;
-  height: 5px;
-  border-radius: 999px;
-  background: #181818;
 }
 
 .card-overlay {
@@ -10227,8 +10203,8 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
   }
 
   .scan-pay-card {
-    min-height: 116px;
-    padding: 12px 14px;
+    min-height: 0;
+    padding: 14px;
     border-radius: 18px;
     gap: 10px;
   }

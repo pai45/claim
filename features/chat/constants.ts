@@ -21,7 +21,7 @@ export const QUICK_ACTIONS: QuickAction[] = [
   },
   {
     id: "merchant-locator",
-    label: "Merchant locator",
+    label: "Meals merchant",
     intentId: "merchant_locator",
   },
   {

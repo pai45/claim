@@ -14,7 +14,6 @@ const overlayCloseButtons = document.querySelectorAll(
   "[data-card-overlay-close]",
 );
 const walletButtons = document.querySelectorAll("[data-wallet-card]");
-const toastButtons = document.querySelectorAll("[data-toast]");
 const pluspayToggle = document.querySelector("[data-pluspay-toggle]");
 const pluspayLabel = document.querySelector("[data-pluspay-label]");
 const swapTextNodes = document.querySelectorAll(
@@ -1048,9 +1047,9 @@ function closeScanPayFlow() {
   if (!scanPayFlow) return;
   clearScanPayTimers();
   scanPayFlow.classList.remove("is-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     scanPayFlow.hidden = true;
+    syncPageScrollLock();
   }, 260);
   if (window.location.hash === "#scan-pay") {
     history.replaceState(
@@ -1781,9 +1780,9 @@ function maybeAnimateClaimsGreeting() {
 function closeClaimsAssistant() {
   if (!claimsAssistant) return;
   claimsAssistant.classList.remove("is-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     claimsAssistant.hidden = true;
+    syncPageScrollLock();
   }, 260);
 }
 
@@ -4063,9 +4062,9 @@ function openClaimsAssistant() {
 function closeClaimsAssistant() {
   if (!claimsAssistant) return;
   claimsAssistant.classList.remove("is-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     claimsAssistant.hidden = true;
+    syncPageScrollLock();
   }, 260);
 }
 
@@ -4406,9 +4405,7 @@ function initializeTapPayDiscovery() {
     );
     if (tapWallet) {
       openWalletOverlay(tapWallet);
-      return;
     }
-    showToast("Tap & Pay settings opened");
   });
 }
 
@@ -4538,12 +4535,6 @@ function createMerchantItem(item, hasExtraBottomSpace = false) {
   return button;
 }
 
-toastButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    showToast(button.dataset.toast);
-  });
-});
-
 function renderManageWalletState() {
   const state = manageWalletState[activeManageWalletKey];
   if (!state) return;
@@ -4605,10 +4596,8 @@ function renderManageWalletState() {
   });
 }
 
-function selectManageWallet(button, announce = true) {
+function selectManageWallet(button) {
   activeManageWalletKey = button.dataset.walletKey || "meal";
-  const state =
-    manageWalletState[activeManageWalletKey] || manageWalletState.meal;
   const selectedIndex = Math.max(
     0,
     Array.from(manageWalletButtons).indexOf(button),
@@ -4624,7 +4613,6 @@ function selectManageWallet(button, announce = true) {
     manageWalletCount.textContent = `${selectedIndex + 1}/${manageWalletButtons.length}`;
 
   renderManageWalletState();
-  if (announce) showToast(`${state.label} selected`);
 }
 
 manageWalletButtons.forEach((button) => {
@@ -4672,7 +4660,7 @@ manageWalletCarousel?.addEventListener("scroll", () => {
       manageWalletButtons[0],
     );
     if (nearestButton && !nearestButton.classList.contains("is-selected"))
-      selectManageWallet(nearestButton, false);
+      selectManageWallet(nearestButton);
   }, 90);
 });
 
@@ -4753,8 +4741,6 @@ claimsInput?.addEventListener("input", syncClaimsComposer);
 
 walletOverlayViewAllHistory?.addEventListener("click", (event) => {
   event.preventDefault();
-  if (walletOverlayViewAllHistory.dataset.toast)
-    showToast(walletOverlayViewAllHistory.dataset.toast);
 });
 
 function applyMode(isPluspay) {
@@ -4789,7 +4775,6 @@ function applyMode(isPluspay) {
 pluspayToggle?.addEventListener("click", () => {
   const nextState = pluspayToggle.getAttribute("aria-pressed") !== "true";
   applyMode(nextState);
-  showToast(nextState ? "Switched to PlusPay" : "Switched to Lens");
 });
 
 filterButtons.forEach((button) => {
@@ -4815,18 +4800,18 @@ function closeCardOverlay() {
   if (!cardOverlay || !virtualCardToggle) return;
   virtualCardToggle.setAttribute("aria-expanded", "false");
   cardOverlay.classList.remove("is-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     cardOverlay.hidden = true;
+    syncPageScrollLock();
   }, 320);
 }
 
 function closeWalletOverlay() {
   if (!walletOverlay) return;
   walletOverlay.classList.remove("is-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     walletOverlay.hidden = true;
+    syncPageScrollLock();
   }, 280);
 }
 
@@ -4834,18 +4819,18 @@ function closeMerchantDirectory() {
   if (!merchantDirectoryOverlay) return;
   merchantDirectoryOverlay.classList.remove("is-open");
   document.body.classList.remove("is-merchant-directory-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     merchantDirectoryOverlay.hidden = true;
+    syncPageScrollLock();
   }, 280);
 }
 
 function closeManageCardsOverlay() {
   if (!manageCardsOverlay) return;
   manageCardsOverlay.classList.remove("is-open");
-  syncPageScrollLock();
   window.setTimeout(() => {
     manageCardsOverlay.hidden = true;
+    syncPageScrollLock();
   }, 280);
 }
 
@@ -4900,7 +4885,6 @@ function openManageCardsOverlay() {
     manageCardsOverlay.classList.add("is-open");
     syncPageScrollLock();
   });
-  showToast("Manage Card opened");
 }
 
 function openWalletOverlay(button) {
@@ -4984,7 +4968,6 @@ function openWalletOverlay(button) {
     walletOverlay.classList.add("is-open");
     syncPageScrollLock();
   });
-  showToast(button.dataset.walletCta || `${walletName} opened`);
 }
 
 virtualCardToggle?.addEventListener("click", () => {
@@ -4996,7 +4979,6 @@ virtualCardToggle?.addEventListener("click", () => {
     cardOverlay.classList.add("is-open");
     syncPageScrollLock();
   });
-  showToast("Virtual card details revealed");
 });
 
 virtualCardNumberToggle?.addEventListener("click", (event) => {

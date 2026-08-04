@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Lato } from "next/font/google";
+import { AddToHomeScreenPrompt } from "@/components/shared/AddToHomeScreenPrompt";
 import { ServiceWorkerRegistrar } from "@/components/shared/ServiceWorkerRegistrar";
 import { withBasePath } from "@/lib/basePath";
 import "./globals.css";
@@ -79,6 +80,7 @@ export default function RootLayout({
         className={`${lato.variable} ${ppTelegraf.variable} ${lato.className} antialiased`}
       >
         {children}
+        <AddToHomeScreenPrompt />
         <ServiceWorkerRegistrar />
       </body>
     </html>

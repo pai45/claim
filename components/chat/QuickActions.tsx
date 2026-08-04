@@ -20,6 +20,7 @@ export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
           <ChatOptionButton
             key={action.id}
             featured={action.featured}
+            pointedBottomRight
             disabled={disabled}
             onClick={() => onSelect(action)}
             style={{ animationDelay: `${START_MS + index * STEP_MS}ms` }}

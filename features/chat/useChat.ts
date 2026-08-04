@@ -177,22 +177,16 @@ export function useChat() {
     ]);
   }, []);
 
-  const appendMerchantTypeOptions = useCallback(() => {
+  const appendMealMerchantSearchOptions = useCallback(() => {
     setMessages((prev) => [
       ...prev,
       {
         id: createId(),
         role: "assistant",
-        content: "Is this for fuel or meal benefits?",
+        content: "Search options",
         createdAt: Date.now(),
-        kind: "text",
-      },
-      {
-        id: createId(),
-        role: "assistant",
-        content: "Choose merchant type",
-        createdAt: Date.now(),
-        kind: "merchant_type_options",
+        kind: "merchant_search_options",
+        merchantLocator: { benefitType: "meal" },
       },
     ]);
   }, []);
@@ -392,8 +386,8 @@ export function useChat() {
         }
 
         if (data.intentId === "merchant_locator") {
-          setActiveBenefitType(null);
-          appendMerchantTypeOptions();
+          setActiveBenefitType("meal");
+          appendMealMerchantSearchOptions();
         }
 
         if (data.intentId === "view_policy") {
@@ -487,7 +481,7 @@ export function useChat() {
       }
     },
     [
-      appendMerchantTypeOptions,
+      appendMealMerchantSearchOptions,
       appendPolicyOptions,
       appendUploadOptions,
       appendVehicleNumberInput,
@@ -546,21 +540,7 @@ export function useChat() {
     (mode: "name" | "nearest", benefitType?: BenefitType) => {
       if (isLoading || isScanning || isLocating) return;
 
-      const resolvedType = benefitType ?? activeBenefitType;
-      if (!resolvedType) {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: createId(),
-            role: "assistant",
-            content: "Please choose Fuel or Meal first.",
-            createdAt: Date.now(),
-            kind: "text",
-          },
-        ]);
-        appendMerchantTypeOptions();
-        return;
-      }
+      const resolvedType = benefitType ?? activeBenefitType ?? "meal";
 
       if (mode === "name") {
         setMessages((prev) => [
@@ -596,7 +576,7 @@ export function useChat() {
         {
           id: createId(),
           role: "user",
-          content: "Find nearest merchant near you",
+          content: "Find near you",
           createdAt: Date.now(),
           kind: "text",
         },
@@ -724,7 +704,6 @@ export function useChat() {
     },
     [
       activeBenefitType,
-      appendMerchantTypeOptions,
       isLoading,
       isLocating,
       isScanning,

@@ -9,7 +9,6 @@ type MerchantTypeCardProps = {
 };
 
 const OPTIONS: { id: BenefitType; label: string }[] = [
-  { id: "fuel", label: "Fuel" },
   { id: "meal", label: "Meal" },
 ];
 
