@@ -9,58 +9,26 @@ type QuickActionsProps = {
 
 const START_MS = 100;
 const STEP_MS = 30;
-const ROW_SIZE = Math.ceil(QUICK_ACTIONS.length / 2);
-
-function QuickActionButton({
-  action,
-  index,
-  disabled,
-  onSelect,
-}: {
-  action: QuickAction;
-  index: number;
-  disabled?: boolean;
-  onSelect: (action: QuickAction) => void;
-}) {
-  const style = { animationDelay: `${START_MS + index * STEP_MS}ms` };
-
-  return (
-    <ChatOptionButton
-      featured={action.featured}
-      disabled={disabled}
-      onClick={() => onSelect(action)}
-      style={style}
-      className="animate-rise-in shrink-0 whitespace-nowrap !px-2 min-[390px]:!px-3"
-    >
-      {action.label}
-    </ChatOptionButton>
-  );
-}
 
 export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
-  const rows = [
-    QUICK_ACTIONS.slice(0, ROW_SIZE),
-    QUICK_ACTIONS.slice(ROW_SIZE),
-  ];
-
   return (
-    <div className="flex flex-col gap-2.5 px-page">
-      {rows.map((row, rowIndex) => (
-        <div key={rowIndex} className="flex flex-nowrap content-start gap-2">
-          {row.map((action, indexInRow) => {
-            const index = rowIndex * ROW_SIZE + indexInRow;
-            return (
-              <QuickActionButton
-                key={action.id}
-                action={action}
-                index={index}
-                disabled={disabled}
-                onSelect={onSelect}
-              />
-            );
-          })}
-        </div>
-      ))}
+    // Full-bleed scroller: the row scrolls past the screen edge while the
+    // first pill still lines up with the page gutter.
+    <div className="scrollbar-none w-full overflow-x-auto">
+      <div className="flex w-max flex-nowrap gap-2 px-page">
+        {QUICK_ACTIONS.map((action, index) => (
+          <ChatOptionButton
+            key={action.id}
+            featured={action.featured}
+            disabled={disabled}
+            onClick={() => onSelect(action)}
+            style={{ animationDelay: `${START_MS + index * STEP_MS}ms` }}
+            className="animate-rise-in shrink-0 whitespace-nowrap"
+          >
+            {action.label}
+          </ChatOptionButton>
+        ))}
+      </div>
     </div>
   );
 }

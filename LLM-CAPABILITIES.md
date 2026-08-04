@@ -1,6 +1,6 @@
-# Claims Assistant — What the LLM Can Answer
+# Benefits Assistant — What the LLM Can Answer
 
-This document lists the questions the Claims Assistant answers, **and what it
+This document lists the questions the Benefits Assistant answers, **and what it
 answers with**. Every answer below is real output from the app's own data
 (`features/policy/constants.ts` + the dashboard and claims records), reproduced
 verbatim — nothing here is illustrative or hand-written.
@@ -385,7 +385,7 @@ Other / HR review.
 
 > **Q — "Hi"**
 >
-> **Hi!** I'm your Claims Assistant.
+> **Hi!** I'm your Benefits Assistant.
 >
 > I can help with:
 >

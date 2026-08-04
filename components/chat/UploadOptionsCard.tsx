@@ -3,30 +3,23 @@
 import { useRef, type ChangeEvent, type ReactNode } from "react";
 import type { UploadOptionId } from "@/features/chat/types";
 import { colors } from "@/lib/ui/colors";
-import { PrivacyNotice } from "./PrivacyNotice";
 
 type UploadOptionsCardProps = {
   onFileSelected: (file: File) => void;
   disabled?: boolean;
   title?: string;
   subtitle?: string;
-  onClearData?: () => void;
 };
 
-function DocumentIcon() {
+function BookmarkIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
       <path
-        d="M5 2.5h5.5L14 6v9.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-12a1 1 0 0 1 1-1z"
-        stroke={colors.pinePrimary}
-        strokeWidth="1.4"
-      />
-      <path d="M10.5 2.5V6H14" stroke={colors.pinePrimary} strokeWidth="1.4" />
-      <path
-        d="M6.5 9.5h5M6.5 12h3.5"
-        stroke={colors.pinePrimary}
-        strokeWidth="1.4"
+        d="M6.25 3.5h9.5a1.25 1.25 0 0 1 1.25 1.25v13.6l-6-3.45-6 3.45V4.75A1.25 1.25 0 0 1 6.25 3.5Z"
+        stroke={colors.pine}
+        strokeWidth="1.8"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -130,7 +123,6 @@ export function UploadOptionsCard({
   disabled,
   title = "Upload options",
   subtitle = "PDF, JPG or PNG up to 10 MB",
-  onClearData,
 }: UploadOptionsCardProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
@@ -155,12 +147,12 @@ export function UploadOptionsCard({
   }
 
   return (
-    <div className="w-full max-w-card rounded-card border border-input-border bg-white p-card shadow-card">
-      <div className="mb-4 flex items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-success-tint">
-          <DocumentIcon />
+    <div className="w-full max-w-card rounded-[28px] border-2 border-[#8dceb0] bg-white p-5 shadow-card">
+      <div className="mb-5 flex items-start gap-3">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-control bg-surface-tint">
+          <BookmarkIcon />
         </div>
-        <div className="min-w-0">
+        <div className="min-w-0 pt-1">
           <h3 className="type-section-title text-pine">
             {title}
           </h3>
@@ -175,18 +167,16 @@ export function UploadOptionsCard({
             type="button"
             disabled={disabled}
             onClick={() => handlePick(option.id)}
-            className="flex min-h-26 flex-col items-center justify-center gap-2 rounded-control border border-input-border bg-input-soft px-2 py-3 text-center disabled:opacity-50"
+            className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-[18px] border border-input-border bg-white px-2 py-4 text-center shadow-soft transition-colors hover:border-success disabled:opacity-50"
           >
-            {option.icon}
-            <span className="text-caption font-bold leading-tight text-pine">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-tint">
+              {option.icon}
+            </span>
+            <span className="text-body-sm font-bold leading-tight text-pine">
               {option.label}
             </span>
           </button>
         ))}
-      </div>
-
-      <div className="mt-3">
-        <PrivacyNotice onClearData={onClearData} />
       </div>
 
       <input

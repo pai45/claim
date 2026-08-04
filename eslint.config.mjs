@@ -11,6 +11,10 @@ const eslintConfig = defineConfig([
     ".app-api-pages-backup/**",
     "out/**",
     "build/**",
+    // Byte-for-byte upstream Employee Benefits source, hosted as an iframe.
+    "public/employee-benefits/**",
+    // Expo shell. Separate toolchain and its own React Native lint config.
+    "mobile/**",
     "next-env.d.ts",
   ]),
 ]);

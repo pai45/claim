@@ -7,7 +7,14 @@ import { ClaimDetailsScreen } from "./ClaimDetailsScreen";
 function ClaimDetailsInner() {
   const searchParams = useSearchParams();
   const claimId = searchParams.get("id") || "CLM-43872";
-  return <ClaimDetailsScreen claimId={claimId} />;
+  const source = searchParams.get("from");
+  const backHref =
+    source === "history"
+      ? "/claims-history/"
+      : source === "dashboard"
+        ? "/dashboard/"
+        : "/#claims";
+  return <ClaimDetailsScreen claimId={claimId} backHref={backHref} />;
 }
 
 export function ClaimDetailsPageClient() {
@@ -23,4 +30,4 @@ export function ClaimDetailsPageClient() {
     </Suspense>
   );
 }
-
+

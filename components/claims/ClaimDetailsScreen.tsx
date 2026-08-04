@@ -10,6 +10,7 @@ import { colors } from "@/lib/ui/colors";
 
 type ClaimDetailsScreenProps = {
   claimId: string;
+  backHref: string;
 };
 
 function DocumentIcon() {
@@ -105,7 +106,7 @@ function ProgressRow({
   );
 }
 
-export function ClaimDetailsScreen({ claimId }: ClaimDetailsScreenProps) {
+export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProps) {
   const router = useRouter();
   const claim = getClaimDetails(claimId);
 
@@ -115,7 +116,7 @@ export function ClaimDetailsScreen({ claimId }: ClaimDetailsScreenProps) {
         <button
           type="button"
           aria-label="Go back"
-          onClick={() => router.back()}
+          onClick={() => router.replace(backHref)}
           className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -190,4 +191,4 @@ export function ClaimDetailsScreen({ claimId }: ClaimDetailsScreenProps) {
     </AppShell>
   );
 }
-
+

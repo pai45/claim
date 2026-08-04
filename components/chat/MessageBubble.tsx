@@ -28,14 +28,12 @@ import { MerchantResultsCard } from "./MerchantResultsCard";
 import { MerchantSearchModeCard } from "./MerchantSearchModeCard";
 import { MerchantTypeCard } from "./MerchantTypeCard";
 import { PolicyOptionsCard } from "./PolicyOptionsCard";
+import { ScannedDocumentCard } from "./ScannedDocumentCard";
 import { UploadOptionsCard } from "./UploadOptionsCard";
 import { VehicleClaimReceiptCard } from "./VehicleClaimReceiptCard";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
 import { VehicleNumberInputCard } from "./VehicleNumberInputCard";
 import { useRevealText } from "./useRevealText";
-
-const assistantBubbleClass =
-  "rounded-bubble rounded-bl-md border border-border-soft bg-white/95 px-3 py-2.5 shadow-soft";
 
 const pillClass =
   "inline-flex min-h-11 items-center rounded-pill border border-input-border bg-white px-4 py-2.5 text-body-sm font-bold text-pine";
@@ -49,7 +47,6 @@ function formatTime(timestamp: number) {
 
 function AssistantText({
   content,
-  createdAt,
   reveal = false,
 }: {
   content: string;
@@ -59,17 +56,12 @@ function AssistantText({
   const { visible } = useRevealText({ text: content, enabled: reveal });
 
   return (
-    <div className="flex max-w-[92%] items-end gap-2">
-      <ChatAvatar />
+    <div className="flex w-full max-w-[96%] flex-col items-start gap-2.5">
+      <ChatAvatar className="ml-0.5" />
       <div className="flex min-w-0 flex-col gap-1">
-        <div className={assistantBubbleClass}>
+        <div className="px-0.5 text-[#123f36]">
           <AssistantMarkdown content={visible} />
         </div>
-        {createdAt ? (
-          <span className="px-1 text-caption text-muted">
-            {formatTime(createdAt)}
-          </span>
-        ) : null}
       </div>
     </div>
   );
@@ -84,7 +76,6 @@ type MessageBubbleProps = {
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
   onReplaceBill?: (messageId: string) => void;
   onStartAnotherBill?: () => void;
-  onClearSavedData?: () => void;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
   onSelectMerchantSearchMode?: (
@@ -111,7 +102,6 @@ export function MessageBubble({
   onSubmitBillClaim,
   onReplaceBill,
   onStartAnotherBill,
-  onClearSavedData,
   onSelectPolicyCategory,
   onSelectMerchantBenefitType,
   onSelectMerchantSearchMode,
@@ -137,7 +127,6 @@ export function MessageBubble({
         <UploadOptionsCard
           onFileSelected={(file) => onFileSelected?.(file)}
           disabled={uploadDisabled}
-          onClearData={onClearSavedData}
         />
       </div>
     );
@@ -240,6 +229,10 @@ export function MessageBubble({
     );
   }
 
+  if (message.kind === "document_scan") {
+    return <ScannedDocumentCard complete />;
+  }
+
   if (message.kind === "bill_extract" && message.billExtract) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
@@ -276,7 +269,6 @@ export function MessageBubble({
           subtitle="Photo or PDF of the DL, up to 10 MB"
           onFileSelected={(file) => onDlFileSelected?.(file)}
           disabled={uploadDisabled}
-          onClearData={onClearSavedData}
         />
       </div>
     );
@@ -333,7 +325,7 @@ export function MessageBubble({
             submittedAt={message.createdAt}
           />
           <Link
-            href={`/claim-details/?id=${encodeURIComponent(message.claimId)}`}
+            href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
             className={pillClass}
           >
             View claim details
@@ -358,7 +350,7 @@ export function MessageBubble({
             submittedAt={message.createdAt}
           />
           <Link
-            href={`/claim-details/?id=${encodeURIComponent(message.claimId)}`}
+            href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
             className={pillClass}
           >
             View claim details
@@ -377,7 +369,7 @@ export function MessageBubble({
           />
           <div className="flex flex-wrap content-start gap-2">
             <Link
-              href={`/claim-details/?id=${encodeURIComponent(message.claimId)}`}
+              href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
               className={pillClass}
             >
               View claim details
@@ -403,7 +395,7 @@ export function MessageBubble({
           reveal={textReveal}
         />
         <Link
-          href={`/claim-details/?id=${encodeURIComponent(message.claimId)}`}
+          href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
           className={pillClass}
         >
           View claim details
@@ -439,7 +431,7 @@ export function MessageBubble({
       : undefined;
     const href =
       payload.target === "claim" && payload.claimId
-        ? `/claim-details/?id=${encodeURIComponent(payload.claimId)}`
+        ? `/claim-details/?id=${encodeURIComponent(payload.claimId)}&from=assistant`
         : payload.target === "policy" && policy
           ? `/policy-details/${policy.id}/`
           : payload.target === "category_dashboard" && category

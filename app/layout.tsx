@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Lato } from "next/font/google";
+import { ServiceWorkerRegistrar } from "@/components/shared/ServiceWorkerRegistrar";
+import { withBasePath } from "@/lib/basePath";
 import "./globals.css";
 
 const lato = Lato({
@@ -38,9 +40,26 @@ const ppTelegraf = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Claims Assistant",
+  title: "Benefits Assistant",
   description:
     "Tax benefits claims assistant for reimbursements and vehicle registration.",
+  applicationName: "Benefits Assistant",
+  // iOS Safari ignores the manifest's `display`, so standalone launch and the
+  // home screen icon have to be declared separately.
+  appleWebApp: {
+    capable: true,
+    title: "Benefits Assistant",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: withBasePath("/assets/pwa/icon-192.png"),
+    apple: withBasePath("/assets/pwa/apple-touch-icon.png"),
+  },
+  other: {
+    // Next emits only the modern `mobile-web-app-capable`. iOS before 16.4
+    // honours the manifest's `display` not at all and needs this instead.
+    "apple-mobile-web-app-capable": "yes",
+  },
 };
 
 export const viewport: Viewport = {
@@ -60,6 +79,7 @@ export default function RootLayout({
         className={`${lato.variable} ${ppTelegraf.variable} ${lato.className} antialiased`}
       >
         {children}
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

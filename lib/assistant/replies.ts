@@ -110,7 +110,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
     id: "greeting",
     keywords: ["hi", "hello", "hey", "good morning", "good evening", "help"],
     reply:
-      "**Hi!** I'm your Claims Assistant.\n\nI can help with:\n\n- Uploading bills\n- Tracking claims\n- Policy details\n- Merchant locator\n- Vehicle registration for tax benefits\n\nWhat would you like to do?",
+      "**Hi!** I'm your Benefits Assistant.\n\nI can help with:\n\n- Uploading bills\n- Tracking claims\n- Policy details\n- Merchant locator\n- Vehicle registration for tax benefits\n\nWhat would you like to do?",
   },
 ];
 

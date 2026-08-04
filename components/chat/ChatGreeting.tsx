@@ -10,7 +10,7 @@ export function ChatGreeting() {
       <div className="animate-rise-in" style={{ animationDelay: "20ms" }}>
         <AppIcon
           src={BRAND_ASSETS.logo}
-          alt="Claims Assistant"
+          alt="Benefits Assistant"
           size={64}
           priority
           className="object-contain"
@@ -18,7 +18,7 @@ export function ChatGreeting() {
       </div>
       <MagicText
         as="h2"
-        text={`Hey ${USER_DISPLAY_NAME}`}
+        text={`Hey ${USER_DISPLAY_NAME} 👋`}
         mode="chars"
         delayMs={30}
         stepMs={14}
@@ -28,11 +28,11 @@ export function ChatGreeting() {
       />
       <MagicText
         as="p"
-        text="I can help you claim reimbursements. What would you like to do?"
+        text="Ask me anything! I can help you upload bills, retrieve bill details, and find nearby merchants."
         mode="words"
         delayMs={120}
         stepMs={22}
-        className="type-body max-w-[20rem]"
+        className="type-body max-w-[21rem]"
       />
     </section>
   );

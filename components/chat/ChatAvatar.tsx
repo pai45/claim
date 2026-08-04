@@ -8,13 +8,13 @@ type ChatAvatarProps = {
 export function ChatAvatar({ className = "" }: ChatAvatarProps) {
   return (
     <span
-      className={`flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-soft ring-1 ring-border-soft ${className}`}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/35 ${className}`}
       aria-hidden
     >
       <AppIcon
         src={BRAND_ASSETS.logo}
         alt=""
-        size={20}
+        size={28}
         className="object-contain"
       />
     </span>

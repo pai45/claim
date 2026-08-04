@@ -1,0 +1,1332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lens Prepaid Card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <svg class="icon-sprite" aria-hidden="true" focusable="false">
+      <symbol id="icon-bell" viewBox="0 0 24 24">
+        <path
+          d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8A6 6 0 1 0 6 8c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.196 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.755-1.088-1.936C18.78 13.206 18 11.09 18 8Z"
+        />
+      </symbol>
+      <symbol id="icon-plus" viewBox="0 0 24 24">
+        <path d="M12 5v14M5 12h14" />
+      </symbol>
+      <symbol id="icon-send" viewBox="0 0 24 24">
+        <path
+          d="M10.5 12H5m-.084.291L2.58 19.267c-.184.548-.275.822-.21.99a.5.5 0 0 0 .332.3c.174.05.438-.07.965-.306l16.711-7.52c.515-.232.772-.348.851-.508a.5.5 0 0 0 0-.444c-.08-.16-.336-.276-.85-.508L3.661 3.748c-.525-.237-.788-.355-.962-.306a.5.5 0 0 0-.332.299c-.066.168.025.442.206.988l2.342 7.057c.032.094.047.14.053.188a.5.5 0 0 1 0 .129c-.006.048-.022.095-.053.188Z"
+        />
+      </symbol>
+      <symbol id="icon-wallet" viewBox="0 0 24 24">
+        <path
+          d="M22 8.5H2m0 4h3.547c.54 0 .81 0 1.071.047.232.04.458.11.674.204.243.106.468.256.917.555l.582.388c.45.3.674.45.917.555.216.095.442.163.674.204.261.047.531.047 1.071.047h1.094c.54 0 .81 0 1.071-.047.232-.04.458-.11.674-.204.243-.106.468-.256.917-.555l.582-.388c.45-.3.674-.45.917-.555.216-.095.442-.163.674-.204.261-.047.531-.047 1.071-.047H22M2 7.2v9.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874C3.52 20 4.08 20 5.2 20h13.6c1.12 0 1.68 0 2.108-.218a2 2 0 0 0 .874-.874C22 18.48 22 17.92 22 16.8V7.2c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C20.48 4 19.92 4 18.8 4H5.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C2 5.52 2 6.08 2 7.2Z"
+        />
+      </symbol>
+      <symbol id="icon-settings" viewBox="0 0 24 24">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+        <path
+          d="M18.727 14.727a1.5 1.5 0 0 0 .3 1.655l.055.054a1.816 1.816 0 0 1 0 2.573 1.818 1.818 0 0 1-2.573 0l-.055-.055a1.5 1.5 0 0 0-1.654-.3 1.5 1.5 0 0 0-.91 1.373v.155a1.818 1.818 0 1 1-3.636 0V20.1a1.5 1.5 0 0 0-.981-1.373 1.5 1.5 0 0 0-1.655.3l-.054.055a1.818 1.818 0 0 1-3.106-1.287 1.818 1.818 0 0 1 .533-1.286l.054-.055a1.5 1.5 0 0 0 .3-1.654 1.5 1.5 0 0 0-1.372-.91h-.155a1.818 1.818 0 1 1 0-3.636H3.9a1.5 1.5 0 0 0 1.373-.981 1.5 1.5 0 0 0-.3-1.655l-.055-.054A1.818 1.818 0 1 1 7.491 4.99l.054.054a1.5 1.5 0 0 0 1.655.3h.073a1.5 1.5 0 0 0 .909-1.372v-.155a1.818 1.818 0 0 1 3.636 0V3.9a1.499 1.499 0 0 0 .91 1.373 1.5 1.5 0 0 0 1.654-.3l.054-.055a1.817 1.817 0 0 1 2.573 0 1.819 1.819 0 0 1 0 2.573l-.055.054a1.5 1.5 0 0 0-.3 1.655v.073a1.5 1.5 0 0 0 1.373.909h.155a1.818 1.818 0 0 1 0 3.636H20.1a1.499 1.499 0 0 0-1.373.91Z"
+        />
+      </symbol>
+      <symbol id="icon-refresh" viewBox="0 0 24 24">
+        <path d="M20 11a8 8 0 0 0-14.2-5" />
+        <path d="M20 5v6h-6" />
+        <path d="M4 13a8 8 0 0 0 14.2 5" />
+        <path d="M4 19v-6h6" />
+      </symbol>
+      <symbol id="icon-card" viewBox="0 0 24 24">
+        <path
+          d="M22 10H2m0-1.8v7.6c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874C3.52 19 4.08 19 5.2 19h13.6c1.12 0 1.68 0 2.108-.218a2 2 0 0 0 .874-.874C22 17.48 22 16.92 22 15.8V8.2c0-1.12 0-1.68-.218-2.108a2 2 0 0 0-.874-.874C20.48 5 19.92 5 18.8 5H5.2c-1.12 0-1.68 0-2.108.218a2 2 0 0 0-.874.874C2 6.52 2 7.08 2 8.2Z"
+        />
+      </symbol>
+      <symbol id="icon-calendar" viewBox="0 0 24 24">
+        <path
+          d="M8 2v4M16 2v4M3 9h18M5.2 4h13.6c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C22 5.52 22 6.08 22 7.2v11.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C20.48 22 19.92 22 18.8 22H5.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C2 20.48 2 19.92 2 18.8V7.2c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C3.52 4 4.08 4 5.2 4Z"
+        />
+      </symbol>
+      <symbol id="icon-trophy" viewBox="0 0 24 24">
+        <path
+          d="M12 15a6 6 0 0 1-6-6V3.444c0-.413 0-.62.06-.786a1 1 0 0 1 .598-.598C6.824 2 7.031 2 7.444 2h9.112c.413 0 .62 0 .786.06a1 1 0 0 1 .598.598c.06.166.06.373.06.786V9a6 6 0 0 1-6 6Zm0 0v3m6-14h2.5c.466 0 .699 0 .883.076a1 1 0 0 1 .54.541c.077.184.077.417.077.883V6c0 .93 0 1.395-.102 1.776a3 3 0 0 1-2.122 2.122C19.395 10 18.93 10 18 10M6 4H3.5c-.466 0-.699 0-.883.076a1 1 0 0 0-.54.541C2 4.801 2 5.034 2 5.5V6c0 .93 0 1.395.102 1.776a3 3 0 0 0 2.122 2.122C4.605 10 5.07 10 6 10m1.444 12h9.112a.444.444 0 0 0 .444-.444A3.556 3.556 0 0 0 13.444 18h-2.888A3.556 3.556 0 0 0 7 21.556c0 .245.199.444.444.444Z"
+        />
+      </symbol>
+      <symbol id="icon-home" viewBox="0 0 24 24">
+        <path
+          d="M3 10.565c0-.574 0-.861.074-1.126a2 2 0 0 1 .318-.65c.163-.22.39-.397.843-.75l6.783-5.275c.351-.273.527-.41.72-.462a1 1 0 0 1 .523 0c.194.052.37.189.721.462l6.783 5.275c.453.353.68.53.843.75.145.195.252.416.318.65.074.265.074.552.074 1.126V17.8c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C19.48 21 18.92 21 17.8 21H6.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C3 19.48 3 18.92 3 17.8v-7.235Z"
+        />
+      </symbol>
+      <symbol id="icon-scan" viewBox="0 0 24 24">
+        <path
+          d="M8 3h-.2c-1.68 0-2.52 0-3.162.327a3 3 0 0 0-1.311 1.311C3 5.28 3 6.12 3 7.8V8m5 13h-.2c-1.68 0-2.52 0-3.162-.327a3 3 0 0 1-1.311-1.311C3 18.72 3 17.88 3 16.2V16m18-8v-.2c0-1.68 0-2.52-.327-3.162a3 3 0 0 0-1.311-1.311C18.72 3 17.88 3 16.2 3H16m5 13v.2c0 1.68 0 2.52-.327 3.162a3 3 0 0 1-1.311 1.311C18.72 21 17.88 21 16.2 21H16M3 12h.01m4.49 0h.01m8.99 0h.01M12 12h.01M21 12h.01"
+        />
+      </symbol>
+      <symbol id="icon-qr-code" viewBox="0 0 24 24">
+        <path
+          d="M7 12h5v5m-8.99-5H3m5.01 5H8m4.01 4H12m9.01-9H21M3 17h1.5m11-5h2M3 21h5m4-19v6m5.6 13h1.8c.56 0 .84 0 1.054-.109a1 1 0 0 0 .437-.437C21 20.24 21 19.96 21 19.4v-1.8c0-.56 0-.84-.109-1.054a1 1 0 0 0-.437-.437C20.24 16 19.96 16 19.4 16h-1.8c-.56 0-.84 0-1.054.109a1 1 0 0 0-.437.437C16 16.76 16 17.04 16 17.6v1.8c0 .56 0 .84.109 1.054a1 1 0 0 0 .437.437C16.76 21 17.04 21 17.6 21Zm0-13h1.8c.56 0 .84 0 1.054-.109a1 1 0 0 0 .437-.437C21 7.24 21 6.96 21 6.4V4.6c0-.56 0-.84-.109-1.054a1 1 0 0 0-.437-.437C20.24 3 19.96 3 19.4 3h-1.8c-.56 0-.84 0-1.054.109a1 1 0 0 0-.437.437C16 3.76 16 4.04 16 4.6v1.8c0 .56 0 .84.109 1.054a1 1 0 0 0 .437.437C16.76 8 17.04 8 17.6 8Zm-13 0h1.8c.56 0 .84 0 1.054-.109a1 1 0 0 0 .437-.437C8 7.24 8 6.96 8 6.4V4.6c0-.56 0-.84-.109-1.054a1 1 0 0 0-.437-.437C7.24 3 6.96 3 6.4 3H4.6c-.56 0-.84 0-1.054.109a1 1 0 0 0-.437.437C3 3.76 3 4.04 3 4.6v1.8c0 .56 0 .84.109 1.054a1 1 0 0 0 .437.437C3.76 8 4.04 8 4.6 8Z"
+        />
+      </symbol>
+      <symbol id="icon-receipt" viewBox="0 0 24 24">
+        <path
+          d="M4 7.8c0-1.68 0-2.52.327-3.162a3 3 0 0 1 1.311-1.311C6.28 3 7.12 3 8.8 3h6.4c1.68 0 2.52 0 3.162.327a3 3 0 0 1 1.311 1.311C20 5.28 20 6.12 20 7.8V21l-2.75-2-2.5 2L12 19l-2.75 2-2.5-2L4 21V7.8Z"
+        />
+      </symbol>
+      <symbol id="icon-claim" viewBox="0 0 24 24">
+        <path
+          d="M7 3h7l4 4v12.2c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C16.48 22 15.92 22 14.8 22H7.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C4 20.48 4 19.92 4 18.8V6.2c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C5.52 3 6.08 3 7 3Z"
+        />
+        <path d="M14 3v4h4M8 13l2.25 2.25L15.5 10" />
+      </symbol>
+      <symbol id="icon-bag" viewBox="0 0 24 24">
+        <path
+          d="M5.52 2.64 3.96 4.72c-.309.412-.463.618-.46.79a.5.5 0 0 0 .192.384C3.828 6 4.085 6 4.6 6h14.8c.515 0 .773 0 .908-.106a.5.5 0 0 0 .192-.384c.003-.172-.151-.378-.46-.79l-1.56-2.08m-12.96 0c.176-.235.264-.352.376-.437a1 1 0 0 1 .33-.165C6.36 2 6.505 2 6.8 2h10.4c.293 0 .44 0 .575.038a1 1 0 0 1 .33.165c.111.085.199.202.375.437m-12.96 0L3.64 5.147c-.237.316-.356.475-.44.649a2 2 0 0 0-.163.487C3 6.473 3 6.671 3 7.067V18.8c0 1.12 0 1.68.218 2.108a2 2 0 0 0 .874.874C4.52 22 5.08 22 6.2 22h11.6c1.12 0 1.68 0 2.108-.218a2 2 0 0 0 .874-.874C21 20.48 21 19.92 21 18.8V7.067c0-.396 0-.594-.037-.784a1.998 1.998 0 0 0-.163-.487c-.084-.174-.203-.333-.44-.65L18.48 2.64M16 10a4 4 0 1 1-8 0"
+        />
+      </symbol>
+      <symbol id="icon-food" viewBox="0 0 24 24">
+        <path
+          d="M17.79 10.47v7.32A4.21 4.21 0 0 1 13.58 22H6.21C3.89 22 2 20.11 2 17.79v-7.32a4.21 4.21 0 0 1 4.21-4.21h7.37c2.32 0 4.21 1.89 4.21 4.21ZM5.5 4V2.25M9.5 4V2.25M13.5 4V2.25M22 13.16c0 2.32-1.89 4.21-4.21 4.21V8.95A4.21 4.21 0 0 1 22 13.16ZM2 12h15.51"
+        />
+      </symbol>
+      <symbol id="icon-car" viewBox="0 0 24 24">
+        <path
+          d="M8.5 19v2.2c0 .28 0 .42-.055.527a.5.5 0 0 1-.218.218C8.12 22 7.98 22 7.7 22H5.8c-.28 0-.42 0-.527-.055a.5.5 0 0 1-.218-.218C5 21.62 5 21.48 5 21.2V19m14 0v2.2c0 .28 0 .42-.055.527a.5.5 0 0 1-.218.218C18.62 22 18.48 22 18.2 22h-1.9c-.28 0-.42 0-.527-.055a.5.5 0 0 1-.218-.218c-.055-.107-.055-.247-.055-.527V19M3 12h18M3 5.5h18m-14.5 10H8m8 0h1.5M7.8 19h8.4c1.68 0 2.52 0 3.162-.327a3 3 0 0 0 1.311-1.311C21 16.72 21 15.88 21 14.2V6.8c0-1.68 0-2.52-.327-3.162a3 3 0 0 0-1.311-1.311C18.72 2 17.88 2 16.2 2H7.8c-1.68 0-2.52 0-3.162.327a3 3 0 0 0-1.311 1.311C3 4.28 3 5.12 3 6.8v7.4c0 1.68 0 2.52.327 3.162a3 3 0 0 0 1.311 1.311C5.28 19 6.12 19 7.8 19Z"
+        />
+      </symbol>
+      <symbol id="icon-fuel" viewBox="0 0 24 24">
+        <path d="M3.5 22V5c0-2 1.34-3 3-3h8c1.66 0 3 1 3 3v17h-14ZM2 22h17" />
+        <path
+          d="M8.39 10h4.23c1.04 0 1.89-.5 1.89-1.89V6.88c0-1.39-.85-1.89-1.89-1.89H8.39c-1.04 0-1.89.5-1.89 1.89v1.23C6.5 9.5 7.35 10 8.39 10ZM6.5 13h3M17.5 16.01 22 16v-6l-2-1"
+        />
+      </symbol>
+      <symbol id="icon-money" viewBox="0 0 24 24">
+        <path
+          d="M6 11v4m12-6v4m-1-9c2.449 0 3.773.375 4.432.665a.708.708 0 0 1 .258.18c.076.072.215.284.25.383.06.165.06.255.06.435V16.41c0 .909 0 1.363-.136 1.597a.872.872 0 0 1-.532.44c-.255.089-.77-.01-1.8-.208-.72-.138-1.576-.24-2.532-.24-3 0-6 2-10 2-2.449 0-3.773-.375-4.432-.665-.088-.04-.132-.059-.258-.18a1.463 1.463 0 0 1-.25-.383C2 18.607 2 18.517 2 18.337V7.59c0-.909 0-1.363.136-1.597a.871.871 0 0 1 .532-.44c.255-.089.77.01 1.8.208C5.188 5.898 6.043 6 7 6c3 0 6-2 10-2Zm-2.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"
+        />
+      </symbol>
+      <symbol id="icon-layers" viewBox="0 0 24 24">
+        <path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z" />
+        <path d="m4 12 8 4.5 8-4.5" />
+        <path d="m4 16.5 8 4.5 8-4.5" />
+      </symbol>
+      <symbol id="icon-grid" viewBox="0 0 24 24">
+        <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
+      </symbol>
+      <symbol id="icon-credit-card" viewBox="0 0 24 24">
+        <path
+          d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5v9A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-9Z"
+        />
+        <path d="M3 10.5h18M7 15h3" />
+      </symbol>
+      <symbol id="icon-close" viewBox="0 0 24 24">
+        <path d="M18 6 6 18M6 6l12 12" />
+      </symbol>
+      <symbol id="icon-arrow-right" viewBox="0 0 24 24">
+        <path d="M5 12h14m0 0-7-7m7 7-7 7" />
+      </symbol>
+      <symbol id="icon-chevron-right" viewBox="0 0 24 24">
+        <path d="m9 5 7 7-7 7" />
+      </symbol>
+      <symbol id="icon-checks" viewBox="0 0 24 24">
+        <path d="m2 13 4 4L16 7" />
+        <path d="m11 17 2 2 9-10" />
+      </symbol>
+      <symbol id="icon-nfc" viewBox="0 0 24 24">
+        <path
+          d="M12 19.5h.01M22.806 8.7A15.942 15.942 0 0 0 12 4.5c-4.166 0-7.96 1.592-10.807 4.2m3.539 3.543A10.958 10.958 0 0 1 12 9.5a10.96 10.96 0 0 1 7.268 2.743m-3.57 3.532A5.974 5.974 0 0 0 12 14.5c-1.416 0-2.718.49-3.745 1.312"
+        />
+      </symbol>
+      <symbol id="icon-headset" viewBox="0 0 24 24">
+        <path
+          d="M21 18v-6a9 9 0 1 0-18 0v6m2.5 3A2.5 2.5 0 0 1 3 18.5v-2a2.5 2.5 0 0 1 5 0v2A2.5 2.5 0 0 1 5.5 21Zm13 0a2.5 2.5 0 0 1-2.5-2.5v-2a2.5 2.5 0 0 1 5 0v2a2.5 2.5 0 0 1-2.5 2.5Z"
+        />
+      </symbol>
+      <symbol id="icon-gift" viewBox="0 0 24 24">
+        <path
+          d="M12 6v16m0-16H8.464c-.52 0-1.02-.21-1.389-.586A2.019 2.019 0 0 1 6.5 4c0-.53.207-1.04.575-1.414A1.947 1.947 0 0 1 8.465 2C11.214 2 12 6 12 6Zm0 0h3.536c.52 0 1.02-.21 1.389-.586A2.02 2.02 0 0 0 17.5 4c0-.53-.207-1.04-.575-1.414A1.947 1.947 0 0 0 15.535 2C12.786 2 12 6 12 6Zm8 5v7.8c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C18.48 22 17.92 22 16.8 22H7.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C4 20.48 4 19.92 4 18.8V11M2 7.6v1.8c0 .56 0 .84.109 1.054a1 1 0 0 0 .437.437C2.76 11 3.04 11 3.6 11h16.8c.56 0 .84 0 1.054-.109a1 1 0 0 0 .437-.437C22 10.24 22 9.96 22 9.4V7.6c0-.56 0-.84-.109-1.054a1 1 0 0 0-.437-.437C21.24 6 20.96 6 20.4 6H3.6c-.56 0-.84 0-1.054.109a1 1 0 0 0-.437.437C2 6.76 2 7.04 2 7.6Z"
+        />
+      </symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24">
+        <path d="m21 21-4.35-4.35" />
+        <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" />
+      </symbol>
+      <symbol id="icon-eye" viewBox="0 0 24 24">
+        <path
+          d="M2.42 12.713c-.15-.238-.225-.357-.267-.54a1.17 1.17 0 0 1 0-.346c.042-.183.117-.302.267-.54C3.66 9.32 7.3 4.5 12 4.5s8.34 4.82 9.58 6.787c.15.238.225.357.267.54.03.13.03.216 0 .346-.042.183-.117.302-.267.54C20.34 14.68 16.7 19.5 12 19.5s-8.34-4.82-9.58-6.787Z"
+        />
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+      </symbol>
+      <symbol id="icon-image" viewBox="0 0 24 24">
+        <path
+          d="M4 16.2 8.2 12a1.2 1.2 0 0 1 1.697 0L13 15.1l1.7-1.7a1.2 1.2 0 0 1 1.697 0L20 17"
+        />
+        <path
+          d="M14 8.5h.01M5.2 4h13.6c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874C22 5.52 22 6.08 22 7.2v9.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C20.48 20 19.92 20 18.8 20H5.2c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C2 18.48 2 17.92 2 16.8V7.2c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C3.52 4 4.08 4 5.2 4Z"
+        />
+      </symbol>
+      <symbol id="icon-copy" viewBox="0 0 24 24">
+        <path
+          d="M9 9.6c0-.84 0-1.26.164-1.581a1.5 1.5 0 0 1 .655-.655C10.14 7.2 10.56 7.2 11.4 7.2h6c.84 0 1.26 0 1.581.164a1.5 1.5 0 0 1 .655.655c.164.321.164.741.164 1.581v6c0 .84 0 1.26-.164 1.581a1.5 1.5 0 0 1-.655.655C18.66 18 18.24 18 17.4 18h-6c-.84 0-1.26 0-1.581-.164a1.5 1.5 0 0 1-.655-.655C9 16.86 9 16.44 9 15.6v-6Z"
+        />
+        <path
+          d="M6.6 15.6c-.84 0-1.26 0-1.581-.164a1.5 1.5 0 0 1-.655-.655C4.2 14.46 4.2 14.04 4.2 13.2V7.2c0-.84 0-1.26.164-1.581a1.5 1.5 0 0 1 .655-.655C5.34 4.8 5.76 4.8 6.6 4.8h6c.84 0 1.26 0 1.581.164a1.5 1.5 0 0 1 .655.655C15 5.94 15 6.36 15 7.2"
+        />
+      </symbol>
+      <symbol id="icon-help" viewBox="0 0 24 24">
+        <path d="M9.09 9a3 3 0 1 1 4.91 2.318c-.6.514-1 .952-1 1.682" />
+        <path d="M12 17h.01" />
+        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+      </symbol>
+      <symbol id="icon-lock" viewBox="0 0 24 24">
+        <path d="M7 10V8a5 5 0 0 1 10 0v2" />
+        <path
+          d="M6.8 10h10.4c1.12 0 1.68 0 2.108.218a2 2 0 0 1 .874.874c.218.428.218.988.218 2.108v4.6c0 1.12 0 1.68-.218 2.108a2 2 0 0 1-.874.874C18.88 21 18.32 21 17.2 21H6.8c-1.12 0-1.68 0-2.108-.218a2 2 0 0 1-.874-.874C3.6 19.48 3.6 18.92 3.6 17.8v-4.6c0-1.12 0-1.68.218-2.108a2 2 0 0 1 .874-.874C5.12 10 5.68 10 6.8 10Z"
+        />
+        <path d="M12 15.5v1.8" />
+      </symbol>
+      <symbol id="icon-snowflake" viewBox="0 0 24 24">
+        <path d="M12 2v20M4.22 6.22l15.56 11.56M19.78 6.22 4.22 17.78" />
+        <path
+          d="m8 4 4 4 4-4M8 20l4-4 4 4M3 10l5.2 1.5L6.7 16.7M21 10l-5.2 1.5 1.5 5.2"
+        />
+      </symbol>
+      <symbol id="icon-location" viewBox="0 0 24 24">
+        <path d="M12 21s7-5.06 7-11a7 7 0 1 0-14 0c0 5.94 7 11 7 11Z" />
+        <path d="M12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+      </symbol>
+    </svg>
+
+    <main class="phone-shell" aria-label="Lens prepaid card app">
+      <section class="hero-panel" aria-label="Account overview">
+        <header class="topbar">
+          <div class="topbar-row">
+            <button
+              class="avatar-button"
+              type="button"
+              aria-label="Open profile"
+            >
+              V
+            </button>
+            <a class="brand" href="#" aria-label="Lens home">
+              <span data-lens-text="Lens" data-pluspay-text="PlusPay"
+                >Lens</span
+              >
+            </a>
+            <button
+              class="pluspay-toggle"
+              type="button"
+              aria-pressed="false"
+              data-pluspay-toggle
+            >
+              <span class="pluspay-toggle-track">
+                <span class="pluspay-toggle-thumb"></span>
+              </span>
+              <span class="pluspay-toggle-label" data-pluspay-label
+                >PlusPay</span
+              >
+            </button>
+          </div>
+        </header>
+
+        <section class="pluspay-corporate-message" data-pluspay-show>
+          <p>Manage your Corporate payment with Pluspay</p>
+        </section>
+
+        <button
+          class="tap-pay-discovery"
+          type="button"
+          aria-label="Tap and Pay is now available. Pay instantly with your phone."
+          data-tap-pay-discovery
+          data-pluspay-hide
+        >
+          <span class="tap-pay-discovery-art" aria-hidden="true">
+            <span class="tap-pay-spark one"></span>
+            <span class="tap-pay-spark two"></span>
+            <span class="tap-pay-discovery-icon"
+              ><svg><use href="#icon-nfc" /></svg
+            ></span>
+          </span>
+          <span class="tap-pay-discovery-copy">
+            <strong>Tap &amp; Pay is now available</strong>
+            <small>Pay instantly with your phone anywhere<br />NFC works</small>
+          </span>
+          <span class="tap-pay-close" aria-hidden="true">
+            <svg><use href="#icon-close" /></svg>
+          </span>
+        </button>
+
+        <section
+          class="balance-card"
+          aria-labelledby="balance-title"
+          data-pluspay-hide
+        >
+          <div class="card-strip">
+            <span class="hero-card-id">
+              <span
+                class="category-title"
+                data-lens-text="Rupay Card"
+                data-pluspay-text="Pluspay"
+                >Rupay Card</span
+              >
+              <small>xxxx xxxx xxxx 1234</small>
+            </span>
+            <span
+              class="status-pill"
+              data-lens-text="Full KYC"
+              data-pluspay-text="UPI Ready"
+              >Full KYC</span
+            >
+          </div>
+          <span class="balance-card-arrow" aria-hidden="true">
+            <svg><use href="#icon-chevron-right" /></svg>
+          </span>
+          <div class="balance-copy">
+            <div>
+              <p
+                id="balance-title"
+                data-lens-text="Current balance"
+                data-pluspay-text="Spend account"
+              >
+                Current balance
+              </p>
+              <strong>₹18,650</strong>
+              <span
+                class="balance-caption"
+                data-lens-text="Available balance across 3 wallets"
+                data-pluspay-text="Unified money movement for scan, send, and collect"
+                >Available balance across 3 wallets</span
+              >
+            </div>
+            <button
+              class="mini-card"
+              type="button"
+              aria-label="Show virtual card details"
+              aria-expanded="false"
+              data-virtual-card-toggle
+              data-pluspay-hide
+            >
+              <span>•••• 1234</span>
+              <small>Virtual card</small>
+            </button>
+          </div>
+          <div
+            class="balance-insights"
+            aria-label="Balance details"
+            data-pluspay-hide
+          >
+            <div>
+              <span data-lens-text="Monthly limit" data-pluspay-text="UPI ID"
+                >Monthly limit</span
+              >
+              <strong
+                data-lens-text="₹40,000"
+                data-pluspay-text="v.sharma@pluspay"
+                >₹40,000</strong
+              >
+            </div>
+            <div>
+              <span
+                data-lens-text="Last top up"
+                data-pluspay-text="Daily transfer cap"
+                >Last top up</span
+              >
+              <strong data-lens-text="10 Dec" data-pluspay-text="₹1,00,000"
+                >10 Dec</strong
+              >
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="upi-panel" aria-label="UPI payment">
+        <!-- <div class="section-heading compact-heading">
+          <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
+          <a href="#" data-lens-text="Manage" data-pluspay-text="View QR">Manage</a>
+        </div> -->
+        <button
+          class="upi-card upi-card-create"
+          type="button"
+          data-pluspay-hide
+          data-toast="Create UPI ID opened"
+          aria-label="Create UPI ID to link credit line to UPI for seamless payments"
+        >
+          <span
+            class="upi-brand-badge upi-brand-badge-create"
+            aria-hidden="true"
+          >
+            <img src="./assets/icons/upi.svg" alt="" />
+          </span>
+          <span class="upi-copy upi-copy-create">
+            <!-- <strong>Pay with UPI</strong> -->
+            <strong>Link your UPI for </br> seamless payments.</strong>
+          </span>
+          <span class="upi-card-cta" aria-hidden="true">Create UPI ID</span>
+        </button>
+        <button
+          class="upi-card upi-card-id"
+          type="button"
+          data-pluspay-show
+          data-toast="UPI settings opened"
+        >
+          <span class="upi-brand-badge" aria-hidden="true">
+            <img src="./assets/icons/upi.svg" alt="" />
+          </span>
+          <span class="upi-copy">
+            <small>UPI ID</small>
+            <span class="upi-id-row">
+              <strong
+                data-lens-text="8646721579@pinelabs"
+                data-pluspay-text="v.sharma@pluspay"
+                >8646721579@pinelabs</strong
+              >
+              <span class="upi-copy-icon" aria-hidden="true"
+                ><svg><use href="#icon-copy" /></svg
+              ></span>
+            </span>
+          </span>
+          <span class="upi-arrow" aria-hidden="true"
+            ><svg><use href="#icon-chevron-right" /></svg
+          ></span>
+        </button>
+        <button
+          class="scan-pay-card"
+          type="button"
+          data-scan-pay-open
+          data-pluspay-hide
+        >
+          <span class="scan-pay-main">
+            <span class="scan-pay-icon" aria-hidden="true"
+              ><svg><use href="#icon-scan" /></svg
+            ></span>
+            <span class="scan-pay-copy">
+              <strong>Scan &amp; Pay</strong>
+              <small>Scan any QR code to pay instantly</small>
+            </span>
+            <span class="scan-pay-arrow" aria-hidden="true"
+              ><svg><use href="#icon-chevron-right" /></svg
+            ></span>
+          </span>
+          <span class="scan-pay-tooltip" aria-hidden="true">
+            <span class="scan-pay-tooltip-icon">i</span>
+            <span>Scan &amp; Pay is not available for Meal wallet.</span>
+          </span>
+        </button>
+      </section>
+
+      <section
+        class="pluspay-actions-panel"
+        aria-label="PlusPay actions"
+        data-pluspay-show
+      >
+        <div class="pluspay-actions-grid">
+          <button
+            class="pluspay-action-card"
+            type="button"
+            data-toast="Send money opened"
+          >
+            <span class="pluspay-action-icon" aria-hidden="true"
+              ><svg><use href="#icon-send" /></svg
+            ></span>
+            <small>Transfer</small>
+            <strong>Send Money</strong>
+          </button>
+          <button
+            class="pluspay-action-card is-highlight"
+            type="button"
+            data-toast="Scan & pay opened"
+          >
+            <span class="pluspay-action-icon" aria-hidden="true"
+              ><svg><use href="#icon-scan" /></svg
+            ></span>
+            <small>Quick Pay</small>
+            <strong>Scan & Pay</strong>
+          </button>
+        </div>
+      </section>
+
+      <section
+        class="wallet-experience-panel"
+        aria-label="Wallets"
+        data-pluspay-hide
+      >
+        <div class="section-heading compact-heading">
+          <div>
+            <h2>Wallets</h2>
+          </div>
+        </div>
+        <div class="wallet-list">
+          <button
+            class="wallet-chip meal"
+            type="button"
+            data-wallet-card
+            data-wallet-name="Meal Wallet"
+            data-wallet-balance="₹6,400"
+            data-wallet-description="Daily essentials"
+            data-wallet-detail="RuPay-enabled meal spends with contactless checkout for cafeterias and food merchants."
+            data-wallet-actions=""
+            data-wallet-cta="Meal Wallet ready for Tap & Pay"
+            aria-pressed="false"
+          >
+            <div class="wallet-topline">
+              <span class="wallet-icon meal-icon" aria-hidden="true"
+                ><svg><use href="#icon-food" /></svg
+              ></span>
+            </div>
+            <span class="wallet-name">Meal</span>
+            <small>Daily essentials</small>
+            <strong>₹6,400</strong>
+            <div class="wallet-rail-pills" aria-hidden="true">
+              <span class="wallet-rail-pill is-active"
+                ><svg><use href="#icon-nfc" /></svg>Tap &amp; Pay</span
+              >
+            </div>
+          </button>
+          <button
+            class="wallet-chip fuel"
+            type="button"
+            data-wallet-card
+            data-wallet-name="Fuel Wallet"
+            data-wallet-balance="₹3,150"
+            data-wallet-description="Commute ready"
+            data-wallet-detail="Built for on-the-go spends with both card-present tap and QR-based merchant acceptance."
+            data-wallet-actions="tap,scan"
+            data-wallet-cta="Fuel Wallet supports Tap & Pay and Scan & Pay"
+            aria-pressed="false"
+          >
+            <div class="wallet-topline">
+              <span class="wallet-icon fuel-icon" aria-hidden="true"
+                ><svg><use href="#icon-fuel" /></svg
+              ></span>
+            </div>
+            <span class="wallet-name">Fuel</span>
+            <small>Commute ready</small>
+            <strong>₹3,150</strong>
+            <div class="wallet-rail-pills" aria-hidden="true">
+              <span class="wallet-rail-pill is-active"
+                ><svg><use href="#icon-nfc" /></svg>Tap &amp; Pay</span
+              >
+              <span class="wallet-rail-pill is-active"
+                ><svg><use href="#icon-scan" /></svg>Scan &amp; Pay</span
+              >
+            </div>
+          </button>
+          <button
+            class="wallet-chip misc"
+            type="button"
+            data-wallet-card
+            data-wallet-name="Reimbursement Wallet"
+            data-wallet-balance="₹9,100"
+            data-wallet-description="Flexible spends"
+            data-wallet-detail="PPI on UPI flow for reimbursement-led spend categories where QR acceptance matters most."
+            data-wallet-actions="tap,scan"
+            data-wallet-cta="Reimbursement Wallet supports Tap & Pay and Scan & Pay"
+            aria-pressed="false"
+          >
+            <div class="wallet-topline">
+              <span class="wallet-icon misc-icon" aria-hidden="true">
+                <img src="./assets/icons/reimbursement-wallet.svg" alt="" />
+              </span>
+            </div>
+            <span class="wallet-name">Reimbursement</span>
+            <small>Flexible spends</small>
+            <strong>₹9,100</strong>
+            <div class="wallet-rail-pills" aria-hidden="true">
+              <span class="wallet-rail-pill is-active"
+                ><svg><use href="#icon-nfc" /></svg>Tap &amp; Pay</span
+              >
+              <span class="wallet-rail-pill is-active"
+                ><svg><use href="#icon-scan" /></svg>Scan &amp; Pay</span
+              >
+            </div>
+          </button>
+          <button
+            class="wallet-chip gift"
+            type="button"
+            data-wallet-card
+            data-wallet-name="Gift Wallet"
+            data-wallet-balance="6200 pts"
+            data-wallet-description="Rewards and gifting"
+            data-wallet-detail="Gift balance for card-linked spends and brand redemption journeys when gifting is the primary intent."
+            data-wallet-actions="card"
+            data-wallet-cta="Gift Wallet details opened"
+            aria-pressed="false"
+          >
+            <div class="wallet-topline">
+              <span class="wallet-icon gift-icon" aria-hidden="true"
+                ><svg><use href="#icon-gift" /></svg
+              ></span>
+            </div>
+            <span class="wallet-name">Gift</span>
+            <small>Rewards and gifting</small>
+            <strong>6200 pts</strong>
+          </button>
+        </div>
+      </section>
+
+      <section
+        class="utility-panel"
+        aria-label="Wallet tools"
+        data-pluspay-hide
+      >
+        <div class="section-heading compact-heading">
+          <h2>Quick Actions</h2>
+        </div>
+        <div class="utility-grid">
+          <button class="utility-card" type="button">
+            <span class="utility-icon" aria-hidden="true">
+              <img src="./assets/icons/upi-settings.svg" alt="" />
+            </span>
+            <strong>UPI<br />Settings</strong>
+          </button>
+          <button class="utility-card" type="button" data-manage-cards-open>
+            <span class="utility-icon" aria-hidden="true">
+              <img src="./assets/icons/setting.svg" alt="" />
+            </span>
+            <strong>Manage<br />Card</strong>
+          </button>
+          <button class="utility-card" type="button">
+            <span class="utility-icon" aria-hidden="true">
+              <img src="./assets/icons/UPI-PIN-Reset-home.svg" alt="" />
+            </span>
+            <strong>Set/ Reset PIN</strong>
+          </button>
+          <button class="utility-card" type="button">
+            <span class="utility-icon" aria-hidden="true">
+              <img src="./assets/icons/credit-card.svg" alt="" />
+            </span>
+            <strong>Get Physical<br />Card</strong>
+          </button>
+        </div>
+      </section>
+
+      <section
+        class="transactions-section"
+        aria-labelledby="transactions-title"
+      >
+        <div class="section-heading">
+          <h2
+            id="transactions-title"
+            data-lens-text="Recent Transactions"
+            data-pluspay-text="Recent Activity"
+          >
+            Recent Transactions
+          </h2>
+          <a href="#">View all</a>
+        </div>
+        <div
+          class="filter-chips"
+          role="tablist"
+          aria-label="Transaction wallets"
+          data-pluspay-hide
+        >
+          <button
+            class="active"
+            type="button"
+            data-filter="all"
+            role="tab"
+            aria-selected="true"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            data-filter="meal"
+            role="tab"
+            aria-selected="false"
+          >
+            Meal
+          </button>
+          <button
+            type="button"
+            data-filter="fuel"
+            role="tab"
+            aria-selected="false"
+          >
+            Fuel
+          </button>
+          <button
+            type="button"
+            data-filter="misc"
+            role="tab"
+            aria-selected="false"
+          >
+            Miscellaneous
+          </button>
+          <button
+            type="button"
+            data-filter="gift"
+            role="tab"
+            aria-selected="false"
+          >
+            Gift
+          </button>
+        </div>
+        <div class="transaction-list" data-transaction-list>
+          <article class="transaction-item" data-wallet="gift">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-bag" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Amazon</strong>
+              <span>Ref ID: 1234566788</span>
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹4,250</strong>
+              <span>20 Dec 2025</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="meal">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-food" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Zomato Payment</strong>
+              <span>Ref ID: 1234566788</span>
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹650</strong>
+              <span>14 Dec 2025</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="fuel">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-car" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Uber</strong>
+              <span>Ref ID: 1234566788</span>
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹650</strong>
+              <span>12 Dec 2025</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="misc">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-money" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Top Up</strong>
+              <span>Ref ID: 1234566788</span>
+            </div>
+            <div class="transaction-amount positive">
+              <strong>+ ₹5,000</strong>
+              <span>10 Dec 2025</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="fuel">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-fuel" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Shell Select</strong>
+              <span>Ref ID: 1234566791</span>
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹2,200</strong>
+              <span>08 Dec 2025</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="meal">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-bag" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Star Bazaar</strong>
+              <span>Ref ID: 1234566792</span>
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹1,180</strong>
+              <span>06 Dec 2025</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="gift">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-gift" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Lifestyle Store</strong>
+              <span>Ref ID: 1234566793</span>
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹2,400</strong>
+              <span>04 Dec 2025</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <nav class="bottom-nav" aria-label="Primary navigation">
+        <button class="nav-item is-active" type="button">
+          <span class="nav-icon-shell"
+            ><img src="./assets/icons/home.svg" alt="" aria-hidden="true"
+          /></span>
+          <span>Home</span>
+        </button>
+        <button
+          class="claims-button"
+          type="button"
+          aria-label="Claims"
+          data-claims-open
+        >
+          <span
+            ><img src="./assets/icons/bill-check.svg" alt="" aria-hidden="true"
+          /></span>
+          <span>Claims</span>
+        </button>
+        <button
+          class="claims-button pluspay-scan-button"
+          type="button"
+          aria-label="Scan &amp; Pay"
+          data-scan-pay-open
+        >
+          <span
+            ><img src="./assets/icons/scanner.svg" alt="" aria-hidden="true"
+          /></span>
+          <span>Scan &amp; Pay</span>
+        </button>
+        <button
+          class="nav-item transactions-nav-item"
+          type="button"
+          aria-label="Transactions"
+          data-toast="Transactions opened"
+        >
+          <span class="nav-icon-shell"
+            ><img
+              src="./assets/icons/transaction-history.svg"
+              alt=""
+              aria-hidden="true"
+          /></span>
+          <span>Transactions</span>
+        </button>
+      </nav>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </main>
+
+    <div class="card-overlay" data-card-overlay hidden>
+      <button
+        class="overlay-backdrop"
+        type="button"
+        aria-label="Close card details"
+        data-card-overlay-close
+      ></button>
+      <section class="card-overlay-panel" aria-label="Virtual card details">
+        <div class="card-overlay-visual">
+          <div class="overlay-card">
+            <span class="overlay-card-brand">Rupay Card</span>
+            <span class="overlay-card-number-row">
+              <span class="overlay-card-number" data-virtual-card-number
+                >4356 2468 0089 1234</span
+              >
+              <button
+                class="overlay-card-eye"
+                type="button"
+                aria-label="Hide card number"
+                aria-pressed="true"
+                data-virtual-card-number-toggle
+              >
+                <svg aria-hidden="true"><use href="#icon-eye" /></svg>
+              </button>
+            </span>
+            <div class="overlay-card-meta">
+              <div>
+                <span>VALID THRU</span>
+                <strong>08/29</strong>
+              </div>
+              <div>
+                <span>CVV</span>
+                <strong>482</strong>
+              </div>
+            </div>
+            <strong class="overlay-card-name">V. SHARMA</strong>
+          </div>
+        </div>
+        <div class="overlay-details">
+          <div class="section-heading overlay-heading">
+            <h2>Virtual Card</h2>
+            <button
+              class="overlay-close"
+              type="button"
+              aria-label="Close card details"
+              data-card-overlay-close
+            >
+              <svg aria-hidden="true"><use href="#icon-close" /></svg>
+            </button>
+          </div>
+          <div class="card-details-row">
+            <span>Card number</span>
+            <strong data-virtual-card-number>4356 2468 0089 1234</strong>
+          </div>
+          <div class="card-details-meta">
+            <div>
+              <span>Name</span>
+              <strong>V. Sharma</strong>
+            </div>
+            <div>
+              <span>Expiry</span>
+              <strong>08/29</strong>
+            </div>
+            <div>
+              <span>CVV</span>
+              <strong>482</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="wallet-overlay" data-wallet-overlay hidden>
+      <button
+        class="wallet-overlay-backdrop"
+        type="button"
+        aria-label="Close wallet details"
+        data-wallet-overlay-close
+      ></button>
+      <section class="wallet-overlay-panel" aria-label="Wallet details">
+        <header class="wallet-overlay-header">
+          <button
+            class="wallet-overlay-back"
+            type="button"
+            aria-label="Close wallet details"
+            data-wallet-overlay-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <div class="wallet-overlay-title-group">
+            <span class="wallet-overlay-eyebrow">Wallet details</span>
+            <h2 data-wallet-overlay-name>Meal Wallet</h2>
+          </div>
+        </header>
+        <div class="wallet-overlay-scroll" data-wallet-overlay-scroll>
+          <section
+            class="wallet-overlay-summary meal"
+            data-wallet-overlay-tone="meal"
+          >
+            <div class="wallet-overlay-summary-top">
+              <span
+                class="wallet-icon meal-icon"
+                aria-hidden="true"
+                data-wallet-overlay-icon
+                ><svg><use href="#icon-food" /></svg
+              ></span>
+              <span class="wallet-overlay-balance-label"
+                >Available balance</span
+              >
+            </div>
+            <strong data-wallet-overlay-balance>₹6,400</strong>
+            <div
+              class="wallet-overlay-pill-row"
+              data-wallet-overlay-pills
+            ></div>
+          </section>
+          <section class="wallet-overlay-section">
+            <div class="wallet-overlay-section-head">
+              <h3>Merchant Tools</h3>
+            </div>
+            <div class="wallet-merchant-grid">
+              <button
+                class="wallet-merchant-card"
+                type="button"
+                data-wallet-directory-open
+              >
+                <span
+                  class="wallet-merchant-icon merchant-directory-icon"
+                  aria-hidden="true"
+                  ><svg><use href="#icon-grid" /></svg
+                ></span>
+                <strong>Merchant Directory</strong>
+                <span data-wallet-overlay-directory-copy>250+ merchants</span>
+                <span class="wallet-merchant-arrow" aria-hidden="true"
+                  ><svg><use href="#icon-chevron-right" /></svg
+                ></span>
+              </button>
+            </div>
+          </section>
+          <section class="wallet-overlay-section wallet-overlay-meta">
+            <div class="wallet-overlay-section-head">
+              <h3>Transaction History</h3>
+              <a href="#" data-wallet-overlay-view-all-history>View all</a>
+            </div>
+            <div
+              class="wallet-history-list transaction-list"
+              data-wallet-overlay-history
+            ></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div
+      class="merchant-directory-overlay"
+      data-merchant-directory-overlay
+      hidden
+    >
+      <button
+        class="merchant-directory-backdrop"
+        type="button"
+        aria-label="Close merchant directory"
+        data-merchant-directory-close
+      ></button>
+      <section class="merchant-directory-panel" aria-label="Merchant directory">
+        <header class="merchant-directory-header">
+          <button
+            class="merchant-directory-back"
+            type="button"
+            aria-label="Back to wallet details"
+            data-merchant-directory-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <div class="merchant-directory-title-group">
+            <span class="merchant-directory-eyebrow">Merchant Directory</span>
+            <h2 data-merchant-directory-title>Meal Wallet</h2>
+          </div>
+        </header>
+        <div class="merchant-directory-scroll" data-merchant-directory-scroll>
+          <button
+            class="merchant-directory-location"
+            type="button"
+            data-toast="Change location opened"
+          >
+            <span class="merchant-directory-location-icon" aria-hidden="true"
+              ><svg><use href="#icon-location" /></svg
+            ></span>
+            <div>
+              <strong>Current Location</strong>
+              <span>Indiranagar, Bengaluru · within 5 km</span>
+            </div>
+            <span class="merchant-directory-location-action" aria-hidden="true"
+              >Change</span
+            >
+          </button>
+          <button
+            class="merchant-directory-summary"
+            type="button"
+            data-toast="Merchant insights opened"
+          >
+            <span class="merchant-directory-summary-icon" aria-hidden="true"
+              ><svg><use href="#icon-grid" /></svg
+            ></span>
+            <div>
+              <strong data-merchant-directory-count>250+ merchants</strong>
+              <span data-merchant-directory-summary-copy
+                >Eligible outlets and partners for this wallet</span
+              >
+            </div>
+            <span class="merchant-directory-summary-action" aria-hidden="true"
+              ><svg><use href="#icon-chevron-right" /></svg
+            ></span>
+          </button>
+          <section class="merchant-directory-search">
+            <span class="merchant-directory-search-icon" aria-hidden="true"
+              ><svg><use href="#icon-search" /></svg
+            ></span>
+            <span data-merchant-directory-search-copy
+              >Search merchants near you</span
+            >
+          </section>
+          <section class="merchant-directory-section">
+            <div
+              class="merchant-directory-chip-row"
+              data-merchant-directory-chips
+            ></div>
+          </section>
+          <section class="merchant-directory-section">
+            <div class="merchant-directory-section-head">
+              <h3>Available Merchants</h3>
+              <button type="button" data-toast="All merchants opened">
+                View all
+              </button>
+            </div>
+            <div
+              class="merchant-directory-list"
+              data-merchant-directory-list
+            ></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div class="manage-cards-overlay" data-manage-cards-overlay hidden>
+      <button
+        class="manage-cards-backdrop"
+        type="button"
+        aria-label="Close Manage Card"
+        data-manage-cards-close
+      ></button>
+      <section class="manage-cards-panel" aria-label="Manage Card">
+        <header class="manage-cards-header">
+          <button
+            class="manage-cards-back"
+            type="button"
+            aria-label="Close Manage Card"
+            data-manage-cards-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <div class="manage-cards-title-group">
+            <span class="manage-cards-eyebrow">CONTROL CENTER</span>
+            <h2>Manage Card</h2>
+            <span>Select a wallet to view and manage its card details.</span>
+          </div>
+          <button
+            class="manage-cards-help"
+            type="button"
+            aria-label="Get help"
+            data-toast="Card help opened"
+          >
+            <svg aria-hidden="true"><use href="#icon-help" /></svg>
+          </button>
+        </header>
+        <div class="manage-cards-scroll">
+          <section
+            class="manage-cards-wallets-section"
+            aria-label="Wallet selector"
+          >
+            <!-- <div class="manage-cards-section-title-row">
+              <h3>Your Wallet</h3>
+            </div> -->
+            <div class="manage-cards-wallet-carousel" aria-label="Card wallets">
+              <button
+                class="manage-cards-wallet-card meal is-selected"
+                type="button"
+                data-manage-wallet
+                data-wallet-key="meal"
+                data-wallet-label="Meal Wallet"
+                data-wallet-limit="₹3,000"
+                aria-pressed="true"
+              >
+                <img
+                  class="manage-card-details-image"
+                  src="./assets/icons/card-details.svg"
+                  alt="Visa card details"
+                />
+              </button>
+            </div>
+          </section>
+
+          <section class="manage-cards-section manage-cards-controls-section">
+            <div class="manage-cards-section-head">
+              <h3>Card Controls</h3>
+            </div>
+            <div class="manage-cards-control-grid">
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="PIN management opened"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/upi-pin-reset.svg" alt="" />
+                </span>
+                <span>Set/ Reset<br />PIN</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="Physical card request opened"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/card-physical.svg" alt="" />
+                </span>
+                <span>Get A<br />Physical Card</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="Block card flow opened"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/card-block.svg" alt="" />
+                </span>
+                <span>Block<br />Card</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="Token management opened"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/card-token.svg" alt="" />
+                </span>
+                <span>Manage<br />Tokens</span>
+              </button>
+            </div>
+          </section>
+
+          <!-- <section class="manage-cards-section">
+            <div class="manage-cards-section-head">
+              <h3>Security &amp; Support</h3>
+            </div>
+            <div class="manage-cards-action-grid">
+              <button
+                class="manage-cards-action"
+                type="button"
+                data-toast="Notification preferences opened"
+              >
+                <span class="manage-cards-action-icon" aria-hidden="true"
+                  ><svg><use href="#icon-bell" /></svg
+                ></span>
+                <span class="manage-cards-setting-copy">
+                  <strong>Alerts</strong>
+                  <span>Control payment and card notifications</span>
+                </span>
+                <span class="manage-cards-action-arrow" aria-hidden="true"
+                  ><svg><use href="#icon-arrow-right" /></svg
+                ></span>
+              </button>
+              <button
+                class="manage-cards-action"
+                type="button"
+                data-toast="Support flow opened"
+              >
+                <span class="manage-cards-action-icon" aria-hidden="true"
+                  ><svg><use href="#icon-headset" /></svg
+                ></span>
+                <span class="manage-cards-setting-copy">
+                  <strong>Report an Issue</strong>
+                  <span>Get help for declines, blocks or limits</span>
+                </span>
+                <span class="manage-cards-action-arrow" aria-hidden="true"
+                  ><svg><use href="#icon-arrow-right" /></svg
+                ></span>
+              </button>
+            </div>
+          </section> -->
+        </div>
+      </section>
+    </div>
+
+    <div class="claims-assistant" data-claims-assistant hidden>
+      <section
+        class="claims-assistant-panel wallet-overlay-panel"
+        aria-label="Benefits Assitant chatbot"
+      >
+        <div class="claims-device-status" aria-hidden="true">
+          <span>9:41</span>
+          <span class="claims-device-icons">
+            <i class="claims-signal"></i>
+            <i class="claims-wifi"></i>
+            <i class="claims-battery"></i>
+          </span>
+        </div>
+        <header class="claims-header wallet-overlay-header">
+          <button
+            class="claims-back wallet-overlay-back"
+            type="button"
+            aria-label="Close Benefits Assitant"
+            data-claims-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <div class="claims-title-group wallet-overlay-title-group">
+            <span class="wallet-overlay-eyebrow">Reimbursement Wallet</span>
+            <h2>Benefits Assitant</h2>
+          </div>
+        </header>
+        <div class="claims-scroll wallet-overlay-scroll" data-claims-scroll>
+          <section
+            class="claims-status-card transaction-list"
+            data-claims-status
+          ></section>
+          <div class="claims-thread" data-claims-thread></div>
+          <div class="claims-workspace" data-claims-workspace></div>
+        </div>
+        <footer class="claims-composer">
+          <div class="claims-action-menu" data-claims-action-menu hidden>
+            <span class="claims-action-menu-handle" aria-hidden="true"></span>
+            <div class="claims-action-option-grid">
+              <button
+                type="button"
+                class="claims-action-option-card"
+                data-claims-action="upload-start"
+              >
+                <span aria-hidden="true"
+                  ><svg><use href="#icon-receipt" /></svg
+                ></span>
+                <strong>Upload bill</strong>
+                <small>Scan and extract details</small>
+              </button>
+              <button
+                type="button"
+                class="claims-action-option-card"
+                data-claims-action="dashboard"
+              >
+                <span aria-hidden="true"
+                  ><svg><use href="#icon-wallet" /></svg
+                ></span>
+                <strong>View dashboard</strong>
+                <small>Wallet balance and usage</small>
+              </button>
+              <button
+                type="button"
+                class="claims-action-option-card"
+                data-claims-action="policy"
+              >
+                <span aria-hidden="true"
+                  ><svg><use href="#icon-help" /></svg
+                ></span>
+                <strong>View policy</strong>
+                <small>Eligibility by category</small>
+              </button>
+              <button
+                type="button"
+                class="claims-action-option-card"
+                data-claims-action="history"
+              >
+                <span aria-hidden="true"
+                  ><svg><use href="#icon-claim" /></svg
+                ></span>
+                <strong>Claim history</strong>
+                <small>Recent claim status</small>
+              </button>
+              <button type="button" class="claims-action-option-card">
+                <span aria-hidden="true"
+                  ><svg><use href="#icon-receipt" /></svg
+                ></span>
+                <strong>View chat history</strong>
+                <small>Review this conversation</small>
+              </button>
+            </div>
+          </div>
+          <div class="claims-input-row merchant-directory-search">
+            <button
+              class="claims-upload-button wallet-overlay-back"
+              type="button"
+              aria-label="Open claim options"
+              aria-expanded="false"
+              data-claims-action="toggle-claim-menu"
+              data-claims-action-menu-toggle
+            >
+              <svg aria-hidden="true"><use href="#icon-plus" /></svg>
+            </button>
+            <input
+              data-claims-input
+              type="text"
+              placeholder="Ask or upload a bill..."
+            />
+            <button
+              class="claims-send-button wallet-overlay-back"
+              type="button"
+              aria-label="Send message"
+              data-claims-send
+            >
+              <svg aria-hidden="true"><use href="#icon-send" /></svg>
+            </button>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <div class="scan-pay-flow" data-scan-pay-flow hidden></div>
+
+    <div class="toast" role="status" aria-live="polite" data-toast-region></div>
+    <script src="./app.js"></script>
+  </body>
+</html>

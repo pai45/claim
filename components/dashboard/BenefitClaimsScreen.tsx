@@ -189,7 +189,7 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
             {data.claims.map((claim, index) => (
               <Link
                 key={claim.id}
-                href={`/claim-details/?id=${encodeURIComponent(claim.id)}`}
+                href={`/claim-details/?id=${encodeURIComponent(claim.id)}&from=dashboard`}
                 style={staggerStyle(index + 2)}
                 className="animate-rise-in flex w-full items-start gap-3 border-b border-border-line px-page py-3 last:border-b-0"
               >

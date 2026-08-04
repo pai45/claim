@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Benefits Assistant",
+    "slug": "benefits-assistant",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "benefits-assistant",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F8FAF8",
+    "ios": {
+      "bundleIdentifier": "com.pai45.benefitsassistant",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Benefits Assistant uses the camera so you can photograph a bill or driving licence when submitting a claim. Scanning happens on this device.",
+        "NSPhotoLibraryUsageDescription": "Benefits Assistant needs access to your photos so you can attach a saved bill or driving licence to a claim."
+      }
+    },
+    "android": {
+      "package": "com.pai45.benefitsassistant",
+      "adaptiveIcon": {
+        "backgroundColor": "#003434",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_MEDIA_IMAGES"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F8FAF8",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180
+        }
+      ]
+    ]
+  }
+}

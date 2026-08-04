@@ -12,11 +12,10 @@ import { UI_ICONS } from "@/lib/ui/assets";
 
 type ChatComposerProps = {
   onSend: (message: string) => void;
-  onAttach?: () => void;
   disabled?: boolean;
   /** Visual variant for the attach drawer composer */
   variant?: "glass" | "solid";
-  /** When set, replaces the attach button (e.g. close in drawer) */
+  /** Optional button left of the input — the drawer uses it to close itself. */
   leadingAction?: {
     label: string;
     onClick: () => void;
@@ -30,7 +29,6 @@ const MAX_TEXTAREA_PX = 120; // ~5 rows
 
 export function ChatComposer({
   onSend,
-  onAttach,
   disabled,
   variant = "glass",
   leadingAction,
@@ -83,7 +81,7 @@ export function ChatComposer({
   const canSend = Boolean(value.trim()) && !disabled;
   const shell =
     variant === "glass"
-      ? "border-white/50 bg-white/55 shadow-soft backdrop-blur-xl"
+      ? "border-[#dce7e2] bg-[#f5faf7]/90 backdrop-blur-xl"
       : "border-border-line bg-white";
   const attachShell =
     variant === "glass"
@@ -93,7 +91,7 @@ export function ChatComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className={`w-full bg-transparent px-4 pb-7 pt-2 ${className}`}
+      className={`w-full bg-transparent px-4 pb-6 pt-3 ${className}`}
     >
       <div className="flex items-end gap-2.5">
         {leadingAction ? (
@@ -109,17 +107,6 @@ export function ChatComposer({
               alt=""
             />
           </button>
-        ) : onAttach ? (
-          <button
-            type="button"
-            aria-label="Add attachment"
-            aria-disabled={disabled}
-            disabled={disabled}
-            onClick={() => onAttach()}
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${attachShell} transition-opacity disabled:opacity-45`}
-          >
-            <AppIcon src={UI_ICONS.plus} size={20} alt="" />
-          </button>
         ) : null}
 
         <div
@@ -131,7 +118,7 @@ export function ChatComposer({
             value={value}
             onChange={(event) => setValue(event.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Message Claims Assistant..."
+            placeholder="Message benefits assistant..."
             disabled={disabled}
             aria-disabled={disabled}
             className="max-h-30 min-h-7 min-w-0 flex-1 resize-none bg-transparent py-1.5 text-body leading-5 text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
@@ -142,10 +129,10 @@ export function ChatComposer({
             aria-label="Send message"
             aria-disabled={!canSend}
             disabled={!canSend}
-            className={`mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-45 ${
+            className={`mb-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-colors disabled:opacity-70 ${
               canSend
                 ? "bg-pine-primary text-white shadow-cta"
-                : "bg-input-icon text-pine"
+                : "bg-[#e8efea] text-pine"
             }`}
           >
             <AppIcon src={UI_ICONS.send} size={18} alt="" />

@@ -20,6 +20,7 @@ import type { PolicyTabId } from "@/features/policy/constants";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 import { ChatStatusBubble } from "./ChatStatusBubble";
 import { MessageBubble } from "./MessageBubble";
+import { ScannedDocumentCard } from "./ScannedDocumentCard";
 
 export type MessageListHandle = {
   scrollToBottom: (force?: boolean) => void;
@@ -38,7 +39,6 @@ type MessageListProps = {
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
   onReplaceBill?: (messageId: string) => void;
   onStartAnotherBill?: () => void;
-  onClearSavedData?: () => void;
   documentProcessingStage?: DocumentProcessingStage | null;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
@@ -96,7 +96,6 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       onSubmitBillClaim,
       onReplaceBill,
       onStartAnotherBill,
-      onClearSavedData,
       documentProcessingStage,
       onSelectPolicyCategory,
       onSelectMerchantBenefitType,
@@ -190,7 +189,9 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       );
     } else if (isScanning) {
       statusNode = (
-        <ChatStatusBubble label={documentStageLabel(documentProcessingStage)} />
+        <div aria-label={documentStageLabel(documentProcessingStage)}>
+          <ScannedDocumentCard stage={documentProcessingStage} />
+        </div>
       );
     } else if (isLocating) {
       statusNode = <ChatStatusBubble label="Finding merchants…" />;
@@ -223,7 +224,6 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onSubmitBillClaim={onSubmitBillClaim}
                 onReplaceBill={onReplaceBill}
                 onStartAnotherBill={onStartAnotherBill}
-                onClearSavedData={onClearSavedData}
                 onSelectPolicyCategory={onSelectPolicyCategory}
                 onSelectMerchantBenefitType={onSelectMerchantBenefitType}
                 onSelectMerchantSearchMode={onSelectMerchantSearchMode}

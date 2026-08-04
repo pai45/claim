@@ -20,6 +20,12 @@
 # production
 /build
 
+# expo shell
+/mobile/node_modules
+/mobile/.expo
+/mobile/android
+/mobile/ios
+
 # misc
 .DS_Store
 *.pem

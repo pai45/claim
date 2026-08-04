@@ -240,20 +240,20 @@ export function AttachBottomDrawer({
               <div className="flex flex-col gap-3">
                 <div className="flex gap-2">
                   {UPLOAD_OPTIONS.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    disabled={disabled}
-                    onClick={() => handlePick(option.id)}
-                    className="flex h-26 flex-1 flex-col items-center justify-center gap-2 rounded-card border border-border-soft bg-white p-3 text-center disabled:opacity-50"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-tint">
-                      {option.icon}
-                    </span>
-                    <span className="w-full text-caption font-bold leading-tight text-pine-dark">
-                      {option.label}
-                    </span>
-                  </button>
+                    <button
+                      key={option.id}
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => handlePick(option.id)}
+                      className="flex h-26 flex-1 flex-col items-center justify-center gap-2 rounded-card border border-border-soft bg-white p-3 text-center disabled:opacity-50"
+                    >
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-tint">
+                        {option.icon}
+                      </span>
+                      <span className="w-full text-caption font-bold leading-tight text-pine-dark">
+                        {option.label}
+                      </span>
+                    </button>
                   ))}
                 </div>
                 <PrivacyNotice onClearData={onClearData} />

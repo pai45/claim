@@ -3,22 +3,16 @@ import { EMPLOYER_BENEFITS_CATALOG } from "@/features/policy/constants";
 
 export const USER_DISPLAY_NAME = "Akshay";
 
+/**
+ * Order matters — the row is a single horizontal scroller, so the first three
+ * are what fit on screen. Dashboard and policy stay reachable by scrolling.
+ */
 export const QUICK_ACTIONS: QuickAction[] = [
   {
     id: "upload-bill",
     label: "Upload bill",
     intentId: "upload_bill",
     featured: true,
-  },
-  {
-    id: "view-dashboard",
-    label: "View dashboard",
-    intentId: "view_dashboard",
-  },
-  {
-    id: "view-policy",
-    label: "View policy",
-    intentId: "view_policy",
   },
   {
     id: "claim-history",
@@ -29,6 +23,16 @@ export const QUICK_ACTIONS: QuickAction[] = [
     id: "merchant-locator",
     label: "Merchant locator",
     intentId: "merchant_locator",
+  },
+  {
+    id: "view-dashboard",
+    label: "View dashboard",
+    intentId: "view_dashboard",
+  },
+  {
+    id: "view-policy",
+    label: "View policy",
+    intentId: "view_policy",
   },
 ];
 

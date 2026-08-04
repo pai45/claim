@@ -1,9 +1,5 @@
-import { ChatShell } from "@/components/chat/ChatShell";
+import { EmployeeBenefitsHost } from "@/components/host/EmployeeBenefitsHost";
 
 export default function HomePage() {
-  return (
-    <main className="min-h-dvh w-full">
-      <ChatShell />
-    </main>
-  );
+  return <EmployeeBenefitsHost />;
 }

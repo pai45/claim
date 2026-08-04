@@ -1,0 +1,29 @@
+{
+  "cli": {
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "simulator": {
+      "//": "iOS Simulator build. Needs no Apple Developer account, but produces a .app for a Mac simulator rather than an installable .ipa.",
+      "ios": { "simulator": true }
+    },
+    "preview": {
+      "//": "Installable builds for real devices. iOS requires a paid Apple Developer account for ad-hoc signing.",
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "ios": { "simulator": false }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

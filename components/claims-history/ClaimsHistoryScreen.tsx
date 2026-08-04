@@ -101,7 +101,7 @@ export function ClaimsHistoryScreen() {
               return (
                 <Link
                   key={claim.id}
-                  href={`/claim-details/?id=${encodeURIComponent(claim.id)}`}
+                  href={`/claim-details/?id=${encodeURIComponent(claim.id)}&from=history`}
                   style={staggerStyle(index)}
                   className={`animate-rise-in flex min-h-11 items-start gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
                     !isLast ? "border-b border-border-line" : ""

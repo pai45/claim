@@ -67,6 +67,10 @@ function benefitLabel(benefitType: BenefitType): string {
   return benefitType === "meal" ? "Meal" : "Fuel";
 }
 
+function articleFor(value: string): "a" | "an" {
+  return /^[aeiou]/i.test(value.trim()) ? "an" : "a";
+}
+
 export function useChat() {
   const chatVersionRef = useRef(0);
   const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
@@ -161,22 +165,16 @@ export function useChat() {
   }, []);
 
   const appendUploadOptions = useCallback(() => {
-    setMessages((prev) => {
-      if (prev.some((message) => message.kind === "upload_options")) {
-        return prev;
-      }
-
-      return [
-        ...prev,
-        {
-          id: createId(),
-          role: "assistant",
-          content: "Upload options",
-          createdAt: Date.now(),
-          kind: "upload_options",
-        },
-      ];
-    });
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: createId(),
+        role: "assistant",
+        content: "Upload options",
+        createdAt: Date.now(),
+        kind: "upload_options",
+      },
+    ]);
   }, []);
 
   const appendMerchantTypeOptions = useCallback(() => {
@@ -846,6 +844,8 @@ export function useChat() {
         await new Promise((resolve) => window.setTimeout(resolve, 180));
 
         setMessages((prev) => {
+          const vendor = nextExtract.vendor || nextExtract.merchant || "";
+          const category = nextExtract.category || "benefits";
           const nextMessage: ChatMessage = {
             id: billMessageId,
             role: "assistant",
@@ -853,16 +853,29 @@ export function useChat() {
               ? extract.error
               : extract.warning
                 ? extract.warning
-                : "I've extracted the claim details. Review the highlighted fields and demo checks before submitting.",
+                : vendor
+                  ? `I found ${articleFor(vendor)} ${vendor} bill. It looks like ${articleFor(category)} ${category} claim.`
+                  : `I found the bill. It looks like ${articleFor(category)} ${category} claim.`,
             createdAt: Date.now(),
             kind: "bill_extract",
             billExtract: nextExtract,
           };
-          return replaceMessageId
-            ? prev.map((message) =>
-                message.id === replaceMessageId ? nextMessage : message,
-              )
-            : [...prev, nextMessage];
+          if (replaceMessageId) {
+            return prev.map((message) =>
+              message.id === replaceMessageId ? nextMessage : message,
+            );
+          }
+          return [
+            ...prev,
+            {
+              id: `${billMessageId}-scan`,
+              role: "assistant",
+              content: "Bill scanned",
+              createdAt: Date.now(),
+              kind: "document_scan",
+            },
+            nextMessage,
+          ];
         });
       } catch (err) {
         console.error("OCR failed", err);

@@ -49,6 +49,7 @@ describe("assistant prompt history", () => {
     const history = buildAssistantHistory([
       message("user", "Upload a bill"),
       message("assistant", "Upload options", "upload_options"),
+      message("assistant", "Bill scanned", "document_scan"),
       message("assistant", "Choose a benefit policy", "policy_options"),
     ]);
 

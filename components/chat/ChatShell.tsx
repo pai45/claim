@@ -10,7 +10,6 @@ import { useChat } from "@/features/chat/useChat";
 import type { QuickAction } from "@/features/chat/types";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
-import { colors } from "@/lib/ui/colors";
 import { AttachBottomDrawer } from "./AttachBottomDrawer";
 import { ChatComposer } from "./ChatComposer";
 import { ChatGreeting } from "./ChatGreeting";
@@ -25,13 +24,18 @@ const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
 });
 
 const COLOR_BENDS_PALETTE = [
-  colors.pinePrimary,
-  colors.mint,
-  colors.mintSoft,
-  colors.mintWash,
+  "#fbfff3",
+  "#f2fbdc",
+  "#eaf7d1",
+  "#f6fce8",
 ];
 
-export function ChatShell() {
+type ChatShellProps = {
+  /** Closes the containing host without clearing the saved assistant session. */
+  onClose?: () => void;
+};
+
+export function ChatShell({ onClose }: ChatShellProps) {
   const [attachOpen, setAttachOpen] = useState(false);
   const [replacementBillId, setReplacementBillId] = useState<string | null>(null);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
@@ -76,11 +80,6 @@ export function ChatShell() {
   }, []);
 
   function handleQuickAction(action: QuickAction) {
-    if (action.intentId === "upload_bill") {
-      setReplacementBillId(null);
-      setAttachOpen(true);
-      return;
-    }
     void sendMessage(action.label, action.intentId);
   }
 
@@ -121,22 +120,22 @@ export function ChatShell() {
   const showEmptyState = isHydrated && !hasMessages;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-surface-chat">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-[#f5fae9]">
       <div className="pointer-events-none fixed inset-0" aria-hidden>
         <ColorBends
           colors={COLOR_BENDS_PALETTE}
-          rotation={104}
-          autoRotate={0.2}
-          speed={0.08}
-          scale={1.2}
-          frequency={0.7}
-          warpStrength={0.45}
+          rotation={112}
+          autoRotate={0.3}
+          speed={0.11}
+          scale={1.25}
+          frequency={0.62}
+          warpStrength={0.5}
           mouseInfluence={0}
           parallax={0}
-          noise={0.015}
+          noise={0.012}
           iterations={2}
-          intensity={0.68}
-          bandWidth={5}
+          intensity={0.48}
+          bandWidth={5.5}
           transparent
           paused={reduceMotion}
         />
@@ -144,13 +143,13 @@ export function ChatShell() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 50% 8%, rgba(255,255,255,0.92) 0%, rgba(244,249,247,0.78) 42%, transparent 74%), linear-gradient(180deg, rgba(244,249,247,0.72) 0%, rgba(236,245,241,0.7) 48%, rgba(238,245,242,0.88) 100%)",
+              "radial-gradient(circle at 68% 32%, rgba(255,255,250,0.46) 0%, rgba(247,252,231,0.4) 42%, transparent 72%), linear-gradient(180deg, rgba(255,255,253,0.82) 0%, rgba(247,252,235,0.68) 46%, rgba(251,253,248,0.84) 100%)",
           }}
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-white/10 shadow-phone">
-        <ChatHeader onNewChat={requestClear} />
+      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-white/5 shadow-phone">
+        <ChatHeader onNewChat={requestClear} onBack={onClose} />
 
         <main
           className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-2 pt-1"
@@ -160,7 +159,6 @@ export function ChatShell() {
             {showEmptyState ? (
               <>
                 <ChatGreeting />
-                <QuickActions onSelect={handleQuickAction} disabled={busy} />
                 <PromoCard
                   onStart={handleVehicleRegistration}
                   disabled={busy}
@@ -183,7 +181,6 @@ export function ChatShell() {
               onSubmitBillClaim={submitBillClaim}
               onReplaceBill={handleReplaceBill}
               onStartAnotherBill={handleStartAnotherBill}
-              onClearSavedData={requestClear}
               onSelectPolicyCategory={selectPolicyCategory}
               onSelectMerchantBenefitType={selectMerchantBenefitType}
               onSelectMerchantSearchMode={selectMerchantSearchMode}
@@ -201,7 +198,7 @@ export function ChatShell() {
           </div>
         </main>
 
-        <div className="relative flex w-full flex-col items-stretch">
+        <div className="relative flex w-full flex-col items-stretch border-t border-white/60 bg-white/55 backdrop-blur-xl">
           <div
             className="pointer-events-none absolute inset-x-0 -top-8 h-8 chat-composer-fade"
             aria-hidden
@@ -234,6 +231,11 @@ export function ChatShell() {
               />
             </div>
           ) : null}
+          {showEmptyState ? (
+            <div className="pb-1 pt-2">
+              <QuickActions onSelect={handleQuickAction} disabled={busy} />
+            </div>
+          ) : null}
           {!attachOpen ? (
             <div
               className="animate-rise-in"
@@ -241,7 +243,6 @@ export function ChatShell() {
             >
               <ChatComposer
                 onSend={(message) => void sendMessage(message)}
-                onAttach={() => setAttachOpen(true)}
                 disabled={busy}
               />
             </div>

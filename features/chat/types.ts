@@ -38,6 +38,7 @@ export type ClaimPrecheck = {
 export type MessageKind =
   | "text"
   | "upload_options"
+  | "document_scan"
   | "bill_extract"
   | "claim_cta"
   | "policy_answer"
