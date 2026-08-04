@@ -12,6 +12,7 @@ import {
   otpValue,
 } from "@/features/auth/loginMachine";
 import { verifyOtp } from "@/features/auth/otp";
+import { useViewportHeight } from "@/features/auth/useViewportHeight";
 import { OtpStep } from "./OtpStep";
 import { PhoneStep } from "./PhoneStep";
 import { PlusPayWordmark } from "./PlusPayWordmark";
@@ -39,6 +40,8 @@ export function LoginScreen() {
 
   const verifying = state.status === "verifying";
   const resendIn = Math.max(0, Math.ceil((resendDeadline - now) / 1000));
+
+  useViewportHeight();
 
   function startResendCooldown() {
     const startedAt = Date.now();
@@ -102,18 +105,19 @@ export function LoginScreen() {
   }
 
   return (
-    <AppShell variant="login" className="relative overflow-hidden">
-      {/* Top-anchored at the art's own 394x396 ratio. Stretching this to cover
-          the full viewport would crop away the coins, card and float icons. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 aspect-[394/396]">
+    <AppShell variant="login" className="h-viewport overflow-hidden">
+      <header className="flex shrink-0 items-center justify-center px-page pb-5 pt-7">
+        <PlusPayWordmark />
+      </header>
+
+      {/* The only flexible row, so the on-screen keyboard squeezes the
+          animation and never the form. `slice` keeps the art filling whatever
+          height is left instead of letterboxing. */}
+      <div className="pointer-events-none relative min-h-0 flex-1 overflow-hidden">
         <LoginBackground />
       </div>
 
-      <div className="relative z-10 flex justify-center pt-6">
-        <PlusPayWordmark />
-      </div>
-
-      <section className="animate-sheet-rise absolute inset-x-0 bottom-0 z-10 max-h-[85dvh] overflow-y-auto rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-6 shadow-drawer">
+      <section className="animate-sheet-rise z-10 max-h-[85dvh] shrink-0 overflow-y-auto rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-6 shadow-drawer">
         {state.step === "phone" ? (
           <PhoneStep
             ref={phoneRef}

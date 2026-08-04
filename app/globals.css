@@ -374,13 +374,12 @@ textarea {
   animation: sheet-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Soft composer edge blend */
-.chat-composer-fade {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(244, 253, 229, 0.78) 100%
-  );
+/* Tracks the visual viewport so the bottom sheet stays above the on-screen
+   keyboard, which `100dvh` ignores. Unlayered on purpose: it has to beat the
+   `h-dvh` utility that AppShell applies. Falls back to dvh before the hook
+   runs and on browsers without `visualViewport`. */
+.h-viewport {
+  height: var(--login-viewport-height, 100dvh);
 }
 
 @keyframes claim-scan-pulse {

@@ -27,11 +27,11 @@ export function PlusPayWordmark({ className = "" }: { className?: string }) {
     <Image
       src={withBasePath(BRAND_ASSETS.plusPay)}
       alt="pluspay"
-      width={132}
-      height={28}
+      width={400}
+      height={132}
       priority
       unoptimized
-      className={`h-7 w-auto ${className}`.trim()}
+      className={`h-9 w-auto ${className}`.trim()}
       onError={() => setArtworkFailed(true)}
     />
   );

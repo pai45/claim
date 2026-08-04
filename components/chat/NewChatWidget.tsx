@@ -322,7 +322,7 @@ export function NewChatWidget({
               src={UI_ICONS.plus}
               size={22}
               alt=""
-              className={expanded ? "brightness-0 invert" : "opacity-55"}
+              className={expanded ? "brightness-0 invert" : "opacity-80"}
             />
           </span>
           <span

@@ -79,7 +79,10 @@ export default function LoginBackground() {
       animationData={animationData}
       loop={!reduceMotion}
       autoplay={!reduceMotion}
-      rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
+      // `slice` fills the band at any height; anchored to the top so the UPI
+      // badge and the floating category icons stay in frame when the keyboard
+      // shrinks it.
+      rendererSettings={{ preserveAspectRatio: "xMidYMin slice" }}
       className="h-full w-full"
     />
   );

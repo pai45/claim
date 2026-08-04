@@ -29,12 +29,12 @@ const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
 });
 
 const COLOR_BENDS_PALETTE = [
-  "#ffffff",
-  "#ffffff",
-  "#C9FFE2",
-  "#BFFFE3",
-  "#fff0ad",
-  "#ffffff",
+  "#fffdf7",
+  "#fffaf0",
+  "#fbf4e5",
+  "#f8efdc",
+  "#fff6e8",
+  "#fffdf7",
 ];
 
 type ChatShellProps = {
@@ -163,7 +163,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const showEmptyState = isHydrated && !hasMessages;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-[#f8fce9]">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-[#fffaf0]">
       <div className="pointer-events-none fixed inset-0" aria-hidden>
         <ColorBends
           colors={COLOR_BENDS_PALETTE}
@@ -186,7 +186,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 68% 30%, rgba(255,255,255,0.12) 0%, rgba(250,255,242,0.06) 40%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(247,252,235,0.04) 48%, rgba(255,255,255,0.12) 100%)",
+              "radial-gradient(circle at 68% 30%, rgba(255,253,247,0.12) 0%, rgba(255,248,232,0.06) 40%, transparent 70%), linear-gradient(180deg, rgba(255,253,247,0.1) 0%, rgba(255,248,235,0.04) 48%, rgba(255,253,247,0.12) 100%)",
           }}
         />
       </div>
@@ -247,10 +247,6 @@ export function ChatShell({ onClose }: ChatShellProps) {
         </main>
 
         <div className="relative flex w-full flex-col items-stretch">
-          <div
-            className="pointer-events-none absolute inset-x-0 -top-8 h-8 chat-composer-fade"
-            aria-hidden
-          />
           {awayFromBottom && hasMessages ? (
             <div className="absolute inset-x-0 -top-12 z-20 flex justify-center">
               <button
