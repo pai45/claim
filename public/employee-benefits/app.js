@@ -4701,6 +4701,36 @@ claimsOpenButton?.addEventListener("click", () => {
   );
 });
 
+document.querySelectorAll("[data-transactions-open]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-transactions" },
+      window.location.origin,
+    );
+  });
+});
+
+document.querySelectorAll("[data-manage-limits-open]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-manage-limits" },
+      window.location.origin,
+    );
+  });
+});
+
+document.querySelectorAll("[data-profile-open]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-profile" },
+      window.location.origin,
+    );
+  });
+});
+
 scanPayOpenButtons.forEach((button) => {
   button.addEventListener("click", () => {
     window.location.hash = "scan-pay";

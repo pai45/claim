@@ -1,5 +1,5 @@
-import { EmployeeBenefitsHost } from "@/components/host/EmployeeBenefitsHost";
+import { HomeEntry } from "@/components/auth/HomeEntry";
 
 export default function HomePage() {
-  return <EmployeeBenefitsHost />;
+  return <HomeEntry />;
 }

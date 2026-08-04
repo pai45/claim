@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 type AppShellProps = {
   children: ReactNode;
   /** Page surface. Default `surface` for most screens; use `chat` for the assistant. */
-  variant?: "surface" | "chat" | "bg";
+  variant?: "surface" | "chat" | "bg" | "login";
   className?: string;
 };
 
@@ -11,6 +11,7 @@ const variantClass = {
   surface: "bg-surface",
   chat: "bg-surface-chat",
   bg: "bg-bg",
+  login: "bg-login-canvas",
 } as const;
 
 export function AppShell({

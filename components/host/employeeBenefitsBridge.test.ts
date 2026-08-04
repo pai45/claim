@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 const CLAIMS_HASH = "#claims";
+const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
+const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
+const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
+const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 
 function isClaimsHash(hash: string) {
   return hash.toLowerCase() === CLAIMS_HASH;
@@ -11,5 +15,27 @@ describe("Employee Benefits claims bridge", () => {
     expect(isClaimsHash("#claims")).toBe(true);
     expect(isClaimsHash("#CLAIMS")).toBe(true);
     expect(isClaimsHash("#scan-pay")).toBe(false);
+  });
+
+  it("uses distinct message types for Benefits and Transactions", () => {
+    expect(OPEN_BENEFITS_MESSAGE).toBe(
+      "employee-benefits:open-benefits-assistant",
+    );
+    expect(OPEN_TRANSACTIONS_MESSAGE).toBe(
+      "employee-benefits:open-transactions",
+    );
+    expect(OPEN_BENEFITS_MESSAGE).not.toBe(OPEN_TRANSACTIONS_MESSAGE);
+  });
+
+  it("uses a distinct message type for Manage Limits", () => {
+    expect(OPEN_MANAGE_LIMITS_MESSAGE).toBe(
+      "employee-benefits:open-manage-limits",
+    );
+    expect(OPEN_MANAGE_LIMITS_MESSAGE).not.toBe(OPEN_TRANSACTIONS_MESSAGE);
+  });
+
+  it("uses a distinct message type for Profile", () => {
+    expect(OPEN_PROFILE_MESSAGE).toBe("employee-benefits:open-profile");
+    expect(OPEN_PROFILE_MESSAGE).not.toBe(OPEN_MANAGE_LIMITS_MESSAGE);
   });
 });

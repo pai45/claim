@@ -239,6 +239,13 @@ svg {
   line-height: 1;
 }
 
+/* Shown only in PlusPay mode, via [data-pluspay-show]. Height matches the
+   wordmark's font-size so the top bar does not shift when the mode changes. */
+.brand-logo {
+  height: 20px;
+  width: auto;
+}
+
 .header-actions {
   display: flex;
   justify-content: flex-end;

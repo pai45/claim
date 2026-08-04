@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { AppIcon } from "@/components/shared/AppIcon";
+import { useAuthSession } from "@/features/auth/useAuthSession";
 import {
   readSnoozedUntil,
   shouldShowInstallNudge,
@@ -63,6 +64,9 @@ function AddBoxGlyph() {
  */
 export function AddToHomeScreenPrompt() {
   const [visible, setVisible] = useState(false);
+  // The login sheet owns the bottom of the screen before anyone is signed in,
+  // and this nudge would land squarely on its CTA.
+  const { session } = useAuthSession();
 
   useEffect(() => {
     const iosNavigator = navigator as IosNavigator;
@@ -101,7 +105,7 @@ export function AddToHomeScreenPrompt() {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [visible, dismiss]);
 
-  if (!visible) return null;
+  if (!visible || !session) return null;
 
   return (
     <div

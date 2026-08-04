@@ -29,10 +29,12 @@ const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
 });
 
 const COLOR_BENDS_PALETTE = [
-  "#fbffe8",
-  "#dcf6c8",
-  "#ccefe5",
-  "#fff1c9",
+  "#ffffff",
+  "#ffffff",
+  "#C9FFE2",
+  "#BFFFE3",
+  "#fff0ad",
+  "#ffffff",
 ];
 
 type ChatShellProps = {
@@ -42,7 +44,9 @@ type ChatShellProps = {
 
 export function ChatShell({ onClose }: ChatShellProps) {
   const [attachOpen, setAttachOpen] = useState(false);
-  const [replacementBillId, setReplacementBillId] = useState<string | null>(null);
+  const [replacementBillId, setReplacementBillId] = useState<string | null>(
+    null,
+  );
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [awayFromBottom, setAwayFromBottom] = useState(false);
@@ -164,17 +168,17 @@ export function ChatShell({ onClose }: ChatShellProps) {
         <ColorBends
           colors={COLOR_BENDS_PALETTE}
           rotation={112}
-          autoRotate={1.1}
-          speed={0.42}
-          scale={1.15}
-          frequency={0.78}
-          warpStrength={0.82}
+          autoRotate={4.5}
+          speed={0.78}
+          scale={1.08}
+          frequency={0.92}
+          warpStrength={1.08}
           mouseInfluence={0}
           parallax={0}
           noise={0.008}
           iterations={3}
-          intensity={0.72}
-          bandWidth={4.6}
+          intensity={1}
+          bandWidth={4.1}
           transparent
           paused={reduceMotion}
         />
@@ -182,7 +186,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 68% 30%, rgba(255,255,250,0.18) 0%, rgba(247,252,231,0.12) 40%, transparent 70%), linear-gradient(180deg, rgba(255,255,253,0.2) 0%, rgba(247,252,235,0.1) 48%, rgba(251,253,248,0.22) 100%)",
+              "radial-gradient(circle at 68% 30%, rgba(255,255,255,0.12) 0%, rgba(250,255,242,0.06) 40%, transparent 70%), linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(247,252,235,0.04) 48%, rgba(255,255,255,0.12) 100%)",
           }}
         />
       </div>

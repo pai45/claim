@@ -19,4 +19,6 @@ export const colors = {
   /** Soft mint accents used by ColorBends background */
   mintSoft: "#9DDBC1",
   mintWash: "#E7F4EE",
+  /** Login screen canvas — matches the login Lottie's own backdrop layer. */
+  loginCanvas: "#DBF5E7",
 } as const;

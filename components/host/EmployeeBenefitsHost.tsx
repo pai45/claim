@@ -6,6 +6,10 @@ import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
 
 const CLAIMS_HASH = "#claims";
+const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
+const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
+const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
+const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 
 export function EmployeeBenefitsHost() {
   const frameRef = useRef<HTMLIFrameElement>(null);
@@ -29,6 +33,18 @@ export function EmployeeBenefitsHost() {
     }
   }, []);
 
+  const openTransactions = useCallback(() => {
+    window.location.assign(withBasePath("/transactions/"));
+  }, []);
+
+  const openManageLimits = useCallback(() => {
+    window.location.assign(withBasePath("/manage-limit/"));
+  }, []);
+
+  const openProfile = useCallback(() => {
+    window.location.assign(withBasePath("/profile/"));
+  }, []);
+
   const connectClaimsBridge = useCallback(() => {
     const document = frameRef.current?.contentDocument;
     if (!document) return;
@@ -45,33 +61,51 @@ export function EmployeeBenefitsHost() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && claimsOpen) closeClaims();
     };
-    const receiveClaimsBridge = (event: MessageEvent) => {
+    const receiveHostBridge = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       if (event.source !== frameRef.current?.contentWindow) return;
-      if (event.data?.type !== "employee-benefits:open-benefits-assistant") {
+      if (event.data?.type === OPEN_BENEFITS_MESSAGE) {
+        openClaims();
         return;
       }
-      openClaims();
+      if (event.data?.type === OPEN_TRANSACTIONS_MESSAGE) {
+        openTransactions();
+        return;
+      }
+      if (event.data?.type === OPEN_MANAGE_LIMITS_MESSAGE) {
+        openManageLimits();
+        return;
+      }
+      if (event.data?.type === OPEN_PROFILE_MESSAGE) {
+        openProfile();
+      }
     };
 
     window.addEventListener("hashchange", syncHash);
     window.addEventListener("keydown", closeOnEscape);
-    window.addEventListener("message", receiveClaimsBridge);
+    window.addEventListener("message", receiveHostBridge);
     const initialSyncFrame = window.requestAnimationFrame(syncHash);
     return () => {
       window.cancelAnimationFrame(initialSyncFrame);
       window.removeEventListener("hashchange", syncHash);
       window.removeEventListener("keydown", closeOnEscape);
-      window.removeEventListener("message", receiveClaimsBridge);
+      window.removeEventListener("message", receiveHostBridge);
     };
-  }, [claimsOpen, closeClaims, openClaims]);
+  }, [
+    claimsOpen,
+    closeClaims,
+    openClaims,
+    openManageLimits,
+    openProfile,
+    openTransactions,
+  ]);
 
   return (
     <main className="employee-benefits-host">
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=benefits-nav-v9`}
+        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-brand-v1`}
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />

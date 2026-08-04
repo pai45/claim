@@ -23,6 +23,9 @@
   --color-input: #f4f8f6;
   --color-input-icon: #e9efea;
   --color-input-soft: #f8fbfa;
+  /* Sampled from the login Lottie's own backdrop layer, so the animation
+     blends into the screen it sits on with no visible seam. */
+  --color-login-canvas: #dbf5e7;
 
   /* —— Ink / text —— */
   --color-ink: #1c2725;
@@ -254,6 +257,16 @@ textarea {
   color: #fff;
 }
 
+/* Lives here rather than as `disabled:bg-*` utilities on the element: these
+   properties are set by .btn-primary itself, which is unlayered and therefore
+   always beats Tailwind's @layer utilities no matter the specificity. */
+.btn-primary:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-muted);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
   display: flex;
   height: 56px;
@@ -344,6 +357,23 @@ textarea {
   animation: rise-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Bottom sheet entrance. `rise-in` travels only 10px, too short to read as a
+   sheet arriving from off-screen. */
+@keyframes sheet-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-sheet-rise {
+  animation: sheet-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Soft composer edge blend */
 .chat-composer-fade {
   background: linear-gradient(
@@ -413,12 +443,51 @@ textarea {
     var(--magic-unit-delay) both;
 }
 
+/* Manage Limit range thumbs */
+.limit-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -7px;
+  border: 2px solid var(--color-success);
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+}
+
+.limit-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--color-success);
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+}
+
+.limit-slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+}
+
+.limit-slider::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .quick-action-featured-border {
     animation: none;
   }
 
   .animate-rise-in {
+    animation: none;
+  }
+
+  .animate-sheet-rise {
     animation: none;
   }
 

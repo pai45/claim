@@ -211,13 +211,29 @@
               class="avatar-button"
               type="button"
               aria-label="Open profile"
+              data-profile-open
             >
               V
             </button>
             <a class="brand" href="#" aria-label="Lens home">
-              <span data-lens-text="Lens" data-pluspay-text="PlusPay"
+              <span
+                data-lens-text="Lens"
+                data-pluspay-text="PlusPay"
+                data-pluspay-hide
                 >Lens</span
               >
+              <!-- Lives in the Next.js public/assets tree, not this app's own
+                   assets folder, so the login screen and PlusPay mode share one
+                   file. Document-relative so it survives the /claim basePath.
+                   If the artwork is missing it hands the brand back to the text
+                   span rather than leaving a broken glyph or an empty header. -->
+              <img
+                class="brand-logo"
+                data-pluspay-show
+                src="../assets/login/pluspay-logo.svg"
+                alt="PlusPay"
+                onerror="this.previousElementSibling.removeAttribute('data-pluspay-hide'); this.remove();"
+              />
             </a>
             <button
               class="pluspay-toggle"
@@ -614,7 +630,7 @@
           >
             Recent Transactions
           </h2>
-          <a href="#">View all</a>
+          <a href="#" data-transactions-open>View all</a>
         </div>
         <div
           class="filter-chips"
@@ -797,7 +813,7 @@
           class="nav-item transactions-nav-item"
           type="button"
           aria-label="Transactions"
-          data-toast="Transactions opened"
+          data-transactions-open
         >
           <span class="nav-icon-shell"
             ><img
@@ -1150,12 +1166,12 @@
               <button
                 class="manage-cards-control-tile"
                 type="button"
-                data-toast="Token management opened"
+                data-manage-limits-open
               >
                 <span class="manage-cards-control-icon" aria-hidden="true">
-                  <img src="./assets/icons/card-token.svg" alt="" />
+                  <img src="./assets/icons/bill-check.svg" alt="" />
                 </span>
-                <span>Manage<br />Tokens</span>
+                <span>Manage<br />Limits</span>
               </button>
             </div>
           </section>

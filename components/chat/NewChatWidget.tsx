@@ -24,7 +24,7 @@ type NewChatWidgetProps = {
   reduceMotion: boolean;
 };
 
-/** Collapsed diameter. 44px stays visible once {@link PEEK} hangs past the wall. */
+/** Collapsed diameter. {@link PEEK} of it hangs past the wall and is clipped away. */
 const SIZE = 60;
 /**
  * Expanded width is a fixed constant rather than `auto` so the pill can animate
@@ -34,8 +34,11 @@ const SIZE = 60;
  * that is still being measured.
  */
 const EXPANDED_WIDTH = 148;
-/** How far the docked circle sits past the frame, clipped by its `overflow-hidden`. */
-const PEEK = 16;
+/**
+ * How far the docked circle sits past the frame, clipped by its `overflow-hidden`.
+ * 26 of 60 hidden leaves ~57% showing.
+ */
+const PEEK = 26;
 /** Inset from the wall while expanded — matches `--spacing-page`. */
 const INSET = 16;
 /** Clears the 69px header with a little air. */
@@ -303,12 +306,23 @@ export function NewChatWidget({
               : `border-white/60 bg-white/90 ${dragging ? "shadow-cta" : "shadow-card"}`
           }`}
         >
-          <span className="grid h-15 w-15 shrink-0 place-items-center">
+          {/* The glyph is centred in the full 60px circle, so once the circle
+              hangs past the wall it would sit almost on the edge. Nudging it
+              back by half the peek re-centres it inside the *visible* sliver. */}
+          <span
+            className="grid h-15 w-15 shrink-0 place-items-center transition-transform duration-360 motion-reduce:transition-none"
+            style={{
+              transform:
+                expanded || dragging
+                  ? "none"
+                  : `translateX(${isRight ? -PEEK / 2 : PEEK / 2}px)`,
+            }}
+          >
             <AppIcon
               src={UI_ICONS.plus}
               size={22}
               alt=""
-              className={expanded ? "brightness-0 invert" : undefined}
+              className={expanded ? "brightness-0 invert" : "opacity-55"}
             />
           </span>
           <span

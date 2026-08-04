@@ -1,6 +1,12 @@
 export const BRAND_ASSETS = {
   logo: "/assets/benefits-logo.gif",
   pineLabs: "/assets/pine-labs-logo.svg",
+  /**
+   * Also referenced document-relative (`../assets/login/pluspay-logo.svg`) by
+   * the static app in `public/employee-benefits/`, which has no `withBasePath`.
+   * Moving this file means updating that markup too.
+   */
+  plusPay: "/assets/login/pluspay-logo.svg",
 } as const;
 
 export const UI_ICONS = {
