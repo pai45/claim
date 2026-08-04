@@ -1,5 +1,5 @@
 export const BRAND_ASSETS = {
-  logo: "/assets/brand-logo.svg",
+  logo: "/assets/benefits-logo.gif",
   pineLabs: "/assets/pine-labs-logo.svg",
 } as const;
 

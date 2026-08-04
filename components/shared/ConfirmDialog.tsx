@@ -8,6 +8,8 @@ type ConfirmDialogProps = {
   title: string;
   description: string;
   confirmLabel: string;
+  /** Defaults to the chat-clear wording; pass one for any other dialog. */
+  cancelLabel?: string;
   onConfirm: () => void;
   onClose: () => void;
 };
@@ -17,6 +19,7 @@ export function ConfirmDialog({
   title,
   description,
   confirmLabel,
+  cancelLabel = "Keep my draft",
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -47,7 +50,7 @@ export function ConfirmDialog({
         <p id="confirm-dialog-description" className="mt-2 type-body-secondary">{description}</p>
         <div className="mt-5 flex flex-col gap-2">
           <button type="button" onClick={onConfirm} className="btn-primary min-h-11 h-auto py-3">{confirmLabel}</button>
-          <button type="button" onClick={onClose} className="btn-secondary min-h-11 h-auto py-3">Keep my draft</button>
+          <button type="button" onClick={onClose} className="btn-secondary min-h-11 h-auto py-3">{cancelLabel}</button>
         </div>
       </section>
     </div>

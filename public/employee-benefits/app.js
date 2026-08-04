@@ -886,7 +886,7 @@ const claimState = {
 };
 
 const CLAIMS_GREETING_TEXT =
-  "Hi, I’m your Benefits Assitant. Let’s get your claim sorted quickly.";
+  "Hi, I’m your Benefits assistant. Let’s get your claim sorted quickly.";
 let claimsGreetingShown = false;
 
 const scanPayMock = {
@@ -4040,7 +4040,7 @@ function syncClaimsComposer() {
     claimState.isActionMenuOpen,
   );
   if (claimsActionMenu) claimsActionMenu.hidden = !claimState.isActionMenuOpen;
-  claimsInput.placeholder = "Message Benefits Assitant...";
+  claimsInput.placeholder = "Message Benefits assistant...";
 }
 
 function openClaimsAssistant() {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
 import { AppShell } from "@/components/shared/AppShell";
+import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   AVAILABLE_LIMIT,
@@ -13,22 +14,7 @@ import {
   UTILIZED_AMOUNT,
   formatINR,
 } from "@/features/dashboard/constants";
-import { colors } from "@/lib/ui/colors";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
-
-function ChevronRight() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M9.5 6.5 15 12l-5.5 5.5"
-        stroke={colors.pinePrimary}
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function ClaimsDashboardScreen() {
   const router = useRouter();
@@ -36,7 +22,10 @@ export function ClaimsDashboardScreen() {
 
   return (
     <AppShell className="overflow-hidden">
-      <ScreenHeader title="Claims Dashboard" onBack={() => router.push("/")} />
+      <ScreenHeader
+        title="Claims Dashboard"
+        onBack={() => router.push("/#claims")}
+      />
 
       <main className="flex min-h-0 flex-1 flex-col gap-section overflow-y-auto px-page pb-8 pt-4">
         <section
@@ -112,7 +101,7 @@ export function ClaimsDashboardScreen() {
                     <span className="text-body-sm font-bold text-pine">
                       {formatINR(category.amount)}
                     </span>
-                    <ChevronRight />
+                    <ChevronRightIcon />
                   </div>
                 </Link>
               );

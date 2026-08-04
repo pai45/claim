@@ -45,7 +45,10 @@ export function ClaimsHistoryScreen() {
 
   return (
     <AppShell className="overflow-hidden">
-      <ScreenHeader title="Claims History" onBack={() => router.push("/")} />
+      <ScreenHeader
+        title="Claims History"
+        onBack={() => router.push("/#claims")}
+      />
 
       <div className="overflow-x-auto border-b border-border-tab bg-white [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="flex min-w-max items-end px-2 pt-1" role="tablist" aria-label="Claim status">

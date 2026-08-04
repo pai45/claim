@@ -368,11 +368,10 @@ export function MessageBubble({
             submittedAt={message.createdAt}
           />
           <div className="flex flex-wrap content-start gap-2">
-            <Link
-              href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
-              className={pillClass}
-            >
-              View claim details
+            {/* Registering a vehicle files no bill, so there is no claim to
+                open — the vehicle it created is what the user wants to see. */}
+            <Link href="/vehicle/" className={pillClass}>
+              View vehicle details
             </Link>
             <button
               type="button"

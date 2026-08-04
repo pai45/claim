@@ -77,6 +77,90 @@ describe("buildVehicleLookup", () => {
       /^\d{1,2} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{4}$/,
     );
   });
+
+  it("keeps the vehicle and date a plate resolved to before chassis numbers existed", () => {
+    // The chassis and engine derivations draw from new hash namespaces. If one
+    // ever aliased `profile:` or `regdate:`, every bookmarked demo plate would
+    // silently resolve to a different car — this is the tripwire for that.
+    const lookup = lookupOrThrow("MH01AB1234");
+    expect(lookup.profile.id).toBe("mahindra-bolero");
+    expect(lookup.registrationDate).toBe("12 Feb 2016");
+  });
+});
+
+/** ISO 3779 model-year codes as used by `chassisNumberFor`, index 0 = 2010. */
+const YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789";
+
+const WMI: Record<string, string> = {
+  "Maruti Suzuki": "MA3",
+  Hyundai: "MAL",
+  Tata: "MAT",
+  Mahindra: "MA1",
+  Honda: "MAK",
+  Toyota: "MBJ",
+};
+
+describe("chassis and engine numbers", () => {
+  it("builds a 17-character VIN-shaped chassis with no I, O or Q", () => {
+    for (const plate of ["MH01AB1234", "KA05RS1035", "24BH1234AB"]) {
+      expect(lookupOrThrow(plate).chassisNumber, plate).toMatch(
+        /^[A-HJ-NPR-Z0-9]{17}$/,
+      );
+    }
+  });
+
+  it("opens the chassis with the maker's WMI", () => {
+    for (const plate of samplePlates().slice(0, 200)) {
+      const lookup = lookupOrThrow(plate);
+      expect(lookup.chassisNumber.slice(0, 3), plate).toBe(
+        WMI[lookup.profile.maker],
+      );
+    }
+  });
+
+  it("encodes the registration year at VIN position 10", () => {
+    for (const plate of samplePlates().slice(0, 200)) {
+      const lookup = lookupOrThrow(plate);
+      const year = Number(lookup.registrationDate.slice(-4));
+      expect(lookup.chassisNumber[9], `${plate} (${year})`).toBe(
+        YEAR_CODES[(((year - 2010) % 30) + 30) % 30],
+      );
+    }
+  });
+
+  it("builds an engine number from family, displacement and serial", () => {
+    for (const plate of samplePlates().slice(0, 200)) {
+      const lookup = lookupOrThrow(plate);
+      expect(lookup.engineNumber, plate).toMatch(/^[A-HJ-NPR-Z](?:\d{2}|EV)\d{8}$/);
+      // EVs have no displacement, so the middle group is the only fork.
+      const capacity = lookup.profile.engineCapacityCc;
+      expect(lookup.engineNumber.slice(1, 3), plate).toBe(
+        capacity ? String(Math.round(capacity / 100)).padStart(2, "0") : "EV",
+      );
+    }
+  });
+
+  it("is deterministic and independent of how the plate is written", () => {
+    const canonical = lookupOrThrow("KA05RS4321");
+    for (const variant of [
+      "KA05RS4321",
+      "ka 05 rs 4321",
+      "KA-05-RS-4321",
+      "IND KA05RS4321",
+    ]) {
+      const lookup = lookupOrThrow(variant);
+      expect(lookup.chassisNumber, variant).toBe(canonical.chassisNumber);
+      expect(lookup.engineNumber, variant).toBe(canonical.engineNumber);
+    }
+  });
+
+  it("gives every plate its own chassis number", () => {
+    // A single hash32 draw only covers about six VIN characters, so slicing one
+    // word would collide here long before 3200 plates.
+    const plates = samplePlates();
+    const chassis = new Set(plates.map((p) => lookupOrThrow(p).chassisNumber));
+    expect(chassis.size).toBe(plates.length);
+  });
 });
 
 describe("roster distribution", () => {

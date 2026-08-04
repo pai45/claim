@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=benefits-nav-v9" />
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true" focusable="false">
@@ -762,20 +762,25 @@
       <nav class="bottom-nav" aria-label="Primary navigation">
         <button class="nav-item is-active" type="button">
           <span class="nav-icon-shell"
-            ><img src="./assets/icons/home.svg" alt="" aria-hidden="true"
-          /></span>
+            ><svg aria-hidden="true"><use href="#icon-home" /></svg
+          ></span>
           <span>Home</span>
         </button>
         <button
-          class="claims-button"
+          class="claims-button benefits-nav-item"
           type="button"
-          aria-label="Claims"
+          aria-label="Benefits"
           data-claims-open
         >
-          <span
-            ><img src="./assets/icons/bill-check.svg" alt="" aria-hidden="true"
-          /></span>
-          <span>Claims</span>
+          <span class="benefits-logo-shell" aria-hidden="true">
+            <img
+              class="benefits-nav-logo"
+              src="../assets/benefits-logo.gif"
+              alt=""
+              aria-hidden="true"
+            />
+          </span>
+          <span>Benefits</span>
         </button>
         <button
           class="claims-button pluspay-scan-button"
@@ -1201,7 +1206,7 @@
     <div class="claims-assistant" data-claims-assistant hidden>
       <section
         class="claims-assistant-panel wallet-overlay-panel"
-        aria-label="Benefits Assitant chatbot"
+        aria-label="Benefits assistant chatbot"
       >
         <div class="claims-device-status" aria-hidden="true">
           <span>9:41</span>
@@ -1215,14 +1220,14 @@
           <button
             class="claims-back wallet-overlay-back"
             type="button"
-            aria-label="Close Benefits Assitant"
+            aria-label="Close Benefits assistant"
             data-claims-close
           >
             <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
           </button>
           <div class="claims-title-group wallet-overlay-title-group">
             <span class="wallet-overlay-eyebrow">Reimbursement Wallet</span>
-            <h2>Benefits Assitant</h2>
+            <h2>Benefits assistant</h2>
           </div>
         </header>
         <div class="claims-scroll wallet-overlay-scroll" data-claims-scroll>

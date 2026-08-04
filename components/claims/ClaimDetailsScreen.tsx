@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import {
   getClaimDetails,
   type ClaimProgressStep,
@@ -113,22 +114,7 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
   return (
     <AppShell className="overflow-hidden">
       <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
-        <button
-          type="button"
-          aria-label="Go back"
-          onClick={() => router.replace(backHref)}
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path
-              d="M14.5 6.5L9 12l5.5 5.5"
-              stroke={colors.ink}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <BackNavigationButton onClick={() => router.replace(backHref)} />
         <h1 className="type-screen-title flex-1 truncate">Claim details</h1>
       </header>
 

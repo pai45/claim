@@ -4,7 +4,13 @@ import type { AppDataContext } from "@/lib/assistant/appData";
 import type { ChatMessage, DriverSalaryPayload } from "./types";
 
 export const CHAT_STORAGE_KEY = "eb-claims:chat-session";
-export const CHAT_STORAGE_VERSION = 1;
+/**
+ * Bumped to 2 when `VehicleLookup` gained the required `chassisNumber` and
+ * `engineNumber`: a v1 transcript holds lookups without them, and the load path
+ * only checks the version, so restoring one would render a card with two rows
+ * silently missing while TypeScript claims they exist.
+ */
+export const CHAT_STORAGE_VERSION = 2;
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 

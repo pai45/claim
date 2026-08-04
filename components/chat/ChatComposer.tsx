@@ -78,11 +78,20 @@ export function ChatComposer({
     }
   }
 
-  const canSend = Boolean(value.trim()) && !disabled;
-  const shell =
+  const hasText = Boolean(value.trim());
+  const canSend = hasText && !disabled;
+  const shellBg =
     variant === "glass"
-      ? "border-[#dce7e2] bg-[#f5faf7]/90 backdrop-blur-xl"
-      : "border-border-line bg-white";
+      ? "bg-[#f5faf7]/90 backdrop-blur-xl"
+      : "bg-white";
+  const shellBorder =
+    variant === "glass"
+      ? hasText
+        ? "border-[#dce7e2] border-b-pine-primary"
+        : "border-[#dce7e2]"
+      : hasText
+        ? "border-border-line border-b-pine-primary"
+        : "border-border-line";
   const attachShell =
     variant === "glass"
       ? "border-white/50 bg-white/55 shadow-soft backdrop-blur-xl"
@@ -110,7 +119,7 @@ export function ChatComposer({
         ) : null}
 
         <div
-          className={`flex min-h-12 min-w-0 flex-1 items-end gap-2 rounded-pill border py-1.5 pl-4 pr-1.5 ${shell}`}
+          className={`flex min-h-12 min-w-0 flex-1 items-end gap-2 rounded-pill border py-1.5 pl-4 pr-1.5 transition-colors ${shellBg} ${shellBorder}`}
         >
           <textarea
             ref={textareaRef}
@@ -121,7 +130,7 @@ export function ChatComposer({
             placeholder="Message benefits assistant..."
             disabled={disabled}
             aria-disabled={disabled}
-            className="max-h-30 min-h-7 min-w-0 flex-1 resize-none bg-transparent py-1.5 text-body leading-5 text-pine outline-none placeholder:text-placeholder disabled:opacity-60"
+            className="max-h-30 min-h-7 min-w-0 flex-1 resize-none bg-transparent py-1.5 text-body leading-5 text-pine outline-none focus-visible:!outline-none placeholder:text-placeholder disabled:opacity-60"
           />
 
           <button
@@ -135,7 +144,12 @@ export function ChatComposer({
                 : "bg-[#e8efea] text-pine"
             }`}
           >
-            <AppIcon src={UI_ICONS.send} size={18} alt="" />
+            <AppIcon
+              src={UI_ICONS.send}
+              size={18}
+              alt=""
+              className={canSend ? "brightness-0 invert" : undefined}
+            />
           </button>
         </div>
       </div>

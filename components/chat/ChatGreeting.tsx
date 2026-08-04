@@ -1,20 +1,13 @@
 import { USER_DISPLAY_NAME } from "@/features/chat/constants";
-import { BRAND_ASSETS } from "@/lib/ui/assets";
 import { MagicText } from "@/components/shared/MagicText";
-import { AppIcon } from "@/components/shared/AppIcon";
+import { BenefitsLogo } from "@/components/shared/BenefitsLogo";
 import { colors } from "@/lib/ui/colors";
 
 export function ChatGreeting() {
   return (
     <section className="flex flex-col gap-3.5 px-page pt-2">
       <div className="animate-rise-in" style={{ animationDelay: "20ms" }}>
-        <AppIcon
-          src={BRAND_ASSETS.logo}
-          alt="Benefits Assistant"
-          size={64}
-          priority
-          className="object-contain"
-        />
+        <BenefitsLogo size={64} label="Benefits Assistant" />
       </div>
       <MagicText
         as="h2"
@@ -24,7 +17,7 @@ export function ChatGreeting() {
         stepMs={14}
         shimmer
         shimmerBase={colors.pinePrimary}
-        className="type-hero"
+        className="type-hero chat-greeting-title"
       />
       <MagicText
         as="p"

@@ -1,11 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   USER_DISPLAY_NAME,
   VEHICLE_REGISTRATION_INTENT,
+  VEHICLE_REGISTRATION_LABEL,
 } from "@/features/chat/constants";
+import { bannerCardsForStage } from "@/features/chat/bannerCards";
+import { takePendingChatIntent } from "@/features/chat/pendingIntent";
+import { useBannerStage } from "@/features/chat/useBannerStage";
 import { useChat } from "@/features/chat/useChat";
 import type { QuickAction } from "@/features/chat/types";
 import { AppIcon } from "@/components/shared/AppIcon";
@@ -15,7 +19,8 @@ import { ChatComposer } from "./ChatComposer";
 import { ChatGreeting } from "./ChatGreeting";
 import { ChatHeader } from "./ChatHeader";
 import { MessageList, type MessageListHandle } from "./MessageList";
-import { PromoCard } from "./PromoCard";
+import { NewChatWidget } from "./NewChatWidget";
+import { PromoCarousel } from "./PromoCarousel";
 import { QuickActions } from "./QuickActions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
@@ -42,6 +47,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [awayFromBottom, setAwayFromBottom] = useState(false);
   const messageListRef = useRef<MessageListHandle>(null);
+  const pendingIntentHandled = useRef(false);
   const {
     messages,
     isLoading,
@@ -79,6 +85,39 @@ export function ChatShell({ onClose }: ChatShellProps) {
     return () => query.removeEventListener("change", update);
   }, []);
 
+  // A full-page screen can ask the assistant to start a flow. Gating on
+  // isHydrated is load-bearing: useChat restores a saved session with a blind
+  // setMessages, so firing first would have these turns wiped a frame later.
+  // It also guarantees the busy flags are clear, so sendMessage can't drop it.
+  useEffect(() => {
+    if (!isHydrated || pendingIntentHandled.current) return;
+    pendingIntentHandled.current = true;
+    const pending = takePendingChatIntent();
+    if (!pending) return;
+    void sendMessage(pending.label, pending.intentId);
+  }, [isHydrated, sendMessage]);
+
+  // Marks the newest completed claim so the floating widget can nudge itself
+  // open. Scans backwards rather than checking the last message: submitVehicleToHr
+  // appends a "Next up — register your driver" turn *after* its claim_cta, so a
+  // tail check would silently miss the vehicle flow. Keyed on the message id, not
+  // claimId, because createClaimId is a random 5-digit number and could repeat.
+  const completedClaimKey = useMemo(() => {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index];
+      if (message.kind === "claim_cta") return message.id;
+    }
+    return null;
+  }, [messages]);
+
+  // Which empty-state banners this app open shows. Null until the stage is
+  // read from storage on the client, which the empty state already waits for.
+  const bannerStage = useBannerStage();
+  const bannerCards = useMemo(
+    () => (bannerStage ? bannerCardsForStage(bannerStage) : []),
+    [bannerStage],
+  );
+
   function handleQuickAction(action: QuickAction) {
     void sendMessage(action.label, action.intentId);
   }
@@ -113,7 +152,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
   }
 
   function handleVehicleRegistration() {
-    void sendMessage("Start registration", VEHICLE_REGISTRATION_INTENT);
+    void sendMessage(VEHICLE_REGISTRATION_LABEL, VEHICLE_REGISTRATION_INTENT);
   }
 
   const busy = isLoading || isScanning || isLocating;
@@ -159,10 +198,15 @@ export function ChatShell({ onClose }: ChatShellProps) {
             {showEmptyState ? (
               <>
                 <ChatGreeting />
-                <PromoCard
-                  onStart={handleVehicleRegistration}
-                  disabled={busy}
-                />
+                {bannerCards.length ? (
+                  <PromoCarousel
+                    cards={bannerCards}
+                    onVehicleStart={handleVehicleRegistration}
+                    onUploadBill={handleStartAnotherBill}
+                    disabled={busy}
+                    reduceMotion={reduceMotion}
+                  />
+                ) : null}
               </>
             ) : null}
 
@@ -248,6 +292,14 @@ export function ChatShell({ onClose }: ChatShellProps) {
             </div>
           ) : null}
         </div>
+
+        {hasMessages && !attachOpen && !confirmClearOpen ? (
+          <NewChatWidget
+            onNewChat={requestClear}
+            completedClaimKey={completedClaimKey}
+            reduceMotion={reduceMotion}
+          />
+        ) : null}
 
         <AttachBottomDrawer
           open={attachOpen}

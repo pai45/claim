@@ -47,11 +47,11 @@ describe("documented answers", () => {
   it("How many claims do I have?", () => {
     const reply = answer("How many claims do I have?");
 
-    expect(reply).toContain("- **Count:** 25");
+    expect(reply).toContain("- **Count:** 26");
     expect(reply).toContain("- **Approved:** 18");
     expect(reply).toContain("- **Pending:** 5");
     expect(reply).toContain("- **Needs info:** 1");
-    expect(reply).toContain("- **Rejected:** 1");
+    expect(reply).toContain("- **Rejected:** 2");
   });
 
   it("Why was my claim rejected?", () => {
@@ -69,9 +69,9 @@ describe("documented answers", () => {
   it("Show mobile claims merges both datasets", () => {
     const reply = answer("Show mobile claims");
 
-    // 4 dashboard rows + 2 from the claims-history screen.
-    expect(reply).toContain("- **Count:** 6");
-    expect(reply).toContain("- **Total:** ₹5,995");
+    // 4 dashboard rows + 3 from the claims-history screen.
+    expect(reply).toContain("- **Count:** 7");
+    expect(reply).toContain("- **Total:** ₹6,894");
   });
 
   it("When must I submit books claims?", () => {

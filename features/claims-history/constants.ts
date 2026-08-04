@@ -53,6 +53,17 @@ export const CLAIM_STATUS_STYLES: Record<
 
 export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
   {
+    id: "CLM-124",
+    merchant: "Jio Fiber",
+    category: "Telephone & Internet",
+    amount: 899,
+    date: "05 Jul 2026",
+    status: "rejected",
+    icon: "mobile",
+    iconBg: "#FFF8E8",
+    iconColor: "#B25E00",
+  },
+  {
     id: "CLM-45201",
     merchant: "Airtel Broadband",
     category: "Telephone & Internet",

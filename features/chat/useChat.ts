@@ -40,6 +40,7 @@ import {
 import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runBillOcr } from "@/lib/ocr/runOcr";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
+import { saveRegisteredVehicle } from "@/features/vehicle/registration";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { BenefitType } from "@/lib/merchants/types";
@@ -1000,6 +1001,12 @@ export function useChat() {
       // push a new function reference through every MessageBubble each turn.
       // submitBillClaim avoids that the same way.
       const claimId = createClaimId();
+
+      // The commit point for the whole app: submitVehicleNumber only produces a
+      // preview the user is asked to confirm, so registering there would flip
+      // the dashboard before the transcript says registration happened.
+      saveRegisteredVehicle(lookup);
+
       patchVehicleLookup(messageId, { submitted: true });
       setMessages((prev) => [
         ...prev,

@@ -45,12 +45,18 @@ function formatUtc(date: Date): string {
   return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
 }
 
+/** The year is returned alongside the text because the chassis encodes it. */
+type RegistrationDate = { year: number; formatted: string };
+
 /**
  * Derived from the plate so it is stable, and formatted from an explicit month
  * table rather than toLocaleDateString so every device renders it identically
  * during a demo.
  */
-function registrationDateFor(normalized: string, bharatYear?: number): string {
+function registrationDateFor(
+  normalized: string,
+  bharatYear?: number,
+): RegistrationDate {
   const offsetDays = hash32(`regdate:${normalized}`) % REG_DATE_WINDOW_DAYS;
   const date = new Date(REG_DATE_START_MS + offsetDays * 86_400_000);
 
@@ -58,10 +64,76 @@ function registrationDateFor(normalized: string, bharatYear?: number): string {
   // contradicting the number printed on the car.
   if (bharatYear !== undefined) {
     const dayOfYear = hash32(`bhday:${normalized}`) % 365;
-    return formatUtc(new Date(Date.UTC(bharatYear, 0, 1 + dayOfYear)));
+    const bhDate = new Date(Date.UTC(bharatYear, 0, 1 + dayOfYear));
+    return { year: bhDate.getUTCFullYear(), formatted: formatUtc(bhDate) };
   }
 
-  return formatUtc(date);
+  return { year: date.getUTCFullYear(), formatted: formatUtc(date) };
+}
+
+/** VIN alphabet: I, O and Q are excluded so they cannot be read as 1 and 0. */
+const VIN_CHARS = "ABCDEFGHJKLMNPRSTUVWXYZ0123456789";
+const VIN_LETTERS = "ABCDEFGHJKLMNPRSTUVWXYZ";
+const DIGITS = "0123456789";
+
+/** ISO 3779 model-year codes, index 0 = 2010. The table cycles every 30 years. */
+const YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789";
+
+/**
+ * Real World Manufacturer Identifiers for the makers in `VEHICLE_ROSTER`.
+ * Adding a maker to the roster means adding its WMI here.
+ */
+const WMI: Record<string, string> = {
+  "Maruti Suzuki": "MA3",
+  Hyundai: "MAL",
+  Tata: "MAT",
+  Mahindra: "MA1",
+  Honda: "MAK",
+  Toyota: "MBJ",
+};
+
+/**
+ * One independent hash draw per character.
+ *
+ * A single hash32 yields 32 bits — about six VIN characters — so slicing one
+ * word would make later positions correlate with earlier ones. The index is
+ * appended after a ":" and plates contain no ":", so no two (seed, index) pairs
+ * can concatenate to the same string.
+ */
+function charsFrom(seed: string, length: number, alphabet: string): string {
+  let out = "";
+  for (let i = 0; i < length; i += 1) {
+    out += alphabet[hash32(`${seed}:${i}`) % alphabet.length];
+  }
+  return out;
+}
+
+/**
+ * Layout mirrors a real VIN: WMI(3) VDS(6) year(1) plant(1) serial(6).
+ * Position 9 of a real VIN is a mod-11 check digit; this is demo data and
+ * deliberately does not compute one, so a VIN validator will reject it.
+ */
+function chassisNumberFor(
+  normalized: string,
+  maker: string,
+  year: number,
+): string {
+  const wmi = WMI[maker] ?? "MA9";
+  const vds = charsFrom(`chassis:vds:${normalized}`, 6, VIN_CHARS);
+  const yearCode = YEAR_CODES[(((year - 2010) % 30) + 30) % 30];
+  const plant = charsFrom(`chassis:plant:${normalized}`, 1, VIN_LETTERS);
+  const serial = charsFrom(`chassis:serial:${normalized}`, 6, DIGITS);
+  return `${wmi}${vds}${yearCode}${plant}${serial}`;
+}
+
+/** Family letter + displacement in hundreds of cc + serial, e.g. "K1245678901". */
+function engineNumberFor(normalized: string, capacityCc?: number): string {
+  const family = charsFrom(`engine:family:${normalized}`, 1, VIN_LETTERS);
+  const displacement = capacityCc
+    ? String(Math.round(capacityCc / 100)).padStart(2, "0")
+    : "EV";
+  const serial = charsFrom(`engine:serial:${normalized}`, 8, DIGITS);
+  return `${family}${displacement}${serial}`;
 }
 
 /**
@@ -83,6 +155,11 @@ export function buildVehicleLookup(
   // Hash the canonical form so "mh 01 ab 1234", "MH-01-AB-1234" and
   // "IND MH01AB1234" land on the same vehicle by construction.
   const index = hash32(`profile:${normalized}`) % VEHICLE_ROSTER.length;
+  const profile = VEHICLE_ROSTER[index];
+  const registrationDate = registrationDateFor(
+    normalized,
+    parsed.value.bharatYear,
+  );
 
   return {
     ok: true,
@@ -91,12 +168,15 @@ export function buildVehicleLookup(
       location: parsed.value.stateCode
         ? lookupRto(parsed.value.stateCode, parsed.value.rtoCode)
         : undefined,
-      profile: VEHICLE_ROSTER[index],
+      profile,
       ownerName,
-      registrationDate: registrationDateFor(
+      registrationDate: registrationDate.formatted,
+      chassisNumber: chassisNumberFor(
         normalized,
-        parsed.value.bharatYear,
+        profile.maker,
+        registrationDate.year,
       ),
+      engineNumber: engineNumberFor(normalized, profile.engineCapacityCc),
     },
   };
 }

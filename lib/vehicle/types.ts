@@ -76,4 +76,11 @@ export type VehicleLookup = {
   ownerName: string;
   /** Pre-formatted and locale-independent, e.g. "14 Mar 2021". */
   registrationDate: string;
+  /**
+   * 17-character VIN-style chassis number, derived from the plate. Demo data,
+   * not a real VIN — there is deliberately no ISO 3779 check digit.
+   */
+  chassisNumber: string;
+  /** Manufacturer-style engine serial, e.g. "K1245678901". Demo data. */
+  engineNumber: string;
 };

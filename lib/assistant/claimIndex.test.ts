@@ -47,7 +47,9 @@ describe("unified claim index", () => {
     const summary = summarizeAssistantClaims(ASSISTANT_CLAIMS);
 
     expect(summary.totalCount).toBe(ASSISTANT_CLAIMS.length);
-    expect(summary.rejectedCount).toBe(1);
+    // CLM-45033 (fuel) and CLM-124, the internet bill the empty-state banner
+    // links to.
+    expect(summary.rejectedCount).toBe(2);
     expect(summary.needsInfoCount).toBe(1);
     expect(
       summary.approvedCount +

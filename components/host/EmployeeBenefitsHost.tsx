@@ -71,7 +71,7 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=11c5b6d-claims-ai`}
+        src={`${withBasePath("/employee-benefits/index.html")}?v=benefits-nav-v9`}
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />

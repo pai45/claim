@@ -120,8 +120,13 @@ describe("grounded sources beyond the dashboard", () => {
       status: "Rejected",
     }) as { claims: Array<{ id: string }>; summary: { totalCount: number } };
 
-    expect(source.summary.totalCount).toBe(1);
-    expect(source.claims.map((claim) => claim.id)).toEqual(["CLM-45033"]);
+    // Newest first: the internet bill the empty-state banner links to, then
+    // the fuel claim.
+    expect(source.summary.totalCount).toBe(2);
+    expect(source.claims.map((claim) => claim.id)).toEqual([
+      "CLM-124",
+      "CLM-45033",
+    ]);
   });
 
   it("covers every wallet in the overview, including the ones without a dashboard", () => {

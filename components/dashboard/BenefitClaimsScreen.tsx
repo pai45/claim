@@ -4,18 +4,29 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
 import { AppShell } from "@/components/shared/AppShell";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import {
+  VEHICLE_REGISTRATION_INTENT,
+  VEHICLE_REGISTRATION_LABEL,
+} from "@/features/chat/constants";
+import { setPendingChatIntent } from "@/features/chat/pendingIntent";
 import {
   BENEFIT_DASHBOARD_FY_LABEL,
   getBenefitClaimsDashboard,
   statusStyles,
   type BenefitClaimStatus,
+  type BenefitClaimsDashboard,
 } from "@/features/dashboard/benefitClaims";
 import {
   DASHBOARD_CATEGORIES,
   formatINR,
 } from "@/features/dashboard/constants";
+import { useRegisteredVehicle } from "@/features/vehicle/useRegisteredVehicle";
+import type { CategoryIconId } from "@/lib/ui/assets";
 import { colors } from "@/lib/ui/colors";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
+import { VehicleRegistrationPrompt } from "./VehicleRegistrationPrompt";
+import { VehicleSummaryCard } from "./VehicleSummaryCard";
 
 type BenefitClaimsScreenProps = {
   categoryId: string;
@@ -72,41 +83,33 @@ function StatusBadge({ status }: { status: BenefitClaimStatus }) {
 
 export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
   const router = useRouter();
+  const { vehicle, isHydrated } = useRegisteredVehicle();
   const data = getBenefitClaimsDashboard(categoryId);
   const categoryMeta =
     DASHBOARD_CATEGORIES.find((item) => item.id === data.categoryId) ??
     DASHBOARD_CATEGORIES[0];
+
+  // The resolved id, not the raw prop — an unknown category falls back to a
+  // real dashboard and must not be gated by whether a vehicle exists.
+  const isFuel = data.categoryId === "fuel";
 
   const progressPercent = Math.min(
     100,
     data.accrued > 0 ? (data.utilized / data.accrued) * 100 : 0,
   );
 
+  function startVehicleRegistration() {
+    setPendingChatIntent({
+      intentId: VEHICLE_REGISTRATION_INTENT,
+      label: VEHICLE_REGISTRATION_LABEL,
+    });
+    router.push("/#claims");
+  }
+
   return (
     <AppShell className="overflow-hidden">
       <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
-        <button
-          type="button"
-          aria-label="Go back"
-          onClick={() => router.push("/dashboard/")}
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M14.5 6.5L9 12l5.5 5.5"
-              stroke={colors.ink}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <BackNavigationButton onClick={() => router.push("/dashboard/")} />
         <h1 className="type-screen-title flex-1 truncate">{data.title}</h1>
       </header>
 
@@ -156,63 +159,100 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
           </div>
         </section>
 
-        <section className="animate-rise-in flex flex-col" style={staggerStyle(1)}>
-          <div className="flex flex-col gap-3 rounded-t-bubble border border-border-line bg-white p-card">
-            <div className="flex items-center justify-between">
-              <h2 className="type-body font-bold text-ink">{data.monthLabel}</h2>
-              <CalendarIcon />
-            </div>
-
-            <div className="flex gap-2">
-              <div className="flex flex-1 flex-col gap-1 rounded-control bg-surface p-3">
-                <span className="type-field-label">Total Claims</span>
-                <span className="text-body font-bold text-ink">
-                  {formatINR(data.monthTotal)}
-                </span>
-              </div>
-              <div className="flex flex-1 flex-col gap-1 rounded-control bg-success-soft p-3">
-                <span className="type-field-label text-success">Approved</span>
-                <span className="text-body font-bold text-success">
-                  {formatINR(data.monthApproved)}
-                </span>
-              </div>
-              <div className="flex flex-1 flex-col gap-1 rounded-control bg-warning-soft p-3">
-                <span className="type-field-label text-warning">Pending</span>
-                <span className="text-body font-bold text-warning">
-                  {formatINR(data.monthPending)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-b-card border border-t-0 border-border-line bg-white">
-            {data.claims.map((claim, index) => (
-              <Link
-                key={claim.id}
-                href={`/claim-details/?id=${encodeURIComponent(claim.id)}&from=dashboard`}
-                style={staggerStyle(index + 2)}
-                className="animate-rise-in flex w-full items-start gap-3 border-b border-border-line px-page py-3 last:border-b-0"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-surface-tint-strong">
-                  <CategoryIcon icon={categoryMeta.icon} color={colors.pinePrimary} />
-                </div>
-                <div className="flex min-w-0 flex-1 flex-col gap-1">
-                  <span className="type-body font-bold">{claim.title}</span>
-                  <span className="type-body-secondary">{claim.category}</span>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="text-title-sm font-bold text-ink">
-                    {formatINR(claim.amount)}
-                  </span>
-                  <span className="type-body-secondary">{claim.date}</span>
-                  <StatusBadge status={claim.status} />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        {isFuel ? (
+          !isHydrated ? (
+            // Registration is only readable on the client, so both branches
+            // would flash the wrong one for a frame. Reserve the space instead.
+            <div
+              className="h-40 rounded-card border border-border-line bg-white/60"
+              aria-hidden
+            />
+          ) : !vehicle ? (
+            <VehicleRegistrationPrompt onRegister={startVehicleRegistration} />
+          ) : (
+            <>
+              <VehicleSummaryCard lookup={vehicle.lookup} />
+              <MonthSummary
+                data={data}
+                icon={categoryMeta.icon}
+                staggerIndex={2}
+              />
+            </>
+          )
+        ) : (
+          <MonthSummary data={data} icon={categoryMeta.icon} staggerIndex={1} />
+        )}
       </main>
     </AppShell>
+  );
+}
+
+type MonthSummaryProps = {
+  data: BenefitClaimsDashboard;
+  icon: CategoryIconId;
+  staggerIndex: number;
+};
+
+function MonthSummary({ data, icon, staggerIndex }: MonthSummaryProps) {
+  return (
+    <section
+      className="animate-rise-in flex flex-col"
+      style={staggerStyle(staggerIndex)}
+    >
+      <div className="flex flex-col gap-3 rounded-t-bubble border border-border-line bg-white p-card">
+        <div className="flex items-center justify-between">
+          <h2 className="type-body font-bold text-ink">{data.monthLabel}</h2>
+          <CalendarIcon />
+        </div>
+
+        <div className="flex gap-2">
+          <div className="flex flex-1 flex-col gap-1 rounded-control bg-surface p-3">
+            <span className="type-field-label">Total Claims</span>
+            <span className="text-body font-bold text-ink">
+              {formatINR(data.monthTotal)}
+            </span>
+          </div>
+          <div className="flex flex-1 flex-col gap-1 rounded-control bg-success-soft p-3">
+            <span className="type-field-label text-success">Approved</span>
+            <span className="text-body font-bold text-success">
+              {formatINR(data.monthApproved)}
+            </span>
+          </div>
+          <div className="flex flex-1 flex-col gap-1 rounded-control bg-warning-soft p-3">
+            <span className="type-field-label text-warning">Pending</span>
+            <span className="text-body font-bold text-warning">
+              {formatINR(data.monthPending)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-hidden rounded-b-card border border-t-0 border-border-line bg-white">
+        {data.claims.map((claim, index) => (
+          <Link
+            key={claim.id}
+            href={`/claim-details/?id=${encodeURIComponent(claim.id)}&from=dashboard`}
+            style={staggerStyle(index + staggerIndex + 1)}
+            className="animate-rise-in flex w-full items-start gap-3 border-b border-border-line px-page py-3 last:border-b-0"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-surface-tint-strong">
+              <CategoryIcon icon={icon} color={colors.pinePrimary} />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className="type-body font-bold">{claim.title}</span>
+              <span className="type-body-secondary">{claim.category}</span>
+            </div>
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <span className="text-title-sm font-bold text-ink">
+                {formatINR(claim.amount)}
+              </span>
+              <span className="type-body-secondary">{claim.date}</span>
+              <StatusBadge status={claim.status} />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 

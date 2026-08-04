@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { POLICY_LIST_ITEMS } from "@/features/policy/constants";
 import { colors } from "@/lib/ui/colors";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
-import { BackChevronIcon } from "./PolicyIcons";
 import { PolicyListIcon } from "./PolicyListIcons";
 
 function ChevronRight() {
@@ -29,14 +29,7 @@ export function PolicyBenefitsListScreen() {
   return (
     <AppShell className="overflow-hidden">
       <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
-        <button
-          type="button"
-          aria-label="Go back"
-          onClick={() => router.push("/")}
-          className="flex items-center justify-center rounded-full bg-white/50 p-2 shadow-icon"
-        >
-          <BackChevronIcon />
-        </button>
+        <BackNavigationButton onClick={() => router.push("/#claims")} />
         <h1 className="type-screen-title flex-1 truncate">Policy details</h1>
       </header>
 
