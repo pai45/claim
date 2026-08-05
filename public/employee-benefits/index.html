@@ -95,6 +95,16 @@
           d="M17.79 10.47v7.32A4.21 4.21 0 0 1 13.58 22H6.21C3.89 22 2 20.11 2 17.79v-7.32a4.21 4.21 0 0 1 4.21-4.21h7.37c2.32 0 4.21 1.89 4.21 4.21ZM5.5 4V2.25M9.5 4V2.25M13.5 4V2.25M22 13.16c0 2.32-1.89 4.21-4.21 4.21V8.95A4.21 4.21 0 0 1 22 13.16ZM2 12h15.51"
         />
       </symbol>
+      <symbol id="icon-cutlery" viewBox="0 0 24 24">
+        <path
+          d="M15.9994 2L13.6994 4.3C13.1497 4.86079 12.8418 5.61474 12.8418 6.4C12.8418 7.18526 13.1497 7.93921 13.6994 8.5L15.4994 10.3C16.0602 10.8497 16.8141 11.1576 17.5994 11.1576C18.3846 11.1576 19.1386 10.8497 19.6994 10.3L21.9994 8"
+        />
+        <path
+          d="M14.9997 15.0008L3.29967 3.30078C2.90056 3.69184 2.58348 4.1586 2.36702 4.67373C2.15056 5.18887 2.03906 5.74202 2.03906 6.30078C2.03906 6.85955 2.15056 7.4127 2.36702 7.92783C2.58348 8.44296 2.90056 8.90973 3.29967 9.30078L10.5997 16.6008C11.2997 17.3008 12.5997 17.3008 13.3997 16.6008L14.9997 15.0008ZM14.9997 15.0008L21.9997 22.0008"
+        />
+        <path d="M2.10059 21.8L8.50059 15.5" />
+        <path d="M19 5L12 12" />
+      </symbol>
       <symbol id="icon-car" viewBox="0 0 24 24">
         <path
           d="M8.5 19v2.2c0 .28 0 .42-.055.527a.5.5 0 0 1-.218.218C8.12 22 7.98 22 7.7 22H5.8c-.28 0-.42 0-.527-.055a.5.5 0 0 1-.218-.218C5 21.62 5 21.48 5 21.2V19m14 0v2.2c0 .28 0 .42-.055.527a.5.5 0 0 1-.218.218C18.62 22 18.48 22 18.2 22h-1.9c-.28 0-.42 0-.527-.055a.5.5 0 0 1-.218-.218c-.055-.107-.055-.247-.055-.527V19M3 12h18M3 5.5h18m-14.5 10H8m8 0h1.5M7.8 19h8.4c1.68 0 2.52 0 3.162-.327a3 3 0 0 0 1.311-1.311C21 16.72 21 15.88 21 14.2V6.8c0-1.68 0-2.52-.327-3.162a3 3 0 0 0-1.311-1.311C18.72 2 17.88 2 16.2 2H7.8c-1.68 0-2.52 0-3.162.327a3 3 0 0 0-1.311 1.311C3 4.28 3 5.12 3 6.8v7.4c0 1.68 0 2.52.327 3.162a3 3 0 0 0 1.311 1.311C5.28 19 6.12 19 7.8 19Z"
@@ -137,6 +147,13 @@
       <symbol id="icon-checks" viewBox="0 0 24 24">
         <path d="m2 13 4 4L16 7" />
         <path d="m11 17 2 2 9-10" />
+      </symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24">
+        <path d="m4 12.5 5.5 5.5L20 6.5" />
+      </symbol>
+      <symbol id="icon-info" viewBox="0 0 24 24">
+        <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+        <path d="M12 16.5v-5M12 7.75h.01" />
       </symbol>
       <symbol id="icon-nfc" viewBox="0 0 24 24">
         <path
@@ -357,6 +374,24 @@
                 >10 Dec</strong
               >
             </div>
+          </div>
+          <div class="balance-card-lock" data-card-lock-banner hidden>
+            <div class="balance-card-lock-note">
+              <span class="balance-card-lock-icon" aria-hidden="true">
+                <svg><use href="#icon-lock" /></svg>
+              </span>
+              <span class="balance-card-lock-copy">
+                <strong>Benefits Card Locked</strong>
+                <small>All transactions are temporarily blocked</small>
+              </span>
+            </div>
+            <button
+              class="balance-card-unlock"
+              type="button"
+              data-card-unlock-open
+            >
+              Unlock Now
+            </button>
           </div>
         </section>
       </section>
@@ -1065,134 +1100,545 @@
             <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
           </button>
           <div class="manage-cards-title-group">
-            <span class="manage-cards-eyebrow">CONTROL CENTER</span>
-            <h2>Manage Card</h2>
-            <span>Select a wallet to view and manage its card details.</span>
+            <h2>Manage Cards</h2>
           </div>
-          <button
-            class="manage-cards-help"
-            type="button"
-            aria-label="Get help"
-            data-toast="Card help opened"
-          >
-            <svg aria-hidden="true"><use href="#icon-help" /></svg>
-          </button>
         </header>
         <div class="manage-cards-scroll">
           <section
             class="manage-cards-wallets-section"
-            aria-label="Wallet selector"
+            aria-labelledby="manage-cards-details-title"
           >
-            <!-- <div class="manage-cards-section-title-row">
-              <h3>Your Wallet</h3>
-            </div> -->
-            <div class="manage-cards-wallet-carousel" aria-label="Card wallets">
-              <button
+            <div class="manage-cards-section-title-row">
+              <h3 id="manage-cards-details-title">Rupay Card Details</h3>
+            </div>
+            <div class="manage-cards-wallet-carousel">
+              <article
                 class="manage-cards-wallet-card meal is-selected"
-                type="button"
                 data-manage-wallet
                 data-wallet-key="meal"
-                data-wallet-label="Meal Wallet"
-                data-wallet-limit="₹3,000"
-                aria-pressed="true"
+                aria-label="RuPay card ending in 7845"
               >
                 <img
-                  class="manage-card-details-image"
-                  src="./assets/icons/card-details.svg"
-                  alt="Visa card details"
+                  class="manage-card-background"
+                  src="./assets/icons/icici-card-front.png"
+                  alt=""
                 />
-              </button>
+                <div class="manage-card-content">
+                  <img
+                    class="manage-card-rupay-logo"
+                    src="./assets/icons/rupay-logo.svg"
+                    alt="RuPay"
+                  />
+                  <div class="manage-card-number-block">
+                    <span class="manage-card-label">CARD NUMBER</span>
+                    <div class="manage-card-number-row">
+                      <span
+                        class="manage-card-number"
+                        data-manage-preview-number
+                        data-card-sensitive="number"
+                        >•••• •••• •••• 7845</span
+                      >
+                      <div class="manage-card-number-actions">
+                        <button
+                          class="manage-card-action is-hidden"
+                          type="button"
+                          aria-label="Reveal card number"
+                          data-card-reveal="number"
+                        >
+                          <svg aria-hidden="true"><use href="#icon-eye" /></svg>
+                        </button>
+                        <button
+                          class="manage-card-action"
+                          type="button"
+                          aria-label="Copy card number"
+                          data-card-copy
+                        >
+                          <svg aria-hidden="true"><use href="#icon-copy" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="manage-card-expiry">
+                    <span class="manage-card-label">VALID THRU</span>
+                    <strong
+                      data-manage-preview-expiry
+                      data-card-sensitive="expiry"
+                      >12/28</strong
+                    >
+                  </div>
+                  <div class="manage-card-footer">
+                    <strong
+                      class="manage-card-holder"
+                      data-manage-preview-holder
+                      data-card-sensitive="holder"
+                      >ALEX MORGAN</strong
+                    >
+                    <div class="manage-card-cvv">
+                      <span>CVV</span>
+                      <strong data-card-sensitive="cvv">•••</strong>
+                      <button
+                        class="manage-card-action is-hidden"
+                        type="button"
+                        aria-label="Reveal CVV"
+                        data-card-reveal="cvv"
+                      >
+                        <svg aria-hidden="true"><use href="#icon-eye" /></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+            <div class="manage-cards-balance-card">
+              <small>Current Balance</small>
+              <strong>₹12,100</strong>
             </div>
           </section>
 
           <section class="manage-cards-section manage-cards-controls-section">
             <div class="manage-cards-section-head">
-              <h3>Card Controls</h3>
+              <h3>Quick Links</h3>
             </div>
             <div class="manage-cards-control-grid">
-              <button
-                class="manage-cards-control-tile"
-                type="button"
-                data-toast="PIN management opened"
-              >
-                <span class="manage-cards-control-icon" aria-hidden="true">
-                  <img src="./assets/icons/upi-pin-reset.svg" alt="" />
-                </span>
-                <span>Set/ Reset<br />PIN</span>
-              </button>
-              <button
-                class="manage-cards-control-tile"
-                type="button"
-                data-toast="Physical card request opened"
-              >
-                <span class="manage-cards-control-icon" aria-hidden="true">
-                  <img src="./assets/icons/card-physical.svg" alt="" />
-                </span>
-                <span>Get A<br />Physical Card</span>
-              </button>
-              <button
-                class="manage-cards-control-tile"
-                type="button"
-                data-toast="Block card flow opened"
-              >
-                <span class="manage-cards-control-icon" aria-hidden="true">
-                  <img src="./assets/icons/card-block.svg" alt="" />
-                </span>
-                <span>Block<br />Card</span>
-              </button>
               <button
                 class="manage-cards-control-tile"
                 type="button"
                 data-manage-limits-open
               >
                 <span class="manage-cards-control-icon" aria-hidden="true">
-                  <img src="./assets/icons/bill-check.svg" alt="" />
+                  <img src="./assets/icons/manage-limit.svg" alt="" />
                 </span>
-                <span>Manage<br />Limits</span>
+                <span>Manage<br />Limit</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-track-card-open
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/track-card.svg" alt="" />
+                </span>
+                <span>Track<br />Card</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="Set/ Reset PIN is coming soon"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/card-pin-reset.svg" alt="" />
+                </span>
+                <span>Set/ Reset<br />PIN</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-card-lock-open
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/lock-card.svg" alt="" />
+                </span>
+                <span data-card-lock-tile-label>Lock<br />Card</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="Manage Tokens is coming soon"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/manage-tokens.svg" alt="" />
+                </span>
+                <span>Manage<br />Tokens</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-toast="Payment Approvals is coming soon"
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/payment-approvals.svg" alt="" />
+                </span>
+                <span>Payment<br />Approvals</span>
+              </button>
+              <button
+                class="manage-cards-control-tile"
+                type="button"
+                data-fallback-open
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/fallback-control.svg" alt="" />
+                </span>
+                <span>Fallback<br />Control</span>
               </button>
             </div>
           </section>
-
-          <!-- <section class="manage-cards-section">
-            <div class="manage-cards-section-head">
-              <h3>Security &amp; Support</h3>
-            </div>
-            <div class="manage-cards-action-grid">
-              <button
-                class="manage-cards-action"
-                type="button"
-                data-toast="Notification preferences opened"
-              >
-                <span class="manage-cards-action-icon" aria-hidden="true"
-                  ><svg><use href="#icon-bell" /></svg
-                ></span>
-                <span class="manage-cards-setting-copy">
-                  <strong>Alerts</strong>
-                  <span>Control payment and card notifications</span>
-                </span>
-                <span class="manage-cards-action-arrow" aria-hidden="true"
-                  ><svg><use href="#icon-arrow-right" /></svg
-                ></span>
-              </button>
-              <button
-                class="manage-cards-action"
-                type="button"
-                data-toast="Support flow opened"
-              >
-                <span class="manage-cards-action-icon" aria-hidden="true"
-                  ><svg><use href="#icon-headset" /></svg
-                ></span>
-                <span class="manage-cards-setting-copy">
-                  <strong>Report an Issue</strong>
-                  <span>Get help for declines, blocks or limits</span>
-                </span>
-                <span class="manage-cards-action-arrow" aria-hidden="true"
-                  ><svg><use href="#icon-arrow-right" /></svg
-                ></span>
-              </button>
-            </div>
-          </section> -->
         </div>
+      </section>
+    </div>
+
+    <div class="fallback-overlay" data-fallback-overlay hidden>
+      <section class="fallback-panel" aria-label="Fallback Control">
+        <header class="fallback-header">
+          <button
+            class="fallback-back"
+            type="button"
+            aria-label="Back to Manage Card"
+            data-fallback-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <h2>Fallback Control</h2>
+        </header>
+
+        <div class="fallback-scroll">
+          <section class="fallback-info" data-fallback-info>
+            <button
+              class="fallback-info-toggle"
+              type="button"
+              aria-expanded="false"
+              aria-controls="fallback-info-body"
+              data-fallback-info-toggle
+            >
+              <span class="fallback-info-icon" aria-hidden="true">
+                <svg><use href="#icon-info" /></svg>
+              </span>
+              <span class="fallback-info-title">What is Fallback Control?</span>
+              <span class="fallback-info-chevron" aria-hidden="true">
+                <svg><use href="#icon-chevron-right" /></svg>
+              </span>
+            </button>
+            <div class="fallback-info-body" id="fallback-info-body">
+              <div class="fallback-info-body-inner">
+                <p>
+                  If your selected wallet does not have sufficient balance, the
+                  transaction can be completed using your Reimbursement Wallet
+                  instead.
+                </p>
+                <ul>
+                  <li>
+                    Fallback is available only when the selected wallet has
+                    insufficient funds.
+                  </li>
+                  <li>
+                    The entire transaction amount will be charged to the
+                    Reimbursement Wallet.
+                  </li>
+                  <li>
+                    The transaction amount will not be split between multiple
+                    wallets.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <ul class="fallback-wallet-list">
+            <li class="fallback-wallet-row">
+              <span class="fallback-wallet-icon meal" aria-hidden="true">
+                <svg><use href="#icon-cutlery" /></svg>
+              </span>
+              <span class="fallback-wallet-name" id="fallback-wallet-meal"
+                >Meal Wallet</span
+              >
+              <button
+                class="fallback-toggle"
+                type="button"
+                role="switch"
+                aria-checked="false"
+                aria-labelledby="fallback-wallet-meal"
+                data-fallback-toggle="meal"
+              ></button>
+            </li>
+            <li class="fallback-wallet-row">
+              <span class="fallback-wallet-icon fuel" aria-hidden="true">
+                <svg><use href="#icon-fuel" /></svg>
+              </span>
+              <span class="fallback-wallet-name" id="fallback-wallet-fuel"
+                >Fuel Wallet</span
+              >
+              <button
+                class="fallback-toggle"
+                type="button"
+                role="switch"
+                aria-checked="false"
+                aria-labelledby="fallback-wallet-fuel"
+                data-fallback-toggle="fuel"
+              ></button>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <div class="track-card-overlay" data-track-card-overlay hidden>
+      <section class="track-card-panel" aria-label="Track Card">
+        <header class="track-card-header">
+          <button
+            class="track-card-back"
+            type="button"
+            aria-label="Back to Manage Cards"
+            data-track-card-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <h2>Track Card</h2>
+        </header>
+
+        <div class="track-card-scroll">
+          <section class="track-order-card" aria-label="Card order details">
+            <div class="track-order-preview" aria-label="RuPay card ending in 7845">
+              <img
+                class="track-order-background"
+                src="./assets/icons/icici-card-front.png"
+                alt=""
+              />
+              <img
+                class="track-order-rupay"
+                src="./assets/icons/rupay-logo.svg"
+                alt="RuPay"
+              />
+              <span class="track-order-number">•••• 7845</span>
+            </div>
+            <div class="track-order-meta">
+              <strong>Order Placed</strong>
+              <span>On 10 Jan 2026</span>
+            </div>
+          </section>
+
+          <section class="track-status-card" aria-labelledby="track-status-title">
+            <div class="track-status-content">
+              <img
+                class="track-status-illustration"
+                src="./assets/icons/card-delivery-agent.png"
+                alt="Delivery agent showing card tracking progress"
+              />
+              <div class="track-status-copy">
+                <h3 id="track-status-title">Track Your Card Status</h3>
+                <p>
+                  Stay updated on your physical card delivery status in real
+                  time.
+                </p>
+                <div class="track-awb-row">
+                  <span>AWB Number :</span>
+                  <strong data-track-awb>TXN000000000003</strong>
+                  <button
+                    type="button"
+                    aria-label="Copy AWB number"
+                    data-track-awb-copy
+                  >
+                    <svg aria-hidden="true"><use href="#icon-copy" /></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              class="track-status-button"
+              type="button"
+              data-toast="Live card tracking is coming soon"
+            >
+              Track Status
+            </button>
+          </section>
+
+          <section class="track-activate-card">
+            <strong>Received Your Card?</strong>
+            <button type="button" data-track-activate-open>Activate Now</button>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div class="track-activation-overlay" data-track-activation-overlay hidden>
+      <button
+        class="track-activation-backdrop"
+        type="button"
+        aria-label="Close activation details"
+        data-track-activation-close
+      ></button>
+      <section
+        class="track-activation-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="track-activation-title"
+      >
+        <header class="track-activation-header">
+          <h2 id="track-activation-title">Confirm Details</h2>
+          <button
+            type="button"
+            aria-label="Close activation details"
+            data-track-activation-close
+          >
+            <svg aria-hidden="true"><use href="#icon-close" /></svg>
+          </button>
+        </header>
+
+        <div class="track-activation-preview" aria-label="RuPay card ending in 7845">
+          <img
+            class="track-activation-background"
+            src="./assets/icons/icici-card-front.png"
+            alt=""
+          />
+          <div class="track-activation-card-content">
+            <img src="./assets/icons/rupay-logo.svg" alt="RuPay" />
+            <div class="track-activation-number">
+              <span>CARD NUMBER</span>
+              <strong>•••• •••• •••• 7845</strong>
+            </div>
+            <div class="track-activation-holder">
+              <strong>ALEX MORGAN</strong>
+              <span>CARD HOLDER</span>
+            </div>
+            <div class="track-activation-expiry">
+              <strong>12/28</strong>
+              <span>EXPIRES</span>
+            </div>
+          </div>
+        </div>
+
+        <dl class="track-activation-details">
+          <div>
+            <dt>Cardholder Name</dt>
+            <dd>ALEX MORGAN</dd>
+          </div>
+          <div>
+            <dt>Expiry Date</dt>
+            <dd>12/2028</dd>
+          </div>
+          <div>
+            <dt>CVV</dt>
+            <dd>
+              <strong data-track-activation-cvv>•••</strong>
+              <button
+                class="is-hidden"
+                type="button"
+                aria-label="Reveal activation CVV"
+                aria-pressed="false"
+                data-track-activation-cvv-toggle
+              >
+                <svg aria-hidden="true"><use href="#icon-eye" /></svg>
+              </button>
+            </dd>
+          </div>
+        </dl>
+
+        <button
+          class="track-confirm-activate"
+          type="button"
+          data-track-confirm-activate
+        >
+          Confirm &amp; Activate
+        </button>
+      </section>
+    </div>
+
+    <div class="card-lock-overlay" data-card-lock-overlay hidden>
+      <button
+        class="card-lock-backdrop"
+        type="button"
+        aria-label="Close lock card confirmation"
+        data-card-lock-close
+      ></button>
+      <section
+        class="card-lock-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="card-lock-title"
+      >
+        <header class="card-lock-header">
+          <h2 id="card-lock-title">Lock your Benefits Card ?</h2>
+          <button
+            type="button"
+            aria-label="Close lock card confirmation"
+            data-card-lock-close
+          >
+            <svg aria-hidden="true"><use href="#icon-close" /></svg>
+          </button>
+        </header>
+
+        <ul class="card-lock-points">
+          <li class="is-allowed">
+            <span aria-hidden="true">
+              <svg><use href="#icon-check" /></svg>
+            </span>
+            <p>
+              Your recurring transactions like bills, recharges and
+              subscriptions will continue.
+            </p>
+          </li>
+          <li class="is-blocked">
+            <span aria-hidden="true">
+              <svg><use href="#icon-close" /></svg>
+            </span>
+            <p>
+              Your Benefits card won&rsquo;t be available for new transactions
+              unless unlocked.
+            </p>
+          </li>
+        </ul>
+
+        <div class="card-lock-actions">
+          <button class="card-lock-cancel" type="button" data-card-lock-close>
+            Cancel
+          </button>
+          <button
+            class="card-lock-confirm"
+            type="button"
+            data-card-lock-confirm
+          >
+            Lock Card
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div class="card-status-overlay" data-card-status-overlay hidden>
+      <button
+        class="card-status-backdrop"
+        type="button"
+        aria-label="Dismiss card status"
+        data-card-status-close
+      ></button>
+      <section
+        class="card-status-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="card-status-title"
+      >
+        <span class="card-status-badge" aria-hidden="true">
+          <svg><use href="#icon-check" /></svg>
+        </span>
+        <button
+          class="card-status-dismiss"
+          type="button"
+          aria-label="Dismiss card status"
+          data-card-status-close
+        >
+          <svg aria-hidden="true"><use href="#icon-close" /></svg>
+        </button>
+
+        <h2 id="card-status-title" data-card-status-title>
+          Your Benefits Card has been Locked Successfully
+        </h2>
+        <p class="card-status-effective" data-card-status-effective>
+          Effective 04/03/2026, 12:30PM
+        </p>
+        <p class="card-status-copy" data-card-status-copy>
+          You can unlock your benefits card anytime to resume transactions.
+        </p>
+        <div class="card-status-help" data-card-status-help>
+          <span aria-hidden="true">
+            <svg><use href="#icon-info" /></svg>
+          </span>
+          <p>
+            Need more help? You can reach out to us at
+            <a href="tel:+918080808090">+91 8080808090</a> or
+            <a href="mailto:support@pinelabs.com">support@pinelabs.com</a>
+          </p>
+        </div>
+
+        <button class="card-status-ok" type="button" data-card-status-close>
+          OK
+        </button>
       </section>
     </div>
 

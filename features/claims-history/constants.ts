@@ -1,8 +1,11 @@
+import type { ClaimOverrides } from "@/features/claims/store";
+
 export type ClaimStatus =
   | "under_review"
   | "needs_info"
   | "approved"
-  | "rejected";
+  | "rejected"
+  | "revoked";
 
 export type ClaimCategoryIcon = "fuel" | "mobile" | "professional";
 
@@ -26,6 +29,7 @@ export const CLAIM_STATUS_TABS: { id: ClaimStatusFilter; label: string }[] = [
   { id: "under_review", label: "Under review" },
   { id: "approved", label: "Approved" },
   { id: "rejected", label: "Rejected" },
+  { id: "revoked", label: "Revoked" },
 ];
 
 /** Token-based chip classes — keep aligned with `@theme` status colors in app/globals.css */
@@ -47,6 +51,10 @@ export const CLAIM_STATUS_STYLES: Record<
   },
   rejected: {
     label: "Rejected",
+    className: "border-transparent bg-danger-soft text-danger",
+  },
+  revoked: {
+    label: "Revoked",
     className: "border-transparent bg-danger-soft text-danger",
   },
 };
@@ -147,6 +155,35 @@ export function getClaimHistoryItem(claimId: string): ClaimHistoryItem | undefin
   return CLAIM_HISTORY_ITEMS.find((item) => item.id === normalized);
 }
 
+export function applyClaimHistoryOverrides(
+  claims: ClaimHistoryItem[],
+  overrides: ClaimOverrides,
+): ClaimHistoryItem[] {
+  return claims.map((claim) => {
+    const override = overrides[claim.id];
+    if (!override) return claim;
+    const status: ClaimStatus =
+      override.status === "Revoked"
+        ? "revoked"
+        : override.status === "Needs info"
+          ? "needs_info"
+          : override.status === "Under review" || override.status === "Pending"
+            ? "under_review"
+            : override.status === "Approved"
+              ? "approved"
+              : override.status === "Rejected"
+                ? "rejected"
+                : claim.status;
+    return {
+      ...claim,
+      merchant: override.vendor ?? claim.merchant,
+      category: override.category ?? claim.category,
+      amount: override.amount ?? claim.amount,
+      status,
+    };
+  });
+}
+
 export function formatINR(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -163,6 +200,7 @@ export function isClaimStatusFilter(
     value === "needs_info" ||
     value === "under_review" ||
     value === "approved" ||
-    value === "rejected"
+    value === "rejected" ||
+    value === "revoked"
   );
 }

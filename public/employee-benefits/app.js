@@ -122,6 +122,10 @@ const manageSensitiveFields = document.querySelectorAll(
   "[data-card-sensitive]",
 );
 const manageRevealButtons = document.querySelectorAll("[data-card-reveal]");
+const manageCopyButton = document.querySelector("[data-card-copy]");
+const managePlaceholderButtons = manageCardsOverlay?.querySelectorAll(
+  ".manage-cards-control-tile[data-toast]",
+);
 const managePreviewNumber = document.querySelector(
   "[data-manage-preview-number]",
 );
@@ -132,6 +136,62 @@ const managePreviewExpiry = document.querySelector(
   "[data-manage-preview-expiry]",
 );
 const manageWalletType = document.querySelector("[data-manage-wallet-type]");
+const trackCardOpenButtons = document.querySelectorAll("[data-track-card-open]");
+const trackCardOverlay = document.querySelector("[data-track-card-overlay]");
+const trackCardPanel = document.querySelector(".track-card-panel");
+const trackCardCloseButtons = document.querySelectorAll(
+  "[data-track-card-close]",
+);
+const trackAwbCopyButton = document.querySelector("[data-track-awb-copy]");
+const trackAwb = document.querySelector("[data-track-awb]");
+const trackStatusButton = document.querySelector(".track-status-button[data-toast]");
+const trackActivationOverlay = document.querySelector(
+  "[data-track-activation-overlay]",
+);
+const trackActivationSheet = document.querySelector(".track-activation-sheet");
+const trackActivationOpenButton = document.querySelector(
+  "[data-track-activate-open]",
+);
+const trackActivationCloseButtons = document.querySelectorAll(
+  "[data-track-activation-close]",
+);
+const trackActivationCvv = document.querySelector(
+  "[data-track-activation-cvv]",
+);
+const trackActivationCvvToggle = document.querySelector(
+  "[data-track-activation-cvv-toggle]",
+);
+const trackConfirmActivateButton = document.querySelector(
+  "[data-track-confirm-activate]",
+);
+const cardLockOverlay = document.querySelector("[data-card-lock-overlay]");
+const cardLockSheet = document.querySelector(".card-lock-sheet");
+const cardLockOpenButtons = document.querySelectorAll("[data-card-lock-open]");
+const cardLockCloseButtons = document.querySelectorAll("[data-card-lock-close]");
+const cardLockConfirmButton = document.querySelector("[data-card-lock-confirm]");
+const cardLockBanner = document.querySelector("[data-card-lock-banner]");
+const cardLockTileLabel = document.querySelector("[data-card-lock-tile-label]");
+const cardUnlockOpenButtons = document.querySelectorAll(
+  "[data-card-unlock-open]",
+);
+const cardStatusOverlay = document.querySelector("[data-card-status-overlay]");
+const cardStatusSheet = document.querySelector(".card-status-sheet");
+const cardStatusCloseButtons = document.querySelectorAll(
+  "[data-card-status-close]",
+);
+const cardStatusTitle = document.querySelector("[data-card-status-title]");
+const cardStatusEffective = document.querySelector(
+  "[data-card-status-effective]",
+);
+const cardStatusCopy = document.querySelector("[data-card-status-copy]");
+const cardStatusHelp = document.querySelector("[data-card-status-help]");
+const fallbackOverlay = document.querySelector("[data-fallback-overlay]");
+const fallbackPanel = document.querySelector(".fallback-panel");
+const fallbackOpenButtons = document.querySelectorAll("[data-fallback-open]");
+const fallbackCloseButtons = document.querySelectorAll("[data-fallback-close]");
+const fallbackInfo = document.querySelector("[data-fallback-info]");
+const fallbackInfoToggle = document.querySelector("[data-fallback-info-toggle]");
+const fallbackToggles = document.querySelectorAll("[data-fallback-toggle]");
 const claimsOpenButton = document.querySelector("[data-claims-open]");
 const claimsAssistant = document.querySelector("[data-claims-assistant]");
 const claimsCloseButtons = document.querySelectorAll("[data-claims-close]");
@@ -162,10 +222,17 @@ const CREATED_UPI_ID = "xxxxxxxx79@infosys";
 const UPI_SETUP_STEP_DURATION = 1500;
 const upiSetupState = { stage: 0, view: "setup" };
 let upiSetupTimer;
+let trackActivationCvvVisible = false;
+const benefitsCardLockState = { locked: false, statusMode: "locked" };
+const FALLBACK_STORAGE_KEY = "employee-benefits:fallback-control:v1";
+// Only spend wallets can fall back; the Reimbursement Wallet is the source of
+// funds, so it never appears as a fallback candidate itself.
+const fallbackWalletLabels = { meal: "Meal Wallet", fuel: "Fuel Wallet" };
+const fallbackState = { meal: false, fuel: false };
 const manageWalletState = {
   meal: {
     label: "Meal Wallet",
-    balance: "₹6,400",
+    balance: "₹12,100",
     summary: "Available balance for daily essentials",
     accessCopy: "Groceries, Restaurants, Food Delivery",
     accessValue: "Allowed",
@@ -175,8 +242,8 @@ const manageWalletState = {
     frozen: false,
     card: {
       number: "4521 8890 4432 7845",
-      holder: "John Doe",
-      expiry: "05 / 29",
+      holder: "ALEX MORGAN",
+      expiry: "12/28",
       cvv: "731",
       last4: "7845",
     },
@@ -247,6 +314,11 @@ function syncPageScrollLock() {
     walletOverlay,
     merchantDirectoryOverlay,
     manageCardsOverlay,
+    trackCardOverlay,
+    trackActivationOverlay,
+    cardLockOverlay,
+    cardStatusOverlay,
+    fallbackOverlay,
     claimsAssistant,
     scanPayFlow,
     upiSetupFlow,
@@ -4767,7 +4839,7 @@ function renderManageWalletState() {
   if (managePreviewNumber)
     managePreviewNumber.textContent = state.reveal.number
       ? state.card.number
-      : "**** **** **** 7845";
+      : `•••• •••• •••• ${state.card.last4}`;
   if (managePreviewHolder) managePreviewHolder.textContent = state.card.holder;
   if (managePreviewExpiry) managePreviewExpiry.textContent = state.card.expiry;
   manageSensitiveFields.forEach((field) => {
@@ -4775,7 +4847,7 @@ function renderManageWalletState() {
     if (key === "number")
       field.textContent = state.reveal.number
         ? state.card.number
-        : `**** **** **** ${state.card.last4}`;
+        : `•••• •••• •••• ${state.card.last4}`;
     if (key === "holder") field.textContent = state.card.holder;
     if (key === "expiry") field.textContent = state.card.expiry;
     if (key === "cvv")
@@ -4784,10 +4856,13 @@ function renderManageWalletState() {
   manageRevealButtons.forEach((button) => {
     const key = button.dataset.cardReveal;
     if (!Object.prototype.hasOwnProperty.call(state.reveal, key)) return;
+    const isRevealed = state.reveal[key];
     button.setAttribute(
       "aria-label",
-      `${state.reveal[key] ? "Hide" : "Reveal"} ${key === "cvv" ? "CVV" : "card number"}`,
+      `${isRevealed ? "Hide" : "Reveal"} ${key === "cvv" ? "CVV" : "card number"}`,
     );
+    button.setAttribute("aria-pressed", String(isRevealed));
+    button.classList.toggle("is-hidden", !isRevealed);
   });
   manageWalletButtons.forEach((button) => {
     const walletState = manageWalletState[button.dataset.walletKey];
@@ -4880,8 +4955,27 @@ function formatCurrency(value) {
   return `₹${Number(value).toLocaleString("en-IN")}`;
 }
 
+async function copyTextToClipboard(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+
+  const copyField = document.createElement("textarea");
+  copyField.value = value;
+  copyField.setAttribute("readonly", "");
+  copyField.style.position = "fixed";
+  copyField.style.opacity = "0";
+  document.body.append(copyField);
+  copyField.select();
+  const didCopy = document.execCommand("copy");
+  copyField.remove();
+  if (!didCopy) throw new Error("Copy command failed");
+}
+
 manageRevealButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
     const state = manageWalletState[activeManageWalletKey];
     const key = button.dataset.cardReveal;
     if (!state || !Object.prototype.hasOwnProperty.call(state.reveal, key))
@@ -4893,6 +4987,23 @@ manageRevealButtons.forEach((button) => {
     );
     renderManageWalletState();
   });
+});
+
+manageCopyButton?.addEventListener("click", async (event) => {
+  event.stopPropagation();
+  const cardNumber = manageWalletState[activeManageWalletKey]?.card.number;
+  if (!cardNumber) return;
+
+  try {
+    await copyTextToClipboard(cardNumber);
+    showToast("Card number copied");
+  } catch {
+    showToast("Could not copy card number");
+  }
+});
+
+managePlaceholderButtons?.forEach((button) => {
+  button.addEventListener("click", () => showToast(button.dataset.toast));
 });
 renderManageWalletState();
 
@@ -5068,6 +5179,228 @@ function closeManageCardsOverlay() {
   }, 280);
 }
 
+function renderTrackActivationCvv() {
+  if (trackActivationCvv)
+    trackActivationCvv.textContent = trackActivationCvvVisible ? "731" : "•••";
+  if (!trackActivationCvvToggle) return;
+  trackActivationCvvToggle.classList.toggle(
+    "is-hidden",
+    !trackActivationCvvVisible,
+  );
+  trackActivationCvvToggle.setAttribute(
+    "aria-pressed",
+    String(trackActivationCvvVisible),
+  );
+  trackActivationCvvToggle.setAttribute(
+    "aria-label",
+    `${trackActivationCvvVisible ? "Hide" : "Reveal"} activation CVV`,
+  );
+}
+
+function closeTrackActivationSheet() {
+  if (!trackActivationOverlay) return;
+  trackActivationOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    trackActivationOverlay.hidden = true;
+    syncPageScrollLock();
+  }, 260);
+}
+
+function openTrackActivationSheet() {
+  if (!trackActivationOverlay) return;
+  trackActivationCvvVisible = false;
+  renderTrackActivationCvv();
+  trackActivationOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    if (trackActivationSheet) trackActivationSheet.scrollTop = 0;
+    trackActivationOverlay.classList.add("is-open");
+    syncPageScrollLock();
+  });
+}
+
+function renderBenefitsCardLockState() {
+  const { locked } = benefitsCardLockState;
+  document.body.classList.toggle("is-benefits-card-locked", locked);
+  if (cardLockBanner) cardLockBanner.hidden = !locked;
+  if (cardLockTileLabel)
+    cardLockTileLabel.innerHTML = locked
+      ? "Unlock<br />Card"
+      : "Lock<br />Card";
+  cardLockOpenButtons.forEach((button) => {
+    button.setAttribute(
+      "aria-label",
+      locked ? "Unlock Benefits Card" : "Lock Benefits Card",
+    );
+  });
+}
+
+function formatCardLockTimestamp(date) {
+  const pad = (value) => String(value).padStart(2, "0");
+  const hours = date.getHours();
+  const meridiem = hours >= 12 ? "PM" : "AM";
+  const displayHours = hours % 12 || 12;
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}, ${displayHours}:${pad(date.getMinutes())}${meridiem}`;
+}
+
+function closeCardLockSheet() {
+  if (!cardLockOverlay) return;
+  cardLockOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    cardLockOverlay.hidden = true;
+    syncPageScrollLock();
+  }, 260);
+}
+
+function openCardLockSheet() {
+  if (!cardLockOverlay) return;
+  cardLockOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    if (cardLockSheet) cardLockSheet.scrollTop = 0;
+    cardLockOverlay.classList.add("is-open");
+    syncPageScrollLock();
+  });
+}
+
+function openCardStatusSheet(mode) {
+  if (!cardStatusOverlay) return;
+  const isUnlocked = mode === "unlocked";
+  benefitsCardLockState.statusMode = isUnlocked ? "unlocked" : "locked";
+  if (cardStatusSheet) cardStatusSheet.dataset.cardStatusMode = mode;
+  if (cardStatusTitle)
+    cardStatusTitle.textContent = isUnlocked
+      ? "Your Benefits Card has been Successfully Unlocked"
+      : "Your Benefits Card has been Locked Successfully";
+  if (cardStatusEffective) {
+    cardStatusEffective.hidden = isUnlocked;
+    if (!isUnlocked)
+      cardStatusEffective.textContent = `Effective ${formatCardLockTimestamp(new Date())}`;
+  }
+  if (cardStatusCopy) cardStatusCopy.hidden = isUnlocked;
+  if (cardStatusHelp) cardStatusHelp.hidden = isUnlocked;
+
+  cardStatusOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    cardStatusOverlay.classList.add("is-open");
+    syncPageScrollLock();
+  });
+}
+
+function closeCardStatusSheet() {
+  if (!cardStatusOverlay) return;
+  // Unlock is committed when the confirmation sheet is dismissed, either from
+  // the OK button or by tapping outside it.
+  if (benefitsCardLockState.statusMode === "unlocked") {
+    benefitsCardLockState.locked = false;
+    renderBenefitsCardLockState();
+  }
+  cardStatusOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    cardStatusOverlay.hidden = true;
+    syncPageScrollLock();
+  }, 260);
+}
+
+function closeTrackCardOverlay() {
+  if (!trackCardOverlay) return;
+  if (trackActivationOverlay?.classList.contains("is-open"))
+    closeTrackActivationSheet();
+  trackCardOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    trackCardOverlay.hidden = true;
+    syncPageScrollLock();
+  }, 280);
+}
+
+function openTrackCardOverlay() {
+  if (!trackCardOverlay) return;
+  trackCardOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    const scroll = trackCardPanel?.querySelector(".track-card-scroll");
+    if (scroll) scroll.scrollTop = 0;
+    trackCardOverlay.classList.add("is-open");
+    syncPageScrollLock();
+  });
+}
+
+function readFallbackState() {
+  try {
+    const stored = window.localStorage.getItem(FALLBACK_STORAGE_KEY);
+    if (!stored) return;
+    const parsed = JSON.parse(stored);
+    Object.keys(fallbackState).forEach((key) => {
+      fallbackState[key] = parsed?.[key] === true;
+    });
+  } catch {
+    // Ignore unreadable/legacy values and keep the defaults.
+  }
+}
+
+function writeFallbackState() {
+  try {
+    window.localStorage.setItem(
+      FALLBACK_STORAGE_KEY,
+      JSON.stringify(fallbackState),
+    );
+  } catch {
+    // Storage is optional; the in-memory state still drives the screen.
+  }
+}
+
+function renderFallbackState() {
+  fallbackToggles.forEach((toggle) => {
+    const key = toggle.dataset.fallbackToggle;
+    toggle.setAttribute("aria-checked", String(fallbackState[key] === true));
+  });
+
+  // Mirror the summary on the Manage Card tile so the state is visible without
+  // opening the screen.
+  const anyEnabled = Object.values(fallbackState).some(Boolean);
+  fallbackOpenButtons.forEach((button) => {
+    button.classList.toggle("is-enabled", anyEnabled);
+  });
+}
+
+function setFallbackInfoOpen(isOpen) {
+  if (!fallbackInfo || !fallbackInfoToggle) return;
+  fallbackInfo.classList.toggle("is-open", isOpen);
+  fallbackInfoToggle.setAttribute("aria-expanded", String(isOpen));
+}
+
+function openFallbackOverlay() {
+  if (!fallbackOverlay) return;
+  setFallbackInfoOpen(false);
+  renderFallbackState();
+  fallbackOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    const scroll = fallbackPanel?.querySelector(".fallback-scroll");
+    if (scroll) scroll.scrollTop = 0;
+    fallbackOverlay.classList.add("is-open");
+    syncPageScrollLock();
+  });
+}
+
+function closeFallbackOverlay() {
+  if (!fallbackOverlay) return;
+  fallbackOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    fallbackOverlay.hidden = true;
+    syncPageScrollLock();
+  }, 280);
+}
+
+function toggleFallbackWallet(key) {
+  if (!(key in fallbackState)) return;
+  fallbackState[key] = !fallbackState[key];
+  writeFallbackState();
+  renderFallbackState();
+  const label = fallbackWalletLabels[key] || "Wallet";
+  showToast(
+    fallbackState[key]
+      ? `${label} will now fall back to Reimbursement Wallet`
+      : `Fallback turned off for ${label}`,
+  );
+}
+
 function openMerchantDirectory() {
   if (
     !merchantDirectoryOverlay ||
@@ -5234,6 +5567,7 @@ virtualCardNumberToggle?.addEventListener("click", (event) => {
 
 balanceCard?.addEventListener("click", (event) => {
   if (document.body.classList.contains("is-pluspay")) return;
+  if (benefitsCardLockState.locked) return;
   if (event.target.closest("[data-virtual-card-toggle]")) return;
   virtualCardToggle?.click();
 });
@@ -5273,8 +5607,122 @@ manageCardsCloseButtons.forEach((button) => {
   button.addEventListener("click", closeManageCardsOverlay);
 });
 
+trackCardOpenButtons.forEach((button) => {
+  button.addEventListener("click", openTrackCardOverlay);
+});
+
+trackCardCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeTrackCardOverlay);
+});
+
+trackAwbCopyButton?.addEventListener("click", async () => {
+  const awbNumber = trackAwb?.textContent?.trim();
+  if (!awbNumber) return;
+
+  try {
+    await copyTextToClipboard(awbNumber);
+    showToast("AWB number copied");
+  } catch {
+    showToast("Could not copy AWB number");
+  }
+});
+
+trackStatusButton?.addEventListener("click", () => {
+  showToast(trackStatusButton.dataset.toast);
+});
+
+trackActivationOpenButton?.addEventListener("click", openTrackActivationSheet);
+
+trackActivationCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeTrackActivationSheet);
+});
+
+trackActivationCvvToggle?.addEventListener("click", () => {
+  trackActivationCvvVisible = !trackActivationCvvVisible;
+  renderTrackActivationCvv();
+});
+
+trackConfirmActivateButton?.addEventListener("click", () => {
+  closeTrackActivationSheet();
+  showToast("Card activated successfully");
+});
+
+cardLockOpenButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    if (benefitsCardLockState.locked) {
+      openCardStatusSheet("unlocked");
+      return;
+    }
+    openCardLockSheet();
+  });
+});
+
+cardLockCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeCardLockSheet);
+});
+
+cardLockConfirmButton?.addEventListener("click", () => {
+  benefitsCardLockState.locked = true;
+  renderBenefitsCardLockState();
+  closeCardLockSheet();
+  openCardStatusSheet("locked");
+});
+
+cardUnlockOpenButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.stopPropagation();
+    openCardStatusSheet("unlocked");
+  });
+});
+
+cardStatusCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeCardStatusSheet);
+});
+
+fallbackOpenButtons.forEach((button) => {
+  button.addEventListener("click", openFallbackOverlay);
+});
+
+fallbackCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeFallbackOverlay);
+});
+
+fallbackInfoToggle?.addEventListener("click", () => {
+  setFallbackInfoOpen(!fallbackInfo?.classList.contains("is-open"));
+});
+
+fallbackToggles.forEach((toggle) => {
+  toggle.addEventListener("click", () => {
+    toggleFallbackWallet(toggle.dataset.fallbackToggle);
+  });
+});
+
+renderBenefitsCardLockState();
+readFallbackState();
+renderFallbackState();
+
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if (cardStatusOverlay?.classList.contains("is-open")) {
+      closeCardStatusSheet();
+      return;
+    }
+    if (cardLockOverlay?.classList.contains("is-open")) {
+      closeCardLockSheet();
+      return;
+    }
+    if (trackActivationOverlay?.classList.contains("is-open")) {
+      closeTrackActivationSheet();
+      return;
+    }
+    if (trackCardOverlay?.classList.contains("is-open")) {
+      closeTrackCardOverlay();
+      return;
+    }
+    if (fallbackOverlay?.classList.contains("is-open")) {
+      closeFallbackOverlay();
+      return;
+    }
     closeCardOverlay();
     closeWalletOverlay();
     closeMerchantDirectory();

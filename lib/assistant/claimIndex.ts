@@ -28,14 +28,16 @@ export type AssistantClaimStatus =
   | "Pending"
   | "Under review"
   | "Needs info"
-  | "Rejected";
+  | "Rejected"
+  | "Revoked";
 
 /** The status values a user can filter on. "Pending" covers anything in flight. */
 export type ClaimAnswerStatus =
   | "Approved"
   | "Pending"
   | "Needs info"
-  | "Rejected";
+  | "Rejected"
+  | "Revoked";
 
 export type AssistantClaim = {
   id: string;
@@ -52,6 +54,7 @@ const HISTORY_STATUS: Record<ClaimStatus, AssistantClaimStatus> = {
   under_review: "Under review",
   needs_info: "Needs info",
   rejected: "Rejected",
+  revoked: "Revoked",
 };
 
 function sortKey(date: string): number {
@@ -138,6 +141,8 @@ export type ClaimSummary = {
   needsInfoCount: number;
   rejectedCount: number;
   rejectedAmount: number;
+  revokedCount: number;
+  revokedAmount: number;
 };
 
 export function summarizeAssistantClaims(
@@ -151,6 +156,7 @@ export function summarizeAssistantClaims(
   );
   const needsInfo = claims.filter((claim) => claim.status === "Needs info");
   const rejected = claims.filter((claim) => claim.status === "Rejected");
+  const revoked = claims.filter((claim) => claim.status === "Revoked");
 
   return {
     totalCount: claims.length,
@@ -162,5 +168,7 @@ export function summarizeAssistantClaims(
     needsInfoCount: needsInfo.length,
     rejectedCount: rejected.length,
     rejectedAmount: sum(rejected),
+    revokedCount: revoked.length,
+    revokedAmount: sum(revoked),
   };
 }

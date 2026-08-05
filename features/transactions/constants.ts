@@ -78,7 +78,26 @@ export const ANALYTICS_WALLETS: {
 export const ANALYTICS_TOTAL_SPENT = 50000;
 export const ANALYTICS_MONTH_LABEL = "Feb 2026";
 
-/** Category palette for the analytics chart (data colors, not brand chrome). */
+/**
+ * Category palette for the analytics chart (data colors, not brand chrome).
+ *
+ * Validated as a set, in this render order, against the white card surface —
+ * OKLCH lightness band, chroma floor, and colour-vision separation on the
+ * adjacent pairlist (a donut is a stacked bar wrapped into a ring, so each
+ * segment only ever touches two others, and the wrap pair was checked too).
+ *
+ * Two slots are deliberately not the obvious hue:
+ * - Dining is magenta rather than the violet `#7B5CFF` it used to be, which sat
+ *   ΔE 8.4 from Groceries blue for normal vision and 1.2 under protanopia —
+ *   effectively the same colour for a red-weak reader.
+ * - Bills is a deeper amber than `#E8B84A`, which was above the lightness band
+ *   and too pale to hold a label.
+ *
+ * Groceries, Travel and Bills still sit below 3:1 against white. That is
+ * allowed here because the value is never carried by colour alone: every
+ * segment is directly labelled and the list below the chart repeats the whole
+ * table. Keep both if you change these.
+ */
 export const ANALYTICS_CATEGORIES: AnalyticsCategory[] = [
   {
     id: "groceries",
@@ -104,7 +123,7 @@ export const ANALYTICS_CATEGORIES: AnalyticsCategory[] = [
     transactionCount: 5,
     amount: 6000,
     percent: 12,
-    color: "#7B5CFF",
+    color: "#A0479E",
     icon: "dining",
   },
   {
@@ -131,7 +150,7 @@ export const ANALYTICS_CATEGORIES: AnalyticsCategory[] = [
     transactionCount: 4,
     amount: 7500,
     percent: 15,
-    color: "#E8B84A",
+    color: "#CE9A22",
     icon: "bills",
   },
 ];

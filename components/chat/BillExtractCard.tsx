@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+/* eslint-disable @next/next/no-img-element -- previews are transient blob/data URLs */
+
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import type { BillExtract } from "@/features/chat/types";
 import {
@@ -15,6 +17,11 @@ type BillExtractCardProps = {
   onUpdate?: (messageId: string, next: BillExtract) => void;
   onSubmitted?: (messageId: string, extract: BillExtract) => void;
   onReplace?: (messageId: string) => void;
+  onSaveClaimEdit?: (
+    messageId: string,
+    claimId: string,
+    extract: BillExtract,
+  ) => void;
 };
 
 type EditableFields = {
@@ -74,6 +81,29 @@ function formatMonth(value: string) {
   });
 }
 
+function escapeXml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => {
+    const replacements: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&apos;",
+    };
+    return replacements[character];
+  });
+}
+
+function demoBillPreview(fields: EditableFields, claimId: string): string {
+  const vendor = escapeXml(fields.vendor || "Merchant");
+  const category = escapeXml(fields.category || "Employee benefit");
+  const amount = escapeXml(fields.amount || "—");
+  const date = escapeXml(formatDate(fields.billDate));
+  const invoice = escapeXml(fields.invoiceNo || claimId);
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420"><rect width="720" height="420" rx="24" fill="#fff"/><rect x="24" y="24" width="672" height="372" rx="16" fill="#f8fbf9" stroke="#dfe8e1" stroke-width="2"/><text x="58" y="78" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#123f36">${vendor}</text><text x="58" y="111" font-family="Arial,sans-serif" font-size="16" fill="#60756e">${category}</text><line x1="58" y1="142" x2="662" y2="142" stroke="#dfe8e1" stroke-width="2"/><text x="58" y="190" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#7d8b87">BILL DATE</text><text x="58" y="220" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#123f36">${date}</text><text x="390" y="190" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#7d8b87">INVOICE NO.</text><text x="390" y="220" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#123f36">${invoice}</text><rect x="58" y="274" width="604" height="76" rx="12" fill="#e9faf1"/><text x="82" y="305" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#60756e">TOTAL</text><text x="82" y="337" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#17664f">INR ${amount}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 function CardIcon() {
   return (
     <svg width="21" height="21" viewBox="0 0 21 21" fill="none" aria-hidden>
@@ -109,11 +139,19 @@ export function BillExtractCard({
   onUpdate,
   onSubmitted,
   onReplace,
+  onSaveClaimEdit,
 }: BillExtractCardProps) {
   const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(Boolean(extract.editClaimId));
   const [acknowledged, setAcknowledged] = useState(Boolean(extract.warningAcknowledged));
   const categoryRef = useRef<HTMLSelectElement>(null);
+  const isClaimEdit = Boolean(extract.editClaimId);
+
+  useEffect(() => {
+    if (!editing) return;
+    const frame = window.requestAnimationFrame(() => categoryRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [editing]);
 
   const workingExtract = useMemo<BillExtract>(
     () => ({
@@ -126,6 +164,11 @@ export function BillExtractCard({
   );
   const precheck = useMemo(() => evaluateClaimPrecheck(workingExtract), [workingExtract]);
   const amount = parseClaimAmount(fields.amount);
+  const previewUrl =
+    extract.previewUrl ||
+    (extract.editClaimId
+      ? demoBillPreview(fields, extract.editClaimId)
+      : undefined);
   const submitDisabled =
     Boolean(extract.submitted) ||
     precheck.status === "blocked" ||
@@ -138,6 +181,9 @@ export function BillExtractCard({
   function saveEdits() {
     onUpdate?.(messageId, workingExtract);
     setEditing(false);
+    if (extract.editClaimId) {
+      onSaveClaimEdit?.(messageId, extract.editClaimId, workingExtract);
+    }
   }
 
   function cancelEdits() {
@@ -180,6 +226,24 @@ export function BillExtractCard({
             <p className="truncate text-[11px] leading-4 text-[#82908b]">{fields.vendor || "Review the scanned details"}</p>
           </div>
         </header>
+
+        {previewUrl ? (
+          <figure className="mt-3.5 overflow-hidden rounded-xl border border-[#dfe8e1] bg-[#f8fbf9]">
+            {extract.previewUrl && extract.previewType === "application/pdf" ? (
+              <div className="flex min-h-28 flex-col items-center justify-center gap-1 px-3 py-5 text-center">
+                <CardIcon />
+                <strong className="max-w-full truncate text-[12px] text-[#123f36]">{extract.fileName}</strong>
+                <span className="text-[10px] text-[#7d8b87]">PDF bill attached</span>
+              </div>
+            ) : (
+              /* Blob previews are transient; seeded claims recreate this SVG locally. */
+              <img src={previewUrl} alt={`Bill preview for ${fields.vendor || "claim"}`} className="aspect-[12/7] w-full object-cover" />
+            )}
+            <figcaption className="truncate border-t border-[#dfe8e1] bg-white px-3 py-2 text-[10px] text-[#60756e]">
+              {extract.fileName}
+            </figcaption>
+          </figure>
+        ) : null}
 
         <div className="mt-3.5 grid grid-cols-2 gap-2">
           <DetailTile label="Category" value={fields.category}>
@@ -224,13 +288,15 @@ export function BillExtractCard({
       <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
         {editing ? (
           <>
-            <button type="button" onClick={saveEdits} className={actionClass}>Save details</button>
+            <button type="button" disabled={submitDisabled} onClick={saveEdits} className={actionClass}>{isClaimEdit ? "Save changes" : "Save details"}</button>
             <button type="button" onClick={cancelEdits} className={actionClass}>Cancel</button>
             <button type="button" onClick={() => onReplace?.(messageId)} className={actionClass}>Replace bill</button>
           </>
         ) : (
           <>
-            <button type="button" disabled={submitDisabled} onClick={handleSubmit} className={actionClass}>{extract.submitted ? "Submitted" : "Submit claim"}</button>
+            {isClaimEdit ? null : (
+              <button type="button" disabled={submitDisabled} onClick={handleSubmit} className={actionClass}>{extract.submitted ? "Submitted" : "Submit claim"}</button>
+            )}
             <button type="button" onClick={() => setEditing(true)} className={actionClass}>Edit details</button>
             <button type="button" onClick={editCategory} className={actionClass}>Change category</button>
           </>

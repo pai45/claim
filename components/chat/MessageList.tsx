@@ -37,6 +37,11 @@ type MessageListProps = {
   onDlFileSelected?: (file: File) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onSaveClaimEdit?: (
+    messageId: string,
+    claimId: string,
+    extract: BillExtract,
+  ) => void;
   onReplaceBill?: (messageId: string) => void;
   onStartAnotherBill?: () => void;
   documentProcessingStage?: DocumentProcessingStage | null;
@@ -94,6 +99,7 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       onDlFileSelected,
       onUpdateBillExtract,
       onSubmitBillClaim,
+      onSaveClaimEdit,
       onReplaceBill,
       onStartAnotherBill,
       documentProcessingStage,
@@ -276,6 +282,7 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onDlFileSelected={onDlFileSelected}
                 onUpdateBillExtract={onUpdateBillExtract}
                 onSubmitBillClaim={onSubmitBillClaim}
+                onSaveClaimEdit={onSaveClaimEdit}
                 onReplaceBill={onReplaceBill}
                 onStartAnotherBill={onStartAnotherBill}
                 onSelectPolicyCategory={onSelectPolicyCategory}

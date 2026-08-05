@@ -53,6 +53,7 @@ const CLAIM_STATUSES: ClaimAnswerStatus[] = [
   "Pending",
   "Needs info",
   "Rejected",
+  "Revoked",
 ];
 
 const MAX_CATEGORIES = 3;
@@ -95,7 +96,7 @@ intent must be exactly one of:
 categoryIds may list zero or more of:
 ${categoryCatalogue()}
 
-status must be null or one of "Approved", "Pending", "Needs info", "Rejected".
+status must be null or one of "Approved", "Pending", "Needs info", "Rejected", "Revoked".
 benefitType must be null or "meal" or "fuel".
 claimId must be null or look like "CLM-44088".
 merchantQuery is the shop name if one is mentioned, else null.

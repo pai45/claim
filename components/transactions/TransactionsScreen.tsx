@@ -299,13 +299,13 @@ function AnalyticsPanel({
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-body-sm font-bold text-ink">
+                    <p className="text-body-sm font-bold text-ink tabular-nums">
                       {formatINR(category.amount)}
                     </p>
-                    <p
-                      className="text-caption font-bold"
-                      style={{ color: category.color }}
-                    >
+                    {/* Identity is carried by the colored tile on the left, so
+                        this stays in an ink token — a light hue like Bills amber
+                        is barely legible as text on white. */}
+                    <p className="text-caption font-bold text-ink-secondary tabular-nums">
                       {category.percent}%
                     </p>
                   </div>

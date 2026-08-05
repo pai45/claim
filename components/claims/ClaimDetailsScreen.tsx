@@ -1,12 +1,17 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { AppShell } from "@/components/shared/AppShell";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import {
-  getClaimDetails,
   type ClaimProgressStep,
 } from "@/features/claims/constants";
+import { downloadClaimReceipt } from "@/features/claims/receipt";
+import { isClaimMutable, revokeClaim } from "@/features/claims/store";
+import { useClaimDetails } from "@/features/claims/useClaimStore";
+import { setPendingChatIntent } from "@/features/chat/pendingIntent";
 import { colors } from "@/lib/ui/colors";
 
 type ClaimDetailsScreenProps = {
@@ -23,6 +28,24 @@ function DocumentIcon() {
         strokeWidth="1.5"
       />
       <path d="M14 3v4h4" stroke={colors.ink} strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 3v12m0 0 4-4m-4 4-4-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function EditIcon() {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="m14.5 5.5 4 4M4 20l4.1-.8L19.2 8.1a2.12 2.12 0 0 0-3-3L5.1 16.2 4 20Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M13 4H6a2 2 0 0 0-2 2v9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -109,7 +132,37 @@ function ProgressRow({
 
 export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProps) {
   const router = useRouter();
-  const claim = getClaimDetails(claimId);
+  const claim = useClaimDetails(claimId);
+  const [confirmRevokeOpen, setConfirmRevokeOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [downloading, setDownloading] = useState(false);
+  const mutable = isClaimMutable(claim.currentStatus);
+
+  async function handleDownload() {
+    if (downloading) return;
+    setDownloading(true);
+    setFeedback("");
+    try {
+      await downloadClaimReceipt(claim);
+      setFeedback("Claim receipt downloaded.");
+    } catch (error) {
+      console.error("Claim receipt download failed", error);
+      setFeedback("The receipt could not be downloaded. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  }
+
+  function handleEdit() {
+    setPendingChatIntent({ kind: "claim_edit", claimId: claim.id });
+    router.push("/#claims");
+  }
+
+  function handleRevoke() {
+    revokeClaim(claim.id);
+    setConfirmRevokeOpen(false);
+    setFeedback(`Claim ${claim.id} has been revoked.`);
+  }
 
   return (
     <AppShell className="overflow-hidden">
@@ -130,9 +183,29 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
                 <p className="type-body-secondary truncate">{claim.vendor}</p>
               </div>
             </div>
-            <span className="shrink-0 rounded-full border border-success-border bg-success-soft px-2 py-0.5 text-caption font-normal leading-4 text-success">
-              {claim.status}
-            </span>
+            <div className="flex shrink-0 items-center gap-1">
+              <button
+                type="button"
+                onClick={() => void handleDownload()}
+                disabled={downloading}
+                aria-label={downloading ? "Downloading claim receipt" : "Download claim receipt"}
+                title="Download claim receipt"
+                className="flex h-11 w-11 items-center justify-center rounded-control text-pine transition-colors hover:bg-surface-tint disabled:opacity-50"
+              >
+                <DownloadIcon />
+              </button>
+              {mutable ? (
+                <button
+                  type="button"
+                  onClick={handleEdit}
+                  aria-label="Edit claim"
+                  title="Edit claim"
+                  className="flex h-11 w-11 items-center justify-center rounded-control text-pine transition-colors hover:bg-surface-tint"
+                >
+                  <EditIcon />
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="h-px w-full bg-border-soft" />
@@ -165,15 +238,41 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
           </div>
         </section>
 
-        <section className="flex flex-col gap-3 pt-4">
+        {feedback ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="rounded-control bg-success-soft px-3 py-2 text-body-sm font-bold text-success"
+          >
+            {feedback}
+          </p>
+        ) : null}
+
+        <section className="flex gap-3 pt-4">
           <button type="button" className="btn-primary">
             Contact Support
           </button>
-          <button type="button" className="btn-secondary">
-            Download Receipt
-          </button>
+          {mutable ? (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setConfirmRevokeOpen(true)}
+            >
+              Revoke Claim
+            </button>
+          ) : null}
         </section>
       </main>
+
+      <ConfirmDialog
+        open={confirmRevokeOpen}
+        title="Revoke this claim?"
+        description={`Are you sure you want to revoke claim ${claim.id}? This action can't be undone.`}
+        confirmLabel="Revoke claim"
+        cancelLabel="Keep claim"
+        onConfirm={handleRevoke}
+        onClose={() => setConfirmRevokeOpen(false)}
+      />
     </AppShell>
   );
 }

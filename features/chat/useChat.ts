@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createClaimId } from "@/features/claims/constants";
+import { createClaimId, getClaimDetails } from "@/features/claims/constants";
+import {
+  parseStoredAmount,
+  readClaimOverrides,
+  updateClaimOverride,
+} from "@/features/claims/store";
 import {
   getPolicyCategory,
   type PolicyCategory,
@@ -231,6 +236,48 @@ export function useChat() {
     ]);
     appendUploadOptions();
   }, [appendUploadOptions]);
+
+  const startClaimEdit = useCallback(
+    (claimId: string) => {
+      if (isLoading || isScanning || isLocating) return;
+      const normalized = claimId.trim().toUpperCase();
+      const override = readClaimOverrides()[normalized];
+      const claim = getClaimDetails(normalized, override);
+      const extract: BillExtract = {
+        fileName: claim.fileName,
+        rawText: "",
+        category: claim.category,
+        vendor: claim.vendor,
+        amount: String(parseStoredAmount(claim.amount) ?? ""),
+        billDate: claim.billDate,
+        billingMonth: claim.billingMonth,
+        invoiceNo: claim.invoiceNo,
+        confidence: 100,
+        warningAcknowledged: true,
+        editClaimId: claim.id,
+      };
+      const messageId = createId();
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: `Edit claim ${claim.id}`,
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: messageId,
+          role: "assistant",
+          content: "Here are the saved bill and claim details. Make your changes and save when everything looks right.",
+          createdAt: Date.now(),
+          kind: "bill_extract",
+          billExtract: extract,
+        },
+      ]);
+    },
+    [isLoading, isLocating, isScanning],
+  );
 
   const sendMessage = useCallback(
     async (content: string, intentId?: string) => {
@@ -826,6 +873,9 @@ export function useChat() {
         setMessages((prev) => {
           const vendor = nextExtract.vendor || nextExtract.merchant || "";
           const category = nextExtract.category || "benefits";
+          const previousExtract = replaceMessageId
+            ? prev.find((message) => message.id === replaceMessageId)?.billExtract
+            : undefined;
           const nextMessage: ChatMessage = {
             id: billMessageId,
             role: "assistant",
@@ -838,7 +888,11 @@ export function useChat() {
                   : `I found the bill. It looks like ${articleFor(category)} ${category} claim.`,
             createdAt: Date.now(),
             kind: "bill_extract",
-            billExtract: nextExtract,
+            billExtract: {
+              ...nextExtract,
+              editClaimId: previousExtract?.editClaimId,
+              warningAcknowledged: previousExtract?.warningAcknowledged,
+            },
           };
           if (replaceMessageId) {
             return prev.map((message) =>
@@ -861,6 +915,9 @@ export function useChat() {
         console.error("OCR failed", err);
         setError("OCR failed");
         setMessages((prev) => {
+          const previousExtract = replaceMessageId
+            ? prev.find((message) => message.id === replaceMessageId)?.billExtract
+            : undefined;
           const nextMessage: ChatMessage = {
             id: billMessageId,
             role: "assistant",
@@ -873,6 +930,8 @@ export function useChat() {
               rawText: "",
               previewUrl,
               previewType: file.type,
+              editClaimId: previousExtract?.editClaimId,
+              warningAcknowledged: previousExtract?.warningAcknowledged,
               error:
                 "I couldn't scan that file. Please try another clear photo or PDF.",
             },
@@ -933,6 +992,36 @@ export function useChat() {
           kind: "claim_cta",
           claimId,
           billExtract: submittedExtract,
+        },
+      ]);
+    },
+    [updateBillExtract],
+  );
+
+  const saveClaimEdit = useCallback(
+    (messageId: string, claimId: string, extract: BillExtract) => {
+      const amount = parseStoredAmount(extract.amount);
+      updateClaimOverride(claimId, {
+        vendor: extract.vendor || extract.merchant || "",
+        category: extract.category || "",
+        amount,
+        billDate: extract.billDate || extract.date || "",
+        billingMonth: extract.billingMonth || "",
+        invoiceNo: extract.invoiceNo || "",
+        fileName: extract.fileName,
+      });
+      updateBillExtract(messageId, extract);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "assistant",
+          content: `Claim ${claimId} updated.`,
+          createdAt: Date.now(),
+          kind: "claim_cta",
+          claimId,
+          claimAction: "updated",
+          billExtract: extract,
         },
       ]);
     },
@@ -1298,12 +1387,14 @@ export function useChat() {
     policyModelStatus,
     error,
     sendMessage,
+    startClaimEdit,
     processBillFile,
     replaceBillFile,
     processDlFile,
     openUploadOptions,
     updateBillExtract,
     submitBillClaim,
+    saveClaimEdit,
     selectPolicyCategory,
     selectMerchantBenefitType,
     selectMerchantSearchMode,

@@ -74,6 +74,11 @@ type MessageBubbleProps = {
   onDlFileSelected?: (file: File) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onSaveClaimEdit?: (
+    messageId: string,
+    claimId: string,
+    extract: BillExtract,
+  ) => void;
   onReplaceBill?: (messageId: string) => void;
   onStartAnotherBill?: () => void;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
@@ -100,6 +105,7 @@ export function MessageBubble({
   onDlFileSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
+  onSaveClaimEdit,
   onReplaceBill,
   onStartAnotherBill,
   onSelectPolicyCategory,
@@ -240,11 +246,13 @@ export function MessageBubble({
           <AssistantText content={message.content} createdAt={message.createdAt} />
         ) : null}
         <BillExtractCard
+          key={`${message.id}-${message.billExtract.fileName}-${message.billExtract.previewUrl ?? "saved"}`}
           messageId={message.id}
           extract={message.billExtract}
           onUpdate={onUpdateBillExtract}
           onSubmitted={onSubmitBillClaim}
           onReplace={onReplaceBill}
+          onSaveClaimEdit={onSaveClaimEdit}
         />
       </div>
     );
@@ -323,6 +331,7 @@ export function MessageBubble({
             claimId={message.claimId}
             extract={message.billExtract}
             submittedAt={message.createdAt}
+            action={message.claimAction}
           />
           <Link
             href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
@@ -330,13 +339,15 @@ export function MessageBubble({
           >
             View claim details
           </Link>
-          <button
-            type="button"
-            onClick={onStartAnotherBill}
-            className={pillClass}
-          >
-            Claim another bill
-          </button>
+          {message.claimAction !== "updated" ? (
+            <button
+              type="button"
+              onClick={onStartAnotherBill}
+              className={pillClass}
+            >
+              Claim another bill
+            </button>
+          ) : null}
         </div>
       );
     }

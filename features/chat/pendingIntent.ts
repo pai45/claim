@@ -12,11 +12,19 @@ export const PENDING_INTENT_KEY = "eb-claims:pending-chat-intent";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
-export type PendingChatIntent = {
+export type AssistantPendingIntent = {
+  kind?: "assistant_intent";
   intentId: string;
   /** The user-visible turn the assistant should receive, e.g. "Start registration". */
   label: string;
 };
+
+export type ClaimEditPendingIntent = {
+  kind: "claim_edit";
+  claimId: string;
+};
+
+export type PendingChatIntent = AssistantPendingIntent | ClaimEditPendingIntent;
 
 export function setPendingChatIntent(
   intent: PendingChatIntent,
@@ -42,11 +50,21 @@ export function takePendingChatIntent(
 
     storage.removeItem(PENDING_INTENT_KEY);
 
-    const parsed = JSON.parse(raw) as Partial<PendingChatIntent>;
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (parsed.kind === "claim_edit") {
+      if (typeof parsed.claimId !== "string" || !parsed.claimId.trim()) {
+        return null;
+      }
+      return { kind: "claim_edit", claimId: parsed.claimId.trim().toUpperCase() };
+    }
     if (typeof parsed.intentId !== "string" || typeof parsed.label !== "string") {
       return null;
     }
-    return { intentId: parsed.intentId, label: parsed.label };
+    return {
+      kind: "assistant_intent",
+      intentId: parsed.intentId,
+      label: parsed.label,
+    };
   } catch {
     try {
       storage.removeItem(PENDING_INTENT_KEY);

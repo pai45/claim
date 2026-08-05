@@ -21,7 +21,10 @@ describe("pending chat intent", () => {
     const storage = fakeStorage();
     setPendingChatIntent(INTENT, storage);
 
-    expect(takePendingChatIntent(storage)).toEqual(INTENT);
+    expect(takePendingChatIntent(storage)).toEqual({
+      kind: "assistant_intent",
+      ...INTENT,
+    });
   });
 
   it("fires at most once", () => {
@@ -30,7 +33,10 @@ describe("pending chat intent", () => {
     const storage = fakeStorage();
     setPendingChatIntent(INTENT, storage);
 
-    expect(takePendingChatIntent(storage)).toEqual(INTENT);
+    expect(takePendingChatIntent(storage)).toEqual({
+      kind: "assistant_intent",
+      ...INTENT,
+    });
     expect(takePendingChatIntent(storage)).toBeNull();
   });
 
@@ -52,5 +58,26 @@ describe("pending chat intent", () => {
 
     expect(takePendingChatIntent(storage)).toBeNull();
     expect(storage.getItem(PENDING_INTENT_KEY)).toBeNull();
+  });
+
+  it("hands off a claim edit once and normalizes its id", () => {
+    const storage = fakeStorage();
+    setPendingChatIntent({ kind: "claim_edit", claimId: " clm-45188 " }, storage);
+
+    expect(takePendingChatIntent(storage)).toEqual({
+      kind: "claim_edit",
+      claimId: "CLM-45188",
+    });
+    expect(takePendingChatIntent(storage)).toBeNull();
+  });
+
+  it("drops an invalid claim edit payload", () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      PENDING_INTENT_KEY,
+      JSON.stringify({ kind: "claim_edit", claimId: 45188 }),
+    );
+
+    expect(takePendingChatIntent(storage)).toBeNull();
   });
 });

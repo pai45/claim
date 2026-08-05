@@ -61,11 +61,13 @@ export function ChatShell({ onClose }: ChatShellProps) {
     isHydrated,
     policyModelStatus,
     sendMessage,
+    startClaimEdit,
     processBillFile,
     replaceBillFile,
     processDlFile,
     updateBillExtract,
     submitBillClaim,
+    saveClaimEdit,
     selectPolicyCategory,
     selectMerchantBenefitType,
     selectMerchantSearchMode,
@@ -98,8 +100,12 @@ export function ChatShell({ onClose }: ChatShellProps) {
     pendingIntentHandled.current = true;
     const pending = takePendingChatIntent();
     if (!pending) return;
+    if (pending.kind === "claim_edit") {
+      startClaimEdit(pending.claimId);
+      return;
+    }
     void sendMessage(pending.label, pending.intentId);
-  }, [isHydrated, sendMessage]);
+  }, [isHydrated, sendMessage, startClaimEdit]);
 
   // Marks the newest completed claim so the floating widget can nudge itself
   // open. Scans backwards rather than checking the last message: submitVehicleToHr
@@ -228,6 +234,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
               onDlFileSelected={(file) => void processDlFile(file)}
               onUpdateBillExtract={updateBillExtract}
               onSubmitBillClaim={submitBillClaim}
+              onSaveClaimEdit={saveClaimEdit}
               onReplaceBill={handleReplaceBill}
               onStartAnotherBill={handleStartAnotherBill}
               onSelectPolicyCategory={selectPolicyCategory}

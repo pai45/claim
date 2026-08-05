@@ -85,6 +85,8 @@ export type BillExtract = {
   previewType?: string;
   warningAcknowledged?: boolean;
   submitted?: boolean;
+  /** Present when the card edits an existing claim instead of creating one. */
+  editClaimId?: string;
   error?: string;
   /** Soft hint when OCR text exists but fields are incomplete */
   warning?: string;
@@ -141,6 +143,7 @@ export type ChatMessage = {
   kind?: MessageKind;
   billExtract?: BillExtract;
   claimId?: string;
+  claimAction?: "submitted" | "updated";
   policyAnswer?: PolicyAnswerPayload;
   appDataAnswer?: AppDataAnswerPayload;
   merchantLocator?: MerchantLocatorPayload;

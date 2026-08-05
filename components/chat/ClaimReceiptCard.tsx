@@ -1,11 +1,14 @@
 import type { BillExtract } from "@/features/chat/types";
 import { colors } from "@/lib/ui/colors";
 import { EMPLOYER_BENEFITS_CATALOG } from "@/features/policy/constants";
+import { formatINR } from "@/features/dashboard/constants";
+import { parseClaimAmount } from "@/lib/claims/precheck";
 
 type ClaimReceiptCardProps = {
   claimId: string;
   extract: BillExtract;
   submittedAt: number;
+  action?: "submitted" | "updated";
 };
 
 function CheckIcon() {
@@ -64,10 +67,12 @@ export function ClaimReceiptCard({
   claimId,
   extract,
   submittedAt,
+  action = "submitted",
 }: ClaimReceiptCardProps) {
   const vendor = extract.vendor || extract.merchant || "Vendor";
   const category = extract.category || "—";
-  const amount = extract.amount || "—";
+  const parsedAmount = parseClaimAmount(extract.amount);
+  const amount = parsedAmount ? formatINR(parsedAmount) : extract.amount || "—";
   const billDate = extract.billDate || extract.date || "";
   const billingMonth = extract.billingMonth || "";
   const invoiceNo = extract.invoiceNo || "";
@@ -79,7 +84,7 @@ export function ClaimReceiptCard({
           <CheckIcon />
           <div className="flex min-w-0 flex-col">
             <span className="text-caption font-bold uppercase tracking-[0.3px] text-success">
-              Claim submitted
+              Claim {action}
             </span>
             <span className="truncate text-body-sm font-bold text-pine">
               {claimId}
@@ -87,7 +92,7 @@ export function ClaimReceiptCard({
           </div>
         </div>
         <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
-          Submitted
+          {action === "updated" ? "Updated" : "Submitted"}
         </span>
       </div>
 
@@ -119,14 +124,15 @@ export function ClaimReceiptCard({
             <ReceiptRow label="Invoice no." value={invoiceNo} />
           ) : null}
           <ReceiptRow
-            label="Submitted"
+            label={action === "updated" ? "Updated" : "Submitted"}
             value={formatSubmittedAt(submittedAt)}
           />
         </div>
 
         <div className="rounded-control bg-surface-tint px-3 py-2 text-caption leading-4 text-ink-secondary">
-          Typical demo review: {EMPLOYER_BENEFITS_CATALOG.reviewSla}. This
-          local demo record is not sent to HR or your employer.
+          {action === "updated"
+            ? "Your changes were saved to this claim in the local demo."
+            : `Typical demo review: ${EMPLOYER_BENEFITS_CATALOG.reviewSla}. This local demo record is not sent to HR or your employer.`}
         </div>
       </div>
     </div>

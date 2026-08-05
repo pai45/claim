@@ -1,3 +1,4 @@
+import { clearMpin, clearMpinLock } from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
 import { BANNER_STAGE_KEY } from "@/features/chat/bannerRotation";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
@@ -58,6 +59,8 @@ export function resetDemoJourney(
   clearRegisteredVehicle(local);
   clearOnboarding(local);
   clearAuthSession(local);
+  clearMpin(local);
+  clearMpinLock(local);
 
   LOCAL_KEYS.forEach((key) => remove(local, key));
   SESSION_KEYS.forEach((key) => remove(session, key));

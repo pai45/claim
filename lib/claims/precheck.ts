@@ -50,6 +50,7 @@ function worstStatus(statuses: ClaimCheckStatus[]): ClaimCheckStatus {
 }
 
 function isPossibleDuplicate(extract: BillExtract, amount: number | null): boolean {
+  if (extract.editClaimId) return false;
   if (!amount || !extract.vendor || !extract.billDate) return false;
   const date = parseClaimDate(extract.billDate);
   return CLAIM_HISTORY_ITEMS.some((claim) => {
@@ -149,7 +150,14 @@ export function evaluateClaimPrecheck(
     status: duplicate ? "warning" : "pass",
   });
 
-  if (benefit?.claimRules.submissionDeadlineDay && billDate) {
+  if (extract.editClaimId && billDate) {
+    checks.push({
+      id: "deadline",
+      label: "Submission deadline",
+      detail: "This is an existing claim, so corrections remain available after submission.",
+      status: "pass",
+    });
+  } else if (benefit?.claimRules.submissionDeadlineDay && billDate) {
     const deadline = new Date(
       billDate.getFullYear(),
       billDate.getMonth() + 1,

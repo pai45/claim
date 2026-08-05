@@ -11,12 +11,14 @@ import {
 } from "@/features/chat/constants";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
 import {
+  applyBenefitClaimOverrides,
   BENEFIT_DASHBOARD_FY_LABEL,
   getBenefitClaimsDashboard,
   statusStyles,
   type BenefitClaimStatus,
   type BenefitClaimsDashboard,
 } from "@/features/dashboard/benefitClaims";
+import { useClaimOverrides } from "@/features/claims/useClaimStore";
 import {
   DASHBOARD_CATEGORIES,
   formatINR,
@@ -84,7 +86,11 @@ function StatusBadge({ status }: { status: BenefitClaimStatus }) {
 export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
   const router = useRouter();
   const { vehicle, isHydrated } = useRegisteredVehicle();
-  const data = getBenefitClaimsDashboard(categoryId);
+  const claimOverrides = useClaimOverrides();
+  const data = applyBenefitClaimOverrides(
+    getBenefitClaimsDashboard(categoryId),
+    claimOverrides,
+  );
   const categoryMeta =
     DASHBOARD_CATEGORIES.find((item) => item.id === data.categoryId) ??
     DASHBOARD_CATEGORIES[0];

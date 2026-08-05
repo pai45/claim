@@ -4,6 +4,7 @@ import {
   type ClaimStatus,
 } from "@/features/claims-history/constants";
 import { ALL_BENEFIT_CLAIMS } from "@/features/dashboard/benefitClaims";
+import type { ClaimOverride } from "./store";
 
 export type ClaimProgressStatus = "done" | "upcoming";
 
@@ -24,6 +25,11 @@ export type ClaimDetails = {
   currentStatus: string;
   notifyNote: string;
   progress: ClaimProgressStep[];
+  billDate: string;
+  billingMonth: string;
+  invoiceNo: string;
+  fileName: string;
+  revokedAt?: number;
 };
 
 export const SAMPLE_CLAIMS: Record<string, ClaimDetails> = {
@@ -36,6 +42,10 @@ export const SAMPLE_CLAIMS: Record<string, ClaimDetails> = {
     submittedAt: "12 May 2026, 10:30 AM",
     currentStatus: "Under review",
     notifyNote: "I'll notify you once it's approved.",
+    billDate: "2026-05-12",
+    billingMonth: "2026-05",
+    invoiceNo: "INV-43872",
+    fileName: "claim-43872-bill.pdf",
     progress: [
       {
         id: "submitted",
@@ -123,20 +133,92 @@ function notifyNoteForStatus(statusLabel: string): string {
   if (statusLabel === "Needs info") {
     return "Additional information is needed to process this claim.";
   }
+  if (statusLabel === "Revoked") return "This claim has been revoked.";
   return "I'll notify you once it's approved.";
+}
+
+function toDateInput(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toISOString().slice(0, 10);
+}
+
+function defaultBillFields(claimId: string, date: string) {
+  const billDate = toDateInput(date);
+  return {
+    billDate,
+    billingMonth: billDate.slice(0, 7),
+    invoiceNo: `INV-${claimId.replace(/\D/g, "").slice(-6)}`,
+    fileName: `${claimId.toLowerCase()}-bill.pdf`,
+  };
+}
+
+function applyOverride(
+  claim: ClaimDetails,
+  override?: ClaimOverride,
+): ClaimDetails {
+  if (!override) return claim;
+  const status = override.status ?? claim.status;
+  const submittedDate = override.billDate
+    ? new Date(`${override.billDate}T00:00:00`).toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      })
+    : claim.submittedAt.split(", 10:")[0];
+  const progress =
+    status === "Revoked"
+      ? [
+          ...claim.progress.filter((step) => step.id !== "reimbursed"),
+          {
+            id: "revoked",
+            title: "Claim revoked",
+            detail: override.revokedAt
+              ? new Date(override.revokedAt).toLocaleDateString("en-IN", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "Revoked",
+            status: "done" as const,
+          },
+        ]
+      : buildProgress(submittedDate, status);
+
+  return {
+    ...claim,
+    vendor: override.vendor ?? claim.vendor,
+    category: override.category ?? claim.category,
+    amount:
+      override.amount === undefined
+        ? claim.amount
+        : formatClaimAmount(override.amount),
+    status,
+    currentStatus: status,
+    notifyNote: notifyNoteForStatus(status),
+    progress,
+    billDate: override.billDate ?? claim.billDate,
+    billingMonth: override.billingMonth ?? claim.billingMonth,
+    invoiceNo: override.invoiceNo ?? claim.invoiceNo,
+    fileName: override.fileName ?? claim.fileName,
+    revokedAt: override.revokedAt,
+  };
 }
 
 function statusLabelFromHistory(status: ClaimStatus): string {
   return CLAIM_STATUS_STYLES[status].label;
 }
 
-export function getClaimDetails(claimId: string): ClaimDetails {
+export function getClaimDetails(
+  claimId: string,
+  override?: ClaimOverride,
+): ClaimDetails {
   const normalized = claimId.trim().toUpperCase();
 
   const fromHistory = getClaimHistoryItem(normalized);
   if (fromHistory) {
     const status = statusLabelFromHistory(fromHistory.status);
-    return {
+    return applyOverride({
       id: fromHistory.id,
       vendor: fromHistory.merchant,
       status,
@@ -146,7 +228,8 @@ export function getClaimDetails(claimId: string): ClaimDetails {
       currentStatus: status,
       notifyNote: notifyNoteForStatus(status),
       progress: buildProgress(fromHistory.date, status),
-    };
+      ...defaultBillFields(fromHistory.id, fromHistory.date),
+    }, override);
   }
 
   const fromBenefit = ALL_BENEFIT_CLAIMS.find((item) => item.id === normalized);
@@ -155,7 +238,7 @@ export function getClaimDetails(claimId: string): ClaimDetails {
       fromBenefit.status === "Approved" ? "Approved" : "Under review";
     const vendor = fromBenefit.title.split(" - ")[0] ?? fromBenefit.title;
 
-    return {
+    return applyOverride({
       id: fromBenefit.id,
       vendor,
       status,
@@ -165,16 +248,17 @@ export function getClaimDetails(claimId: string): ClaimDetails {
       currentStatus: status,
       notifyNote: notifyNoteForStatus(status),
       progress: buildProgress(fromBenefit.date, fromBenefit.status),
-    };
+      ...defaultBillFields(fromBenefit.id, fromBenefit.date),
+    }, override);
   }
 
   const known = SAMPLE_CLAIMS[normalized];
-  if (known) return known;
+  if (known) return applyOverride(known, override);
 
-  return {
+  return applyOverride({
     ...SAMPLE_CLAIMS["CLM-43872"],
     id: normalized || "CLM-43872",
-  };
+  }, override);
 }
 
 export function createClaimId(): string {

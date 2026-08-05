@@ -4,8 +4,15 @@ import {
   type PolicyTabId,
 } from "@/features/policy/constants";
 import { DASHBOARD_CATEGORIES } from "./constants";
+import type { ClaimOverrides } from "@/features/claims/store";
 
-export type BenefitClaimStatus = "Approved" | "Pending" | "Under review";
+export type BenefitClaimStatus =
+  | "Approved"
+  | "Pending"
+  | "Under review"
+  | "Needs info"
+  | "Rejected"
+  | "Revoked";
 
 export type BenefitClaimItem = {
   id: string;
@@ -301,6 +308,50 @@ export function getBenefitClaimsDashboard(
   };
 }
 
+export function applyBenefitClaimOverrides(
+  dashboard: BenefitClaimsDashboard,
+  overrides: ClaimOverrides,
+): BenefitClaimsDashboard {
+  let monthTotal = dashboard.monthTotal;
+  let monthApproved = dashboard.monthApproved;
+  let monthPending = dashboard.monthPending;
+  const claims = dashboard.claims.map((claim) => {
+    const override = overrides[claim.id];
+    if (!override) return claim;
+    const next = {
+      ...claim,
+      title: override.vendor
+        ? `${override.vendor}${claim.title.includes(" - ") ? ` - ${claim.title.split(" - ").slice(1).join(" - ")}` : ""}`
+        : claim.title,
+      category: override.category ?? claim.category,
+      amount: override.amount ?? claim.amount,
+      status: override.status ?? claim.status,
+    };
+    const wasApproved = claim.status === "Approved";
+    const wasPending =
+      claim.status === "Pending" ||
+      claim.status === "Under review" ||
+      claim.status === "Needs info";
+    const isActive = next.status !== "Revoked";
+    const isApproved = next.status === "Approved";
+    const isPending =
+      next.status === "Pending" ||
+      next.status === "Under review" ||
+      next.status === "Needs info";
+    monthTotal += (isActive ? next.amount : 0) - claim.amount;
+    monthApproved += (isApproved ? next.amount : 0) - (wasApproved ? claim.amount : 0);
+    monthPending += (isPending ? next.amount : 0) - (wasPending ? claim.amount : 0);
+    return next;
+  });
+  return {
+    ...dashboard,
+    claims,
+    monthTotal: Math.max(0, monthTotal),
+    monthApproved: Math.max(0, monthApproved),
+    monthPending: Math.max(0, monthPending),
+  };
+}
+
 export function isDashboardCategoryId(value: string): boolean {
   return DASHBOARD_CATEGORIES.some((item) => item.id === value);
 }
@@ -314,6 +365,12 @@ export function statusStyles(status: BenefitClaimStatus): {
     return { bg: "#ECFDF3", border: "#A9EFC5", text: "#085D3A" };
   }
   if (status === "Pending") {
+    return { bg: "#FFFAEB", border: "#FEDF89", text: "#B37727" };
+  }
+  if (status === "Revoked" || status === "Rejected") {
+    return { bg: "#FEF3F2", border: "#FECDCA", text: "#B42318" };
+  }
+  if (status === "Needs info") {
     return { bg: "#FFFAEB", border: "#FEDF89", text: "#B37727" };
   }
   return { bg: "#F3FCF6", border: "#D1F3DF", text: "#279E6C" };

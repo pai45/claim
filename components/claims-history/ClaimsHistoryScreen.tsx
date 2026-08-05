@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
+  applyClaimHistoryOverrides,
   CLAIM_HISTORY_ITEMS,
   CLAIM_STATUS_STYLES,
   CLAIM_STATUS_TABS,
@@ -13,6 +14,7 @@ import {
   isClaimStatusFilter,
   type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
+import { useClaimOverrides } from "@/features/claims/useClaimStore";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { CategoryIcon } from "./CategoryIcon";
 
@@ -23,11 +25,13 @@ export function ClaimsHistoryScreen() {
   const [activeTab, setActiveTab] = useState<ClaimStatusFilter>(
     isClaimStatusFilter(initialFilter) ? initialFilter : "all",
   );
+  const overrides = useClaimOverrides();
 
   const claims = useMemo(() => {
-    if (activeTab === "all") return CLAIM_HISTORY_ITEMS;
-    return CLAIM_HISTORY_ITEMS.filter((claim) => claim.status === activeTab);
-  }, [activeTab]);
+    const resolved = applyClaimHistoryOverrides(CLAIM_HISTORY_ITEMS, overrides);
+    if (activeTab === "all") return resolved;
+    return resolved.filter((claim) => claim.status === activeTab);
+  }, [activeTab, overrides]);
 
   function handleTabChange(tab: ClaimStatusFilter) {
     setActiveTab(tab);

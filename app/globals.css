@@ -517,6 +517,27 @@ textarea {
   animation: sheet-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Rejection cue for the MPIN boxes. Short travel and an odd number of swings so
+   the row settles back on centre. */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out both;
+}
+
 /* Tracks the visual viewport so the bottom sheet stays above the on-screen
    keyboard, which `100dvh` ignores. Unlayered on purpose: it has to beat the
    `h-dvh` utility that AppShell applies. Falls back to dvh before the hook

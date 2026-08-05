@@ -27,6 +27,7 @@ const CLAIM_STATUSES = new Set<string>([
   "Pending",
   "Needs info",
   "Rejected",
+  "Revoked",
 ]);
 
 const MAX_QUESTION_CHARS = 1000;

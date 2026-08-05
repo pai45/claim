@@ -6,6 +6,7 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
+import { clearMpin, clearMpinLock } from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
 import { clearChatSession } from "@/features/chat/persistence";
 import { resetDemoJourney } from "@/features/demo/reset";
@@ -44,9 +45,14 @@ export function ProfileScreen() {
     // Onboarding deliberately survives: it is an account setup, not session
     // data, so signing back in lands on the home screen rather than repeating
     // identity, KYC and card setup. "Logout & restart demo" is what clears it.
+    //
+    // The MPIN goes with the session, not the account: leaving it would demand
+    // a PIN the moment the next person finished OTP, which reads as a bug.
     clearChatSession();
     clearRegisteredVehicle();
     clearAuthSession();
+    clearMpin();
+    clearMpinLock();
     router.push("/");
   }
 
