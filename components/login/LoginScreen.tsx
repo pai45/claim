@@ -105,7 +105,7 @@ export function LoginScreen() {
   }
 
   return (
-    <AppShell variant="login" className="h-viewport overflow-hidden">
+    <AppShell variant="login" className="login-viewport overflow-hidden">
       <header className="flex shrink-0 items-center justify-center px-page pb-5 pt-7">
         <PlusPayWordmark />
       </header>
@@ -117,7 +117,10 @@ export function LoginScreen() {
         <LoginBackground />
       </div>
 
-      <section className="animate-sheet-rise z-10 max-h-[85dvh] shrink-0 overflow-y-auto rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-6 shadow-drawer">
+      {/* Shrinkable rather than `shrink-0`: the animation band collapses first
+          (flex basis 0), and only once it is gone does the sheet give way and
+          scroll its own content — instead of being clipped by the shell. */}
+      <section className="animate-sheet-rise z-10 min-h-0 overflow-y-auto rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-6 shadow-drawer">
         {state.step === "phone" ? (
           <PhoneStep
             ref={phoneRef}

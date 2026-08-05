@@ -1,4 +1,9 @@
-export type KycStatus = "idle" | "in_progress" | "completed";
+export type KycStatus =
+  | "idle"
+  /** Handed off to the Pine Labs VKYC page; waiting for the user to come back. */
+  | "awaiting_return"
+  | "in_progress"
+  | "completed";
 
 export type OnboardingStep =
   | "intro"
@@ -6,8 +11,6 @@ export type OnboardingStep =
   | "identity-email"
   | "identity-details"
   | "kyc-intro"
-  | "kyc-consent"
-  | "kyc-auth"
   | "kyc-completed"
   | "card-choice"
   | "card-address"
@@ -32,7 +35,7 @@ export type AddressForm = {
 };
 
 export type OnboardingState = {
-  version: 1;
+  version: 2;
   step: OnboardingStep;
   completed: boolean;
   identityDone: boolean;
@@ -52,7 +55,8 @@ export type OnboardingAction =
   | { type: "email-verified" }
   | { type: "set-identity-field"; field: keyof IdentityForm; value: string | boolean }
   | { type: "identity-complete" }
-  | { type: "kyc-start" }
+  | { type: "kyc-handoff-started" }
+  | { type: "kyc-verifying" }
   | { type: "kyc-mark-in-progress" }
   | { type: "kyc-complete" }
   | { type: "set-address-field"; field: keyof AddressForm; value: string | boolean }

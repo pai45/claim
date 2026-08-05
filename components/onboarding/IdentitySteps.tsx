@@ -13,14 +13,12 @@ import { PrimaryFooter } from "./PrimaryFooter";
 type IdentityEmailStepProps = {
   email: string;
   onBack: () => void;
-  onChangeEmail: (value: string) => void;
   onVerified: () => void;
 };
 
 export function IdentityEmailStep({
   email,
   onBack,
-  onChangeEmail,
   onVerified,
 }: IdentityEmailStepProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -85,9 +83,9 @@ export function IdentityEmailStep({
         <TextField
           label="Email"
           value={email}
-          onChange={onChangeEmail}
           type="email"
           placeholder="name@company.com"
+          readOnly
         />
         <p className="mt-3 text-caption text-ink-tertiary">
           Demo OTP: {DEMO_OTP}
@@ -181,14 +179,12 @@ export function IdentityEmailStep({
 type IdentityDetailsStepProps = {
   identity: IdentityForm;
   onBack: () => void;
-  onChange: (field: keyof IdentityForm, value: string) => void;
   onComplete: () => void;
 };
 
 export function IdentityDetailsStep({
   identity,
   onBack,
-  onChange,
   onComplete,
 }: IdentityDetailsStepProps) {
   const [confirmed, setConfirmed] = useState(false);
@@ -217,32 +213,32 @@ export function IdentityDetailsStep({
         <TextField
           label="Title"
           value={identity.title}
-          onChange={(value) => onChange("title", value)}
+          readOnly
         />
         <TextField
           label="First Name"
           value={identity.firstName}
-          onChange={(value) => onChange("firstName", value)}
           hint="Please enter your first name as per PAN"
+          readOnly
         />
         <TextField
           label="Middle Name"
           value={identity.middleName}
-          onChange={(value) => onChange("middleName", value)}
           hint="Please enter your middle name as per PAN"
+          readOnly
         />
         <TextField
           label="Last Name"
           value={identity.lastName}
-          onChange={(value) => onChange("lastName", value)}
           hint="Please enter your last name as per PAN"
+          readOnly
         />
         <TextField
           label="Date of Birth"
           value={identity.dateOfBirth}
-          onChange={(value) => onChange("dateOfBirth", value)}
           placeholder="DD/MM/YYYY"
           trailing={<CalendarIcon />}
+          readOnly
         />
         <CheckRow
           checked={confirmed}

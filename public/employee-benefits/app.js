@@ -1058,10 +1058,6 @@ function renderUpiSetupFlow() {
     upiSetupFlow.innerHTML = `
       <button class="upi-setup-backdrop" type="button" aria-label="Close UPI setup" data-upi-setup-action="close"></button>
       <section class="upi-setup-screen upi-setup-safety" role="dialog" aria-modal="true" aria-labelledby="upi-safety-title" tabindex="-1" data-upi-setup-dialog>
-        <div class="upi-setup-status" aria-hidden="true">
-          <span>9:41</span>
-          <span class="claims-device-icons"><i class="claims-signal"></i><i class="claims-wifi"></i><i class="claims-battery"></i></span>
-        </div>
         <main class="upi-safety-hero">
           <span class="upi-safety-mark" aria-hidden="true">
             <svg viewBox="0 0 96 104"><path d="M48 5 81 17v27c0 24-14 43-33 53C29 87 15 68 15 44V17L48 5Z" fill="currentColor"/><path d="m32 50 10 10 23-25" fill="none" stroke="#0f5d4c" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/></svg>
@@ -1101,10 +1097,6 @@ function renderUpiSetupFlow() {
   upiSetupFlow.innerHTML = `
     <button class="upi-setup-backdrop" type="button" aria-label="Close UPI setup" data-upi-setup-action="close"></button>
     <section class="upi-setup-screen" role="dialog" aria-modal="true" aria-labelledby="upi-setup-title" tabindex="-1" data-upi-setup-dialog>
-      <div class="upi-setup-status" aria-hidden="true">
-        <span>9:41</span>
-        <span class="claims-device-icons"><i class="claims-signal"></i><i class="claims-wifi"></i><i class="claims-battery"></i></span>
-      </div>
       <main class="upi-setup-main" aria-live="polite">
         <span class="upi-setup-handle" aria-hidden="true"></span>
         <h1 id="upi-setup-title">Setting up UPI</h1>

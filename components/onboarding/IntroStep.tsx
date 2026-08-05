@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { FEATURE_WALLETS } from "@/features/onboarding/constants";
-import { colors } from "@/lib/ui/colors";
-import { OnboardingHeader } from "./OnboardingHeader";
+import { withBasePath } from "@/lib/basePath";
 import { PrimaryFooter } from "./PrimaryFooter";
 import { WalletGlyph } from "./WalletGlyphs";
 
@@ -11,28 +11,38 @@ type IntroStepProps = {
   onBack?: () => void;
 };
 
-export function IntroStep({ onContinue, onBack }: IntroStepProps) {
+export function IntroStep({ onContinue }: IntroStepProps) {
   return (
     <>
-      <OnboardingHeader onBack={onBack} />
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
-        <section
-          className="relative overflow-hidden rounded-card p-card text-white shadow-card"
-          style={{
-            background: `linear-gradient(145deg, ${colors.pinePrimary} 0%, ${colors.pine} 55%, ${colors.pineDark} 100%)`,
-          }}
-        >
-          <p className="text-caption font-bold tracking-wide text-white/80">
-            pine labs
-          </p>
-          <h2 className="mt-4 font-display text-title font-bold leading-snug">
-            Activate your{" "}
-            <span style={{ color: colors.mint }}>Employee Benefits</span>
-          </h2>
-          <p className="mt-2 text-body-sm leading-5 text-white/85">
-            Infosys has invited you to activate your exclusive Employee Benefits
-            program.
-          </p>
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
+        <section className="benefits-activation-hero" aria-labelledby="activation-title">
+          <span className="benefits-activation-glow benefits-activation-glow-top" aria-hidden="true" />
+          <span className="benefits-activation-glow benefits-activation-glow-side" aria-hidden="true" />
+          <span className="benefits-activation-dot benefits-activation-dot-large" aria-hidden="true" />
+          <span className="benefits-activation-dot benefits-activation-dot-small" aria-hidden="true" />
+
+          <Image
+            className="benefits-activation-logo"
+            src={withBasePath("/assets/pine-labs-logo-white.svg")}
+            alt="Pine Labs"
+            width={80}
+            height={21}
+            priority
+          />
+
+          <div className="benefits-activation-copy">
+            <h2 id="activation-title">
+              <span>Activate your</span>
+              <span>Employee Benefits</span>
+            </h2>
+            <p>
+              <strong>Infosys</strong>{" "}
+              <span>
+                has invited you to activate your exclusive Employee Benefits
+                program.
+              </span>
+            </p>
+          </div>
         </section>
 
         <h3 className="type-section-title mt-6 mb-3">Feature & Benefits</h3>

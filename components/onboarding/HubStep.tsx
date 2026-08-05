@@ -33,7 +33,14 @@ export function HubStep({
     }
     if (id === "kyc") {
       if (state.kycStatus === "completed") return "complete";
-      if (state.kycStatus === "in_progress") return "in_progress";
+      // Handed off to the browser but not back yet — still mid-flight, so it
+      // must not read as an untouched step.
+      if (
+        state.kycStatus === "in_progress" ||
+        state.kycStatus === "awaiting_return"
+      ) {
+        return "in_progress";
+      }
       return canOpenHubStep(state, "kyc") ? "available" : "locked";
     }
     if (state.cardSetupDone) return "complete";

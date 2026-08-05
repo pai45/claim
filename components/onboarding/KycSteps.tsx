@@ -1,142 +1,88 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import { colors } from "@/lib/ui/colors";
+import { withBasePath } from "@/lib/basePath";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
-import { CheckRow } from "./OnboardingPrimitives";
 import { PrimaryFooter } from "./PrimaryFooter";
 
 type KycIntroStepProps = {
-  onBack: () => void;
   onStart: () => void;
+  onCompleted: () => void;
+  /** True once the VKYC page has been handed off to and not yet come back from. */
+  awaitingReturn: boolean;
 };
 
-export function KycIntroStep({ onBack, onStart }: KycIntroStepProps) {
-  const [notice, setNotice] = useState<string | null>(null);
-
+export function KycIntroStep({
+  onStart,
+  onCompleted,
+  awaitingReturn,
+}: KycIntroStepProps) {
   return (
-    <>
-      <OnboardingHeader title="KYC Verification" onBack={onBack} />
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
-        <div className="mx-auto mt-4 flex h-36 w-36 items-center justify-center rounded-card bg-success-tint">
-          <KycIllustration />
-        </div>
-        <h2 className="type-section-title mt-6 text-center">
-          Complete your KYC Verification
-        </h2>
-        <ul className="mt-4 flex flex-col gap-3">
-          {[
-            "Keep your Aadhaar & PAN card ready",
-            "Please ensure you're in a well lit environment",
-            "Follow on-screen instructions carefully",
-          ].map((item) => (
-            <li key={item} className="flex items-start gap-2">
-              <span
-                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                style={{ background: colors.success }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="m6 12.5 4 4 8-9"
-                    stroke="white"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-              <span className="type-body-secondary">{item}</span>
-            </li>
-          ))}
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#f1f1f1]">
+      <main className="flex shrink-0 flex-col px-[19px]">
+        <Image
+          src={withBasePath("/assets/kyc-verification.svg")}
+          alt=""
+          width={181}
+          height={128}
+          unoptimized
+          className="mx-auto mt-[18px] block h-32 w-[181px] shrink-0"
+          aria-hidden="true"
+        />
+        <h1 className="mt-5 text-center font-display text-[28px] leading-[30px] font-bold text-[#0d3838]">
+          Complete your
+          <br />
+          KYC Verification
+        </h1>
+        <p className="mt-6 text-center text-[18px] leading-[22px] text-[#5f6174]">
+          KYC requires camera &amp; microphone access.
+          <br />
+          Please allow location and enable pop-ups in your
+          <br />
+          browser.
+        </p>
+        <ul className="mt-[25px] divide-y divide-[#eeeeee] rounded-2xl bg-white px-4 py-px text-[16px] leading-6 text-[#25282a]">
+          <li className="flex min-h-14 items-center gap-[18px]">
+            <span className="h-1 w-1 shrink-0 rounded-full bg-[#006060]" aria-hidden="true" />
+            <span>Keep your original PAN card handy.</span>
+          </li>
+          <li className="flex min-h-[76px] items-center gap-[18px]">
+            <span className="h-1 w-1 shrink-0 rounded-full bg-[#006060]" aria-hidden="true" />
+            <span>Ensure access to your Aadhaar-linked mobile number.</span>
+          </li>
+          <li className="flex min-h-14 items-center gap-[18px]">
+            <span className="h-1 w-1 shrink-0 rounded-full bg-[#006060]" aria-hidden="true" />
+            <span>Return here after completing your KYC.</span>
+          </li>
         </ul>
-        {notice ? (
-          <p className="mt-4 text-center text-caption font-bold text-ink-secondary">
-            {notice}
+      </main>
+
+      <div className="mt-auto shrink-0 px-[19px] pb-[max(17px,env(safe-area-inset-bottom))] pt-8">
+        {awaitingReturn ? (
+          <p className="mb-3 text-center text-[15px] leading-5 text-[#5f6174]">
+            Finish the steps in the browser, then come back here.
           </p>
         ) : null}
-      </main>
-      <PrimaryFooter
-        label="Start KYC Verification"
-        onClick={onStart}
-        secondary={
-          <button
-            type="button"
-            className="mb-3 w-full text-center text-body-sm font-bold text-pine-primary"
-            onClick={() => setNotice("Offline KYC is not available in this demo.")}
-          >
-            Proceed with Offline KYC
-          </button>
-        }
-      />
-    </>
-  );
-}
-
-type KycConsentStepProps = {
-  onBack: () => void;
-  onConfirm: () => void;
-};
-
-export function KycConsentStep({ onBack, onConfirm }: KycConsentStepProps) {
-  return (
-    <>
-      <OnboardingHeader title="pho labs" onBack={onBack} />
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
-        <div className="rounded-card border border-border-line bg-white p-card shadow-card">
-          <h2 className="type-section-title">Consent for Aadhaar Use (OTP)</h2>
-          <ul className="mt-3 flex list-disc flex-col gap-2 pl-5 type-body-secondary">
-            <li>
-              I consent to use of my Aadhaar number for KYC verification with
-              UIDAI via OTP.
-            </li>
-            <li>
-              I understand this is a simulated partner flow for demo purposes.
-            </li>
-            <li>
-              My demographic details may be shared with the employer benefits
-              program.
-            </li>
-          </ul>
-        </div>
-      </main>
-      <PrimaryFooter label="Confirm" onClick={onConfirm} />
-    </>
-  );
-}
-
-type KycAuthStepProps = {
-  onBack: () => void;
-  onAuthenticate: () => void;
-};
-
-export function KycAuthStep({ onBack, onAuthenticate }: KycAuthStepProps) {
-  const [inIndia, setInIndia] = useState(false);
-
-  return (
-    <>
-      <OnboardingHeader title="pho labs" onBack={onBack} />
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
-        <div className="mx-auto mt-2 flex h-32 w-32 items-center justify-center rounded-card bg-surface-tint">
-          <KycIllustration />
-        </div>
-        <p className="type-body-secondary mt-4 text-center">
-          Keep your original PAN card handy and ensure you are in a well-lit
-          environment before continuing.
-        </p>
-        <div className="mt-4">
-          <CheckRow
-            checked={inIndia}
-            onChange={setInIndia}
-            label="I confirm that I am physically present in India."
-          />
-        </div>
-      </main>
-      <PrimaryFooter
-        label="Authenticate Aadhaar"
-        disabled={!inIndia}
-        onClick={onAuthenticate}
-      />
-    </>
+        <button
+          type="button"
+          className="flex h-[50px] w-full items-center justify-center rounded-lg bg-[#196261] px-4 text-center text-[17px] leading-6 text-white"
+          onClick={onStart}
+        >
+          {awaitingReturn
+            ? "Reopen KYC tab"
+            : "Ready? Let's begin KYC in browser."}
+        </button>
+        <button
+          type="button"
+          className="mt-3 flex h-[50px] w-full items-center justify-center rounded-lg border border-[#006060] bg-white px-4 text-center text-[17px] leading-6 text-[#006060]"
+          onClick={onCompleted}
+        >
+          I&apos;ve completed my KYC
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -153,8 +99,8 @@ export function KycProgressOverlay({
     <CenterModal
       open={open}
       variant="info"
-      title="KYC Verification In Progress"
-      description="Your KYC details are currently under review. This usually takes up to 24-48 hours."
+      title="Verifying your KYC"
+      description="Hang tight — we're confirming your Video KYC with Pine Labs."
       onConfirm={onDismiss}
       onClose={onDismiss}
     />
@@ -192,38 +138,5 @@ export function KycCompletedStep({ onContinue }: KycCompletedStepProps) {
       </main>
       <PrimaryFooter label="Continue" onClick={onContinue} />
     </>
-  );
-}
-
-function KycIllustration() {
-  return (
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <rect
-        x="16"
-        y="8"
-        width="32"
-        height="48"
-        rx="6"
-        stroke={colors.pinePrimary}
-        strokeWidth="2.5"
-      />
-      <rect
-        x="22"
-        y="16"
-        width="20"
-        height="14"
-        rx="2"
-        fill={colors.mintWash}
-        stroke={colors.pinePrimary}
-        strokeWidth="1.5"
-      />
-      <circle cx="44" cy="44" r="10" fill={colors.success} />
-      <path
-        d="m40 44 2.8 2.8 5.2-5.6"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

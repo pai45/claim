@@ -122,7 +122,7 @@ export function TextField({
     <div>
       <FieldLabel>{label}</FieldLabel>
       <div
-        className={`flex min-h-11 items-center rounded-control border border-input-border px-3 focus-within:border-pine ${
+        className={`field-focus-shell flex min-h-11 items-center rounded-control border border-input-border px-3 ${
           readOnly ? "bg-surface-muted" : "bg-input-soft"
         }`}
       >

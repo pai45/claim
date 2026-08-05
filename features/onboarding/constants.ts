@@ -1,12 +1,19 @@
 import type { AddressForm, IdentityForm, OnboardingState } from "./types";
 
 export const ONBOARDING_STORAGE_KEY = "eb-claims:onboarding";
-export const ONBOARDING_STORAGE_VERSION = 1 as const;
+/**
+ * Bumped to 2 when the in-app Aadhaar screens were replaced by the Pine Labs
+ * hand-off. State saved on the removed `kyc-consent` / `kyc-auth` steps has no
+ * matching branch to render, so the version check in `storage.ts` has to reject
+ * it rather than rehydrate into a blank screen.
+ */
+export const ONBOARDING_STORAGE_VERSION = 2 as const;
 export const ONBOARDING_SESSION_EVENT = "eb-claims:onboarding-changed";
 
 export const DEMO_EMAIL = "alex.morgan@infosys.com";
 export const DEMO_KIT_NUMBER = "PKT20241234567";
-export const KYC_AUTO_COMPLETE_MS = 2500;
+/** How long "Verifying your KYC" shows before the completed screen. */
+export const KYC_AUTO_COMPLETE_MS = 2000;
 
 export const KYC_ADDRESS: AddressForm = {
   line1: "Apex Apartment",
@@ -22,7 +29,7 @@ export const DEFAULT_IDENTITY: IdentityForm = {
   firstName: "Alex",
   middleName: "Justin",
   lastName: "Morgan",
-  dateOfBirth: "",
+  dateOfBirth: "12/01/1992",
 };
 
 export function createInitialOnboardingState(): OnboardingState {
@@ -51,29 +58,29 @@ export const FEATURE_WALLETS = [
     id: "meal",
     title: "Meal Wallet",
     description: "Daily dining and food expenses.",
-    bg: "#FFF4DB",
-    ink: "#8A5A00",
+    bg: "linear-gradient(180deg, #FFF2DA, #FFE7BF)",
+    ink: "#AA5A08",
   },
   {
     id: "fuel",
     title: "Fuel Wallet",
     description: "Fuel up for your daily commute.",
-    bg: "#E5F3FF",
-    ink: "#0B5CAD",
+    bg: "linear-gradient(180deg, #E5F4FF, #CFEAFF)",
+    ink: "#1163A6",
   },
   {
     id: "reimbursement",
     title: "Reimbursement Wallet",
     description: "Flexible spending for eligible expenses.",
-    bg: "#ECE9FF",
-    ink: "#4B3FA8",
+    bg: "linear-gradient(180deg, #ECECFF, #DDDAFE)",
+    ink: "#5D50C6",
   },
   {
     id: "gift",
     title: "Gift Wallet",
     description: "Rewards, vouchers, and gifting.",
-    bg: "#E8F8EE",
-    ink: "#0F3F37",
+    bg: "linear-gradient(180deg, #E3F7EA, #CAEFD9)",
+    ink: "#1C8D59",
   },
 ] as const;
 

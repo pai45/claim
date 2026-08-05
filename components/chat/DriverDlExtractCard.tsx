@@ -47,14 +47,14 @@ export function DriverDlExtractCard({
           </p>
         ) : null}
 
-        <div className="flex flex-col gap-1 rounded-control border border-border-soft bg-white p-3">
+        <div className="field-focus-shell flex flex-col gap-1 rounded-control border border-border-soft bg-white p-3">
           <span className="type-field-label">DL number</span>
           <input
             value={dlNumber}
             onChange={(event) => setDlNumber(event.target.value)}
             disabled={disabled}
             placeholder="e.g. MH01 20110012345"
-            className="w-full border-b border-input-border bg-transparent text-body-sm font-bold text-pine outline-none disabled:opacity-50"
+            className="w-full border-0 bg-transparent text-body-sm font-bold text-pine outline-none disabled:opacity-50"
           />
         </div>
       </div>

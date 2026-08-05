@@ -10,6 +10,13 @@ type ConfirmDialogProps = {
   confirmLabel: string;
   /** Defaults to the chat-clear wording; pass one for any other dialog. */
   cancelLabel?: string;
+  /** Optional third choice, rendered under the two standard buttons. */
+  extraAction?: {
+    label: string;
+    /** Small line under the button, for choices that need a warning. */
+    hint?: string;
+    onSelect: () => void;
+  };
   onConfirm: () => void;
   onClose: () => void;
 };
@@ -20,6 +27,7 @@ export function ConfirmDialog({
   description,
   confirmLabel,
   cancelLabel = "Keep my draft",
+  extraAction,
   onConfirm,
   onClose,
 }: ConfirmDialogProps) {
@@ -51,6 +59,22 @@ export function ConfirmDialog({
         <div className="mt-5 flex flex-col gap-2">
           <button type="button" onClick={onConfirm} className="btn-primary min-h-11 h-auto py-3">{confirmLabel}</button>
           <button type="button" onClick={onClose} className="btn-secondary min-h-11 h-auto py-3">{cancelLabel}</button>
+          {extraAction ? (
+            <div className="mt-1 border-t border-border-line pt-3">
+              <button
+                type="button"
+                onClick={extraAction.onSelect}
+                className="btn-secondary min-h-11 h-auto w-full py-3"
+              >
+                {extraAction.label}
+              </button>
+              {extraAction.hint ? (
+                <p className="mt-2 text-center text-caption text-subtle">
+                  {extraAction.hint}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

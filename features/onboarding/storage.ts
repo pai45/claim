@@ -1,4 +1,5 @@
 import {
+  DEFAULT_IDENTITY,
   ONBOARDING_SESSION_EVENT,
   ONBOARDING_STORAGE_KEY,
   ONBOARDING_STORAGE_VERSION,
@@ -39,7 +40,15 @@ export function loadOnboardingState(
       storage.removeItem(ONBOARDING_STORAGE_KEY);
       return createInitialOnboardingState();
     }
-    return parsed;
+    return {
+      ...parsed,
+      identity: {
+        ...DEFAULT_IDENTITY,
+        ...parsed.identity,
+        // Existing demo sessions may have saved this before DOB was prefilled.
+        dateOfBirth: parsed.identity.dateOfBirth || DEFAULT_IDENTITY.dateOfBirth,
+      },
+    };
   } catch {
     return createInitialOnboardingState();
   }

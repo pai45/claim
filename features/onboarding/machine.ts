@@ -42,8 +42,13 @@ export function onboardingReducer(
         step: "hub",
       };
 
-    case "kyc-start":
-      return { ...state, step: "kyc-consent" };
+    // The step is left alone by both of these: the user is looking at the KYC
+    // screen when they leave, and it is what they should find on the way back.
+    case "kyc-handoff-started":
+      return { ...state, kycStatus: "awaiting_return" };
+
+    case "kyc-verifying":
+      return { ...state, kycStatus: "in_progress" };
 
     case "kyc-mark-in-progress":
       return {

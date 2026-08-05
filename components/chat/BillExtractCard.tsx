@@ -85,7 +85,7 @@ function CardIcon() {
 
 function DetailTile({ label, value, children }: { label: string; value?: string; children?: ReactNode }) {
   return (
-    <div className="min-w-0 rounded-xl border border-[#e6ece8] bg-white/70 px-3 py-2.5">
+    <div className="field-focus-shell min-w-0 rounded-xl border border-[#e6ece8] bg-white/70 px-3 py-2.5">
       <span className="block text-[9px] font-bold uppercase tracking-[0.025em] text-[#7d8b87]">
         {label}
       </span>

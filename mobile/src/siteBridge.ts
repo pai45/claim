@@ -17,8 +17,17 @@ export const SITE_URL_PREFIX = "https://pai45.github.io/claim";
 /** Hash the web app uses to mark the chat overlay open. */
 export const CLAIMS_HASH = "#claims";
 
-/** Message shape posted from the page to the shell. */
-export type BridgeMessage = { type: "hash"; hash: string };
+/**
+ * Messages posted from the page to the shell.
+ *
+ * `open-external` exists because the KYC journey hands off to a Pine Labs page
+ * that has to open in the real browser. `window.open` cannot do that from here:
+ * Android WebView routes it through `onOpenWindow`, and a plain navigation
+ * would pass `isInternalUrl` below and simply load inside the WebView.
+ */
+export type BridgeMessage =
+  | { type: "hash"; hash: string }
+  | { type: "open-external"; url: string };
 
 /**
  * Reports the current hash to the shell so the Android back button can close

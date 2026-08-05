@@ -28,7 +28,7 @@ export const PhoneStep = forwardRef<HTMLInputElement, PhoneStepProps>(
             Enter mobile number
           </label>
 
-          <div className="flex min-h-14 items-center gap-2 rounded-control border border-input-border bg-input-soft px-3 focus-within:border-pine">
+          <div className="field-focus-shell flex min-h-14 items-center gap-2 rounded-control border border-input-border bg-input-soft px-3">
             {/* Decoration: the label already announces what the field is, and
                 there is only one country to choose from. */}
             <span

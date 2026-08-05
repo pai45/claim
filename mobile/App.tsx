@@ -23,6 +23,7 @@ import {
   CLOSE_CLAIMS_JS,
   HASH_BRIDGE_JS,
   SITE_URL,
+  SITE_URL_PREFIX,
   isInternalUrl,
   type BridgeMessage,
 } from "./src/siteBridge";
@@ -74,7 +75,16 @@ export default function App() {
   const handleMessage = useCallback((event: WebViewMessageEvent) => {
     try {
       const message = JSON.parse(event.nativeEvent.data) as BridgeMessage;
-      if (message.type === "hash") hashRef.current = message.hash;
+      if (message.type === "hash") {
+        hashRef.current = message.hash;
+        return;
+      }
+      if (message.type === "open-external") {
+        // Only the site may drive this. Without the prefix check, anything the
+        // WebView renders could hand the OS an arbitrary URL to act on.
+        if (!message.url?.startsWith(SITE_URL_PREFIX)) return;
+        Linking.openURL(message.url).catch(() => {});
+      }
     } catch {
       // The page may post messages the shell does not care about.
     }

@@ -119,7 +119,7 @@ export function ChatComposer({
         ) : null}
 
         <div
-          className={`flex min-h-12 min-w-0 flex-1 items-end gap-2 rounded-pill border py-1.5 pl-4 pr-1.5 transition-colors ${shellBg} ${shellBorder}`}
+          className={`field-focus-shell flex min-h-12 min-w-0 flex-1 items-end gap-2 rounded-pill border py-1.5 pl-4 pr-1.5 ${shellBg} ${shellBorder}`}
         >
           <textarea
             ref={textareaRef}

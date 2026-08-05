@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
 import { clearAuthSession } from "@/features/auth/session";
 import { clearChatSession } from "@/features/chat/persistence";
-import { clearOnboarding } from "@/features/onboarding/storage";
+import { resetDemoJourney } from "@/features/demo/reset";
 import {
   PROFILE_MENU_ITEMS,
   PROFILE_USER,
@@ -40,10 +40,19 @@ export function ProfileScreen() {
     setLogoutOpen(false);
     // The transcript and registered vehicle are keyed to a person, so leaving
     // them would carry one login's data into the next.
+    //
+    // Onboarding deliberately survives: it is an account setup, not session
+    // data, so signing back in lands on the home screen rather than repeating
+    // identity, KYC and card setup. "Logout & restart demo" is what clears it.
     clearChatSession();
     clearRegisteredVehicle();
-    clearOnboarding();
     clearAuthSession();
+    router.push("/");
+  }
+
+  function confirmDemoReset() {
+    setLogoutOpen(false);
+    resetDemoJourney();
     router.push("/");
   }
 
@@ -119,9 +128,14 @@ export function ProfileScreen() {
       <ConfirmDialog
         open={logoutOpen}
         title="Log out?"
-        description="You will return to the home screen. You can sign back in anytime."
+        description="You will return to the login screen. Your onboarding is saved, so signing back in takes you straight to home."
         confirmLabel="Logout"
         cancelLabel="Stay signed in"
+        extraAction={{
+          label: "Logout & restart demo",
+          hint: "For demo: signs out and clears everything — no UPI ID, no onboarding, back to the very first screen.",
+          onSelect: confirmDemoReset,
+        }}
         onConfirm={confirmLogout}
         onClose={() => setLogoutOpen(false)}
       />

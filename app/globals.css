@@ -153,9 +153,38 @@ textarea {
   line-height: inherit;
 }
 
-:where(button, a, input, select, textarea, summary):focus-visible {
+:where(button, a, summary):focus-visible {
   outline: 2px solid var(--color-pine-primary);
   outline-offset: 2px;
+}
+
+/* Form controls use one clear focus surface. Standalone controls own the ring;
+   composite controls move it to their shared rounded shell. */
+:where(input, select, textarea):focus-visible {
+  border-color: var(--color-pine-primary);
+  outline: none;
+  box-shadow:
+    0 0 0 1px var(--color-pine-primary),
+    0 0 0 7px rgba(0, 86, 86, 0.12);
+}
+
+.field-focus-shell {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.field-focus-shell:focus-within {
+  border-color: var(--color-pine-primary);
+  box-shadow:
+    0 0 0 1px var(--color-pine-primary),
+    0 0 0 7px rgba(0, 86, 86, 0.12);
+}
+
+.field-focus-shell :where(input, select, textarea):focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 /* Horizontal scrollers that should not show a track (quick actions row). */
@@ -230,6 +259,120 @@ textarea {
   line-height: var(--text-display--line-height);
   font-weight: 700;
   color: var(--color-pine-dark);
+}
+
+/* Employee Benefits activation hero */
+.benefits-activation-hero {
+  position: relative;
+  display: flex;
+  min-height: 200px;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 24px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0a3d35 0%, #0e5c4a 50%, #1a7a5e 100%);
+  box-shadow: 0 12px 40px rgba(10, 61, 53, 0.2);
+  color: #fff;
+  isolation: isolate;
+}
+
+.benefits-activation-logo,
+.benefits-activation-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.benefits-activation-logo {
+  display: block;
+  width: 80px;
+  height: auto;
+}
+
+.benefits-activation-copy h2 {
+  display: flex;
+  margin: 0;
+  flex-direction: column;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.25px;
+  line-height: 1.07;
+}
+
+.benefits-activation-copy h2 span {
+  font-family: inherit;
+}
+
+.benefits-activation-copy h2 span:last-child {
+  color: #edf7bf;
+}
+
+.benefits-activation-copy p {
+  width: min(100%, 250px);
+  margin: 12px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.benefits-activation-copy p strong {
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.benefits-activation-copy p span,
+.benefits-activation-copy p strong {
+  font-family: var(--font-sans);
+}
+
+.benefits-activation-glow,
+.benefits-activation-dot {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.benefits-activation-glow {
+  opacity: 0.1;
+}
+
+.benefits-activation-glow-top {
+  width: 128px;
+  height: 128px;
+  top: -32px;
+  left: 262px;
+  background: radial-gradient(circle, #7fffd4 0%, rgba(0, 0, 0, 0) 71%);
+}
+
+.benefits-activation-glow-side {
+  width: 96px;
+  height: 96px;
+  top: 127px;
+  left: -24px;
+  background: radial-gradient(circle, #00ff9d 0%, rgba(0, 0, 0, 0) 71%);
+}
+
+.benefits-activation-dot-large {
+  width: 8px;
+  height: 8px;
+  top: 16px;
+  left: 310px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.benefits-activation-dot-small {
+  width: 4px;
+  height: 4px;
+  top: 40px;
+  left: 330px;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .type-section-label {
@@ -378,7 +521,19 @@ textarea {
    keyboard, which `100dvh` ignores. Unlayered on purpose: it has to beat the
    `h-dvh` utility that AppShell applies. Falls back to dvh before the hook
    runs and on browsers without `visualViewport`. */
-.h-viewport {
+/* Pins the login screen to the *visual* viewport.
+   - fixed, so the scroll the browser performs to reveal a focused input cannot
+     drag the screen up off the top of the display (iOS does not reliably
+     re-clamp that scroll once the keyboard shrinks the page).
+   - height tracks the keyboard, which `100dvh` ignores by design.
+   - top tracks a panned visual viewport, which fixed elements otherwise miss.
+   Unlayered on purpose: it has to beat the `h-dvh` utility AppShell applies.
+   Both variables fall back for SSR and browsers without `visualViewport`. */
+.login-viewport {
+  position: fixed;
+  top: var(--login-viewport-offset, 0px);
+  left: 0;
+  right: 0;
   height: var(--login-viewport-height, 100dvh);
 }
 
