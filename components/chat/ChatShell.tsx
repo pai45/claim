@@ -163,9 +163,10 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const showEmptyState = isHydrated && !hasMessages;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-[#f7fddb]">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-[#F3F3F0]">
       <div className="pointer-events-none fixed inset-0" aria-hidden>
         <ColorBends
+          className="opacity-40"
           colors={COLOR_BENDS_PALETTE}
           rotation={112}
           autoRotate={3.375}

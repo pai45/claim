@@ -12,9 +12,18 @@ const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 
+/**
+ * Body classes the source app sets while one of its full-screen surfaces
+ * (wallet, card, manage cards, merchant directory, scan & pay) is open. Those
+ * are not the home screen, so the shared nav has to step aside with them.
+ */
+const SOURCE_OVERLAY_CLASSES = ["is-overlay-open", "is-merchant-directory-open"];
+
 export function EmployeeBenefitsHost() {
   const frameRef = useRef<HTMLIFrameElement>(null);
+  const bodyObserverRef = useRef<MutationObserver | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(false);
+  const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
 
   const openClaims = useCallback(() => {
     setClaimsOpen(true);
@@ -59,9 +68,33 @@ export function EmployeeBenefitsHost() {
     // The source application's mock claims panel is never mounted. Its Claims
     // entry point is bridged to the real Benefits Assistant owned by Next.js.
     document.querySelector("[data-claims-assistant]")?.remove();
+
+    // The source app hides its own nav behind these classes; the host nav
+    // lives outside that document, so it has to watch for them.
+    const syncNavVisibility = () => {
+      setSourceOverlayOpen(
+        SOURCE_OVERLAY_CLASSES.some((name) =>
+          document.body.classList.contains(name),
+        ),
+      );
+    };
+
+    bodyObserverRef.current?.disconnect();
+    const observer = new MutationObserver(syncNavVisibility);
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    bodyObserverRef.current = observer;
+    syncNavVisibility();
   }, []);
 
+  useEffect(() => () => bodyObserverRef.current?.disconnect(), []);
+
   useEffect(() => {
+    // Only picks up hashes the browser navigates to. The App Router changes the
+    // URL through the history API, which fires neither of these — screens that
+    // are already mounted have to call `openClaims` directly.
     const syncHash = () => {
       setClaimsOpen(window.location.hash.toLowerCase() === CLAIMS_HASH);
     };
@@ -89,12 +122,14 @@ export function EmployeeBenefitsHost() {
     };
 
     window.addEventListener("hashchange", syncHash);
+    window.addEventListener("popstate", syncHash);
     window.addEventListener("keydown", closeOnEscape);
     window.addEventListener("message", receiveHostBridge);
     const initialSyncFrame = window.requestAnimationFrame(syncHash);
     return () => {
       window.cancelAnimationFrame(initialSyncFrame);
       window.removeEventListener("hashchange", syncHash);
+      window.removeEventListener("popstate", syncHash);
       window.removeEventListener("keydown", closeOnEscape);
       window.removeEventListener("message", receiveHostBridge);
     };
@@ -117,7 +152,14 @@ export function EmployeeBenefitsHost() {
         onLoad={connectClaimsBridge}
       />
 
-      <EbBottomNav active="home" className="employee-benefits-shared-nav" />
+      <EbBottomNav
+        active="home"
+        className={`employee-benefits-shared-nav${
+          claimsOpen || sourceOverlayOpen ? " is-hidden" : ""
+        }`}
+        hidden={claimsOpen || sourceOverlayOpen}
+        onBenefits={openClaims}
+      />
 
       {claimsOpen ? (
         <section

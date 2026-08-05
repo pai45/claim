@@ -14,11 +14,25 @@
   background: #f5f5f5;
 }
 
+/*
+ * Matches the positioning of the source app's own `.bottom-nav`, which this
+ * replaces. It has to be fixed rather than absolute: anchoring it to the
+ * bottom of a 100dvh box drops it below the visible viewport on mobile
+ * browsers, where the dynamic viewport unit and the actually visible area
+ * disagree while the URL bar is in transit.
+ */
 .employee-benefits-shared-nav {
-  position: absolute;
+  position: fixed;
   right: 50%;
   bottom: 0;
   transform: translateX(50%);
+  transition: opacity 160ms ease;
+}
+
+/* The source app's full-screen surfaces are not the home screen. */
+.employee-benefits-shared-nav.is-hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .employee-benefits-claims {

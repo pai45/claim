@@ -149,10 +149,19 @@ const claimsActionMenuButton = document.querySelector(
 const tapPayDiscovery = document.querySelector("[data-tap-pay-discovery]");
 const scanPayOpenButtons = document.querySelectorAll("[data-scan-pay-open]");
 const scanPayFlow = document.querySelector("[data-scan-pay-flow]");
+const upiSetupOpenButton = document.querySelector("[data-upi-setup-open]");
+const upiSetupFlow = document.querySelector("[data-upi-setup-flow]");
+const upiIdCards = document.querySelectorAll("[data-upi-id-card]");
+const upiIdValues = document.querySelectorAll("[data-upi-id-value]");
 
 let toastTimer;
 let activeWalletTone = "meal";
 let activeManageWalletKey = "meal";
+const UPI_CREATED_STORAGE_KEY = "employee-benefits:upi-created:v1";
+const CREATED_UPI_ID = "xxxxxxxx79@infosys";
+const UPI_SETUP_STEP_DURATION = 1500;
+const upiSetupState = { stage: 0, view: "setup" };
+let upiSetupTimer;
 const manageWalletState = {
   meal: {
     label: "Meal Wallet",
@@ -240,6 +249,7 @@ function syncPageScrollLock() {
     manageCardsOverlay,
     claimsAssistant,
     scanPayFlow,
+    upiSetupFlow,
   ].some((overlay) => overlay?.classList.contains("is-open"));
   document.body.classList.toggle("is-overlay-open", hasOpenOverlay);
 }
@@ -978,6 +988,206 @@ const scanPayState = {
 
 let scanPayScanTimer;
 let scanPayProcessingTimer;
+
+const UPI_SETUP_STEPS = [
+  {
+    title: "Verifying Wallet",
+    detail: "Checking details",
+    gif: "./assets/upi-setup/1.gif",
+    still: "./assets/upi-setup/1-still.png",
+  },
+  {
+    title: "Creating UPI ID",
+    detail: "Setting up identifier",
+    gif: "./assets/upi-setup/2.gif",
+    still: "./assets/upi-setup/2-still.png",
+  },
+  {
+    title: "Signing you up!",
+    detail: "Enabling payments",
+    gif: "./assets/upi-setup/3.gif",
+    still: "./assets/upi-setup/3-still.png",
+  },
+  {
+    title: "You're all set",
+    detail: "A better UPI experience is ready for you!",
+    gif: "./assets/upi-setup/4.gif",
+    still: "./assets/upi-setup/4-still.png",
+  },
+];
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function readUpiCreatedState() {
+  try {
+    return window.localStorage.getItem(UPI_CREATED_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function applyUpiCreatedState(isCreated) {
+  document.body.classList.toggle("is-upi-created", isCreated);
+
+  upiIdValues.forEach((value) => {
+    if (isCreated) {
+      value.textContent = CREATED_UPI_ID;
+      value.dataset.lensText = CREATED_UPI_ID;
+      value.dataset.pluspayText = CREATED_UPI_ID;
+    }
+  });
+
+  upiIdCards.forEach((card) => {
+    card.setAttribute(
+      "aria-label",
+      isCreated ? `UPI ID ${CREATED_UPI_ID}` : "UPI settings",
+    );
+  });
+}
+
+function clearUpiSetupTimer() {
+  window.clearTimeout(upiSetupTimer);
+}
+
+function renderUpiSetupFlow() {
+  if (!upiSetupFlow) return;
+
+  if (upiSetupState.view === "safety") {
+    upiSetupFlow.innerHTML = `
+      <button class="upi-setup-backdrop" type="button" aria-label="Close UPI setup" data-upi-setup-action="close"></button>
+      <section class="upi-setup-screen upi-setup-safety" role="dialog" aria-modal="true" aria-labelledby="upi-safety-title" tabindex="-1" data-upi-setup-dialog>
+        <div class="upi-setup-status" aria-hidden="true">
+          <span>9:41</span>
+          <span class="claims-device-icons"><i class="claims-signal"></i><i class="claims-wifi"></i><i class="claims-battery"></i></span>
+        </div>
+        <main class="upi-safety-hero">
+          <span class="upi-safety-mark" aria-hidden="true">
+            <svg viewBox="0 0 96 104"><path d="M48 5 81 17v27c0 24-14 43-33 53C29 87 15 68 15 44V17L48 5Z" fill="currentColor"/><path d="m32 50 10 10 23-25" fill="none" stroke="#0f5d4c" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/></svg>
+          </span>
+          <h1 id="upi-safety-title">Important</h1>
+          <p>Safety Guidelines</p>
+        </main>
+        <section class="upi-safety-sheet" aria-label="UPI safety guidelines">
+          <span class="upi-safety-handle" aria-hidden="true"></span>
+          <ul>
+            <li>Verify recipient details before confirming payment</li>
+            <li>Never share OTP or login credentials with anyone</li>
+            <li>Use secure networks - avoid public Wi-Fi</li>
+            <li>Don't scan unknown QR codes or click suspicious links</li>
+          </ul>
+          <span class="upi-setup-powered" aria-hidden="true">POWERED BY <strong>UPI</strong></span>
+        </section>
+        <footer class="upi-safety-footer">
+          <button type="button" class="upi-safety-confirm" data-upi-setup-action="complete">I understand &amp; agree</button>
+        </footer>
+      </section>
+    `;
+    bindUpiSetupActions();
+    window.requestAnimationFrame(() =>
+      upiSetupFlow.querySelector("[data-upi-setup-action='complete']")?.focus(),
+    );
+    return;
+  }
+
+  const step = UPI_SETUP_STEPS[upiSetupState.stage];
+  const imageSource = prefersReducedMotion() ? step.still : step.gif;
+  const progressItems = UPI_SETUP_STEPS.map(
+    (_, index) =>
+      `<i class="${index <= upiSetupState.stage ? "is-complete" : ""}" aria-hidden="true"></i>`,
+  ).join("");
+
+  upiSetupFlow.innerHTML = `
+    <button class="upi-setup-backdrop" type="button" aria-label="Close UPI setup" data-upi-setup-action="close"></button>
+    <section class="upi-setup-screen" role="dialog" aria-modal="true" aria-labelledby="upi-setup-title" tabindex="-1" data-upi-setup-dialog>
+      <div class="upi-setup-status" aria-hidden="true">
+        <span>9:41</span>
+        <span class="claims-device-icons"><i class="claims-signal"></i><i class="claims-wifi"></i><i class="claims-battery"></i></span>
+      </div>
+      <main class="upi-setup-main" aria-live="polite">
+        <span class="upi-setup-handle" aria-hidden="true"></span>
+        <h1 id="upi-setup-title">Setting up UPI</h1>
+        <p>PlusPay</p>
+        <img class="upi-setup-illustration" src="${imageSource}" alt="" />
+        <div class="upi-setup-progress" aria-label="Step ${upiSetupState.stage + 1} of ${UPI_SETUP_STEPS.length}">${progressItems}</div>
+        <span class="upi-setup-step" aria-hidden="true">${upiSetupState.stage + 1}</span>
+        <strong>${step.title}</strong>
+        <small>${step.detail}</small>
+        <span class="upi-setup-processing" aria-label="Processing"><i aria-hidden="true"></i>Processing...</span>
+      </main>
+      <footer class="upi-setup-footer"><span class="upi-setup-powered" aria-hidden="true">POWERED BY <strong>UPI</strong></span></footer>
+    </section>
+  `;
+  bindUpiSetupActions();
+}
+
+function scheduleUpiSetupStep() {
+  clearUpiSetupTimer();
+  if (upiSetupState.view !== "setup") return;
+  upiSetupTimer = window.setTimeout(() => {
+    if (!upiSetupFlow?.classList.contains("is-open")) return;
+    if (upiSetupState.stage < UPI_SETUP_STEPS.length - 1) {
+      upiSetupState.stage += 1;
+    } else {
+      upiSetupState.view = "safety";
+    }
+    renderUpiSetupFlow();
+    scheduleUpiSetupStep();
+  }, UPI_SETUP_STEP_DURATION);
+}
+
+function bindUpiSetupActions() {
+  if (!upiSetupFlow) return;
+  upiSetupFlow.querySelectorAll("[data-upi-setup-action]").forEach((control) => {
+    control.addEventListener("click", () => {
+      const action = control.dataset.upiSetupAction;
+      if (action === "close") closeUpiSetupFlow();
+      if (action === "complete") completeUpiSetupFlow();
+    });
+  });
+}
+
+function openUpiSetupFlow() {
+  if (!upiSetupFlow || upiSetupFlow.classList.contains("is-open")) return;
+  closeCardOverlay();
+  closeWalletOverlay();
+  closeMerchantDirectory();
+  closeManageCardsOverlay();
+  closeClaimsAssistant();
+  closeScanPayFlow();
+  upiSetupState.stage = 0;
+  upiSetupState.view = "setup";
+  upiSetupFlow.hidden = false;
+  renderUpiSetupFlow();
+  window.requestAnimationFrame(() => {
+    upiSetupFlow.classList.add("is-open");
+    upiSetupFlow.querySelector("[data-upi-setup-dialog]")?.focus();
+    syncPageScrollLock();
+    scheduleUpiSetupStep();
+  });
+}
+
+function closeUpiSetupFlow() {
+  if (!upiSetupFlow || !upiSetupFlow.classList.contains("is-open")) return;
+  clearUpiSetupTimer();
+  upiSetupFlow.classList.remove("is-open");
+  window.setTimeout(() => {
+    upiSetupFlow.hidden = true;
+    syncPageScrollLock();
+  }, 220);
+}
+
+function completeUpiSetupFlow() {
+  try {
+    window.localStorage.setItem(UPI_CREATED_STORAGE_KEY, "true");
+  } catch {
+    // Keep the current session usable if browser storage is unavailable.
+  }
+  applyUpiCreatedState(true);
+  closeUpiSetupFlow();
+  showToast("UPI ID created");
+}
 
 function createBaseClaimMessages() {
   return [];
@@ -4738,6 +4948,8 @@ scanPayOpenButtons.forEach((button) => {
   });
 });
 
+upiSetupOpenButton?.addEventListener("click", openUpiSetupFlow);
+
 claimsCloseButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (claimState.view && claimState.view !== "home") {
@@ -5077,9 +5289,11 @@ window.addEventListener("keydown", (event) => {
     closeManageCardsOverlay();
     closeClaimsAssistant();
     closeScanPayFlow();
+    closeUpiSetupFlow();
   }
 });
 
 applyMode(false);
+applyUpiCreatedState(readUpiCreatedState());
 if (window.location.hash === "#claims") openClaimsAssistant();
 if (window.location.hash === "#scan-pay") openScanPayFlow();
