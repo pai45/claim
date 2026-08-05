@@ -1,12 +1,28 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/shared/AppShell";
-import { markVkycDone } from "@/features/onboarding/vkycHandoff";
+import {
+  appHomeUrl,
+  markVkycDone,
+  readHandoffRoute,
+} from "@/features/onboarding/vkycHandoff";
 import { withBasePath } from "@/lib/basePath";
+import { detectAppPlatform } from "@/lib/pwa/platform";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
 import { InstructionManualIllustration } from "./InstructionManualIllustration";
+
+/**
+ * Whether the window showing this page is the app's own rather than a browser
+ * tab opened alongside it. A tab is never in standalone display mode, and the
+ * native shell hands this URL to the system browser instead of loading it — so
+ * anything but "browser" means the hand-off did not take and the app is
+ * stranded on a page it has no way back from.
+ */
+function isAppOwnWindow(): boolean {
+  return detectAppPlatform() !== "browser";
+}
 
 /**
  * A stand-in for the Pine Labs Full-KYC page the real journey hands off to.
@@ -40,6 +56,14 @@ export function VkycDemoScreen() {
 
   const tapToAdvance = stage === "process" || stage === "consent";
 
+  // Safety net for a hand-off that misfired and loaded this page in the app's
+  // own window. Going home remounts the onboarding screen, which picks the
+  // journey back up at the verifying step instead of replaying a KYC the user
+  // has already finished elsewhere.
+  useEffect(() => {
+    if (isAppOwnWindow()) window.location.replace(appHomeUrl());
+  }, []);
+
   // Taps land on this container, so anywhere on the screen moves the demo
   // forward. The visible CTA is a real button with no handler of its own — its
   // click (including the synthetic one Enter/Space produces) bubbles to here,
@@ -51,6 +75,13 @@ export function VkycDemoScreen() {
 
   function handleFinishDemo() {
     markVkycDone();
+    // When there is no separate tab to switch back to — the app reused its own
+    // window because a popup blocker stopped `window.open` — asking the user to
+    // "return to the app" is asking the impossible. Take them there.
+    if (isAppOwnWindow() || readHandoffRoute() === "same-tab") {
+      window.location.assign(appHomeUrl());
+      return;
+    }
     setStage("returned");
   }
 

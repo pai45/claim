@@ -15,6 +15,13 @@ export const DEMO_KIT_NUMBER = "PKT20241234567";
 /** How long "Verifying your KYC" shows before the completed screen. */
 export const KYC_AUTO_COMPLETE_MS = 2000;
 
+/**
+ * The shortest believable round trip out to the VKYC page and back. Below this,
+ * a focus or visibility event so soon after the hand-off is the OS shuffling
+ * windows, not the user returning from a finished demo.
+ */
+export const MIN_HANDOFF_AWAY_MS = 2500;
+
 export const KYC_ADDRESS: AddressForm = {
   line1: "Apex Apartment",
   line2: "Nanjeevan Road",

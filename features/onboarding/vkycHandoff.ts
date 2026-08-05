@@ -37,6 +37,10 @@ export function buildVkycUrl(): string {
   return new URL(withBasePath(VKYC_PATH), window.location.origin).toString();
 }
 
+export function appHomeUrl(): string {
+  return new URL(withBasePath("/"), window.location.origin).toString();
+}
+
 /**
  * Chrome for iOS answers to `googlechrome:` / `googlechromes:`, which is the
  * only public way to hand a URL to it rather than to whatever browser view the
@@ -179,18 +183,22 @@ export function openVkycDemo(): HandoffRoute {
 }
 
 /**
- * Walks a list of ways out of an iOS web app, best first, stopping as soon as
- * one of them takes. iOS gives no success callback for a scheme that nothing
- * handles, so "did it work" has to be inferred from the app still being on
- * screen a moment later.
+ * Walks the ways out of an iOS web app, best first, stopping as soon as one of
+ * them takes. iOS gives no success callback for a scheme nothing handles, so
+ * "did it work" has to be inferred from the app still being on screen a moment
+ * later — and that inference is only safe because every step here opens another
+ * *app*. Worst case the user gets Safari as well as Chrome, which still lands
+ * them on the demo.
+ *
+ * Deliberately no same-window navigation at the end of this list. A PWA does
+ * not reliably report itself hidden once a scheme has launched another app, so
+ * a final `location.href = url` fires even when Chrome did open, leaving the
+ * backgrounded web app sitting on the VKYC page — no way back, and the
+ * onboarding screen unmounted. A dead button is the lesser failure, and the KYC
+ * screen offers "Reopen KYC tab" to retry.
  */
 function openViaIosBrowserApp(url: string): void {
-  const attempts = [
-    chromeSchemeUrl(url),
-    safariSchemeUrl(url),
-    // Last resort. Not a separate browser, but better than a dead button.
-    url,
-  ];
+  const attempts = [chromeSchemeUrl(url), safariSchemeUrl(url)];
   let timer = 0;
 
   const stop = () => {

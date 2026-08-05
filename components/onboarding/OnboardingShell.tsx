@@ -2,7 +2,10 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { AppShell } from "@/components/shared/AppShell";
-import { KYC_AUTO_COMPLETE_MS } from "@/features/onboarding/constants";
+import {
+  KYC_AUTO_COMPLETE_MS,
+  MIN_HANDOFF_AWAY_MS,
+} from "@/features/onboarding/constants";
 import {
   createInitialOnboardingState,
   onboardingReducer,
@@ -72,22 +75,23 @@ export function OnboardingShell() {
     if (!hydrated || state.kycStatus !== "awaiting_return") return;
     const flagCanCross = handoffFlagCanCross();
     const startedHere = handoffStartedHereRef.current;
-    let wentAway = false;
+    const handoffAt = Date.now();
 
-    const settle = () => {
-      if (document.visibilityState !== "visible") {
-        wentAway = true;
-        return;
-      }
+    const settle = (viaEvent: boolean) => {
+      if (document.visibilityState !== "visible") return;
       if (!readVkycDone()) {
         // No flag to go on. Within one browser that means unfinished, full
-        // stop. Across apps it is the normal case — but the hand-off leaves
-        // this app in the foreground for a moment while the OS starts the
-        // browser, and settling then would finish KYC as the user is only just
-        // arriving. So require having actually gone away, unless this page load
-        // post-dates the hand-off (an app relaunch), where leaving happened.
+        // stop. Across apps it is the normal case, and coming back is the whole
+        // signal — so what counts is being sure the user actually went. Two
+        // guards, because an iOS web app does not reliably report itself hidden
+        // once a URL scheme has launched another app: it must be an event
+        // rather than this effect's own first run, and enough time must have
+        // passed that the event is a return and not the OS swapping windows.
+        // Neither applies when this page load post-dates the hand-off (an app
+        // relaunch), where leaving has already happened.
         if (flagCanCross) return;
-        if (startedHere && !wentAway) return;
+        if (startedHere && !viaEvent) return;
+        if (startedHere && Date.now() - handoffAt < MIN_HANDOFF_AWAY_MS) return;
       }
       clearVkycHandoff();
       handoffStartedHereRef.current = false;
@@ -95,14 +99,18 @@ export function OnboardingShell() {
       setKycProgressOpen(true);
     };
 
-    // `focus` covers desktop tab switches, which do not always fire
-    // `visibilitychange`.
-    document.addEventListener("visibilitychange", settle);
-    window.addEventListener("focus", settle);
-    settle();
+    // `focus` covers tab switches, which do not always fire `visibilitychange`;
+    // `pageshow` covers a restore from the back-forward cache, which is how iOS
+    // usually brings a web app back.
+    const onEvent = () => settle(true);
+    document.addEventListener("visibilitychange", onEvent);
+    window.addEventListener("focus", onEvent);
+    window.addEventListener("pageshow", onEvent);
+    settle(false);
     return () => {
-      document.removeEventListener("visibilitychange", settle);
-      window.removeEventListener("focus", settle);
+      document.removeEventListener("visibilitychange", onEvent);
+      window.removeEventListener("focus", onEvent);
+      window.removeEventListener("pageshow", onEvent);
     };
   }, [hydrated, state.kycStatus]);
 
