@@ -5,7 +5,10 @@ import { clearChatSession } from "@/features/chat/persistence";
 import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
 import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
 import { clearOnboarding } from "@/features/onboarding/storage";
-import { VKYC_DONE_KEY } from "@/features/onboarding/vkycHandoff";
+import {
+  VKYC_DONE_KEY,
+  VKYC_ROUTE_KEY,
+} from "@/features/onboarding/vkycHandoff";
 import { clearRegisteredVehicle } from "@/features/vehicle/registration";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 
@@ -26,6 +29,7 @@ const LOCAL_KEYS = [
   WIDGET_POSITION_KEY,
   NUDGE_SNOOZE_KEY,
   VKYC_DONE_KEY,
+  VKYC_ROUTE_KEY,
 ];
 
 const SESSION_KEYS = [PENDING_INTENT_KEY];

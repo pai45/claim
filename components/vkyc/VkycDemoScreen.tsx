@@ -24,10 +24,13 @@ const UAT = {
   panelRule: "#d5e2d3",
   pill: "#a9c5a2",
   pillInk: "#123a2c",
-  submit: "#123a2c",
-  agree: "#5b8f70",
+  /**
+   * The enabled primary CTA. The consent screen renders muted on the real site
+   * only while its checkbox is unticked, and this demo ships it already ticked,
+   * so both screens use the enabled colour.
+   */
+  cta: "#123a2c",
   link: "#2f6fd0",
-  checkbox: "#5f6174",
 } as const;
 
 type Stage = "process" | "consent" | "started" | "returned";
@@ -127,7 +130,7 @@ function ProcessCard() {
         <button
           type="button"
           className="min-h-11 rounded-md px-12 text-[16px] leading-6 text-white"
-          style={{ background: UAT.submit }}
+          style={{ background: UAT.cta }}
         >
           Submit
         </button>
@@ -160,10 +163,20 @@ function ConsentCard() {
 
       <div className="mt-5 flex items-start gap-3">
         <span
-          className="mt-0.5 h-5 w-5 shrink-0 rounded-[3px] border-2"
-          style={{ borderColor: UAT.checkbox }}
+          className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[3px] border-2"
+          style={{ background: UAT.cta, borderColor: UAT.cta }}
           aria-hidden="true"
-        />
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+            <path
+              d="m6 12.5 4 4 8-9"
+              stroke="white"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
         <span className="text-[15px] leading-[21px]" style={{ color: UAT.body }}>
           I have read and understood all the Terms and conditions above.
         </span>
@@ -173,7 +186,7 @@ function ConsentCard() {
         <button
           type="button"
           className="min-h-11 rounded-md px-8 text-[16px] leading-6 text-white"
-          style={{ background: UAT.agree }}
+          style={{ background: UAT.cta }}
         >
           Agree and Continue
         </button>
@@ -227,7 +240,7 @@ function VkycStartedCard({ onFinish }: { onFinish: () => void }) {
         <button
           type="button"
           className="min-h-11 rounded-md px-10 text-[16px] leading-6 text-white"
-          style={{ background: UAT.submit }}
+          style={{ background: UAT.cta }}
           onClick={onFinish}
         >
           Finish demo
@@ -243,7 +256,7 @@ function ReturnToAppCard() {
       <div className="flex flex-col items-center text-center">
         <span
           className="flex h-16 w-16 items-center justify-center rounded-full"
-          style={{ background: UAT.submit }}
+          style={{ background: UAT.cta }}
           aria-hidden="true"
         >
           <svg width="30" height="30" viewBox="0 0 24 24" fill="none">

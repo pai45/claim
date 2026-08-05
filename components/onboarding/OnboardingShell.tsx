@@ -12,11 +12,11 @@ import {
   saveOnboardingState,
 } from "@/features/onboarding/storage";
 import {
-  clearVkycDone,
+  clearVkycHandoff,
+  handoffFlagCanCross,
   openVkycDemo,
   readVkycDone,
 } from "@/features/onboarding/vkycHandoff";
-import { detectAppPlatform } from "@/lib/pwa/platform";
 import { CardAddressStep, CardChoiceStep, CardKitStep, ReadyStep } from "./CardSteps";
 import { HubStep } from "./HubStep";
 import { IdentityDetailsStep, IdentityEmailStep } from "./IdentitySteps";
@@ -63,13 +63,14 @@ export function OnboardingShell() {
   }, [hydrated, state.kycStatus]);
 
   // The VKYC page runs in another browsing context, so coming back here is the
-  // only signal that it is over. On the web and in a PWA the page also leaves a
-  // flag behind, and requiring it means an early tab switch cannot skip the
-  // journey. The native shell cannot see that flag — the system browser has its
-  // own storage — so there, returning at all has to be enough.
+  // only signal that it is over. When it ran in a tab of this same browser it
+  // also leaves a flag behind, and requiring that flag means an early tab
+  // switch cannot skip the journey. When it ran in a separate app — the native
+  // shell's browser, or Chrome from an iOS home-screen app — the flag is
+  // written to storage this app cannot read, so returning has to be enough.
   useEffect(() => {
     if (!hydrated || state.kycStatus !== "awaiting_return") return;
-    const flagCanCross = detectAppPlatform() !== "native-shell";
+    const flagCanCross = handoffFlagCanCross();
     const startedHere = handoffStartedHereRef.current;
     let wentAway = false;
 
@@ -79,16 +80,16 @@ export function OnboardingShell() {
         return;
       }
       if (!readVkycDone()) {
-        // No flag to go on. On the web that means unfinished, full stop. In the
-        // native shell it is the normal case — but the hand-off leaves the app
-        // in the foreground for a moment while the OS starts the browser, and
-        // settling then would finish KYC as the user is only just arriving. So
-        // require having actually gone away, unless this page load post-dates
-        // the hand-off (an app relaunch), where leaving already happened.
+        // No flag to go on. Within one browser that means unfinished, full
+        // stop. Across apps it is the normal case — but the hand-off leaves
+        // this app in the foreground for a moment while the OS starts the
+        // browser, and settling then would finish KYC as the user is only just
+        // arriving. So require having actually gone away, unless this page load
+        // post-dates the hand-off (an app relaunch), where leaving happened.
         if (flagCanCross) return;
         if (startedHere && !wentAway) return;
       }
-      clearVkycDone();
+      clearVkycHandoff();
       handoffStartedHereRef.current = false;
       dispatch({ type: "kyc-verifying" });
       setKycProgressOpen(true);

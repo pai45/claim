@@ -7,7 +7,7 @@
  * actually asks — "can I open a real browser tab from here?".
  */
 
-import { isInstalled, isNativeShell } from "./installNudge";
+import { isInstalled, isIosDevice, isNativeShell } from "./installNudge";
 
 export type AppPlatform =
   /** Inside the Expo WebView shell in `mobile/`. */
@@ -49,4 +49,20 @@ export function detectAppPlatform(): AppPlatform {
   }
 
   return "browser";
+}
+
+/**
+ * A home-screen web app on iOS, which is its own special case: links do not
+ * leave for a browser the way they do elsewhere — iOS shows an in-app browser
+ * sheet inside the web app instead — and the web app gets a WebKit data store
+ * of its own, separate from Safari's. So anything that has to reach a real
+ * browser needs a URL scheme, and nothing it leaves behind there comes back.
+ */
+export function isIosStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  if (detectAppPlatform() !== "standalone") return false;
+  return isIosDevice(
+    window.navigator.userAgent,
+    window.navigator.maxTouchPoints,
+  );
 }
