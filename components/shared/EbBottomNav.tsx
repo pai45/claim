@@ -7,12 +7,13 @@ import { withBasePath } from "@/lib/basePath";
 
 type EbBottomNavProps = {
   active?: "home" | "benefits" | "transactions";
+  className?: string;
 };
 
 const NAV_BG =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 402 139' preserveAspectRatio='none'%3E%3Cpath d='M0 52H130C160 52 166 88 201 88C236 88 242 52 272 52H402V139H0Z' fill='%23fff' stroke='%23dce3e0' stroke-width='.7'/%3E%3C/svg%3E\")";
 
-export function EbBottomNav({ active }: EbBottomNavProps) {
+export function EbBottomNav({ active, className = "" }: EbBottomNavProps) {
   const pathname = usePathname();
   const current =
     active ??
@@ -20,7 +21,7 @@ export function EbBottomNav({ active }: EbBottomNavProps) {
 
   return (
     <nav
-      className="relative z-20 grid h-[calc(139px+env(safe-area-inset-bottom,0px))] w-full shrink-0 grid-cols-3 items-start overflow-visible pb-[env(safe-area-inset-bottom,0px)]"
+      className={`relative z-20 mx-auto grid h-[calc(139px+env(safe-area-inset-bottom,0px))] w-full max-w-phone shrink-0 grid-cols-3 items-start overflow-visible pb-[env(safe-area-inset-bottom,0px)] ${className}`.trim()}
       aria-label="Primary navigation"
     >
       <div

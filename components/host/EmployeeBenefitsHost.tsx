@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatShell } from "@/components/chat/ChatShell";
+import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
 
@@ -48,6 +49,12 @@ export function EmployeeBenefitsHost() {
   const connectClaimsBridge = useCallback(() => {
     const document = frameRef.current?.contentDocument;
     if (!document) return;
+
+    // Navigation is owned by the host so Home and the Next.js screens render
+    // the exact same component. Keep the iframe's legacy nav in the document
+    // for its scripts, but remove it from layout and interaction.
+    const legacyNav = document.querySelector<HTMLElement>(".bottom-nav");
+    if (legacyNav) legacyNav.style.display = "none";
 
     // The source application's mock claims panel is never mounted. Its Claims
     // entry point is bridged to the real Benefits Assistant owned by Next.js.
@@ -109,6 +116,8 @@ export function EmployeeBenefitsHost() {
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />
+
+      <EbBottomNav active="home" className="employee-benefits-shared-nav" />
 
       {claimsOpen ? (
         <section

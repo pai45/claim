@@ -29,12 +29,12 @@ const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
 });
 
 const COLOR_BENDS_PALETTE = [
-  "#fffdf7",
-  "#fffaf0",
-  "#fbf4e5",
-  "#f8efdc",
-  "#fff6e8",
-  "#fffdf7",
+  "#fbffe9",
+  "#f4fcc7",
+  "#efffb7",
+  "#F8FFDF",
+  "#f7ffe0",
+  "#f4fcc7",
 ];
 
 type ChatShellProps = {
@@ -163,13 +163,13 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const showEmptyState = isHydrated && !hasMessages;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-[#fffaf0]">
+    <div className="relative min-h-dvh w-full overflow-hidden bg-[#f7fddb]">
       <div className="pointer-events-none fixed inset-0" aria-hidden>
         <ColorBends
           colors={COLOR_BENDS_PALETTE}
           rotation={112}
-          autoRotate={4.5}
-          speed={0.78}
+          autoRotate={3.375}
+          speed={0.585}
           scale={1.08}
           frequency={0.92}
           warpStrength={1.08}
@@ -186,12 +186,12 @@ export function ChatShell({ onClose }: ChatShellProps) {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(circle at 68% 30%, rgba(255,253,247,0.12) 0%, rgba(255,248,232,0.06) 40%, transparent 70%), linear-gradient(180deg, rgba(255,253,247,0.1) 0%, rgba(255,248,235,0.04) 48%, rgba(255,253,247,0.12) 100%)",
+              "radial-gradient(circle at 68% 30%, rgba(244,252,199,0.14) 0%, rgba(239,255,183,0.07) 40%, transparent 70%), linear-gradient(180deg, rgba(251,255,233,0.11) 0%, rgba(244,252,199,0.05) 48%, rgba(251,255,233,0.13) 100%)",
           }}
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-white/5 shadow-phone">
+      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-[#f4fcc7]/10 shadow-phone">
         <ChatHeader onNewChat={requestClear} onBack={onClose} />
 
         <main
