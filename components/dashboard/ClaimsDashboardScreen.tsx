@@ -7,18 +7,26 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
-  AVAILABLE_LIMIT,
-  DASHBOARD_CATEGORIES,
   FY_LABEL,
-  FY_LIMIT,
-  UTILIZED_AMOUNT,
   formatINR,
+  getDashboardCategories,
+  getDashboardTotals,
 } from "@/features/dashboard/constants";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 export function ClaimsDashboardScreen() {
   const router = useRouter();
-  const utilizedPercent = Math.min(100, (UTILIZED_AMOUNT / FY_LIMIT) * 100);
+  const { personaId } = useActivePersona();
+  const categories = getDashboardCategories(personaId);
+  const { availableLimit, utilizedAmount, financialYearLimit } =
+    getDashboardTotals(personaId);
+  const utilizedPercent = Math.min(
+    100,
+    financialYearLimit > 0
+      ? (utilizedAmount / financialYearLimit) * 100
+      : 0,
+  );
 
   return (
     <AppShell className="overflow-hidden">
@@ -34,7 +42,7 @@ export function ClaimsDashboardScreen() {
         >
           <div className="flex flex-col items-center gap-2">
             <p className="type-field-label">Available limit</p>
-            <p className="type-amount text-center">{formatINR(AVAILABLE_LIMIT)}</p>
+            <p className="type-amount text-center">{formatINR(availableLimit)}</p>
           </div>
 
           <div className="flex w-full flex-col gap-3">
@@ -57,7 +65,7 @@ export function ClaimsDashboardScreen() {
                   Utilized · {FY_LABEL}
                 </span>
                 <span className="text-body-sm font-bold text-ink">
-                  {formatINR(UTILIZED_AMOUNT)}
+                  {formatINR(utilizedAmount)}
                 </span>
               </div>
               <div className="flex min-w-0 flex-col items-end gap-0.5">
@@ -65,7 +73,7 @@ export function ClaimsDashboardScreen() {
                   Limit · {FY_LABEL}
                 </span>
                 <span className="text-body-sm font-bold text-pine-primary">
-                  {formatINR(FY_LIMIT)}
+                  {formatINR(financialYearLimit)}
                 </span>
               </div>
             </div>
@@ -75,8 +83,8 @@ export function ClaimsDashboardScreen() {
         <section className="flex flex-col gap-3">
           <h2 className="type-section-label">Categories</h2>
           <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
-            {DASHBOARD_CATEGORIES.map((category, index) => {
-              const isLast = index === DASHBOARD_CATEGORIES.length - 1;
+            {categories.map((category, index) => {
+              const isLast = index === categories.length - 1;
 
               return (
                 <Link

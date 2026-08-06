@@ -1,8 +1,20 @@
+import { getPersonaConfig } from "@/features/persona/constants";
+import type { PersonaId } from "@/features/persona/types";
+
 export const PROFILE_USER = {
   name: "Vishal Sharma",
   initials: "V",
   memberSince: "UPI Member since January 2022",
 } as const;
+
+export function getProfileUser(personaId: PersonaId = "returning") {
+  const config = getPersonaConfig(personaId);
+  return {
+    name: config.profile.name,
+    initials: config.profile.initials,
+    memberSince: config.profile.memberSince,
+  };
+}
 
 export type ProfileMenuId = "profile" | "autopay" | "collect" | "logout";
 

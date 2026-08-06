@@ -88,7 +88,8 @@
   --radius-control: 12px;
 
   /* —— Layout —— */
-  --max-width-phone: 402px;
+  /* Largest supported mobile canvas (iPhone 16 Pro Max class width). */
+  --max-width-phone: 434px;
   --max-width-card: 340px;
 
   /* —— Shadows —— */

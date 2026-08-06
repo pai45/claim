@@ -140,7 +140,7 @@ svg {
 
 .phone-shell {
   position: relative;
-  width: min(100%, 400px);
+  width: min(100%, 434px);
   min-height: 100vh;
   margin: 0 auto;
   padding: 0 var(--space-16) calc(132px + var(--page-end-padding));
@@ -793,6 +793,34 @@ body.is-upi-created .upi-card-create {
 
 body.is-upi-created .upi-card[data-upi-id-card] {
   display: grid !important;
+}
+
+[data-upi-created-only] {
+  display: none !important;
+}
+
+body.is-upi-created [data-upi-created-only] {
+  display: flex !important;
+}
+
+body:not(.is-upi-created) .utility-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.is-upi-created .utility-grid {
+  display: flex;
+  gap: 12px;
+  padding: 0 2px 4px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+body.is-upi-created .utility-grid .utility-card {
+  flex: 0 0 76px;
+  width: 76px;
+  scroll-snap-align: start;
 }
 
 body.is-pluspay .balance-copy {
@@ -4873,6 +4901,67 @@ body.is-merchant-directory-open .bottom-nav {
   overflow: hidden;
 }
 
+.transaction-empty-state {
+  margin: 0;
+  padding: var(--space-24) var(--space-16);
+  color: var(--muted);
+  font-size: var(--text-14);
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* Match the Recent Transactions feed to the Transaction History rows. */
+.transactions-section .transaction-list {
+  border-color: #e5ece8;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 2px 2px 10px rgba(0, 42, 25, 0.05);
+}
+
+.transactions-section .transaction-item {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 12px;
+  min-height: 68px;
+  padding: 14px 16px;
+  border-bottom-color: #e5ece8;
+}
+
+.transactions-section .transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #e7f6ef;
+  color: #005656;
+}
+
+.transactions-section .transaction-meta,
+.transactions-section .transaction-amount {
+  gap: 2px;
+}
+
+.transactions-section .transaction-meta strong {
+  color: #1c2725;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.transactions-section .transaction-meta span,
+.transactions-section .transaction-amount span {
+  color: #667a74;
+  font-size: 12px;
+  line-height: 1.33;
+}
+
+.transactions-section .transaction-amount strong {
+  color: #1c2725;
+  font-size: 14px;
+  line-height: 1.43;
+}
+
+.transactions-section .transaction-amount.positive strong {
+  color: #279e6c;
+}
+
 .transaction-item {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr) auto;
@@ -4881,6 +4970,11 @@ body.is-merchant-directory-open .bottom-nav {
   min-height: 76px;
   padding: var(--space-12);
   border-bottom: 1px solid var(--line);
+}
+
+.transaction-item[hidden],
+.transaction-empty-state[hidden] {
+  display: none;
 }
 
 .transaction-item:last-child {
@@ -4987,7 +5081,7 @@ body.is-merchant-directory-open .bottom-nav {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   align-items: start;
-  width: min(100%, 402px);
+  width: min(100%, 434px);
   max-width: 100vw;
   height: calc(139px + env(safe-area-inset-bottom, 0px));
   padding: 0 0 env(safe-area-inset-bottom, 0px);
@@ -5157,6 +5251,34 @@ body.is-pluspay .bottom-nav .claims-button[data-claims-open] {
 
 body.is-pluspay .bottom-nav .pluspay-scan-button {
   display: grid;
+}
+
+body.is-pluspay .bottom-nav .pluspay-scan-button .pluspay-scan-icon {
+  top: 18px;
+  width: 60px;
+  height: 60px;
+  background: var(--brand-700);
+  box-shadow:
+    0 8px 20px rgba(0, 86, 86, 0.2),
+    0 0 18px rgba(54, 204, 139, 0.2);
+}
+
+body.is-pluspay .bottom-nav .pluspay-scan-button .pluspay-scan-gif {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  filter: url("#scan-gif-knockout");
+}
+
+body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
+  position: absolute;
+  top: 97px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #595e70;
+  font-size: 12px;
+  font-weight: var(--fw-regular);
+  line-height: 1.2;
 }
 
 .claims-button span:last-child {
@@ -5421,7 +5543,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
   bottom: 0;
   display: flex;
   flex-direction: column;
-  width: min(100%, 400px);
+  width: min(100%, 434px);
   max-width: 100%;
   background:
     radial-gradient(circle at 50% 18%, rgba(0, 86, 86, 0.05), transparent 34%),
@@ -10635,6 +10757,16 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
     justify-items: start;
     text-align: left;
   }
+
+  .transactions-section .transaction-item {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+  }
+
+  .transactions-section .transaction-amount {
+    grid-column: auto;
+    justify-items: end;
+    text-align: right;
+  }
 }
 
 /* Manage Cards — shared RuPay mobile design */
@@ -12290,7 +12422,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
   right: auto;
   display: flex;
   width: 100%;
-  max-width: 400px;
+  max-width: 434px;
   height: 100dvh;
   flex-direction: column;
   background: #f3f3f3;

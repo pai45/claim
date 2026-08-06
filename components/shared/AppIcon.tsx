@@ -9,6 +9,7 @@ type AppIconProps = {
   height?: number;
   className?: string;
   priority?: boolean;
+  style?: React.CSSProperties;
 };
 
 export function AppIcon({
@@ -19,6 +20,7 @@ export function AppIcon({
   height,
   className,
   priority,
+  style,
 }: AppIconProps) {
   return (
     <Image
@@ -28,6 +30,7 @@ export function AppIcon({
       height={height ?? size}
       className={className}
       priority={priority}
+      style={style}
       unoptimized
     />
   );

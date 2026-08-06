@@ -4,6 +4,8 @@ const CLAIMS_HASH = "#claims";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
+const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
+const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
 const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
@@ -41,6 +43,23 @@ describe("Employee Benefits claims bridge", () => {
   it("uses a distinct message type for Profile", () => {
     expect(OPEN_PROFILE_MESSAGE).toBe("employee-benefits:open-profile");
     expect(OPEN_PROFILE_MESSAGE).not.toBe(OPEN_MANAGE_LIMITS_MESSAGE);
+  });
+
+  it("uses a dedicated message type for tab-aware UPI settings", () => {
+    expect(OPEN_UPI_SETTINGS_MESSAGE).toBe(
+      "employee-benefits:open-upi-settings",
+    );
+    expect(OPEN_UPI_SETTINGS_MESSAGE).not.toBe(OPEN_MANAGE_LIMITS_MESSAGE);
+    expect(OPEN_UPI_SETTINGS_MESSAGE).not.toBe(OPEN_PROFILE_MESSAGE);
+  });
+
+  it("uses a dedicated message type for Spend Analytics", () => {
+    expect(OPEN_SPEND_ANALYTICS_MESSAGE).toBe(
+      "employee-benefits:open-spend-analytics",
+    );
+    expect(OPEN_SPEND_ANALYTICS_MESSAGE).not.toBe(
+      OPEN_TRANSACTIONS_MESSAGE,
+    );
   });
 
   it("uses a dedicated request/result contract for card MPIN verification", () => {

@@ -1,3 +1,4 @@
+import type { PersonaId } from "@/features/persona/types";
 import type {
   AddressForm,
   CardEmbossmentForm,
@@ -48,7 +49,22 @@ export const DEFAULT_IDENTITY: IdentityForm = {
   dateOfBirth: "12/01/1992",
 };
 
-export function createInitialOnboardingState(): OnboardingState {
+export const NEW_USER_IDENTITY: IdentityForm = {
+  email: "aarav.patel@infosys.com",
+  emailVerified: false,
+  title: "Mr.",
+  firstName: "Aarav",
+  middleName: "",
+  lastName: "Patel",
+  dateOfBirth: "15/08/1995",
+};
+
+export function getIdentityForPersona(personaId: PersonaId = "returning"): IdentityForm {
+  return personaId === "new_user" ? { ...NEW_USER_IDENTITY } : { ...DEFAULT_IDENTITY };
+}
+
+export function createInitialOnboardingState(personaId: PersonaId = "returning"): OnboardingState {
+  const identity = getIdentityForPersona(personaId);
   return {
     version: ONBOARDING_STORAGE_VERSION,
     step: "intro",
@@ -56,7 +72,7 @@ export function createInitialOnboardingState(): OnboardingState {
     identityDone: false,
     kycStatus: "idle",
     cardSetupDone: false,
-    identity: { ...DEFAULT_IDENTITY },
+    identity,
     address: {
       line1: "",
       line2: "",
@@ -67,6 +83,35 @@ export function createInitialOnboardingState(): OnboardingState {
     kitNumber: "",
     onlineTransactions: false,
     tapToPay: false,
+  };
+}
+
+export function createCompletedOnboardingState(personaId: PersonaId = "returning"): OnboardingState {
+  const identity = getIdentityForPersona(personaId);
+  return {
+    version: ONBOARDING_STORAGE_VERSION,
+    step: "hub",
+    completed: true,
+    identityDone: true,
+    kycStatus: "completed",
+    cardSetupDone: true,
+    identity: {
+      ...identity,
+      emailVerified: true,
+    },
+    address: {
+      line1: "Apex Apartment",
+      line2: "Nanjeevan Road",
+      pinCode: "401305",
+      sameAsKyc: true,
+    },
+    cardEmbossment: {
+      firstName: identity.firstName,
+      lastName: identity.lastName,
+    },
+    kitNumber: DEMO_KIT_NUMBER,
+    onlineTransactions: true,
+    tapToPay: true,
   };
 }
 

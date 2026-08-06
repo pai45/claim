@@ -1,9 +1,11 @@
+import { getActivePersonaId } from "@/features/persona/store";
 import {
-  DEFAULT_IDENTITY,
   ONBOARDING_SESSION_EVENT,
   ONBOARDING_STORAGE_KEY,
   ONBOARDING_STORAGE_VERSION,
+  createCompletedOnboardingState,
   createInitialOnboardingState,
+  getIdentityForPersona,
 } from "./constants";
 import type { OnboardingState } from "./types";
 
@@ -31,23 +33,25 @@ function isValidState(value: unknown): value is OnboardingState {
 }
 
 export function loadOnboardingState(
-  storage: StorageLike = window.localStorage,
+  storage: StorageLike = typeof window !== "undefined" ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
 ): OnboardingState {
   try {
+    const personaId = getActivePersonaId(storage);
+    const defaultIdentity = getIdentityForPersona(personaId);
     const raw = storage.getItem(ONBOARDING_STORAGE_KEY);
-    if (!raw) return createInitialOnboardingState();
+    if (!raw) return createInitialOnboardingState(personaId);
     const parsed = JSON.parse(raw) as unknown;
     if (!isValidState(parsed)) {
       storage.removeItem(ONBOARDING_STORAGE_KEY);
-      return createInitialOnboardingState();
+      return createInitialOnboardingState(personaId);
     }
     return {
       ...parsed,
       identity: {
-        ...DEFAULT_IDENTITY,
+        ...defaultIdentity,
         ...parsed.identity,
         // Existing demo sessions may have saved this before DOB was prefilled.
-        dateOfBirth: parsed.identity.dateOfBirth || DEFAULT_IDENTITY.dateOfBirth,
+        dateOfBirth: parsed.identity.dateOfBirth || defaultIdentity.dateOfBirth,
       },
     };
   } catch {
@@ -57,7 +61,7 @@ export function loadOnboardingState(
 
 export function saveOnboardingState(
   state: OnboardingState,
-  storage: StorageLike = window.localStorage,
+  storage: StorageLike = typeof window !== "undefined" ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
 ): void {
   try {
     storage.setItem(ONBOARDING_STORAGE_KEY, JSON.stringify(state));
@@ -68,7 +72,7 @@ export function saveOnboardingState(
 }
 
 export function clearOnboarding(
-  storage: StorageLike = window.localStorage,
+  storage: StorageLike = typeof window !== "undefined" ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
 ): void {
   try {
     storage.removeItem(ONBOARDING_STORAGE_KEY);
@@ -79,12 +83,13 @@ export function clearOnboarding(
 }
 
 export function isOnboardingComplete(
-  storage: StorageLike = window.localStorage,
+  storage: StorageLike = typeof window !== "undefined" ? window.localStorage : { getItem: () => null, setItem: () => {}, removeItem: () => {} },
 ): boolean {
   return loadOnboardingState(storage).completed;
 }
 
 export function subscribeToOnboarding(listener: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
   const onStorage = (event: StorageEvent) => {
     if (event.key === ONBOARDING_STORAGE_KEY || event.key === null) listener();
   };
@@ -95,3 +100,5 @@ export function subscribeToOnboarding(listener: () => void): () => void {
     window.removeEventListener("storage", onStorage);
   };
 }
+
+export { createInitialOnboardingState, createCompletedOnboardingState };

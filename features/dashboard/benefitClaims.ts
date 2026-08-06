@@ -5,6 +5,8 @@ import {
 } from "@/features/policy/constants";
 import { DASHBOARD_CATEGORIES } from "./constants";
 import type { ClaimOverrides } from "@/features/claims/store";
+import { getActivePersonaId } from "@/features/persona/store";
+import type { PersonaId } from "@/features/persona/types";
 
 export type BenefitClaimStatus =
   | "Approved"
@@ -45,7 +47,7 @@ function booksDashboard(): BenefitClaimsDashboard {
     title: "Books & Periodicals",
     availableLimit: 48000,
     utilized: 7000,
-    accrued: 32000,
+    accrued: 55000,
     frequencyLabel: "Annually",
     monthLabel: "July 2026",
     monthTotal: 13500,
@@ -285,10 +287,34 @@ export const BENEFIT_DASHBOARD_FY_LABEL = FY;
 
 export function getBenefitClaimsDashboard(
   categoryId: string,
+  personaId?: PersonaId,
 ): BenefitClaimsDashboard {
+  const activePersona = personaId ?? getActivePersonaId();
   const known = DASHBOARDS[categoryId];
+  const policy = getEmployerBenefit((known?.categoryId ?? categoryId) as PolicyTabId, activePersona);
+
+  if (activePersona === "new_user") {
+    const title =
+      known?.title ??
+      DASHBOARD_CATEGORIES.find((item) => item.id === categoryId)?.name ??
+      "Benefit Claims";
+
+    return {
+      categoryId: (known?.categoryId ?? categoryId) as PolicyTabId,
+      title,
+      availableLimit: policy.balance.available,
+      utilized: 0,
+      accrued: policy.balance.allocation,
+      frequencyLabel: known?.frequencyLabel ?? "Monthly",
+      monthLabel: "July 2026",
+      monthTotal: 0,
+      monthApproved: 0,
+      monthPending: 0,
+      claims: [],
+    };
+  }
+
   if (known) {
-    const policy = getEmployerBenefit(known.categoryId);
     return {
       ...known,
       availableLimit: policy.balance.available,

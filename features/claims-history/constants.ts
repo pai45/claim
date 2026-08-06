@@ -1,4 +1,6 @@
 import type { ClaimOverrides } from "@/features/claims/store";
+import { getActivePersonaId } from "@/features/persona/store";
+import type { PersonaId } from "@/features/persona/types";
 
 export type ClaimStatus =
   | "under_review"
@@ -150,9 +152,21 @@ export const CLAIM_HISTORY_ITEMS: ClaimHistoryItem[] = [
   },
 ];
 
-export function getClaimHistoryItem(claimId: string): ClaimHistoryItem | undefined {
+export function getClaimHistoryItems(personaId?: PersonaId): ClaimHistoryItem[] {
+  const activePersona = personaId ?? getActivePersonaId();
+  if (activePersona === "new_user") {
+    return [];
+  }
+  return CLAIM_HISTORY_ITEMS;
+}
+
+export function getClaimHistoryItem(
+  claimId: string,
+  personaId?: PersonaId,
+): ClaimHistoryItem | undefined {
+  const items = getClaimHistoryItems(personaId);
   const normalized = claimId.trim().toUpperCase();
-  return CLAIM_HISTORY_ITEMS.find((item) => item.id === normalized);
+  return items.find((item) => item.id === normalized);
 }
 
 export function applyClaimHistoryOverrides(

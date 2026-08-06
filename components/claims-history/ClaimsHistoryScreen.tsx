@@ -7,7 +7,7 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   applyClaimHistoryOverrides,
-  CLAIM_HISTORY_ITEMS,
+  getClaimHistoryItems,
   CLAIM_STATUS_STYLES,
   CLAIM_STATUS_TABS,
   formatINR,
@@ -15,6 +15,7 @@ import {
   type ClaimStatusFilter,
 } from "@/features/claims-history/constants";
 import { useClaimOverrides } from "@/features/claims/useClaimStore";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { CategoryIcon } from "./CategoryIcon";
 
@@ -26,12 +27,14 @@ export function ClaimsHistoryScreen() {
     isClaimStatusFilter(initialFilter) ? initialFilter : "all",
   );
   const overrides = useClaimOverrides();
+  const { personaId } = useActivePersona();
 
   const claims = useMemo(() => {
-    const resolved = applyClaimHistoryOverrides(CLAIM_HISTORY_ITEMS, overrides);
+    const baseItems = getClaimHistoryItems(personaId);
+    const resolved = applyClaimHistoryOverrides(baseItems, overrides);
     if (activeTab === "all") return resolved;
     return resolved.filter((claim) => claim.status === activeTab);
-  }, [activeTab, overrides]);
+  }, [activeTab, overrides, personaId]);
 
   function handleTabChange(tab: ClaimStatusFilter) {
     setActiveTab(tab);
@@ -91,10 +94,28 @@ export function ClaimsHistoryScreen() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-8 pt-4">
         {claims.length === 0 ? (
-          <div className="rounded-card border border-border-line bg-white p-card shadow-card">
-            <p className="type-body-secondary py-6 text-center">
-              No claims in this status yet.
+          <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 shadow-card text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted text-subtle mb-3">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+            </div>
+            <h3 className="type-section-title text-ink mb-1">No claims found</h3>
+            <p className="type-body-secondary max-w-[260px] mb-5">
+              {activeTab === "all"
+                ? "You haven't submitted any benefit claims yet. Use the Benefits Assistant to submit your first claim!"
+                : `No claims currently in "${CLAIM_STATUS_TABS.find((t) => t.id === activeTab)?.label}" status.`}
             </p>
+            <Link
+              href="/#claims"
+              className="btn-primary min-h-11 h-auto py-2.5 px-6 text-sm font-semibold inline-flex items-center gap-2"
+            >
+              Go to Claims
+            </Link>
           </div>
         ) : (
           <section

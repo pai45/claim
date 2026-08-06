@@ -1,3 +1,6 @@
+import { getActivePersonaId } from "@/features/persona/store";
+import type { PersonaId } from "@/features/persona/types";
+
 export type PolicyTabId =
   | "meal"
   | "gift"
@@ -706,17 +709,36 @@ export const POLICY_LIST_ITEMS: PolicyListItem[] =
     iconTone: display.iconTone,
   }));
 
-export function getEmployerBenefit(id: PolicyTabId): EmployerBenefit {
-  return (
-    EMPLOYER_BENEFITS_CATALOG.benefits.find((benefit) => benefit.id === id) ??
-    EMPLOYER_BENEFITS_CATALOG.benefits[0]
-  );
+export function getEmployerBenefit(
+  id: PolicyTabId,
+  personaId?: PersonaId,
+): EmployerBenefit {
+  const activePersona = personaId ?? getActivePersonaId();
+  const benefit =
+    EMPLOYER_BENEFITS_CATALOG.benefits.find((b) => b.id === id) ??
+    EMPLOYER_BENEFITS_CATALOG.benefits[0];
+
+  if (activePersona === "new_user") {
+    return {
+      ...benefit,
+      balance: {
+        allocation: benefit.balance.allocation,
+        utilized: 0,
+        available: benefit.balance.allocation,
+      },
+    };
+  }
+
+  return benefit;
 }
 
 export function isPolicyTabId(value: string): value is PolicyTabId {
   return POLICY_LIST_ITEMS.some((item) => item.id === value);
 }
 
-export function getPolicyCategory(id: PolicyTabId): PolicyCategory {
-  return getEmployerBenefit(id);
+export function getPolicyCategory(
+  id: PolicyTabId,
+  personaId?: PersonaId,
+): PolicyCategory {
+  return getEmployerBenefit(id, personaId);
 }

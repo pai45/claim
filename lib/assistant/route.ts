@@ -215,7 +215,7 @@ export function parseAssistantRoute(raw: string): AssistantRoute | null {
 
 /** Maps a validated route onto the app's existing retrieval paths. */
 export function routePlanFor(route: AssistantRoute): RoutePlan | null {
-  const categories = route.categoryIds.map(getPolicyCategory);
+  const categories = route.categoryIds.map((id) => getPolicyCategory(id));
 
   switch (route.intent) {
     case "policy":

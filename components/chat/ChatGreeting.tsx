@@ -1,9 +1,13 @@
-import { USER_DISPLAY_NAME } from "@/features/chat/constants";
+"use client";
+
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { MagicText } from "@/components/shared/MagicText";
 import { BenefitsLogo } from "@/components/shared/BenefitsLogo";
 import { colors } from "@/lib/ui/colors";
 
 export function ChatGreeting() {
+  const { persona } = useActivePersona();
+
   return (
     <section className="flex flex-col gap-3.5 px-page pt-2">
       <div className="animate-rise-in" style={{ animationDelay: "20ms" }}>
@@ -11,7 +15,7 @@ export function ChatGreeting() {
       </div>
       <MagicText
         as="h2"
-        text={`Hey ${USER_DISPLAY_NAME} 👋`}
+        text={`Hey ${persona.profile.name} 👋`}
         mode="chars"
         delayMs={30}
         stepMs={14}

@@ -10,10 +10,26 @@
       href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=benefits-nav-v9" />
+    <link rel="stylesheet" href="./styles.css?v=benefits-nav-v10" />
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <filter
+          id="scan-gif-knockout"
+          color-interpolation-filters="sRGB"
+        >
+          <feColorMatrix
+            type="matrix"
+            values="
+              0 0 0 0 1
+              0 0 0 0 1
+              0 0 0 0 1
+              0.319 1.073 0.108 0 -0.5
+            "
+          />
+        </filter>
+      </defs>
       <symbol id="icon-bell" viewBox="0 0 24 24">
         <path
           d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8A6 6 0 1 0 6 8c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.196 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.755-1.088-1.936C18.78 13.206 18 11.09 18 8Z"
@@ -329,7 +345,7 @@
               >
                 Current balance
               </p>
-              <strong>₹18,650</strong>
+              <strong data-current-wallet-balance>₹18,650</strong>
               <span
                 class="balance-caption"
                 data-lens-text="Available balance across 3 wallets"
@@ -425,7 +441,7 @@
           type="button"
           data-pluspay-show
           data-upi-id-card
-          data-toast="UPI settings opened"
+          data-upi-settings-open
         >
           <span class="upi-brand-badge" aria-hidden="true">
             <img src="./assets/icons/upi.svg" alt="" />
@@ -603,7 +619,12 @@
           <h2>Quick Actions</h2>
         </div>
         <div class="utility-grid">
-          <button class="utility-card" type="button">
+          <button
+            class="utility-card"
+            type="button"
+            data-upi-settings-open
+            data-upi-created-only
+          >
             <span class="utility-icon" aria-hidden="true">
               <img src="./assets/icons/upi-settings.svg" alt="" />
             </span>
@@ -627,6 +648,16 @@
             </span>
             <strong>Get Physical<br />Card</strong>
           </button>
+          <button
+            class="utility-card"
+            type="button"
+            data-spend-analytics-open
+          >
+            <span class="utility-icon" aria-hidden="true">
+              <img src="./assets/icons/spend-analytics.svg" alt="" />
+            </span>
+            <strong>Spend<br />Analytics</strong>
+          </button>
         </div>
       </section>
 
@@ -638,7 +669,7 @@
           <h2
             id="transactions-title"
             data-lens-text="Recent Transactions"
-            data-pluspay-text="Recent Activity"
+            data-pluspay-text="Recent Transactions"
           >
             Recent Transactions
           </h2>
@@ -699,11 +730,15 @@
             ></span>
             <div class="transaction-meta">
               <strong>Amazon</strong>
-              <span>Ref ID: 1234566788</span>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 12345678"
+                data-pluspay-text="UPI | Ref ID: 12345678"
+                >Rupay Card | Ref ID: 12345678</span
+              >
             </div>
             <div class="transaction-amount">
               <strong>- ₹4,250</strong>
-              <span>20 Dec 2025</span>
+              <span>20 Dec</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="meal">
@@ -712,11 +747,15 @@
             ></span>
             <div class="transaction-meta">
               <strong>Zomato Payment</strong>
-              <span>Ref ID: 1234566788</span>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 12345678"
+                data-pluspay-text="UPI | Ref ID: 12345678"
+                >Rupay Card | Ref ID: 12345678</span
+              >
             </div>
             <div class="transaction-amount">
               <strong>- ₹650</strong>
-              <span>14 Dec 2025</span>
+              <span>14 Dec</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="fuel">
@@ -725,11 +764,15 @@
             ></span>
             <div class="transaction-meta">
               <strong>Uber</strong>
-              <span>Ref ID: 1234566788</span>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 12345678"
+                data-pluspay-text="UPI | Ref ID: 12345678"
+                >Rupay Card | Ref ID: 12345678</span
+              >
             </div>
             <div class="transaction-amount">
               <strong>- ₹650</strong>
-              <span>12 Dec 2025</span>
+              <span>12 Dec</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="misc">
@@ -738,11 +781,15 @@
             ></span>
             <div class="transaction-meta">
               <strong>Top Up</strong>
-              <span>Ref ID: 1234566788</span>
+              <span
+                data-lens-text="Bank Transfer | Ref ID: 12345678"
+                data-pluspay-text="UPI | Ref ID: 12345678"
+                >Bank Transfer | Ref ID: 12345678</span
+              >
             </div>
             <div class="transaction-amount positive">
               <strong>+ ₹5,000</strong>
-              <span>10 Dec 2025</span>
+              <span>10 Dec</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="fuel">
@@ -751,11 +798,15 @@
             ></span>
             <div class="transaction-meta">
               <strong>Shell Select</strong>
-              <span>Ref ID: 1234566791</span>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 123456791"
+                data-pluspay-text="UPI | Ref ID: 123456791"
+                >Rupay Card | Ref ID: 123456791</span
+              >
             </div>
             <div class="transaction-amount">
               <strong>- ₹2,200</strong>
-              <span>08 Dec 2025</span>
+              <span>08 Dec</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="meal">
@@ -764,11 +815,15 @@
             ></span>
             <div class="transaction-meta">
               <strong>Star Bazaar</strong>
-              <span>Ref ID: 1234566792</span>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 123456792"
+                data-pluspay-text="UPI | Ref ID: 123456792"
+                >Rupay Card | Ref ID: 123456792</span
+              >
             </div>
             <div class="transaction-amount">
               <strong>- ₹1,180</strong>
-              <span>06 Dec 2025</span>
+              <span>06 Dec</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="gift">
@@ -777,11 +832,66 @@
             ></span>
             <div class="transaction-meta">
               <strong>Lifestyle Store</strong>
-              <span>Ref ID: 1234566793</span>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 123456793"
+                data-pluspay-text="UPI | Ref ID: 123456793"
+                >Rupay Card | Ref ID: 123456793</span
+              >
             </div>
             <div class="transaction-amount">
               <strong>- ₹2,400</strong>
-              <span>04 Dec 2025</span>
+              <span>04 Dec</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="meal">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-food" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Swiggy</strong>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 123456700"
+                data-pluspay-text="UPI | Ref ID: 123456700"
+                >Rupay Card | Ref ID: 123456700</span
+              >
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹420</strong>
+              <span>28 Nov</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="gift">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-bag" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Amazon</strong>
+              <span
+                data-lens-text="Rupay Card | Ref ID: 123456701"
+                data-pluspay-text="UPI | Ref ID: 123456701"
+                >Rupay Card | Ref ID: 123456701</span
+              >
+            </div>
+            <div class="transaction-amount">
+              <strong>- ₹1,899</strong>
+              <span>18 Nov</span>
+            </div>
+          </article>
+          <article class="transaction-item" data-wallet="misc">
+            <span class="transaction-icon"
+              ><svg><use href="#icon-money" /></svg
+            ></span>
+            <div class="transaction-meta">
+              <strong>Top Up</strong>
+              <span
+                data-lens-text="Bank Transfer | Ref ID: 123456702"
+                data-pluspay-text="UPI | Ref ID: 123456702"
+                >Bank Transfer | Ref ID: 123456702</span
+              >
+            </div>
+            <div class="transaction-amount positive">
+              <strong>+ ₹3,000</strong>
+              <span>05 Nov</span>
             </div>
           </article>
         </div>
@@ -816,9 +926,14 @@
           aria-label="Scan &amp; Pay"
           data-scan-pay-open
         >
-          <span
-            ><img src="./assets/icons/scanner.svg" alt="" aria-hidden="true"
-          /></span>
+          <span class="pluspay-scan-icon" aria-hidden="true">
+            <img
+              class="pluspay-scan-gif"
+              src="../assets/scan.gif"
+              alt=""
+              aria-hidden="true"
+            />
+          </span>
           <span>Scan &amp; Pay</span>
         </button>
         <button
@@ -1191,7 +1306,7 @@
             </div>
             <div class="manage-cards-balance-card">
               <small>Current Balance</small>
-              <strong>₹12,100</strong>
+              <strong data-manage-current-balance>₹18,650</strong>
             </div>
           </section>
 

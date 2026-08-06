@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
@@ -12,34 +12,47 @@ import {
   SpendingChart,
 } from "@/components/transactions/SpendingChart";
 import {
-  ANALYTICS_CATEGORIES,
-  ANALYTICS_MONTH_LABEL,
-  ANALYTICS_TOTAL_SPENT,
   ANALYTICS_VIEW_PILLS,
   ANALYTICS_WALLETS,
   HISTORY_TABS,
-  TRANSACTION_ITEMS,
   formatINR,
   formatSignedINR,
+  getAnalyticsData,
+  getTransactionItems,
   groupTransactions,
   type AnalyticsViewId,
   type AnalyticsWalletId,
   type HistoryTabId,
 } from "@/features/transactions/constants";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { colors } from "@/lib/ui/colors";
 
 export function TransactionsScreen() {
   const router = useRouter();
-  const [tab, setTab] = useState<HistoryTabId>("transactions");
+  const searchParams = useSearchParams();
+  const { personaId } = useActivePersona();
+  const [tab, setTab] = useState<HistoryTabId>(
+    searchParams.get("tab") === "analytics" ? "analytics" : "transactions",
+  );
   const [analyticsView, setAnalyticsView] =
     useState<AnalyticsViewId>("category");
   const [analyticsWallet, setAnalyticsWallet] =
     useState<AnalyticsWalletId>("meal");
 
+  const transactions = useMemo(
+    () => getTransactionItems(personaId),
+    [personaId],
+  );
+
   const groups = useMemo(
-    () => groupTransactions(TRANSACTION_ITEMS),
-    [],
+    () => groupTransactions(transactions),
+    [transactions],
+  );
+
+  const analytics = useMemo(
+    () => getAnalyticsData(personaId),
+    [personaId],
   );
 
   return (
@@ -90,13 +103,14 @@ export function TransactionsScreen() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
         {tab === "transactions" ? (
-          <TransactionsPanel groups={groups} />
+          <TransactionsPanel groups={groups} totalTransactions={transactions.length} />
         ) : (
           <AnalyticsPanel
             view={analyticsView}
             onViewChange={setAnalyticsView}
             wallet={analyticsWallet}
             onWalletChange={setAnalyticsWallet}
+            analytics={analytics}
           />
         )}
       </main>
@@ -108,8 +122,10 @@ export function TransactionsScreen() {
 
 function TransactionsPanel({
   groups,
+  totalTransactions,
 }: {
   groups: ReturnType<typeof groupTransactions>;
+  totalTransactions: number;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -137,52 +153,73 @@ function TransactionsPanel({
         </button>
       </div>
 
-      {groups.map((section) => (
-        <section key={section.group} className="flex flex-col gap-2">
-          <h2 className="type-section-title text-pine-primary">
-            {section.label}
-          </h2>
-          <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
-            {section.items.map((txn, index) => {
-              const isLast = index === section.items.length - 1;
-              return (
-                <Link
-                  key={txn.id}
-                  href={`/transaction-details/?id=${encodeURIComponent(txn.id)}`}
-                  style={staggerStyle(index)}
-                  className={`animate-rise-in flex min-h-11 items-center gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
-                    !isLast ? "border-b border-border-line" : ""
-                  }`}
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
-                    <TransactionIcon icon={txn.icon} />
-                  </div>
-                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <h3 className="type-body truncate font-bold text-ink">
-                      {txn.merchant}
-                    </h3>
-                    <p className="truncate text-caption text-ink-secondary">
-                      {txn.paymentMethod} | Ref ID: {txn.refId}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-0.5">
-                    <p
-                      className={`text-body-sm font-bold ${
-                        txn.type === "credit" ? "text-success" : "text-ink"
-                      }`}
-                    >
-                      {formatSignedINR(txn.amount, txn.type)}
-                    </p>
-                    <p className="text-caption text-ink-secondary">
-                      {txn.dateLabel}
-                    </p>
-                  </div>
-                </Link>
-              );
-            })}
+      {totalTransactions === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 shadow-card text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted text-subtle mb-3">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
           </div>
-        </section>
-      ))}
+          <h3 className="type-section-title text-ink mb-1">No transactions yet</h3>
+          <p className="type-body-secondary max-w-[260px] mb-5">
+            Your wallet is fresh and ready to use! Make your first spend to see transactions here.
+          </p>
+          <Link
+            href="/"
+            className="btn-primary min-h-11 h-auto py-2.5 px-6 text-sm font-semibold inline-flex items-center gap-2"
+          >
+            Go to Home
+          </Link>
+        </div>
+      ) : (
+        groups.map((section) => (
+          <section key={section.group} className="flex flex-col gap-2">
+            <h2 className="type-section-title text-pine-primary">
+              {section.label}
+            </h2>
+            <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
+              {section.items.map((txn, index) => {
+                const isLast = index === section.items.length - 1;
+                return (
+                  <Link
+                    key={txn.id}
+                    href={`/transaction-details/?id=${encodeURIComponent(txn.id)}`}
+                    style={staggerStyle(index)}
+                    className={`animate-rise-in flex min-h-11 items-center gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
+                      !isLast ? "border-b border-border-line" : ""
+                    }`}
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
+                      <TransactionIcon icon={txn.icon} />
+                    </div>
+                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                      <h3 className="type-body truncate font-bold text-ink">
+                        {txn.merchant}
+                      </h3>
+                      <p className="truncate text-caption text-ink-secondary">
+                        {txn.paymentMethod} | Ref ID: {txn.refId}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-0.5">
+                      <p
+                        className={`text-body-sm font-bold ${
+                          txn.type === "credit" ? "text-success" : "text-ink"
+                        }`}
+                      >
+                        {formatSignedINR(txn.amount, txn.type)}
+                      </p>
+                      <p className="text-caption text-ink-secondary">
+                        {txn.dateLabel}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        ))
+      )}
     </div>
   );
 }
@@ -192,11 +229,13 @@ function AnalyticsPanel({
   onViewChange,
   wallet,
   onWalletChange,
+  analytics,
 }: {
   view: AnalyticsViewId;
   onViewChange: (view: AnalyticsViewId) => void;
   wallet: AnalyticsWalletId;
   onWalletChange: (wallet: AnalyticsWalletId) => void;
+  analytics: ReturnType<typeof getAnalyticsData>;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -266,53 +305,58 @@ function AnalyticsPanel({
               type="button"
               className="flex min-h-11 items-center gap-1 text-body-sm font-bold text-ink"
             >
-              {ANALYTICS_MONTH_LABEL}
+              {analytics.monthLabel}
               <ChevronDownIcon color={colors.ink} />
             </button>
           </div>
 
-          <section className="overflow-hidden rounded-card border border-border-line bg-white p-card shadow-card">
-            <SpendingChart
-              categories={ANALYTICS_CATEGORIES}
-              totalLabel={formatINR(ANALYTICS_TOTAL_SPENT)}
-              totalSubLabel="Total Spent"
-            />
+          {analytics.categories.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 shadow-card text-center">
+              <p className="type-body-secondary">
+                No spending data available for this period.
+              </p>
+            </div>
+          ) : (
+            <section className="overflow-hidden rounded-card border border-border-line bg-white p-card shadow-card">
+              <SpendingChart
+                categories={analytics.categories}
+                totalLabel={formatINR(analytics.totalSpent)}
+                totalSubLabel="Total Spent"
+              />
 
-            <ul className="mt-2 divide-y divide-border-line">
-              {ANALYTICS_CATEGORIES.map((category) => (
-                <li
-                  key={category.id}
-                  className="flex items-center gap-3 py-3.5 first:pt-2 last:pb-0"
-                >
-                  <span
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control"
-                    style={{ background: category.color }}
+              <ul className="mt-2 divide-y divide-border-line">
+                {analytics.categories.map((category) => (
+                  <li
+                    key={category.id}
+                    className="flex items-center gap-3 py-3.5 first:pt-2 last:pb-0"
                   >
-                    <CategoryGlyph icon={category.icon} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="type-body font-bold text-ink">
-                      {category.name}
-                    </p>
-                    <p className="text-caption text-ink-secondary">
-                      {category.transactionCount} Transactions
-                    </p>
-                  </div>
-                  <div className="shrink-0 text-right">
-                    <p className="text-body-sm font-bold text-ink tabular-nums">
-                      {formatINR(category.amount)}
-                    </p>
-                    {/* Identity is carried by the colored tile on the left, so
-                        this stays in an ink token — a light hue like Bills amber
-                        is barely legible as text on white. */}
-                    <p className="text-caption font-bold text-ink-secondary tabular-nums">
-                      {category.percent}%
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
+                    <span
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control"
+                      style={{ background: category.color }}
+                    >
+                      <CategoryGlyph icon={category.icon} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="type-body font-bold text-ink">
+                        {category.name}
+                      </p>
+                      <p className="text-caption text-ink-secondary">
+                        {category.transactionCount} Transactions
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-body-sm font-bold text-ink tabular-nums">
+                        {formatINR(category.amount)}
+                      </p>
+                      <p className="text-caption font-bold text-ink-secondary tabular-nums">
+                        {category.percent}%
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </>
       ) : (
         <div className="rounded-card border border-border-line bg-white p-card shadow-card">

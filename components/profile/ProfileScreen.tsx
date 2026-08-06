@@ -14,9 +14,10 @@ import {
 import { clearAuthSession } from "@/features/auth/session";
 import { clearChatSession } from "@/features/chat/persistence";
 import { resetDemoJourney } from "@/features/demo/reset";
+import { useActivePersona } from "@/features/persona/useActivePersona";
+import type { PersonaId } from "@/features/persona/types";
 import {
   PROFILE_MENU_ITEMS,
-  PROFILE_USER,
   type ProfileMenuId,
 } from "@/features/profile/constants";
 import { clearRegisteredVehicle } from "@/features/vehicle/registration";
@@ -25,7 +26,9 @@ import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 export function ProfileScreen() {
   const router = useRouter();
+  const { persona } = useActivePersona();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [profileDetailsOpen, setProfileDetailsOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   function handleMenu(id: ProfileMenuId) {
@@ -33,8 +36,11 @@ export function ProfileScreen() {
       setLogoutOpen(true);
       return;
     }
-    const labels: Record<Exclude<ProfileMenuId, "logout">, string> = {
-      profile: "Profile details coming soon",
+    if (id === "profile") {
+      setProfileDetailsOpen(true);
+      return;
+    }
+    const labels: Record<Exclude<ProfileMenuId, "logout" | "profile">, string> = {
       autopay: "AutoPay settings coming soon",
       collect: "Collect requests coming soon",
     };
@@ -43,15 +49,6 @@ export function ProfileScreen() {
 
   function confirmLogout() {
     setLogoutOpen(false);
-    // The transcript and registered vehicle are keyed to a person, so leaving
-    // them would carry one login's data into the next.
-    //
-    // Onboarding deliberately survives: it is an account setup, not session
-    // data, so signing back in lands on the home screen rather than repeating
-    // identity, KYC and card setup. "Logout & restart demo" is what clears it.
-    //
-    // The MPIN goes with the session, not the account: leaving it would demand
-    // a PIN the moment the next person finished OTP, which reads as a bug.
     clearChatSession();
     clearRegisteredVehicle();
     clearAuthSession();
@@ -61,9 +58,9 @@ export function ProfileScreen() {
     router.push("/");
   }
 
-  function confirmDemoReset() {
+  function confirmDemoReset(targetPersona: PersonaId) {
     setLogoutOpen(false);
-    resetDemoJourney();
+    resetDemoJourney(targetPersona);
     router.push("/");
   }
 
@@ -77,20 +74,27 @@ export function ProfileScreen() {
           style={staggerStyle(0)}
         >
           <div
-            className="flex h-24 w-24 items-center justify-center rounded-full shadow-soft"
+            className="flex h-24 w-24 items-center justify-center rounded-full shadow-soft font-bold text-3xl text-white"
             style={{
               background: `linear-gradient(180deg, ${colors.pinePrimary} 0%, ${colors.pine} 55%, ${colors.mint} 160%)`,
             }}
             aria-hidden="true"
           >
-            <PersonSilhouette />
+            {persona.profile.initials}
           </div>
           <h2 className="type-section-title mt-2 text-center text-ink">
-            {PROFILE_USER.name}
+            {persona.profile.name}
           </h2>
-          <p className="type-body-secondary text-center">
-            {PROFILE_USER.memberSince}
+          <p className="text-xs text-subtle text-center">
+            {persona.profile.email} • {persona.profile.employeeId}
           </p>
+          <p className="type-body-secondary text-center text-xs">
+            {persona.profile.memberSince}
+          </p>
+          <div className="mt-1 inline-flex items-center gap-1.5 rounded-pill bg-surface-muted px-3 py-1 text-xs font-semibold text-subtle border border-border-line">
+            <span className="h-2 w-2 rounded-full bg-pine" />
+            Active Persona: {persona.label}
+          </div>
         </section>
 
         {notice ? (
@@ -136,33 +140,98 @@ export function ProfileScreen() {
         </nav>
       </main>
 
+      {/* Profile Details Dialog */}
+      {profileDetailsOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="profile-details-title"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl animate-rise-in border border-border-line">
+            <div className="flex items-center justify-between pb-3 border-b border-border-line">
+              <h3 id="profile-details-title" className="text-lg font-bold text-ink">
+                Profile Details
+              </h3>
+              <button
+                type="button"
+                onClick={() => setProfileDetailsOpen(false)}
+                className="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center text-subtle hover:text-ink transition-colors"
+                aria-label="Close details"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-col gap-3 text-sm">
+              <div className="flex justify-between py-1 border-b border-border-line/40">
+                <span className="text-subtle">Full Name</span>
+                <span className="font-semibold text-ink">{persona.profile.name}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border-line/40">
+                <span className="text-subtle">Employee ID</span>
+                <span className="font-semibold text-ink">{persona.profile.employeeId}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border-line/40">
+                <span className="text-subtle">Corporate</span>
+                <span className="font-semibold text-ink">{persona.profile.corporate}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border-line/40">
+                <span className="text-subtle">Work Email</span>
+                <span className="font-semibold text-ink">{persona.profile.email}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border-line/40">
+                <span className="text-subtle">Mobile</span>
+                <span className="font-semibold text-ink">{persona.profile.phone}</span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-border-line/40">
+                <span className="text-subtle">Account Type</span>
+                <span className="font-semibold text-pine-dark">{persona.label}</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-subtle">Status</span>
+                <span className="inline-flex items-center gap-1 font-semibold text-success">
+                  <span className="h-2 w-2 rounded-full bg-success" />
+                  Active
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setProfileDetailsOpen(false)}
+              className="mt-5 w-full rounded-xl bg-pine py-2.5 font-bold text-white shadow-sm hover:bg-pine-dark active:scale-[0.99] transition-all"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       <ConfirmDialog
         open={logoutOpen}
         title="Log out?"
-        description="You will return to the login screen. Your onboarding is saved, so signing back in takes you straight to home."
+        description="You will return to the login screen. Your current onboarding is saved, so signing back in takes you straight to home."
         confirmLabel="Logout"
         cancelLabel="Stay signed in"
-        extraAction={{
-          label: "Logout & restart demo",
-          hint: "For demo: signs out and clears everything — no UPI ID, no onboarding, back to the very first screen.",
-          onSelect: confirmDemoReset,
-        }}
+        extraActions={[
+          {
+            label: "Restart as Brand New User (Aarav)",
+            hint: "Fresh start: 0 claims, 0 txns, 100% full wallet funds, no setup done.",
+            tone: "danger",
+            onSelect: () => confirmDemoReset("new_user"),
+          },
+          {
+            label: "Restart as Returning User (Vishal)",
+            hint: "Established user: Active claims, transactions, limits used & setup done.",
+            tone: "brand",
+            onSelect: () => confirmDemoReset("returning"),
+          },
+        ]}
         onConfirm={confirmLogout}
         onClose={() => setLogoutOpen(false)}
       />
     </AppShell>
-  );
-}
-
-function PersonSilhouette() {
-  return (
-    <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <circle cx="24" cy="18" r="9" fill="white" />
-      <path
-        d="M8 42c2.5-10 10-14 16-14s13.5 4 16 14"
-        fill="white"
-      />
-    </svg>
   );
 }
 

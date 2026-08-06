@@ -253,7 +253,7 @@ function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
         src={withBasePath("/employee-benefits/assets/icons/icici-card-front.png")}
         alt=""
         fill
-        sizes="(max-width: 402px) 100vw, 340px"
+        sizes="(max-width: 434px) 100vw, 340px"
         className="object-cover"
       />
       <Image

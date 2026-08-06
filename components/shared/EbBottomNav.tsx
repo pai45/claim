@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { AppIcon } from "@/components/shared/AppIcon";
 import { BenefitsLogo } from "@/components/shared/BenefitsLogo";
 import { withBasePath } from "@/lib/basePath";
+import { BRAND_ASSETS } from "@/lib/ui/assets";
 
 type EbBottomNavProps = {
   active?: "home" | "benefits" | "transactions";
@@ -13,11 +15,15 @@ type EbBottomNavProps = {
    * out while a full-screen surface takes over.
    */
   hidden?: boolean;
+  /** Replaces the Benefits center action with PlusPay Scan & Pay. */
+  variant?: "benefits" | "pluspay";
   /**
    * Opens the Benefits Assistant in place. Screens that own the assistant pass
    * this; the rest fall back to linking at `/#claims`, which opens it on load.
    */
   onBenefits?: () => void;
+  /** Opens the embedded PlusPay scanner when the PlusPay variant is active. */
+  onScanPay?: () => void;
 };
 
 const NAV_BG =
@@ -27,7 +33,9 @@ export function EbBottomNav({
   active,
   className = "",
   hidden = false,
+  variant = "benefits",
   onBenefits,
+  onScanPay,
 }: EbBottomNavProps) {
   const pathname = usePathname();
   const current =
@@ -37,7 +45,7 @@ export function EbBottomNav({
   // Laid out exactly like the Home and Transactions tabs, so the label picks up
   // the same type and lands on the same line by construction rather than by a
   // hand-set offset that has to be kept in step with them.
-  const benefitsClassName = `relative flex min-h-[139px] flex-col items-center justify-start gap-2 px-2 pb-[11px] pt-[67px] text-caption font-normal leading-[1.2] ${
+  const centerActionClassName = `relative flex min-h-[139px] flex-col items-center justify-start gap-2 px-2 pb-[11px] pt-[67px] text-caption font-normal leading-[1.2] ${
     current === "benefits" ? "text-pine-primary" : "text-[#595e70]"
   }`;
   const benefitsContent = (
@@ -55,6 +63,22 @@ export function EbBottomNav({
       </span>
     </>
   );
+  const scanPayContent = (
+    <>
+      <span className="block h-[22px] w-[22px]" aria-hidden="true" />
+      <span className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-pine-primary shadow-cta">
+        <AppIcon
+          src={BRAND_ASSETS.scanPay}
+          size={40}
+          className="h-10 w-10 object-cover"
+          style={{ filter: 'url("#scan-gif-knockout-host")' }}
+        />
+      </span>
+      <span className="max-w-[82px] overflow-hidden text-ellipsis whitespace-nowrap">
+        Scan &amp; Pay
+      </span>
+    </>
+  );
 
   return (
     <nav
@@ -63,6 +87,25 @@ export function EbBottomNav({
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}
     >
+      {variant === "pluspay" ? (
+        <svg
+          className="pointer-events-none absolute h-0 w-0 overflow-hidden"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <filter
+              id="scan-gif-knockout-host"
+              colorInterpolationFilters="sRGB"
+            >
+              <feColorMatrix
+                type="matrix"
+                values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.319 1.073 0.108 0 -0.5"
+              />
+            </filter>
+          </defs>
+        </svg>
+      ) : null}
       {/*
         The artwork is 139px tall by design and the icons, button and labels are
         all positioned from the top of that 139px box. Letting it stretch over
@@ -99,22 +142,36 @@ export function EbBottomNav({
         <span>Home</span>
       </Link>
 
-      <Link
-        href="/#claims"
-        className={benefitsClassName}
-        aria-label="Benefits"
-        aria-current={current === "benefits" ? "page" : undefined}
-        onClick={
-          onBenefits
-            ? (event) => {
-                event.preventDefault();
-                onBenefits();
-              }
-            : undefined
-        }
-      >
-        {benefitsContent}
-      </Link>
+      {variant === "pluspay" ? (
+        <Link
+          href="/#scan-pay"
+          className={centerActionClassName}
+          aria-label="Scan & Pay"
+          onClick={(event) => {
+            event.preventDefault();
+            onScanPay?.();
+          }}
+        >
+          {scanPayContent}
+        </Link>
+      ) : (
+        <Link
+          href="/#claims"
+          className={centerActionClassName}
+          aria-label="Benefits"
+          aria-current={current === "benefits" ? "page" : undefined}
+          onClick={
+            onBenefits
+              ? (event) => {
+                  event.preventDefault();
+                  onBenefits();
+                }
+              : undefined
+          }
+        >
+          {benefitsContent}
+        </Link>
+      )}
 
       <Link
         href="/transactions/"

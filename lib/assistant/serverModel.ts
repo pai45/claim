@@ -80,7 +80,7 @@ function messagesForRequest(
   if (request.type === "policy") {
     return createPolicyPrompt(
       request.question,
-      request.categoryIds.map(getPolicyCategory),
+      request.categoryIds.map((id) => getPolicyCategory(id)),
       request.history,
     );
   }

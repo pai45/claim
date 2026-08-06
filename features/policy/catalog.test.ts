@@ -5,6 +5,8 @@ import {
   DASHBOARD_CATEGORIES,
   FY_LIMIT,
   UTILIZED_AMOUNT,
+  getDashboardCategories,
+  getDashboardTotals,
 } from "@/features/dashboard/constants";
 import {
   EMPLOYER_BENEFITS_CATALOG,
@@ -44,6 +46,18 @@ describe("employer benefits catalog", () => {
     expect(FY_LIMIT).toBe(
       DASHBOARD_CATEGORIES.reduce((sum, item) => sum + item.allocation, 0),
     );
+  });
+
+  it("shows full claim limits and zero utilization for a brand-new user", () => {
+    const categories = getDashboardCategories("new_user");
+    const totals = getDashboardTotals("new_user");
+
+    for (const category of categories) {
+      expect(category.amount).toBe(category.allocation);
+      expect(category.utilized).toBe(0);
+    }
+    expect(totals.availableLimit).toBe(totals.financialYearLimit);
+    expect(totals.utilizedAmount).toBe(0);
   });
 
   it("contains only qualified tax-treatment language", () => {

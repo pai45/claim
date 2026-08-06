@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { MPIN_UNLOCK_STORAGE_KEY } from "@/features/auth/mpinStorage";
+import { MPIN_STORAGE_KEY, MPIN_UNLOCK_STORAGE_KEY } from "@/features/auth/mpinStorage";
 import { AUTH_STORAGE_KEY } from "@/features/auth/session";
 import { BANNER_STAGE_KEY } from "@/features/chat/bannerRotation";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
@@ -8,6 +8,7 @@ import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
 import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
 import { ONBOARDING_STORAGE_KEY } from "@/features/onboarding/constants";
 import { VEHICLE_STORAGE_KEY } from "@/features/vehicle/registration";
+import { PERSONA_STORAGE_KEY } from "@/features/persona/constants";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 import { UPI_CREATED_STORAGE_KEY, resetDemoJourney } from "./reset";
 
@@ -49,29 +50,30 @@ describe("resetDemoJourney", () => {
     session.setItem(MPIN_UNLOCK_STORAGE_KEY, "seeded");
   });
 
-  it("clears every key the demo writes", () => {
-    resetDemoJourney(local, session);
+  it("wipes state cleanly for new_user persona", () => {
+    resetDemoJourney("new_user", local, session);
 
-    expect([...local.map.keys()]).toEqual([]);
-    expect([...session.map.keys()]).toEqual([]);
-  });
-
-  // Reaching the home screen without a challenge is the one thing a reset must
-  // not carry over, and it is the only MPIN key outside localStorage.
-  it("drops the session unlock so the next run starts at the MPIN gate", () => {
-    resetDemoJourney(local, session);
-
+    expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("new_user");
+    expect(local.getItem(ONBOARDING_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(VEHICLE_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(MPIN_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
   });
 
-  it("leaves the UPI setup flag unset so the embedded app starts fresh", () => {
-    resetDemoJourney(local, session);
+  it("seeds onboarding and vehicle for returning persona", () => {
+    resetDemoJourney("returning", local, session);
 
-    expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("returning");
+    expect(local.getItem(ONBOARDING_STORAGE_KEY)).toBeTruthy();
+    expect(local.getItem(VEHICLE_STORAGE_KEY)).toBeTruthy();
+    expect(local.getItem(MPIN_STORAGE_KEY)).toBeTruthy();
+    expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBe("true");
+    expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
   });
 
   it("is safe when nothing was stored", () => {
     const empty = memoryStorage();
-    expect(() => resetDemoJourney(empty, empty)).not.toThrow();
+    expect(() => resetDemoJourney("new_user", empty, empty)).not.toThrow();
   });
 });

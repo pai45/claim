@@ -135,6 +135,12 @@ const managePreviewHolder = document.querySelector(
 const managePreviewExpiry = document.querySelector(
   "[data-manage-preview-expiry]",
 );
+const currentWalletBalance = document.querySelector(
+  "[data-current-wallet-balance]",
+);
+const manageCurrentBalance = document.querySelector(
+  "[data-manage-current-balance]",
+);
 const manageWalletType = document.querySelector("[data-manage-wallet-type]");
 const trackCardOpenButtons = document.querySelectorAll("[data-track-card-open]");
 const trackCardOverlay = document.querySelector("[data-track-card-overlay]");
@@ -242,6 +248,9 @@ const upiSetupOpenButton = document.querySelector("[data-upi-setup-open]");
 const upiSetupFlow = document.querySelector("[data-upi-setup-flow]");
 const upiIdCards = document.querySelectorAll("[data-upi-id-card]");
 const upiIdValues = document.querySelectorAll("[data-upi-id-value]");
+const upiSettingsOpenButtons = document.querySelectorAll(
+  "[data-upi-settings-open]",
+);
 
 let toastTimer;
 let activeWalletTone = "meal";
@@ -264,10 +273,30 @@ const FALLBACK_STORAGE_KEY = "employee-benefits:fallback-control:v1";
 // funds, so it never appears as a fallback candidate itself.
 const fallbackWalletLabels = { meal: "Meal Wallet", fuel: "Fuel Wallet" };
 const fallbackState = { meal: false, fuel: false };
+const personaFinancialState = {
+  returning: {
+    wallets: {
+      meal: { amount: 6400, display: "₹6,400" },
+      fuel: { amount: 3150, display: "₹3,150" },
+      misc: { amount: 9100, display: "₹9,100" },
+      gift: { amount: 6200, display: "6,200 pts" },
+    },
+    limitUsed: 4200,
+  },
+  new_user: {
+    wallets: {
+      meal: { amount: 10000, display: "₹10,000" },
+      fuel: { amount: 10000, display: "₹10,000" },
+      misc: { amount: 10000, display: "₹10,000" },
+      gift: { amount: 10000, display: "10,000 pts" },
+    },
+    limitUsed: 0,
+  },
+};
 const manageWalletState = {
   meal: {
     label: "Meal Wallet",
-    balance: "₹12,100",
+    balance: "₹6,400",
     summary: "Available balance for daily essentials",
     accessCopy: "Groceries, Restaurants, Food Delivery",
     accessValue: "Allowed",
@@ -4817,6 +4846,35 @@ function createHistoryItem(item) {
   return article;
 }
 
+function isBrandNewPersona() {
+  return window.localStorage.getItem("eb-claims:active-persona") === "new_user";
+}
+
+function createEmptyTransactionState(message) {
+  const notice = document.createElement("p");
+  notice.className = "transaction-empty-state";
+  notice.textContent = message;
+  return notice;
+}
+
+function renderWalletHistory(overlayContent) {
+  if (!walletOverlayHistory) return;
+
+  walletOverlayHistory.replaceChildren();
+  if (isBrandNewPersona()) {
+    walletOverlayHistory.append(
+      createEmptyTransactionState("No transactions yet for this wallet."),
+    );
+    if (walletOverlayViewAllHistory) walletOverlayViewAllHistory.hidden = true;
+    return;
+  }
+
+  overlayContent.history.forEach((item) => {
+    walletOverlayHistory.append(createHistoryItem(item));
+  });
+  if (walletOverlayViewAllHistory) walletOverlayViewAllHistory.hidden = false;
+}
+
 function createMerchantChip(label, isActive) {
   const chip = document.createElement("button");
   chip.type = "button";
@@ -5081,6 +5139,16 @@ document.querySelectorAll("[data-profile-open]").forEach((button) => {
   });
 });
 
+document.querySelectorAll("[data-spend-analytics-open]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-spend-analytics" },
+      window.location.origin,
+    );
+  });
+});
+
 scanPayOpenButtons.forEach((button) => {
   button.addEventListener("click", () => {
     window.location.hash = "scan-pay";
@@ -5089,6 +5157,21 @@ scanPayOpenButtons.forEach((button) => {
 });
 
 upiSetupOpenButton?.addEventListener("click", openUpiSetupFlow);
+
+upiSettingsOpenButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      {
+        type: "employee-benefits:open-upi-settings",
+        tab: document.body.classList.contains("is-pluspay")
+          ? "pluspay"
+          : "benefits",
+      },
+      window.location.origin,
+    );
+  });
+});
 
 claimsCloseButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -5722,12 +5805,7 @@ function openWalletOverlay(button) {
     renderPrimaryAction(primaryAction);
   }
 
-  if (walletOverlayHistory) {
-    walletOverlayHistory.replaceChildren();
-    overlayContent.history.forEach((item) => {
-      walletOverlayHistory.append(createHistoryItem(item));
-    });
-  }
+  renderWalletHistory(overlayContent);
 
   walletOverlay.hidden = false;
   window.requestAnimationFrame(() => {
@@ -6077,7 +6155,113 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+function syncPersonaToApp() {
+  const activePersona = window.localStorage.getItem("eb-claims:active-persona") || "returning";
+  const isNewUser = activePersona === "new_user";
+  const financialState = personaFinancialState[activePersona] || personaFinancialState.returning;
+  const name = isNewUser ? "Aarav Patel" : "Vishal Sharma";
+  const upperName = isNewUser ? "AARAV PATEL" : "VISHAL SHARMA";
+  const initials = isNewUser ? "A" : "V";
+  const upiHandle = isNewUser ? "aarav.patel@pluspay" : "vishal.sharma@pluspay";
+
+  // 1. Avatar button
+  const avatarBtn = document.querySelector("[data-profile-open]");
+  if (avatarBtn) avatarBtn.textContent = initials;
+
+  // 2. Physical / virtual card details and overlay names
+  document.querySelectorAll(".overlay-card-name, [data-manage-preview-holder]").forEach((el) => {
+    el.textContent = upperName;
+  });
+  document.querySelectorAll(".card-details-meta strong, .card-details-row strong, .virtual-card-front strong, .virtual-card-back strong, .manage-cards-card strong").forEach((el) => {
+    if (el.textContent === "Vishal Sharma" || el.textContent === "Aarav Patel" || el.textContent === "VISHAL SHARMA" || el.textContent === "AARAV PATEL") {
+      el.textContent = el.textContent === el.textContent.toUpperCase() ? upperName : name;
+    }
+  });
+
+  // 3. PlusPay handle data attributes
+  document.querySelectorAll("[data-pluspay-text]").forEach((node) => {
+    if (node.dataset.pluspayText && node.dataset.pluspayText.includes("@pluspay")) {
+      node.dataset.pluspayText = upiHandle;
+      if (document.body.classList.contains("is-pluspay")) {
+        node.textContent = upiHandle;
+      }
+    }
+  });
+
+  // 4. Update manageWalletState
+  if (typeof manageWalletState !== "undefined") {
+    Object.keys(manageWalletState).forEach((key) => {
+      if (manageWalletState[key].card) {
+        manageWalletState[key].card.holder = upperName;
+      }
+      manageWalletState[key].balance = financialState.wallets[key].display;
+      manageWalletState[key].limitUsed = financialState.limitUsed;
+    });
+  }
+
+  // 5. Update wallet chips on home screen
+  Object.entries(financialState.wallets).forEach(([key, wallet]) => {
+    const chip = document.querySelector(`.wallet-chip.${key}`);
+    if (!chip) return;
+    chip.setAttribute("data-wallet-balance", wallet.display);
+    const amount = chip.querySelector("strong");
+    if (amount) amount.textContent = wallet.display;
+  });
+
+  // 6. Gift points are excluded from the rupee balance shown on both cards.
+  const totalBalance = ["meal", "fuel", "misc"].reduce(
+    (sum, key) => sum + financialState.wallets[key].amount,
+    0,
+  );
+  const totalBalanceDisplay = formatCurrency(totalBalance);
+  if (currentWalletBalance) currentWalletBalance.textContent = totalBalanceDisplay;
+  if (manageCurrentBalance) manageCurrentBalance.textContent = totalBalanceDisplay;
+  renderManageWalletState();
+
+  // 7. Transactions list visibility
+  const txList = document.querySelector("[data-transaction-list]");
+  if (txList) {
+    const transactionItems = txList.querySelectorAll(":scope > .transaction-item");
+    let emptyNotice = txList.querySelector("[data-no-tx-notice]");
+    if (isNewUser) {
+      transactionItems.forEach((item) => {
+        item.hidden = true;
+      });
+      if (!emptyNotice) {
+        emptyNotice = createEmptyTransactionState(
+          "No transactions yet for your new account.",
+        );
+        emptyNotice.setAttribute("data-no-tx-notice", "true");
+        txList.appendChild(emptyNotice);
+      } else {
+        emptyNotice.hidden = false;
+      }
+    } else {
+      transactionItems.forEach((item) => {
+        item.hidden = false;
+      });
+      if (emptyNotice) emptyNotice.hidden = true;
+    }
+  }
+
+  const activeOverlayContent = walletOverlayContent[activeWalletTone];
+  if (activeOverlayContent && walletOverlay?.classList.contains("is-open")) {
+    renderWalletHistory(activeOverlayContent);
+  }
+}
+
 applyMode(false);
 applyUpiCreatedState(readUpiCreatedState());
+syncPersonaToApp();
+window.addEventListener("storage", (e) => {
+  if (e.key === "eb-claims:active-persona" || e.key === null) {
+    syncPersonaToApp();
+  }
+});
+window.addEventListener("message", (e) => {
+  if (e.data?.type === "employee-benefits:sync-persona") {
+    syncPersonaToApp();
+  }
+});
 if (window.location.hash === "#claims") openClaimsAssistant();
 if (window.location.hash === "#scan-pay") openScanPayFlow();

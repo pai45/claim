@@ -7,6 +7,8 @@ export const BRAND_ASSETS = {
    * Moving this file means updating that markup too.
    */
   plusPay: "/assets/login/pluspay-logo.svg",
+  /** Animated scanner used by the PlusPay center navigation action. */
+  scanPay: "/assets/scan.gif",
   /** Hero art for the MPIN intro screen; falls back to a padlock glyph. */
   mpinLock: "/assets/mpin/mpin.gif",
 } as const;

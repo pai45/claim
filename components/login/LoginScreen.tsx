@@ -16,6 +16,7 @@ import { useViewportHeight } from "@/features/auth/useViewportHeight";
 import { OtpStep } from "./OtpStep";
 import { PhoneStep } from "./PhoneStep";
 import { PlusPayWordmark } from "./PlusPayWordmark";
+import { PersonaBadgeSwitcher } from "./PersonaBadgeSwitcher";
 import type { OtpInputHandle } from "./OtpInput";
 
 // Same pattern as ColorBends in ChatShell: lottie touches `document` at module
@@ -106,8 +107,9 @@ export function LoginScreen() {
 
   return (
     <AppShell variant="login" className="login-viewport overflow-hidden">
-      <header className="flex shrink-0 items-center justify-center px-page pb-5 pt-7">
+      <header className="flex flex-col shrink-0 items-center justify-center px-page pb-2 pt-6 gap-2">
         <PlusPayWordmark />
+        <PersonaBadgeSwitcher />
       </header>
 
       {/* The only flexible row, so the on-screen keyboard squeezes the

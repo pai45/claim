@@ -11,6 +11,8 @@ const CLAIMS_HASH = "#claims";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
+const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
+const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
 const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
@@ -35,6 +37,7 @@ export function EmployeeBenefitsHost() {
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(false);
   const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
+  const [plusPayMode, setPlusPayMode] = useState(false);
   const [cardMpinIntent, setCardMpinIntent] = useState<CardMpinIntent | null>(
     null,
   );
@@ -83,12 +86,26 @@ export function EmployeeBenefitsHost() {
     window.location.assign(withBasePath("/transactions/"));
   }, []);
 
+  const openSpendAnalytics = useCallback(() => {
+    window.location.assign(withBasePath("/transactions/?tab=analytics"));
+  }, []);
+
   const openManageLimits = useCallback(() => {
     window.location.assign(withBasePath("/manage-limit/"));
   }, []);
 
   const openProfile = useCallback(() => {
     window.location.assign(withBasePath("/profile/"));
+  }, []);
+
+  const openUpiSettings = useCallback((tab: "benefits" | "pluspay") => {
+    window.location.assign(withBasePath(`/upi-settings/?tab=${tab}`));
+  }, []);
+
+  const openScanPay = useCallback(() => {
+    frameRef.current?.contentDocument
+      ?.querySelector<HTMLElement>("[data-scan-pay-open]")
+      ?.click();
   }, []);
 
   const connectClaimsBridge = useCallback(() => {
@@ -107,22 +124,23 @@ export function EmployeeBenefitsHost() {
 
     // The source app hides its own nav behind these classes; the host nav
     // lives outside that document, so it has to watch for them.
-    const syncNavVisibility = () => {
+    const syncSourceState = () => {
       setSourceOverlayOpen(
         SOURCE_OVERLAY_CLASSES.some((name) =>
           document.body.classList.contains(name),
         ),
       );
+      setPlusPayMode(document.body.classList.contains("is-pluspay"));
     };
 
     bodyObserverRef.current?.disconnect();
-    const observer = new MutationObserver(syncNavVisibility);
+    const observer = new MutationObserver(syncSourceState);
     observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["class"],
     });
     bodyObserverRef.current = observer;
-    syncNavVisibility();
+    syncSourceState();
 
     // Manage Limit is a standalone Next.js screen opened from this overlay.
     // Re-open the source overlay when the screen's Back button returns home,
@@ -141,6 +159,11 @@ export function EmployeeBenefitsHost() {
         `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`,
       );
     }
+
+    frameRef.current?.contentWindow?.postMessage(
+      { type: "employee-benefits:sync-persona" },
+      "*",
+    );
   }, []);
 
   useEffect(() => () => bodyObserverRef.current?.disconnect(), []);
@@ -171,12 +194,22 @@ export function EmployeeBenefitsHost() {
         openTransactions();
         return;
       }
+      if (event.data?.type === OPEN_SPEND_ANALYTICS_MESSAGE) {
+        openSpendAnalytics();
+        return;
+      }
       if (event.data?.type === OPEN_MANAGE_LIMITS_MESSAGE) {
         openManageLimits();
         return;
       }
       if (event.data?.type === OPEN_PROFILE_MESSAGE) {
         openProfile();
+        return;
+      }
+      if (event.data?.type === OPEN_UPI_SETTINGS_MESSAGE) {
+        openUpiSettings(
+          event.data.tab === "pluspay" ? "pluspay" : "benefits",
+        );
         return;
       }
       if (
@@ -207,7 +240,9 @@ export function EmployeeBenefitsHost() {
     openClaims,
     openManageLimits,
     openProfile,
+    openSpendAnalytics,
     openTransactions,
+    openUpiSettings,
   ]);
 
   return (
@@ -215,7 +250,7 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-brand-v1`}
+        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-scan-nav-v2`}
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />
@@ -226,7 +261,9 @@ export function EmployeeBenefitsHost() {
           claimsOpen || sourceOverlayOpen ? " is-hidden" : ""
         }`}
         hidden={claimsOpen || sourceOverlayOpen}
+        variant={plusPayMode ? "pluspay" : "benefits"}
         onBenefits={openClaims}
+        onScanPay={openScanPay}
       />
 
       {claimsOpen ? (

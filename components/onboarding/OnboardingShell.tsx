@@ -125,11 +125,7 @@ export function OnboardingShell() {
   }
 
   return (
-    <AppShell
-      className={`overflow-hidden ${
-        state.step === "kyc-intro" ? "!max-w-[418px]" : ""
-      }`}
-    >
+    <AppShell className="overflow-hidden">
       {state.step === "intro" ? (
         <IntroStep onContinue={() => dispatch({ type: "go", step: "hub" })} />
       ) : null}

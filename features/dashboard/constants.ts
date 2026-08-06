@@ -1,7 +1,9 @@
 import {
   EMPLOYER_BENEFITS_CATALOG,
+  getEmployerBenefit,
   type PolicyTabId,
 } from "@/features/policy/constants";
+import type { PersonaId } from "@/features/persona/types";
 
 export type DashboardCategory = {
   id: PolicyTabId;
@@ -30,6 +32,36 @@ export const DASHBOARD_CATEGORIES: DashboardCategory[] =
       iconColor: benefit.display.iconTone,
       icon: benefit.display.dashboardIcon as DashboardCategory["icon"],
     }));
+
+export function getDashboardCategories(
+  personaId?: PersonaId,
+): DashboardCategory[] {
+  return DASHBOARD_CATEGORIES.map((category) => {
+    const benefit = getEmployerBenefit(category.id, personaId);
+    return {
+      ...category,
+      amount: benefit.balance.available,
+      utilized: benefit.balance.utilized,
+      allocation: benefit.balance.allocation,
+    };
+  });
+}
+
+export function getDashboardTotals(personaId?: PersonaId): {
+  availableLimit: number;
+  utilizedAmount: number;
+  financialYearLimit: number;
+} {
+  const categories = getDashboardCategories(personaId);
+  return categories.reduce(
+    (totals, category) => ({
+      availableLimit: totals.availableLimit + category.amount,
+      utilizedAmount: totals.utilizedAmount + category.utilized,
+      financialYearLimit: totals.financialYearLimit + category.allocation,
+    }),
+    { availableLimit: 0, utilizedAmount: 0, financialYearLimit: 0 },
+  );
+}
 
 export const AVAILABLE_LIMIT = DASHBOARD_CATEGORIES.reduce(
   (total, category) => total + category.amount,

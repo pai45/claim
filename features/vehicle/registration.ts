@@ -1,4 +1,4 @@
-import { USER_DISPLAY_NAME } from "@/features/chat/constants";
+import { getActivePersonaConfig } from "@/features/persona/store";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 
@@ -75,12 +75,12 @@ export function loadRegisteredVehicle(
       return null;
     }
 
-    // A hand-edited or newly-invalid plate must not wedge the dashboard.
+    const defaultOwner = getActivePersonaConfig(storage).profile.name;
     const result = buildVehicleLookup(
       parsed.regNumber,
       typeof parsed.ownerName === "string" && parsed.ownerName
         ? parsed.ownerName
-        : USER_DISPLAY_NAME,
+        : defaultOwner,
     );
     if (!result.ok) {
       storage.removeItem(VEHICLE_STORAGE_KEY);

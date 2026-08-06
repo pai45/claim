@@ -23,6 +23,7 @@ import {
   DASHBOARD_CATEGORIES,
   formatINR,
 } from "@/features/dashboard/constants";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { useRegisteredVehicle } from "@/features/vehicle/useRegisteredVehicle";
 import type { CategoryIconId } from "@/lib/ui/assets";
 import { colors } from "@/lib/ui/colors";
@@ -85,10 +86,11 @@ function StatusBadge({ status }: { status: BenefitClaimStatus }) {
 
 export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
   const router = useRouter();
+  const { personaId } = useActivePersona();
   const { vehicle, isHydrated } = useRegisteredVehicle();
   const claimOverrides = useClaimOverrides();
   const data = applyBenefitClaimOverrides(
-    getBenefitClaimsDashboard(categoryId),
+    getBenefitClaimsDashboard(categoryId, personaId),
     claimOverrides,
   );
   const categoryMeta =

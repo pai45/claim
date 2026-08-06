@@ -1,0 +1,324 @@
+.upi-settings-shell {
+  --upi-accent: #45c98b;
+  --upi-line: #9fe3c8;
+  position: relative;
+  display: flex;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 434px;
+  margin: 0 auto;
+  padding: 0 22px 28px;
+  flex-direction: column;
+  overflow-x: hidden;
+  background: #fff;
+  color: #141827;
+  box-shadow: 0 0 40px rgba(0, 42, 25, 0.08);
+}
+
+.upi-account-tabs {
+  display: flex;
+  margin-top: 8px;
+  min-height: 43px;
+  align-items: stretch;
+  gap: 13px;
+}
+
+.upi-settings-header {
+  width: calc(100% + 44px);
+  margin-inline: -22px;
+}
+
+.upi-account-tab {
+  display: inline-flex;
+  height: 43px;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 9px 5px 6px;
+  border: 1px solid #d7e6e0;
+  border-radius: 13px;
+  background: #fff;
+  color: #19202d;
+  font-size: 17px;
+  line-height: 1;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.upi-account-tab[aria-selected="true"] {
+  border: 2px solid var(--upi-accent);
+  padding: 4px 8px 4px 5px;
+  box-shadow: 0 2px 4px rgba(0, 74, 56, 0.04);
+}
+
+.upi-account-tab img {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  object-fit: contain;
+}
+
+.upi-pluspay-tab img {
+  width: 24px;
+  height: 24px;
+  flex-basis: 24px;
+}
+
+.upi-settings-panel {
+  display: flex;
+  margin-top: 21px;
+  padding: 16px 16px 17px;
+  flex-direction: column;
+  border: 1px solid var(--upi-line);
+  border-radius: 23px;
+  background: #fff;
+}
+
+.upi-id-card {
+  display: flex;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 13px;
+  border-radius: 13px;
+  background: #f4f4f4;
+}
+
+.upi-id-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.upi-id-copy strong {
+  overflow: hidden;
+  color: #1c2230;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upi-id-copy > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #176e69;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.upi-id-copy i {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #269a8c, #07565b);
+  color: #fff;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.upi-id-actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 13px;
+}
+
+.upi-id-actions button {
+  display: inline-flex;
+  width: 27px;
+  height: 34px;
+  padding: 4px 2px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: #153238;
+}
+
+.upi-id-actions svg {
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.upi-settings-list {
+  display: flex;
+  margin-top: 22px;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.upi-setting-card {
+  display: grid;
+  min-height: 108px;
+  width: 100%;
+  grid-template-columns: 44px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 15px 15px 16px;
+  text-align: left;
+  border: 1px solid var(--upi-line);
+  border-radius: 20px;
+  background: #fff;
+  color: #151a29;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.upi-setting-card:active {
+  transform: translateY(1px);
+  background: #f8fcfa;
+}
+
+.upi-setting-icon {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #299b90;
+}
+
+.upi-setting-icon img {
+  width: 24px;
+  height: 24px;
+}
+
+.upi-setting-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.upi-setting-copy strong {
+  color: #141927;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.upi-setting-copy > span {
+  color: #505463;
+  font-size: 14px;
+  line-height: 1.48;
+  font-weight: 400;
+}
+
+.upi-setting-chevron {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--upi-line);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.upi-deactivate-area {
+  margin-top: 21px;
+  padding-top: 17px;
+  border-top: 1px solid #e7e8e8;
+}
+
+.upi-deactivate-button {
+  width: 100%;
+  min-height: 51px;
+  padding: 11px 18px;
+  border: 1px solid #d1d4d6;
+  border-radius: 13px;
+  background: #f6f6f6;
+  color: #171b28;
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 400;
+}
+
+.upi-powered-by {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 42px;
+}
+
+.upi-powered-by img {
+  width: 49px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.upi-settings-notice {
+  position: fixed;
+  z-index: 10;
+  bottom: 22px;
+  left: 50%;
+  max-width: min(330px, calc(100vw - 40px));
+  margin: 0;
+  padding: 10px 14px;
+  transform: translate(-50%, 12px);
+  border-radius: 999px;
+  background: #173e39;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.upi-settings-notice.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+@media (max-width: 370px) {
+  .upi-settings-shell {
+    padding-inline: 14px;
+  }
+
+  .upi-settings-panel {
+    padding-inline: 12px;
+  }
+
+  .upi-setting-card {
+    grid-template-columns: 40px minmax(0, 1fr) 16px;
+    gap: 10px;
+    padding-inline: 12px;
+  }
+
+  .upi-setting-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .upi-setting-copy strong {
+    font-size: 16px;
+  }
+
+  .upi-setting-copy > span {
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upi-account-tab,
+  .upi-setting-card,
+  .upi-settings-notice {
+    transition: none;
+  }
+}
