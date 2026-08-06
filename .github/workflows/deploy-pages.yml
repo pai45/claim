@@ -42,7 +42,7 @@ jobs:
         run: npm run build:pages
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./.next-verify
 
@@ -55,8 +55,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          # GitHub Pages occasionally keeps an otherwise healthy deployment
-          # queued longer than the action's ten-minute default.
-          timeout: 1800000
+        uses: actions/deploy-pages@v5
