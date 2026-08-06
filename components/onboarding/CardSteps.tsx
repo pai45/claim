@@ -9,6 +9,7 @@ import type {
   OnboardingState,
 } from "@/features/onboarding/types";
 import { colors } from "@/lib/ui/colors";
+import { withBasePath } from "@/lib/basePath";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
@@ -249,14 +250,14 @@ function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
       aria-label={`Card preview for ${cardholder}`}
     >
       <Image
-        src="/employee-benefits/assets/icons/icici-card-front.png"
+        src={withBasePath("/employee-benefits/assets/icons/icici-card-front.png")}
         alt=""
         fill
         sizes="(max-width: 402px) 100vw, 340px"
         className="object-cover"
       />
       <Image
-        src="/employee-benefits/assets/icons/rupay-logo.svg"
+        src={withBasePath("/employee-benefits/assets/icons/rupay-logo.svg")}
         alt="RuPay"
         width={56}
         height={24}

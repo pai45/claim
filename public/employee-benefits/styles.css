@@ -12286,7 +12286,8 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
 .card-pin-panel {
   position: absolute;
   inset: 0;
-  right: 50%;
+  left: 50%;
+  right: auto;
   display: flex;
   width: 100%;
   max-width: 400px;
@@ -12295,7 +12296,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
   background: #f3f3f3;
   opacity: 0;
   overflow: hidden;
-  transform: translateX(calc(50% + 18px));
+  transform: translateX(calc(-50% + 18px));
   transition:
     opacity 180ms ease,
     transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -12303,7 +12304,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
 
 .card-pin-overlay.is-open .card-pin-panel {
   opacity: 1;
-  transform: translateX(50%);
+  transform: translateX(-50%);
 }
 
 .card-pin-header {
