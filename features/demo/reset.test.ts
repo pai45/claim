@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { MPIN_UNLOCK_STORAGE_KEY } from "@/features/auth/mpinStorage";
 import { AUTH_STORAGE_KEY } from "@/features/auth/session";
 import { BANNER_STAGE_KEY } from "@/features/chat/bannerRotation";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
@@ -45,13 +46,22 @@ describe("resetDemoJourney", () => {
     session = memoryStorage();
     LOCAL_KEYS.forEach((key) => local.setItem(key, "seeded"));
     session.setItem(PENDING_INTENT_KEY, "seeded");
+    session.setItem(MPIN_UNLOCK_STORAGE_KEY, "seeded");
   });
 
   it("clears every key the demo writes", () => {
     resetDemoJourney(local, session);
 
     expect([...local.map.keys()]).toEqual([]);
-    expect(session.getItem(PENDING_INTENT_KEY)).toBeNull();
+    expect([...session.map.keys()]).toEqual([]);
+  });
+
+  // Reaching the home screen without a challenge is the one thing a reset must
+  // not carry over, and it is the only MPIN key outside localStorage.
+  it("drops the session unlock so the next run starts at the MPIN gate", () => {
+    resetDemoJourney(local, session);
+
+    expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
   });
 
   it("leaves the UPI setup flag unset so the embedded app starts fresh", () => {

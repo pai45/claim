@@ -3,6 +3,11 @@
 import { useRef, type ChangeEvent, type ReactNode } from "react";
 import type { UploadOptionId } from "@/features/chat/types";
 import { colors } from "@/lib/ui/colors";
+import {
+  CameraMinimalisticIcon,
+  GalleryMinimalisticIcon,
+  UploadSquareIcon,
+} from "./UploadOptionIcons";
 
 type UploadOptionsCardProps = {
   onFileSelected: (file: File) => void;
@@ -25,71 +30,6 @@ function BookmarkIcon() {
   );
 }
 
-function CameraIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <rect
-        x="4"
-        y="7"
-        width="20"
-        height="15"
-        rx="3"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-      />
-      <circle cx="14" cy="14.5" r="4" stroke={colors.pine} strokeWidth="1.6" />
-      <path
-        d="M10 7l1.2-2h5.6L18 7"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function PdfIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <path
-        d="M8 4h8l5 5v14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-      />
-      <path d="M16 4v5h5" stroke={colors.pine} strokeWidth="1.6" />
-      <path
-        d="M10 14h8M10 17.5h5"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function GalleryIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-      <rect
-        x="4"
-        y="6"
-        width="20"
-        height="16"
-        rx="2.5"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-      />
-      <circle cx="10" cy="12" r="2" stroke={colors.pine} strokeWidth="1.4" />
-      <path
-        d="M4.5 18.5l5.5-5 4 3.5 3-2.5 6.5 4.5"
-        stroke={colors.pine}
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 const OPTIONS: {
   id: UploadOptionId;
   label: string;
@@ -102,19 +42,19 @@ const OPTIONS: {
     label: "Take photo",
     accept: "image/*",
     capture: true,
-    icon: <CameraIcon />,
+    icon: <CameraMinimalisticIcon size={28} />,
   },
   {
     id: "pdf",
     label: "Upload PDF",
     accept: "application/pdf",
-    icon: <PdfIcon />,
+    icon: <UploadSquareIcon size={28} />,
   },
   {
     id: "gallery",
-    label: "Choose from gallery",
+    label: "Gallery",
     accept: "image/*",
-    icon: <GalleryIcon />,
+    icon: <GalleryMinimalisticIcon size={28} />,
   },
 ];
 

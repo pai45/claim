@@ -360,7 +360,7 @@
               >
               <strong
                 data-lens-text="₹40,000"
-                data-pluspay-text="v.sharma@pluspay"
+                data-pluspay-text="vishal.sharma@pluspay"
                 >₹40,000</strong
               >
             </div>
@@ -435,7 +435,7 @@
             <span class="upi-id-row">
               <strong
                 data-lens-text="8646721579@pinelabs"
-                data-pluspay-text="v.sharma@pluspay"
+                data-pluspay-text="vishal.sharma@pluspay"
                 data-upi-id-value
                 >8646721579@pinelabs</strong
               >
@@ -615,7 +615,7 @@
             </span>
             <strong>Manage<br />Card</strong>
           </button>
-          <button class="utility-card" type="button">
+          <button class="utility-card" type="button" data-card-pin-open>
             <span class="utility-icon" aria-hidden="true">
               <img src="./assets/icons/UPI-PIN-Reset-home.svg" alt="" />
             </span>
@@ -873,7 +873,7 @@
                 <strong>482</strong>
               </div>
             </div>
-            <strong class="overlay-card-name">V. SHARMA</strong>
+            <strong class="overlay-card-name">VISHAL SHARMA</strong>
           </div>
         </div>
         <div class="overlay-details">
@@ -895,7 +895,7 @@
           <div class="card-details-meta">
             <div>
               <span>Name</span>
-              <strong>V. Sharma</strong>
+              <strong>Vishal Sharma</strong>
             </div>
             <div>
               <span>Expiry</span>
@@ -1171,7 +1171,7 @@
                       class="manage-card-holder"
                       data-manage-preview-holder
                       data-card-sensitive="holder"
-                      >ALEX MORGAN</strong
+                      >VISHAL SHARMA</strong
                     >
                     <div class="manage-card-cvv">
                       <span>CVV</span>
@@ -1223,7 +1223,7 @@
               <button
                 class="manage-cards-control-tile"
                 type="button"
-                data-toast="Set/ Reset PIN is coming soon"
+                data-card-pin-open
               >
                 <span class="manage-cards-control-icon" aria-hidden="true">
                   <img src="./assets/icons/card-pin-reset.svg" alt="" />
@@ -1441,7 +1441,7 @@
           </section>
 
           <section class="track-activate-card">
-            <strong>Received Your Card?</strong>
+            <strong data-track-activate-label>Received Your Card?</strong>
             <button type="button" data-track-activate-open>Activate Now</button>
           </section>
         </div>
@@ -1485,7 +1485,7 @@
               <strong>•••• •••• •••• 7845</strong>
             </div>
             <div class="track-activation-holder">
-              <strong>ALEX MORGAN</strong>
+              <strong>VISHAL SHARMA</strong>
               <span>CARD HOLDER</span>
             </div>
             <div class="track-activation-expiry">
@@ -1498,7 +1498,7 @@
         <dl class="track-activation-details">
           <div>
             <dt>Cardholder Name</dt>
-            <dd>ALEX MORGAN</dd>
+            <dd>VISHAL SHARMA</dd>
           </div>
           <div>
             <dt>Expiry Date</dt>
@@ -1528,6 +1528,120 @@
         >
           Confirm &amp; Activate
         </button>
+      </section>
+    </div>
+
+    <div class="card-pin-overlay" data-card-pin-overlay hidden>
+      <section class="card-pin-panel" aria-labelledby="card-pin-title">
+        <header class="card-pin-header">
+          <button
+            class="card-pin-back"
+            type="button"
+            aria-label="Close Set Benefits Card PIN"
+            data-card-pin-close
+          >
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+          <h2 id="card-pin-title">Set Benefits Card PIN</h2>
+        </header>
+
+        <div class="card-pin-scroll">
+          <section class="card-pin-entry" aria-label="Benefits Card PIN details">
+            <div class="card-pin-field-group">
+              <div class="card-pin-label-row">
+                <label for="card-pin-digit-1">Enter Benefits Card PIN</label>
+                <button
+                  type="button"
+                  aria-label="Show Benefits Card PIN"
+                  aria-pressed="false"
+                  data-card-pin-visibility="pin"
+                >
+                  <svg aria-hidden="true"><use href="#icon-eye" /></svg>
+                </button>
+              </div>
+              <div class="card-pin-digits" data-card-pin-digits="pin">
+                <input id="card-pin-digit-1" type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Benefits Card PIN digit 1" data-card-pin-digit="pin" />
+                <input type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Benefits Card PIN digit 2" data-card-pin-digit="pin" />
+                <input type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Benefits Card PIN digit 3" data-card-pin-digit="pin" />
+                <input type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Benefits Card PIN digit 4" data-card-pin-digit="pin" />
+              </div>
+            </div>
+
+            <div class="card-pin-field-group">
+              <div class="card-pin-label-row">
+                <label for="card-pin-confirm-digit-1">Re-enter Benefits Card PIN</label>
+                <button
+                  type="button"
+                  aria-label="Show re-entered Benefits Card PIN"
+                  aria-pressed="false"
+                  data-card-pin-visibility="confirm"
+                >
+                  <svg aria-hidden="true"><use href="#icon-eye" /></svg>
+                </button>
+              </div>
+              <div class="card-pin-digits" data-card-pin-digits="confirm">
+                <input id="card-pin-confirm-digit-1" type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Re-entered Benefits Card PIN digit 1" data-card-pin-digit="confirm" />
+                <input type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Re-entered Benefits Card PIN digit 2" data-card-pin-digit="confirm" />
+                <input type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Re-entered Benefits Card PIN digit 3" data-card-pin-digit="confirm" />
+                <input type="password" inputmode="numeric" maxlength="1" autocomplete="off" aria-label="Re-entered Benefits Card PIN digit 4" data-card-pin-digit="confirm" />
+              </div>
+            </div>
+            <p class="card-pin-error" role="status" aria-live="polite" data-card-pin-error></p>
+          </section>
+
+          <aside class="card-pin-guidelines" aria-labelledby="card-pin-guidelines-title">
+            <strong id="card-pin-guidelines-title">PIN Guidelines:</strong>
+            <ul>
+              <li>Must be 4 digits</li>
+              <li>Avoid repeating digits (e.g., 1111)</li>
+              <li>Avoid sequential digits (e.g., 1234)</li>
+            </ul>
+          </aside>
+
+          <p class="card-pin-note">
+            Note: You will have to enter the MPIN to set/reset your Card PIN.
+          </p>
+        </div>
+
+        <div class="card-pin-footer">
+          <button type="button" disabled data-card-pin-submit>Set PIN</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="card-success-overlay" data-card-success-overlay hidden>
+      <button
+        class="card-success-backdrop"
+        type="button"
+        aria-label="Close success message"
+        data-card-success-close
+      ></button>
+      <section
+        class="card-success-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Card update successful"
+        data-card-success-sheet
+      >
+        <span class="card-success-badge" aria-hidden="true">
+          <svg><use href="#icon-check" /></svg>
+        </span>
+
+        <div data-card-success-activation>
+          <h2 id="card-success-title">Card Activated Successfully</h2>
+          <p>Your Benefits card is now ready to use</p>
+          <div class="card-success-actions">
+            <button type="button" data-card-success-set-pin>Set PIN</button>
+            <button class="is-secondary" type="button" data-card-success-done>Done</button>
+          </div>
+        </div>
+
+        <div data-card-success-pin hidden>
+          <h2 data-card-success-pin-title>
+            Your Benefits Card PIN has been<br />Set Successfully
+          </h2>
+          <button class="card-success-ok" type="button" data-card-success-ok>OK</button>
+        </div>
       </section>
     </div>
 

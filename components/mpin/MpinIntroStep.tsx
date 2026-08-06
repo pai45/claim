@@ -6,7 +6,6 @@ import { PrimaryFooter } from "@/components/onboarding/PrimaryFooter";
 import { withBasePath } from "@/lib/basePath";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
 import { colors } from "@/lib/ui/colors";
-import { MpinHeader } from "./MpinHeader";
 
 type MpinIntroStepProps = {
   onStart: () => void;
@@ -67,11 +66,17 @@ function LockArtwork() {
 
 export function MpinIntroStep({ onStart }: MpinIntroStepProps) {
   return (
-    <>
-      <MpinHeader />
+    <section
+      className="animate-sheet-rise mt-auto flex h-[60dvh] min-h-0 flex-col overflow-hidden rounded-t-card bg-white shadow-drawer"
+      aria-labelledby="mpin-setup-title"
+    >
+      <div
+        className="mx-auto mt-2 h-1 w-12 shrink-0 rounded-full bg-border-muted"
+        aria-hidden="true"
+      />
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
-        <h1 className="type-screen-title text-center">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-3 pt-6">
+        <h1 id="mpin-setup-title" className="type-screen-title text-center">
           Secure Your Payments
           <br />
           before your 1st Transaction
@@ -80,12 +85,12 @@ export function MpinIntroStep({ onStart }: MpinIntroStepProps) {
           Create your 4-digit MPIN to get started with your first transaction!
         </p>
 
-        <div className="flex flex-1 items-center justify-center py-6">
+        <div className="flex flex-1 items-center justify-center py-4">
           <LockArtwork />
         </div>
       </main>
 
       <PrimaryFooter label="Set up MPIN" onClick={onStart} />
-    </>
+    </section>
   );
 }

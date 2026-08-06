@@ -303,7 +303,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
 
         {hasMessages && !attachOpen && !confirmClearOpen ? (
           <NewChatWidget
-            onNewChat={requestClear}
+            onClearChat={handleConfirmedClear}
             completedClaimKey={completedClaimKey}
             reduceMotion={reduceMotion}
           />

@@ -92,6 +92,15 @@ export function onboardingReducer(
         address: { ...KYC_ADDRESS, sameAsKyc: true },
       };
 
+    case "set-card-embossment-field":
+      return {
+        ...state,
+        cardEmbossment: {
+          ...state.cardEmbossment,
+          [action.field]: action.value,
+        },
+      };
+
     case "set-kit-number":
       return { ...state, kitNumber: action.value };
 

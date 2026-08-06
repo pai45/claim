@@ -12270,3 +12270,388 @@ body.is-pluspay .bottom-nav .pluspay-scan-button {
     padding-left: 48px;
   }
 }
+
+/* Set / Reset Benefits Card PIN */
+.card-pin-overlay,
+.card-success-overlay {
+  position: fixed;
+  inset: 0;
+}
+
+.card-pin-overlay {
+  z-index: 60;
+  background: #f3f3f3;
+}
+
+.card-pin-panel {
+  position: absolute;
+  inset: 0;
+  right: 50%;
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+  height: 100dvh;
+  flex-direction: column;
+  background: #f3f3f3;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateX(calc(50% + 18px));
+  transition:
+    opacity 180ms ease,
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-pin-overlay.is-open .card-pin-panel {
+  opacity: 1;
+  transform: translateX(50%);
+}
+
+.card-pin-header {
+  display: flex;
+  min-height: 82px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 14px;
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 12px;
+}
+
+.card-pin-back {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(32, 35, 40, 0.1);
+  color: #202328;
+}
+
+.card-pin-back svg {
+  width: 18px;
+  height: 18px;
+  transform: rotate(180deg);
+}
+
+.card-pin-header h2 {
+  margin: 0;
+  color: #202328;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.card-pin-scroll {
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 10px 20px 24px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.card-pin-entry {
+  display: grid;
+  gap: 20px;
+  padding: 18px 14px 10px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.card-pin-field-group {
+  display: grid;
+  gap: 14px;
+}
+
+.card-pin-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.card-pin-label-row label {
+  color: #202328;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.card-pin-label-row button {
+  position: relative;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #626a7d;
+}
+
+.card-pin-label-row button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.card-pin-label-row button[aria-pressed="false"]::after {
+  position: absolute;
+  width: 18px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  transform: rotate(42deg);
+}
+
+.card-pin-digits {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.card-pin-digits input {
+  width: 100%;
+  min-width: 0;
+  height: 52px;
+  padding: 0;
+  border: 1px solid #dfe3e7;
+  border-radius: 10px;
+  outline: none;
+  background: #ffffff;
+  color: #125e5d;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  caret-color: #125e5d;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.card-pin-digits input:focus {
+  border-color: #0a6665;
+  box-shadow: 0 0 0 2px rgba(10, 102, 101, 0.1);
+}
+
+.card-pin-digits input.is-invalid {
+  border-color: #c74747;
+}
+
+.card-pin-error {
+  min-height: 18px;
+  margin: -6px 0 0;
+  color: #b43b3b;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}
+
+.card-pin-guidelines {
+  margin-top: 18px;
+  padding: 13px 14px 11px;
+  border: 1px solid #dce8c6;
+  border-radius: 8px;
+  background: #f5ffe8;
+  color: #202328;
+}
+
+.card-pin-guidelines strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.card-pin-guidelines ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding-left: 20px;
+  color: #626a7d;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.card-pin-note {
+  margin: 18px 0 0;
+  color: #30343a;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.card-pin-footer {
+  flex: 0 0 auto;
+  padding: 10px 20px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  background: #f3f3f3;
+}
+
+.card-pin-footer button {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  border-radius: 7px;
+  background: #126260;
+  color: #ffffff;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.card-pin-footer button:disabled {
+  background: #8eb3b2;
+  cursor: not-allowed;
+}
+
+.card-pin-back:focus-visible,
+.card-pin-label-row button:focus-visible,
+.card-pin-footer button:focus-visible {
+  outline: 2px solid #0a6665;
+  outline-offset: 2px;
+}
+
+/* Activation and Card PIN success bottom sheets */
+.card-success-overlay {
+  z-index: 70;
+}
+
+.card-success-overlay[hidden],
+.card-pin-overlay[hidden],
+.card-success-sheet [hidden] {
+  display: none;
+}
+
+.card-success-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(28, 30, 31, 0.8);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.card-success-sheet {
+  position: absolute;
+  right: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  width: calc(100% - 40px);
+  max-width: 368px;
+  padding: 72px 24px 24px;
+  border-radius: 18px;
+  background: #ffffff;
+  color: #202328;
+  text-align: center;
+  transform: translate(50%, calc(100% + 90px));
+  transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.card-success-overlay.is-open .card-success-backdrop {
+  opacity: 1;
+}
+
+.card-success-overlay.is-open .card-success-sheet {
+  transform: translate(50%, 0);
+}
+
+.card-success-badge {
+  position: absolute;
+  top: -42px;
+  left: 50%;
+  display: grid;
+  width: 84px;
+  height: 84px;
+  place-items: center;
+  border: 10px solid #ffffff;
+  border-radius: 50%;
+  background: #32a852;
+  color: #ffffff;
+  transform: translateX(-50%);
+}
+
+.card-success-badge svg {
+  width: 34px;
+  height: 34px;
+  stroke-width: 2.4;
+}
+
+.card-success-sheet h2 {
+  margin: 0;
+  color: #202328;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.card-success-sheet p {
+  margin: 14px 0 0;
+  color: #626a7d;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.card-success-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 32px;
+}
+
+.card-success-actions button,
+.card-success-ok {
+  min-height: 50px;
+  border: 1px solid #126260;
+  border-radius: 8px;
+  background: #126260;
+  color: #ffffff;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.card-success-actions button.is-secondary {
+  background: #ffffff;
+  color: #126260;
+}
+
+[data-card-success-pin] h2 {
+  font-size: 19px;
+  line-height: 1.18;
+}
+
+.card-success-ok {
+  width: 100%;
+  margin-top: 28px;
+  font-size: 14px;
+}
+
+.card-success-actions button:focus-visible,
+.card-success-ok:focus-visible {
+  outline: 2px solid #0a6665;
+  outline-offset: 2px;
+}
+
+@media (max-width: 340px) {
+  .card-pin-header,
+  .card-pin-scroll,
+  .card-pin-footer {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .card-pin-digits {
+    gap: 12px;
+  }
+
+  .card-success-sheet {
+    width: calc(100% - 24px);
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+}

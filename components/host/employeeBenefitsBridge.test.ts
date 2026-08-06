@@ -5,6 +5,10 @@ const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
+const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
+const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
+const MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
+const CARD_MPIN_INTENTS = ["activate-card", "set-card-pin"] as const;
 
 function isClaimsHash(hash: string) {
   return hash.toLowerCase() === CLAIMS_HASH;
@@ -37,5 +41,19 @@ describe("Employee Benefits claims bridge", () => {
   it("uses a distinct message type for Profile", () => {
     expect(OPEN_PROFILE_MESSAGE).toBe("employee-benefits:open-profile");
     expect(OPEN_PROFILE_MESSAGE).not.toBe(OPEN_MANAGE_LIMITS_MESSAGE);
+  });
+
+  it("uses a dedicated request/result contract for card MPIN verification", () => {
+    expect(VERIFY_MPIN_MESSAGE).toBe("employee-benefits:verify-mpin");
+    expect(MPIN_VERIFIED_MESSAGE).toBe("employee-benefits:mpin-verified");
+    expect(MPIN_CANCELLED_MESSAGE).toBe("employee-benefits:mpin-cancelled");
+    expect(
+      new Set([
+        VERIFY_MPIN_MESSAGE,
+        MPIN_VERIFIED_MESSAGE,
+        MPIN_CANCELLED_MESSAGE,
+      ]).size,
+    ).toBe(3);
+    expect(CARD_MPIN_INTENTS).toEqual(["activate-card", "set-card-pin"]);
   });
 });

@@ -2,6 +2,10 @@ import { initialMpinLock, type MpinLock } from "./mpin";
 
 export const MPIN_STORAGE_KEY = "eb-claims:mpin";
 export const MPIN_LOCK_STORAGE_KEY = "eb-claims:mpin-lock";
+/**
+ * Lives in sessionStorage, unlike the two keys above. See `markMpinUnlocked`.
+ */
+export const MPIN_UNLOCK_STORAGE_KEY = "eb-claims:mpin-unlocked";
 export const MPIN_STORAGE_VERSION = 1;
 /** localStorage's `storage` event never fires in the tab that wrote it. */
 export const MPIN_EVENT = "eb-claims:mpin-changed";
@@ -150,6 +154,51 @@ export function clearMpinLock(
 ): void {
   try {
     storage.removeItem(MPIN_LOCK_STORAGE_KEY);
+  } catch {
+    // Clearing should remain safe when storage is blocked.
+  }
+}
+
+/**
+ * Records that this tab has cleared the MPIN gate.
+ *
+ * sessionStorage rather than component state: the gate sits on the home screen
+ * only, so walking out to /profile or /dashboard and back unmounts it, and
+ * re-challenging on every return reads as the unlock never having registered.
+ * sessionStorage rather than localStorage: a new tab still starts challenged,
+ * which is the boundary "once per app session" actually means here.
+ *
+ * The value carries the version so a future bump invalidates unlocks that were
+ * granted against the old record shape.
+ */
+export function markMpinUnlocked(
+  storage: StorageLike = window.sessionStorage,
+): void {
+  try {
+    storage.setItem(MPIN_UNLOCK_STORAGE_KEY, String(MPIN_STORAGE_VERSION));
+  } catch {
+    // Storage may be unavailable in private browsing or managed environments.
+  }
+}
+
+export function isMpinUnlocked(
+  storage: StorageLike = window.sessionStorage,
+): boolean {
+  try {
+    return (
+      storage.getItem(MPIN_UNLOCK_STORAGE_KEY) === String(MPIN_STORAGE_VERSION)
+    );
+  } catch {
+    // An unreadable store means we cannot prove the gate was cleared.
+    return false;
+  }
+}
+
+export function clearMpinUnlock(
+  storage: StorageLike = window.sessionStorage,
+): void {
+  try {
+    storage.removeItem(MPIN_UNLOCK_STORAGE_KEY);
   } catch {
     // Clearing should remain safe when storage is blocked.
   }

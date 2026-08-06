@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatShell } from "@/components/chat/ChatShell";
+import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
@@ -11,6 +12,16 @@ const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
+const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
+const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
+const MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
+const MANAGE_CARDS_RETURN_QUERY = "returnTo";
+const MANAGE_CARDS_RETURN_VALUE = "manage-cards";
+type CardMpinIntent = "activate-card" | "set-card-pin";
+
+function isCardMpinIntent(value: unknown): value is CardMpinIntent {
+  return value === "activate-card" || value === "set-card-pin";
+}
 
 /**
  * Body classes the source app sets while one of its full-screen surfaces
@@ -24,6 +35,31 @@ export function EmployeeBenefitsHost() {
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(false);
   const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
+  const [cardMpinIntent, setCardMpinIntent] = useState<CardMpinIntent | null>(
+    null,
+  );
+
+  const replyToEmployeeBenefits = useCallback(
+    (type: string, intent: CardMpinIntent) => {
+      frameRef.current?.contentWindow?.postMessage(
+        { type, intent },
+        window.location.origin,
+      );
+    },
+    [],
+  );
+
+  const closeCardMpin = useCallback(() => {
+    if (!cardMpinIntent) return;
+    replyToEmployeeBenefits(MPIN_CANCELLED_MESSAGE, cardMpinIntent);
+    setCardMpinIntent(null);
+  }, [cardMpinIntent, replyToEmployeeBenefits]);
+
+  const completeCardMpin = useCallback(() => {
+    if (!cardMpinIntent) return;
+    replyToEmployeeBenefits(MPIN_VERIFIED_MESSAGE, cardMpinIntent);
+    setCardMpinIntent(null);
+  }, [cardMpinIntent, replyToEmployeeBenefits]);
 
   const openClaims = useCallback(() => {
     setClaimsOpen(true);
@@ -87,6 +123,24 @@ export function EmployeeBenefitsHost() {
     });
     bodyObserverRef.current = observer;
     syncNavVisibility();
+
+    // Manage Limit is a standalone Next.js screen opened from this overlay.
+    // Re-open the source overlay when the screen's Back button returns home,
+    // then remove the one-time instruction from the URL.
+    const searchParams = new URLSearchParams(window.location.search);
+    if (
+      searchParams.get(MANAGE_CARDS_RETURN_QUERY) ===
+      MANAGE_CARDS_RETURN_VALUE
+    ) {
+      document.querySelector<HTMLElement>("[data-manage-cards-open]")?.click();
+      searchParams.delete(MANAGE_CARDS_RETURN_QUERY);
+      const search = searchParams.toString();
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${search ? `?${search}` : ""}${window.location.hash}`,
+      );
+    }
   }, []);
 
   useEffect(() => () => bodyObserverRef.current?.disconnect(), []);
@@ -99,7 +153,12 @@ export function EmployeeBenefitsHost() {
       setClaimsOpen(window.location.hash.toLowerCase() === CLAIMS_HASH);
     };
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && claimsOpen) closeClaims();
+      if (event.key !== "Escape") return;
+      if (cardMpinIntent) {
+        closeCardMpin();
+        return;
+      }
+      if (claimsOpen) closeClaims();
     };
     const receiveHostBridge = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
@@ -118,6 +177,13 @@ export function EmployeeBenefitsHost() {
       }
       if (event.data?.type === OPEN_PROFILE_MESSAGE) {
         openProfile();
+        return;
+      }
+      if (
+        event.data?.type === VERIFY_MPIN_MESSAGE &&
+        isCardMpinIntent(event.data.intent)
+      ) {
+        setCardMpinIntent(event.data.intent);
       }
     };
 
@@ -135,6 +201,8 @@ export function EmployeeBenefitsHost() {
     };
   }, [
     claimsOpen,
+    cardMpinIntent,
+    closeCardMpin,
     closeClaims,
     openClaims,
     openManageLimits,
@@ -169,6 +237,21 @@ export function EmployeeBenefitsHost() {
           aria-label="Benefits Assistant"
         >
           <ChatShell onClose={closeClaims} />
+        </section>
+      ) : null}
+
+      {cardMpinIntent ? (
+        <section
+          className="employee-benefits-mpin-verification"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Verify MPIN"
+        >
+          <MpinLockScreen
+            key={cardMpinIntent}
+            onUnlock={completeCardMpin}
+            onCancel={closeCardMpin}
+          />
         </section>
       ) : null}
     </main>

@@ -88,4 +88,22 @@ describe("onboardingReducer", () => {
     });
     expect(state.kitNumber).toBe(DEMO_KIT_NUMBER);
   });
+
+  it("stores the first and last names selected for card embossment", () => {
+    let state = createInitialOnboardingState();
+    state = onboardingReducer(state, {
+      type: "set-card-embossment-field",
+      field: "firstName",
+      value: "Vishal",
+    });
+    state = onboardingReducer(state, {
+      type: "set-card-embossment-field",
+      field: "lastName",
+      value: "Sharma",
+    });
+    expect(state.cardEmbossment).toEqual({
+      firstName: "Vishal",
+      lastName: "Sharma",
+    });
+  });
 });

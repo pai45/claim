@@ -6,7 +6,11 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
-import { clearMpin, clearMpinLock } from "@/features/auth/mpinStorage";
+import {
+  clearMpin,
+  clearMpinLock,
+  clearMpinUnlock,
+} from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
 import { clearChatSession } from "@/features/chat/persistence";
 import { resetDemoJourney } from "@/features/demo/reset";
@@ -53,6 +57,7 @@ export function ProfileScreen() {
     clearAuthSession();
     clearMpin();
     clearMpinLock();
+    clearMpinUnlock();
     router.push("/");
   }
 

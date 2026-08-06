@@ -16,7 +16,7 @@ function fakeStorage() {
   };
 }
 
-function lookupOrThrow(plate: string, owner = "Akshay") {
+function lookupOrThrow(plate: string, owner = "Vishal Sharma") {
   const result = buildVehicleLookup(plate, owner);
   if (!result.ok) throw new Error(`expected ${plate} to parse: ${result.message}`);
   return result.lookup;
@@ -33,7 +33,7 @@ describe("registered vehicle store", () => {
     expect(loaded?.registeredAt).toBe(1000);
     expect(loaded?.lookup.profile.id).toBe(lookup.profile.id);
     expect(loaded?.lookup.regNumber.formatted).toBe("KA 05 RS 1035");
-    expect(loaded?.lookup.ownerName).toBe("Akshay");
+    expect(loaded?.lookup.ownerName).toBe("Vishal Sharma");
     expect(loaded?.lookup.chassisNumber).toBe(lookup.chassisNumber);
     expect(loaded?.lookup.engineNumber).toBe(lookup.engineNumber);
   });
@@ -48,7 +48,7 @@ describe("registered vehicle store", () => {
     expect(stored).toEqual({
       version: 1,
       regNumber: "KA05RS1035",
-      ownerName: "Akshay",
+      ownerName: "Vishal Sharma",
       registeredAt: expect.any(Number),
     });
   });
@@ -83,7 +83,7 @@ describe("registered vehicle store", () => {
       JSON.stringify({
         version: 1,
         regNumber: "ZZ99ZZ9999",
-        ownerName: "Akshay",
+        ownerName: "Vishal Sharma",
         registeredAt: 1,
       }),
     );
@@ -99,7 +99,7 @@ describe("registered vehicle store", () => {
       JSON.stringify({ version: 1, regNumber: "KA05RS1035", registeredAt: 1 }),
     );
 
-    expect(loadRegisteredVehicle(storage)?.lookup.ownerName).toBe("Akshay");
+    expect(loadRegisteredVehicle(storage)?.lookup.ownerName).toBe("Vishal Sharma");
   });
 
   it("clears the stored vehicle", () => {

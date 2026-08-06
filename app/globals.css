@@ -118,6 +118,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* `@theme inline` makes this token available to Tailwind utilities, but does
+   not emit it as a browser custom property. Define it where Next's local-font
+   variables are present so semantic heading styles use PP Telegraf at runtime. */
+body {
+  --font-display: var(--font-pp-telegraf), "PP Telegraf", var(--font-lato),
+    "Lato", ui-sans-serif, system-ui, sans-serif;
+}
+
 /* Headings: PP Telegraf */
 h1,
 h2,

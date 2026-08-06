@@ -1,7 +1,7 @@
 import type { QuickAction } from "./types";
 import { EMPLOYER_BENEFITS_CATALOG } from "@/features/policy/constants";
 
-export const USER_DISPLAY_NAME = "Akshay";
+export const USER_DISPLAY_NAME = "Vishal Sharma";
 
 /**
  * Order matters — the row is a single horizontal scroller, so the first three

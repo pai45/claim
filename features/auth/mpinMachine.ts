@@ -44,8 +44,9 @@ export function activeDigits(state: MpinSetupState): string[] {
 }
 
 /**
- * Guards live here rather than on the disabled attribute alone, so the
- * auto-advance timer cannot fire against a half-filled row.
+ * Guards live here rather than on the disabled attribute alone: `advance` and
+ * `saving` are reachable from a keyboard-submitted form or a stale handler, and
+ * neither may act on a half-filled row.
  */
 export function canAdvance(state: MpinSetupState): boolean {
   return isMpinComplete(activeDigits(state)) && state.status !== "saving";

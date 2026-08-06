@@ -21,6 +21,7 @@ import {
 import {
   clearMpin,
   clearMpinLock,
+  clearMpinUnlock,
   loadMpin,
   loadMpinLock,
   saveMpinLock,
@@ -32,6 +33,7 @@ const VERIFY_DELAY_MS = 200;
 
 type MpinLockScreenProps = {
   onUnlock: () => void;
+  onCancel?: () => void;
 };
 
 /**
@@ -43,7 +45,7 @@ function readLock(): MpinLock {
   return loadMpinLock();
 }
 
-export function MpinLockScreen({ onUnlock }: MpinLockScreenProps) {
+export function MpinLockScreen({ onUnlock, onCancel }: MpinLockScreenProps) {
   const [digits, setDigits] = useState(emptyMpin);
   const [error, setError] = useState<string | null>(null);
   const [shakeKey, setShakeKey] = useState(0);
@@ -123,6 +125,7 @@ export function MpinLockScreen({ onUnlock }: MpinLockScreenProps) {
     // session: `HomeEntry` falls back to login and, after OTP, to setup.
     clearMpin();
     clearMpinLock();
+    clearMpinUnlock();
     clearAuthSession();
   }
 
@@ -151,6 +154,7 @@ export function MpinLockScreen({ onUnlock }: MpinLockScreenProps) {
         error={message}
         shakeKey={shakeKey}
         locked={lockedOut}
+        onBack={onCancel}
         footnote={
           <div className="mt-1">
             {lockedOut ? (

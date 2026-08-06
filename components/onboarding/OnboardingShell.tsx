@@ -20,7 +20,13 @@ import {
   openVkycDemo,
   readVkycDone,
 } from "@/features/onboarding/vkycHandoff";
-import { CardAddressStep, CardChoiceStep, CardKitStep, ReadyStep } from "./CardSteps";
+import {
+  CardAddressStep,
+  CardChoiceStep,
+  CardEmbossmentStep,
+  CardKitStep,
+  ReadyStep,
+} from "./CardSteps";
 import { HubStep } from "./HubStep";
 import { IdentityDetailsStep, IdentityEmailStep } from "./IdentitySteps";
 import { IntroStep } from "./IntroStep";
@@ -203,6 +209,17 @@ export function OnboardingShell() {
           onBack={() => dispatch({ type: "go", step: "card-choice" })}
           onChange={(field, value) =>
             dispatch({ type: "set-address-field", field, value })
+          }
+          onProceed={() => dispatch({ type: "go", step: "card-embossment" })}
+        />
+      ) : null}
+
+      {state.step === "card-embossment" ? (
+        <CardEmbossmentStep
+          embossment={state.cardEmbossment}
+          onBack={() => dispatch({ type: "go", step: "card-address" })}
+          onChange={(field, value) =>
+            dispatch({ type: "set-card-embossment-field", field, value })
           }
           onComplete={() => dispatch({ type: "card-setup-complete" })}
         />

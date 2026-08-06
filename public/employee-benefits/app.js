@@ -164,6 +164,35 @@ const trackActivationCvvToggle = document.querySelector(
 const trackConfirmActivateButton = document.querySelector(
   "[data-track-confirm-activate]",
 );
+const trackActivateLabel = document.querySelector("[data-track-activate-label]");
+const cardPinOpenButtons = document.querySelectorAll("[data-card-pin-open]");
+const cardPinOverlay = document.querySelector("[data-card-pin-overlay]");
+const cardPinPanel = document.querySelector(".card-pin-panel");
+const cardPinTitle = document.querySelector("#card-pin-title");
+const cardPinCloseButtons = document.querySelectorAll("[data-card-pin-close]");
+const cardPinInputs = Array.from(
+  document.querySelectorAll("[data-card-pin-digit]"),
+);
+const cardPinVisibilityButtons = document.querySelectorAll(
+  "[data-card-pin-visibility]",
+);
+const cardPinError = document.querySelector("[data-card-pin-error]");
+const cardPinSubmitButton = document.querySelector("[data-card-pin-submit]");
+const cardSuccessOverlay = document.querySelector("[data-card-success-overlay]");
+const cardSuccessSheet = document.querySelector("[data-card-success-sheet]");
+const cardSuccessActivation = document.querySelector(
+  "[data-card-success-activation]",
+);
+const cardSuccessPin = document.querySelector("[data-card-success-pin]");
+const cardSuccessPinTitle = document.querySelector(
+  "[data-card-success-pin-title]",
+);
+const cardSuccessCloseButtons = document.querySelectorAll(
+  "[data-card-success-close], [data-card-success-done], [data-card-success-ok]",
+);
+const cardSuccessSetPinButton = document.querySelector(
+  "[data-card-success-set-pin]",
+);
 const cardLockOverlay = document.querySelector("[data-card-lock-overlay]");
 const cardLockSheet = document.querySelector(".card-lock-sheet");
 const cardLockOpenButtons = document.querySelectorAll("[data-card-lock-open]");
@@ -223,6 +252,12 @@ const UPI_SETUP_STEP_DURATION = 1500;
 const upiSetupState = { stage: 0, view: "setup" };
 let upiSetupTimer;
 let trackActivationCvvVisible = false;
+let pendingCardMpinIntent = null;
+const benefitsCardSecurityState = { activated: false, pin: null };
+let cardSuccessMode = "activation";
+const CARD_MPIN_VERIFY_MESSAGE = "employee-benefits:verify-mpin";
+const CARD_MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
+const CARD_MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
 const benefitsCardLockState = { locked: false, statusMode: "locked" };
 const FALLBACK_STORAGE_KEY = "employee-benefits:fallback-control:v1";
 // Only spend wallets can fall back; the Reimbursement Wallet is the source of
@@ -242,7 +277,7 @@ const manageWalletState = {
     frozen: false,
     card: {
       number: "4521 8890 4432 7845",
-      holder: "ALEX MORGAN",
+      holder: "VISHAL SHARMA",
       expiry: "12/28",
       cvv: "731",
       last4: "7845",
@@ -261,7 +296,7 @@ const manageWalletState = {
     frozen: false,
     card: {
       number: "4521 8890 4432 7846",
-      holder: "John Doe",
+      holder: "VISHAL SHARMA",
       expiry: "05 / 29",
       cvv: "731",
       last4: "7846",
@@ -280,7 +315,7 @@ const manageWalletState = {
     frozen: false,
     card: {
       number: "4521 8890 4432 7847",
-      holder: "John Doe",
+      holder: "VISHAL SHARMA",
       expiry: "05 / 29",
       cvv: "731",
       last4: "7847",
@@ -299,7 +334,7 @@ const manageWalletState = {
     frozen: false,
     card: {
       number: "4521 8890 4432 7848",
-      holder: "John Doe",
+      holder: "VISHAL SHARMA",
       expiry: "05 / 29",
       cvv: "731",
       last4: "7848",
@@ -316,6 +351,8 @@ function syncPageScrollLock() {
     manageCardsOverlay,
     trackCardOverlay,
     trackActivationOverlay,
+    cardPinOverlay,
+    cardSuccessOverlay,
     cardLockOverlay,
     cardStatusOverlay,
     fallbackOverlay,
@@ -3416,7 +3453,7 @@ function renderHomeJourney() {
   resetClaimJourney();
   resetWorkspace();
   addBotMessage(
-    "Hi Akshay 👋 I can help you claim reimbursements from your Reimbursement Wallet. What would you like to do?",
+    "Hi Vishal Sharma 👋 I can help you claim reimbursements from your Reimbursement Wallet. What would you like to do?",
   );
   addQuickReplies([
     "Upload bill",
@@ -4090,7 +4127,7 @@ function getErrorScenario(type) {
       message: "The name on this bill doesn’t match your employee profile.",
       card: card("Name mismatch", [
         ["Bill name", "Rohan Mehta"],
-        ["Employee profile", "Akshay"],
+        ["Employee profile", "Vishal Sharma"],
       ]),
       replies: ["Upload proof", "Change bill", "Cancel claim"],
     },
@@ -5218,6 +5255,169 @@ function openTrackActivationSheet() {
   });
 }
 
+function getCardPinInputs(group) {
+  return cardPinInputs.filter((input) => input.dataset.cardPinDigit === group);
+}
+
+function getCardPinValue(group) {
+  return getCardPinInputs(group)
+    .map((input) => input.value)
+    .join("");
+}
+
+function isSequentialCardPin(value) {
+  if (value.length !== 4) return false;
+  const digits = [...value].map(Number);
+  return [1, -1].some((step) =>
+    digits.slice(1).every((digit, index) => digit - digits[index] === step),
+  );
+}
+
+function validateCardPin({ announce = false } = {}) {
+  const pin = getCardPinValue("pin");
+  const confirmation = getCardPinValue("confirm");
+  let message = "";
+
+  if (pin.length === 4 && /^(\d)\1{3}$/.test(pin)) {
+    message = "Choose a PIN without repeating the same digit.";
+  } else if (pin.length === 4 && isSequentialCardPin(pin)) {
+    message = "Choose a PIN without sequential digits.";
+  } else if (
+    pin.length === 4 &&
+    confirmation.length === 4 &&
+    pin !== confirmation
+  ) {
+    message = "The PINs do not match. Please try again.";
+  }
+
+  const valid =
+    pin.length === 4 &&
+    confirmation.length === 4 &&
+    pin === confirmation &&
+    !message;
+  if (cardPinSubmitButton) cardPinSubmitButton.disabled = !valid;
+  if (cardPinError) {
+    cardPinError.textContent = announce || message ? message : "";
+  }
+  cardPinInputs.forEach((input) => {
+    input.classList.toggle("is-invalid", Boolean(message));
+  });
+  return valid;
+}
+
+function resetCardPinForm() {
+  cardPinInputs.forEach((input) => {
+    input.value = "";
+    input.type = "password";
+    input.classList.remove("is-invalid");
+  });
+  cardPinVisibilityButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", "false");
+    const group = button.dataset.cardPinVisibility;
+    button.setAttribute(
+      "aria-label",
+      group === "confirm"
+        ? "Show re-entered Benefits Card PIN"
+        : "Show Benefits Card PIN",
+    );
+  });
+  if (cardPinError) cardPinError.textContent = "";
+  if (cardPinSubmitButton) cardPinSubmitButton.disabled = true;
+}
+
+function openCardPinOverlay() {
+  if (!cardPinOverlay) return;
+  resetCardPinForm();
+  cardPinOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    if (cardPinPanel) cardPinPanel.scrollTop = 0;
+    cardPinOverlay.classList.add("is-open");
+    syncPageScrollLock();
+    getCardPinInputs("pin")[0]?.focus();
+  });
+}
+
+function closeCardPinOverlay() {
+  if (!cardPinOverlay) return;
+  cardPinOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    if (!cardPinOverlay.classList.contains("is-open")) {
+      cardPinOverlay.hidden = true;
+      resetCardPinForm();
+      syncPageScrollLock();
+    }
+  }, 280);
+}
+
+function openCardSuccessSheet(mode) {
+  if (!cardSuccessOverlay) return;
+  cardSuccessMode = mode === "pin" ? "pin" : "activation";
+  if (cardSuccessActivation)
+    cardSuccessActivation.hidden = cardSuccessMode !== "activation";
+  if (cardSuccessPin) cardSuccessPin.hidden = cardSuccessMode !== "pin";
+  cardSuccessOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    cardSuccessOverlay.classList.add("is-open");
+    syncPageScrollLock();
+    const focusTarget =
+      cardSuccessMode === "pin"
+        ? cardSuccessPin?.querySelector("button")
+        : cardSuccessActivation?.querySelector("button");
+    focusTarget?.focus({ preventScroll: true });
+  });
+}
+
+function closeCardSuccessSheet() {
+  if (!cardSuccessOverlay) return;
+  cardSuccessOverlay.classList.remove("is-open");
+  window.setTimeout(() => {
+    if (!cardSuccessOverlay.classList.contains("is-open")) {
+      cardSuccessOverlay.hidden = true;
+      syncPageScrollLock();
+    }
+  }, 260);
+}
+
+/**
+ * Activation and the card PIN are session state, like the lock toggle above:
+ * the host challenges for the MPIN on every load, so a demo run always opens on
+ * a card that has not been activated yet.
+ */
+function renderBenefitsCardSecurityState() {
+  const { activated, pin } = benefitsCardSecurityState;
+
+  if (trackActivateLabel) {
+    trackActivateLabel.textContent = activated
+      ? "Card Activated"
+      : "Received Your Card?";
+  }
+  // Activating twice is not a journey the card has, so the CTA hands over to
+  // the step that actually follows activation.
+  if (trackActivationOpenButton) {
+    trackActivationOpenButton.textContent = activated
+      ? pin
+        ? "Reset PIN"
+        : "Set PIN"
+      : "Activate Now";
+  }
+
+  const pinAction = pin ? "Reset" : "Set";
+  if (cardPinTitle) cardPinTitle.textContent = `${pinAction} Benefits Card PIN`;
+  if (cardPinSubmitButton) cardPinSubmitButton.textContent = `${pinAction} PIN`;
+  cardPinCloseButtons.forEach((button) => {
+    button.setAttribute("aria-label", `Close ${pinAction} Benefits Card PIN`);
+  });
+}
+
+function requestCardMpinVerification(intent) {
+  if (pendingCardMpinIntent) return;
+  pendingCardMpinIntent = intent;
+  window.parent.postMessage(
+    { type: CARD_MPIN_VERIFY_MESSAGE, intent },
+    window.location.origin,
+  );
+}
+
 function renderBenefitsCardLockState() {
   const { locked } = benefitsCardLockState;
   document.body.classList.toggle("is-benefits-card-locked", locked);
@@ -5565,11 +5765,20 @@ virtualCardNumberToggle?.addEventListener("click", (event) => {
   });
 });
 
+// Keep the previous virtual-card-details behavior available for a future
+// rollout, but do not attach it while the hero card should lead to Manage Cards.
+// balanceCard?.addEventListener("click", (event) => {
+//   if (document.body.classList.contains("is-pluspay")) return;
+//   if (benefitsCardLockState.locked) return;
+//   if (event.target.closest("[data-virtual-card-toggle]")) return;
+//   virtualCardToggle?.click();
+// });
+
 balanceCard?.addEventListener("click", (event) => {
   if (document.body.classList.contains("is-pluspay")) return;
   if (benefitsCardLockState.locked) return;
   if (event.target.closest("[data-virtual-card-toggle]")) return;
-  virtualCardToggle?.click();
+  openManageCardsOverlay();
 });
 
 overlayCloseButtons.forEach((button) => {
@@ -5631,7 +5840,13 @@ trackStatusButton?.addEventListener("click", () => {
   showToast(trackStatusButton.dataset.toast);
 });
 
-trackActivationOpenButton?.addEventListener("click", openTrackActivationSheet);
+trackActivationOpenButton?.addEventListener("click", () => {
+  if (benefitsCardSecurityState.activated) {
+    openCardPinOverlay();
+    return;
+  }
+  openTrackActivationSheet();
+});
 
 trackActivationCloseButtons.forEach((button) => {
   button.addEventListener("click", closeTrackActivationSheet);
@@ -5643,8 +5858,128 @@ trackActivationCvvToggle?.addEventListener("click", () => {
 });
 
 trackConfirmActivateButton?.addEventListener("click", () => {
-  closeTrackActivationSheet();
-  showToast("Card activated successfully");
+  requestCardMpinVerification("activate-card");
+});
+
+cardPinOpenButtons.forEach((button) => {
+  button.addEventListener("click", openCardPinOverlay);
+});
+
+cardPinCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeCardPinOverlay);
+});
+
+cardPinInputs.forEach((input) => {
+  input.addEventListener("input", () => {
+    input.value = input.value.replace(/\D/g, "").slice(-1);
+    if (input.value) {
+      const groupInputs = getCardPinInputs(input.dataset.cardPinDigit);
+      const index = groupInputs.indexOf(input);
+      if (index < groupInputs.length - 1) {
+        groupInputs[index + 1].focus();
+      } else if (input.dataset.cardPinDigit === "pin") {
+        getCardPinInputs("confirm")[0]?.focus();
+      }
+    }
+    validateCardPin();
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key !== "Backspace" || input.value) return;
+    const allInputs = cardPinInputs;
+    const index = allInputs.indexOf(input);
+    if (index > 0) allInputs[index - 1].focus();
+  });
+
+  input.addEventListener("paste", (event) => {
+    const digits = event.clipboardData
+      ?.getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 4);
+    if (!digits) return;
+    event.preventDefault();
+    const groupInputs = getCardPinInputs(input.dataset.cardPinDigit);
+    groupInputs.forEach((field, index) => {
+      field.value = digits[index] || "";
+    });
+    (digits.length === 4
+      ? input.dataset.cardPinDigit === "pin"
+        ? getCardPinInputs("confirm")[0]
+        : groupInputs[3]
+      : groupInputs[digits.length]
+    )?.focus();
+    validateCardPin();
+  });
+});
+
+cardPinVisibilityButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const revealed = button.getAttribute("aria-pressed") !== "true";
+    const group = button.dataset.cardPinVisibility;
+    getCardPinInputs(group).forEach((input) => {
+      input.type = revealed ? "text" : "password";
+    });
+    button.setAttribute("aria-pressed", String(revealed));
+    button.setAttribute(
+      "aria-label",
+      `${revealed ? "Hide" : "Show"} ${
+        group === "confirm" ? "re-entered " : ""
+      }Benefits Card PIN`,
+    );
+  });
+});
+
+cardPinSubmitButton?.addEventListener("click", () => {
+  if (!validateCardPin({ announce: true })) return;
+  requestCardMpinVerification("set-card-pin");
+});
+
+cardSuccessCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeCardSuccessSheet);
+});
+
+cardSuccessSetPinButton?.addEventListener("click", () => {
+  closeCardSuccessSheet();
+  window.setTimeout(openCardPinOverlay, 180);
+});
+
+window.addEventListener("message", (event) => {
+  if (event.origin !== window.location.origin) return;
+  if (event.source !== window.parent) return;
+  if (
+    event.data?.type !== CARD_MPIN_VERIFIED_MESSAGE &&
+    event.data?.type !== CARD_MPIN_CANCELLED_MESSAGE
+  ) {
+    return;
+  }
+  if (event.data.intent !== pendingCardMpinIntent) return;
+
+  const intent = pendingCardMpinIntent;
+  pendingCardMpinIntent = null;
+  if (event.data.type === CARD_MPIN_CANCELLED_MESSAGE) return;
+
+  if (intent === "activate-card") {
+    benefitsCardSecurityState.activated = true;
+    renderBenefitsCardSecurityState();
+    closeTrackActivationSheet();
+    openCardSuccessSheet("activation");
+    return;
+  }
+
+  if (intent === "set-card-pin") {
+    // Read before the write: the sheet has to say which of the two just
+    // happened, and afterwards a PIN always exists.
+    const wasSet = benefitsCardSecurityState.pin !== null;
+    benefitsCardSecurityState.pin = getCardPinValue("pin");
+    renderBenefitsCardSecurityState();
+    if (cardSuccessPinTitle) {
+      cardSuccessPinTitle.innerHTML = `Your Benefits Card PIN has been<br />${
+        wasSet ? "Reset" : "Set"
+      } Successfully`;
+    }
+    closeCardPinOverlay();
+    openCardSuccessSheet("pin");
+  }
 });
 
 cardLockOpenButtons.forEach((button) => {
@@ -5698,11 +6033,20 @@ fallbackToggles.forEach((toggle) => {
 });
 
 renderBenefitsCardLockState();
+renderBenefitsCardSecurityState();
 readFallbackState();
 renderFallbackState();
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if (cardSuccessOverlay?.classList.contains("is-open")) {
+      closeCardSuccessSheet();
+      return;
+    }
+    if (cardPinOverlay?.classList.contains("is-open")) {
+      closeCardPinOverlay();
+      return;
+    }
     if (cardStatusOverlay?.classList.contains("is-open")) {
       closeCardStatusSheet();
       return;

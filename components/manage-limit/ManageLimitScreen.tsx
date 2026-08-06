@@ -52,7 +52,10 @@ export function ManageLimitScreen() {
 
   return (
     <AppShell className="overflow-hidden">
-      <ScreenHeader title="Manage Limit" onBack={() => router.push("/")} />
+      <ScreenHeader
+        title="Manage Limit"
+        onBack={() => router.push("/?returnTo=manage-cards")}
+      />
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
         <h2 className="type-section-title mb-3 text-pine-primary">

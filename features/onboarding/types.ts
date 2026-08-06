@@ -14,6 +14,7 @@ export type OnboardingStep =
   | "kyc-completed"
   | "card-choice"
   | "card-address"
+  | "card-embossment"
   | "card-kit"
   | "ready";
 
@@ -34,8 +35,13 @@ export type AddressForm = {
   sameAsKyc: boolean;
 };
 
+export type CardEmbossmentForm = {
+  firstName: string;
+  lastName: string;
+};
+
 export type OnboardingState = {
-  version: 2;
+  version: 3;
   step: OnboardingStep;
   completed: boolean;
   identityDone: boolean;
@@ -43,6 +49,7 @@ export type OnboardingState = {
   cardSetupDone: boolean;
   identity: IdentityForm;
   address: AddressForm;
+  cardEmbossment: CardEmbossmentForm;
   kitNumber: string;
   onlineTransactions: boolean;
   tapToPay: boolean;
@@ -61,6 +68,7 @@ export type OnboardingAction =
   | { type: "kyc-complete" }
   | { type: "set-address-field"; field: keyof AddressForm; value: string | boolean }
   | { type: "autofill-kyc-address" }
+  | { type: "set-card-embossment-field"; field: keyof CardEmbossmentForm; value: string }
   | { type: "set-kit-number"; value: string }
   | { type: "card-setup-complete" }
   | { type: "set-online-tx"; value: boolean }

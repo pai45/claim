@@ -1,9 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { DEMO_KIT_NUMBER, FEATURE_WALLETS } from "@/features/onboarding/constants";
-import type { AddressForm, OnboardingState } from "@/features/onboarding/types";
+import type {
+  AddressForm,
+  CardEmbossmentForm,
+  OnboardingState,
+} from "@/features/onboarding/types";
 import { colors } from "@/lib/ui/colors";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
 import { CheckRow, TextField } from "./OnboardingPrimitives";
@@ -80,16 +86,15 @@ type CardAddressStepProps = {
   address: AddressForm;
   onBack: () => void;
   onChange: (field: keyof AddressForm, value: string | boolean) => void;
-  onComplete: () => void;
+  onProceed: () => void;
 };
 
 export function CardAddressStep({
   address,
   onBack,
   onChange,
-  onComplete,
+  onProceed,
 }: CardAddressStepProps) {
-  const [successOpen, setSuccessOpen] = useState(false);
   const canProceed =
     address.sameAsKyc &&
     address.line1.trim() &&
@@ -134,6 +139,60 @@ export function CardAddressStep({
       <PrimaryFooter
         label="Proceed"
         disabled={!canProceed}
+        onClick={onProceed}
+      />
+    </>
+  );
+}
+
+type CardEmbossmentStepProps = {
+  embossment: CardEmbossmentForm;
+  onBack: () => void;
+  onChange: (field: keyof CardEmbossmentForm, value: string) => void;
+  onComplete: () => void;
+};
+
+/** The second card-ordering step, where the cardholder name is chosen. */
+export function CardEmbossmentStep({
+  embossment,
+  onBack,
+  onChange,
+  onComplete,
+}: CardEmbossmentStepProps) {
+  const [successOpen, setSuccessOpen] = useState(false);
+  const cardholder = `${embossment.firstName.trim()} ${embossment.lastName.trim()}`
+    .trim()
+    .toUpperCase();
+  const canProceed = Boolean(
+    embossment.firstName.trim() && embossment.lastName.trim(),
+  );
+
+  return (
+    <>
+      <CardOrderHeader onBack={onBack} />
+      <CardOrderProgress />
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#f4f4f4] px-5 py-5">
+        <section className="rounded-card bg-white p-3 shadow-card">
+          <div className="flex flex-col gap-4">
+            <TextField
+              label="First Name"
+              value={embossment.firstName}
+              onChange={(value) => onChange("firstName", value)}
+              placeholder="e.g. Vishal"
+            />
+            <TextField
+              label="Last Name"
+              value={embossment.lastName}
+              onChange={(value) => onChange("lastName", value)}
+              placeholder="e.g. Sharma"
+            />
+          </div>
+          <CardEmbossmentPreview cardholder={cardholder || "YOUR NAME"} />
+        </section>
+      </main>
+      <PrimaryFooter
+        label="Proceed"
+        disabled={!canProceed}
         onClick={() => setSuccessOpen(true)}
       />
       <CenterModal
@@ -150,6 +209,79 @@ export function CardAddressStep({
         }}
       />
     </>
+  );
+}
+
+function CardOrderHeader({ onBack }: { onBack: () => void }) {
+  return (
+    <header className="shrink-0 bg-white px-5 pb-4 pt-1">
+      <BackNavigationButton onClick={onBack} ariaLabel="Back to delivery address" />
+      <h1 className="type-screen-title mt-2 text-[26px] leading-tight text-[#20252b]">
+        Order a New Card
+      </h1>
+      <p className="type-body-secondary mt-1">
+        We&apos;ll deliver your card to your address
+      </p>
+    </header>
+  );
+}
+
+function CardOrderProgress() {
+  return (
+    <section
+      className="relative shrink-0 bg-[#ddf0dc] px-5 py-2"
+      aria-label="Card order, step 2 of 2"
+    >
+      <p className="type-body-sm font-bold text-ink">Name Embossment</p>
+      <p className="text-caption text-ink-secondary">Step 2 of 2</p>
+      <span
+        className="absolute bottom-0 left-0 h-0.5 w-1/2 bg-mint"
+        aria-hidden="true"
+      />
+    </section>
+  );
+}
+
+function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
+  return (
+    <section
+      className="relative mt-5 aspect-[740/384] overflow-hidden rounded-[7px] text-white"
+      aria-label={`Card preview for ${cardholder}`}
+    >
+      <Image
+        src="/employee-benefits/assets/icons/icici-card-front.png"
+        alt=""
+        fill
+        sizes="(max-width: 402px) 100vw, 340px"
+        className="object-cover"
+      />
+      <Image
+        src="/employee-benefits/assets/icons/rupay-logo.svg"
+        alt="RuPay"
+        width={56}
+        height={24}
+        className="absolute left-[5%] top-[7%] h-auto w-[17%]"
+      />
+      <div className="absolute inset-x-[5%] top-[31%]">
+        <p className="text-[10px] font-normal text-[#bdd2d0]">CARD NUMBER</p>
+        <div className="mt-1 flex items-center justify-between gap-2">
+          <p className="whitespace-nowrap text-[15px] tracking-[0.22em]">
+            •••• •••• ••••
+          </p>
+          <p className="text-[15px] tracking-[0.22em]">7845</p>
+        </div>
+      </div>
+      <div className="absolute inset-x-[5%] bottom-[11%] flex items-end justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[14px] leading-none">{cardholder}</p>
+          <p className="mt-1 text-[9px] text-[#bdd2d0]">CARD HOLDER</p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-[14px] font-bold leading-none">12/28</p>
+          <p className="mt-1 text-[9px] text-[#bdd2d0]">EXPIRES</p>
+        </div>
+      </div>
+    </section>
   );
 }
 

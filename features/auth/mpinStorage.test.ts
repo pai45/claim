@@ -3,11 +3,15 @@ import { initialMpinLock, MPIN_LOCKOUT_MS } from "./mpin";
 import {
   clearMpin,
   clearMpinLock,
+  clearMpinUnlock,
   isMpinSet,
+  isMpinUnlocked,
   loadMpin,
   loadMpinLock,
+  markMpinUnlocked,
   MPIN_LOCK_STORAGE_KEY,
   MPIN_STORAGE_KEY,
+  MPIN_UNLOCK_STORAGE_KEY,
   saveMpin,
   saveMpinLock,
 } from "./mpinStorage";
@@ -113,6 +117,43 @@ describe("mpin lockout storage", () => {
 
     clearMpinLock(storage);
     expect(loadMpinLock(storage)).toEqual(initialMpinLock);
+    expect(loadMpin(storage)).not.toBeNull();
+  });
+});
+
+describe("mpin session unlock", () => {
+  let storage: ReturnType<typeof memoryStorage>;
+
+  beforeEach(() => {
+    storage = memoryStorage();
+  });
+
+  it("starts locked", () => {
+    expect(isMpinUnlocked(storage)).toBe(false);
+  });
+
+  /**
+   * The whole point of the key: leaving the home screen for /profile and coming
+   * back unmounts the gate, and a second read has to still report unlocked.
+   */
+  it("survives the gate unmounting and remounting", () => {
+    markMpinUnlocked(storage);
+
+    expect(isMpinUnlocked(storage)).toBe(true);
+    expect(isMpinUnlocked(storage)).toBe(true);
+  });
+
+  it("ignores an unlock granted against another record version", () => {
+    storage.setItem(MPIN_UNLOCK_STORAGE_KEY, "99");
+    expect(isMpinUnlocked(storage)).toBe(false);
+  });
+
+  it("clears without disturbing the mpin record", () => {
+    saveMpin(record, storage);
+    markMpinUnlocked(storage);
+
+    clearMpinUnlock(storage);
+    expect(isMpinUnlocked(storage)).toBe(false);
     expect(loadMpin(storage)).not.toBeNull();
   });
 });

@@ -14,10 +14,14 @@ import {
 } from "@/features/claims-history/constants";
 import type { UploadOptionId } from "@/features/chat/types";
 import { UI_ICONS } from "@/lib/ui/assets";
-import { colors } from "@/lib/ui/colors";
 import { ChatComposer } from "./ChatComposer";
 import { PrivacyNotice } from "./PrivacyNotice";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
+import {
+  CameraMinimalisticIcon,
+  GalleryMinimalisticIcon,
+  UploadSquareIcon,
+} from "./UploadOptionIcons";
 
 type DrawerTab = "upload" | "history";
 
@@ -29,57 +33,6 @@ type AttachBottomDrawerProps = {
   disabled?: boolean;
   onClearData?: () => void;
 };
-
-function CameraIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M2.5 5.2A1.7 1.7 0 0 1 4.2 3.5h1.1l.7-1.1h4l.7 1.1h1.1A1.7 1.7 0 0 1 13.5 5.2v6.1a1.7 1.7 0 0 1-1.7 1.7H4.2a1.7 1.7 0 0 1-1.7-1.7V5.2Z"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <circle cx="8" cy="8.2" r="2.1" stroke={colors.pineDark} strokeWidth="1.5" />
-    </svg>
-  );
-}
-
-function PdfIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <path
-        d="M4 2.5h5.2L12.5 6v7.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-10a1 1 0 0 1 1-1Z"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-      <path d="M9.2 2.5V6H12.5" stroke={colors.pineDark} strokeWidth="1.5" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function GalleryIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect
-        x="2"
-        y="2.5"
-        width="12"
-        height="11"
-        rx="1.5"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-      />
-      <circle cx="5.5" cy="6" r="1.2" stroke={colors.pineDark} strokeWidth="1.3" />
-      <path
-        d="M2.5 11.5 5.8 8.5l2.4 2.2 1.8-1.5L13.5 12"
-        stroke={colors.pineDark}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 const UPLOAD_OPTIONS: {
   id: UploadOptionId;
@@ -99,7 +52,7 @@ const UPLOAD_OPTIONS: {
     ),
     accept: "image/*",
     capture: true,
-    icon: <CameraIcon />,
+    icon: <CameraMinimalisticIcon size={16} />,
   },
   {
     id: "pdf",
@@ -111,13 +64,13 @@ const UPLOAD_OPTIONS: {
       </>
     ),
     accept: "application/pdf",
-    icon: <PdfIcon />,
+    icon: <UploadSquareIcon size={16} />,
   },
   {
     id: "gallery",
-    label: "Choose from gallery",
+    label: "Gallery",
     accept: "image/*",
-    icon: <GalleryIcon />,
+    icon: <GalleryMinimalisticIcon size={16} />,
   },
 ];
 

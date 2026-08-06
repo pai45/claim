@@ -15,9 +15,6 @@ import { MpinEntryStep } from "./MpinEntryStep";
 import { MpinIntroStep } from "./MpinIntroStep";
 import { MpinSuccessStep } from "./MpinSuccessStep";
 
-/** Long enough for the fourth dot to register before the screen changes. */
-const AUTO_ADVANCE_MS = 250;
-
 type MpinFlowProps = {
   onDone: () => void;
 };
@@ -49,41 +46,36 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
     };
   }, []);
 
-  // The fourth digit is the whole intent, so waiting for a Continue tap is a
-  // step the user has already expressed. Continue stays enabled as the fallback.
-  useEffect(() => {
-    if (state.step !== "set" || !ready) return;
-    const timer = window.setTimeout(
-      () => dispatch({ type: "advance" }),
-      AUTO_ADVANCE_MS,
-    );
-    return () => window.clearTimeout(timer);
-  }, [state.step, ready]);
+  /**
+   * Both steps commit on Continue rather than on the fourth digit. Setting a PIN
+   * is not the same act as entering a known one: the last box is where people
+   * check what they typed, and a screen that moves on by itself takes that
+   * moment away — and, on the confirm step, spends an attempt on it.
+   */
+  function submitConfirm() {
+    if (!ready) return;
 
-  useEffect(() => {
-    if (state.step !== "confirm" || !ready) return;
+    if (!mpinMatches(state)) {
+      setShakeKey((key) => key + 1);
+      dispatch({ type: "mismatch" });
+      return;
+    }
 
-    const timer = window.setTimeout(() => {
-      if (!mpinMatches(state)) {
-        setShakeKey((key) => key + 1);
-        dispatch({ type: "mismatch" });
-        return;
-      }
-
-      dispatch({ type: "saving" });
-      const salt = createMpinSalt();
-      void digestMpin(mpinValue(state.pin), salt).then((digest) => {
-        if (!aliveRef.current) return;
-        setPending({ salt, digest });
-        dispatch({ type: "saved" });
-      });
-    }, AUTO_ADVANCE_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [state, ready]);
+    dispatch({ type: "saving" });
+    const salt = createMpinSalt();
+    void digestMpin(mpinValue(state.pin), salt).then((digest) => {
+      if (!aliveRef.current) return;
+      setPending({ salt, digest });
+      dispatch({ type: "saved" });
+    });
+  }
 
   return (
-    <AppShell className="overflow-hidden">
+    <AppShell
+      className={
+        state.step === "intro" ? "overflow-hidden bg-black/70" : "overflow-hidden"
+      }
+    >
       {state.step === "intro" ? (
         <MpinIntroStep onStart={() => dispatch({ type: "start" })} />
       ) : null}
@@ -110,7 +102,7 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
           digits={digits}
           onDigit={(value) => dispatch({ type: "press-digit", value })}
           onBackspace={() => dispatch({ type: "press-backspace" })}
-          onSubmit={() => dispatch({ type: "saving" })}
+          onSubmit={submitConfirm}
           canSubmit={ready}
           error={state.error}
           shakeKey={shakeKey}

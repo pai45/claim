@@ -1,4 +1,8 @@
-import { clearMpin, clearMpinLock } from "@/features/auth/mpinStorage";
+import {
+  clearMpin,
+  clearMpinLock,
+  clearMpinUnlock,
+} from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
 import { BANNER_STAGE_KEY } from "@/features/chat/bannerRotation";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
@@ -61,6 +65,8 @@ export function resetDemoJourney(
   clearAuthSession(local);
   clearMpin(local);
   clearMpinLock(local);
+  // The only MPIN key that lives in sessionStorage.
+  clearMpinUnlock(session);
 
   LOCAL_KEYS.forEach((key) => remove(local, key));
   SESSION_KEYS.forEach((key) => remove(session, key));

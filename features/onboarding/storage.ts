@@ -25,7 +25,8 @@ function isValidState(value: unknown): value is OnboardingState {
     typeof state.kycStatus === "string" &&
     typeof state.cardSetupDone === "boolean" &&
     !!state.identity &&
-    !!state.address
+    !!state.address &&
+    !!state.cardEmbossment
   );
 }
 

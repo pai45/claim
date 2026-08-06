@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildVehicleLookup } from "./demoLookup";
 import { VEHICLE_ROSTER, vehicleDisplayName } from "./roster";
 
-const OWNER = "Akshay";
+const OWNER = "Vishal Sharma";
 
 function lookupOrThrow(input: string) {
   const result = buildVehicleLookup(input, OWNER);

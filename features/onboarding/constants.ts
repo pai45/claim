@@ -1,16 +1,20 @@
-import type { AddressForm, IdentityForm, OnboardingState } from "./types";
+import type {
+  AddressForm,
+  CardEmbossmentForm,
+  IdentityForm,
+  OnboardingState,
+} from "./types";
 
 export const ONBOARDING_STORAGE_KEY = "eb-claims:onboarding";
 /**
- * Bumped to 2 when the in-app Aadhaar screens were replaced by the Pine Labs
- * hand-off. State saved on the removed `kyc-consent` / `kyc-auth` steps has no
- * matching branch to render, so the version check in `storage.ts` has to reject
- * it rather than rehydrate into a blank screen.
+ * Bumped to 3 when card ordering gained the name-embossment step. State saved
+ * partway through the former address-only flow is intentionally reset so it
+ * cannot skip the new required cardholder-name details.
  */
-export const ONBOARDING_STORAGE_VERSION = 2 as const;
+export const ONBOARDING_STORAGE_VERSION = 3 as const;
 export const ONBOARDING_SESSION_EVENT = "eb-claims:onboarding-changed";
 
-export const DEMO_EMAIL = "alex.morgan@infosys.com";
+export const DEMO_EMAIL = "vishal.sharma@infosys.com";
 export const DEMO_KIT_NUMBER = "PKT20241234567";
 /** How long "Verifying your KYC" shows before the completed screen. */
 export const KYC_AUTO_COMPLETE_MS = 2000;
@@ -29,13 +33,18 @@ export const KYC_ADDRESS: AddressForm = {
   sameAsKyc: false,
 };
 
+export const DEFAULT_CARD_EMBOSSMENT: CardEmbossmentForm = {
+  firstName: "",
+  lastName: "",
+};
+
 export const DEFAULT_IDENTITY: IdentityForm = {
   email: DEMO_EMAIL,
   emailVerified: false,
   title: "Mr.",
-  firstName: "Alex",
-  middleName: "Justin",
-  lastName: "Morgan",
+  firstName: "Vishal",
+  middleName: "",
+  lastName: "Sharma",
   dateOfBirth: "12/01/1992",
 };
 
@@ -54,6 +63,7 @@ export function createInitialOnboardingState(): OnboardingState {
       pinCode: "",
       sameAsKyc: false,
     },
+    cardEmbossment: { ...DEFAULT_CARD_EMBOSSMENT },
     kitNumber: "",
     onlineTransactions: false,
     tapToPay: false,

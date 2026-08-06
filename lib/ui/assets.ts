@@ -8,7 +8,7 @@ export const BRAND_ASSETS = {
    */
   plusPay: "/assets/login/pluspay-logo.svg",
   /** Hero art for the MPIN intro screen; falls back to a padlock glyph. */
-  mpinLock: "/assets/mpin/secure-payments.svg",
+  mpinLock: "/assets/mpin/mpin.gif",
 } as const;
 
 export const UI_ICONS = {
