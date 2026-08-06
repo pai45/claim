@@ -56,3 +56,7 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          # GitHub Pages occasionally keeps an otherwise healthy deployment
+          # queued longer than the action's ten-minute default.
+          timeout: 1800000
