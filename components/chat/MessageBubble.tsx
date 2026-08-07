@@ -7,6 +7,7 @@ import type {
   BillExtract,
   ChatMessage,
   DriverSalaryPayload,
+  UploadOptionId,
 } from "@/features/chat/types";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
@@ -70,8 +71,8 @@ function AssistantText({
 type MessageBubbleProps = {
   message: ChatMessage;
   reveal?: boolean;
-  onFileSelected?: (file: File) => void;
-  onDlFileSelected?: (file: File) => void;
+  onBillSourceSelected?: (source: UploadOptionId) => void;
+  onDlSourceSelected?: (source: UploadOptionId) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
   onSaveClaimEdit?: (
@@ -101,8 +102,8 @@ type MessageBubbleProps = {
 export function MessageBubble({
   message,
   reveal = false,
-  onFileSelected,
-  onDlFileSelected,
+  onBillSourceSelected,
+  onDlSourceSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
   onSaveClaimEdit,
@@ -131,7 +132,7 @@ export function MessageBubble({
     return (
       <div className="flex w-full justify-start">
         <UploadOptionsCard
-          onFileSelected={(file) => onFileSelected?.(file)}
+          onSourceSelected={(source) => onBillSourceSelected?.(source)}
           disabled={uploadDisabled}
         />
       </div>
@@ -246,7 +247,7 @@ export function MessageBubble({
           <AssistantText content={message.content} createdAt={message.createdAt} />
         ) : null}
         <BillExtractCard
-          key={`${message.id}-${message.billExtract.fileName}-${message.billExtract.previewUrl ?? "saved"}`}
+          key={`${message.id}-${message.billExtract.fileName}-${message.billExtract.previewAsset ?? message.billExtract.previewUrl ?? "saved"}`}
           messageId={message.id}
           extract={message.billExtract}
           onUpdate={onUpdateBillExtract}
@@ -275,7 +276,7 @@ export function MessageBubble({
         <UploadOptionsCard
           title="Upload driving licence"
           subtitle="Photo or PDF of the DL, up to 10 MB"
-          onFileSelected={(file) => onDlFileSelected?.(file)}
+          onSourceSelected={(source) => onDlSourceSelected?.(source)}
           disabled={uploadDisabled}
         />
       </div>

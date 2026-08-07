@@ -9,6 +9,24 @@ export type DocumentProcessingStage =
   | "reading"
   | "checking";
 
+export type DocumentUploadKind = "bill" | "dl";
+
+export type BillUploadScenarioId =
+  | "meal"
+  | "meal_missing"
+  | "fuel"
+  | "fuel_exceeding"
+  | "internet"
+  | "mobile"
+  | "gift"
+  | "books"
+  | "professional"
+  | "duplicate"
+  | "late"
+  | "other";
+
+export type DlUploadScenarioId = "dl_found" | "dl_not_found";
+
 export type ClaimFieldName =
   | "category"
   | "vendor"
@@ -65,6 +83,8 @@ export type DriverSalaryPayload = {
   dlConfidence?: number;
   dlError?: string;
   dlWarning?: string;
+  dlScenarioId?: DlUploadScenarioId;
+  dlPreviewAsset?: string;
   salary?: string;
   startDate?: string;
   submitted?: boolean;
@@ -83,6 +103,11 @@ export type BillExtract = {
   /** Transient object URL. It is deliberately removed before persistence. */
   previewUrl?: string;
   previewType?: string;
+  /** Static, base-path-safe preview used by deterministic demo scenarios. */
+  previewAsset?: string;
+  demoScenarioId?: BillUploadScenarioId;
+  /** Opens incomplete demo data directly in the editable review state. */
+  manualReview?: boolean;
   warningAcknowledged?: boolean;
   submitted?: boolean;
   /** Present when the card edits an existing claim instead of creating one. */

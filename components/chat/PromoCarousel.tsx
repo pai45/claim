@@ -19,6 +19,7 @@ const DRAG_THRESHOLD_PX = 6;
 type PromoCarouselProps = {
   cards: BannerCardContent[];
   onVehicleStart: () => void;
+  onDriverStart?: () => void;
   onUploadBill: () => void;
   disabled?: boolean;
   reduceMotion?: boolean;
@@ -35,6 +36,7 @@ type DragState = {
 export function PromoCarousel({
   cards,
   onVehicleStart,
+  onDriverStart,
   onUploadBill,
   disabled,
   reduceMotion,
@@ -211,10 +213,15 @@ export function PromoCarousel({
             aria-roledescription="slide"
             aria-label={`${index + 1} of ${cards.length}`}
           >
-            {card.id === "vehicle_registration" ? (
+            {card.id === "vehicle_registration" ||
+            card.id === "driver_registration" ? (
               <PromoCard
                 card={card}
-                onStart={onVehicleStart}
+                onStart={
+                  card.id === "driver_registration"
+                    ? onDriverStart ?? onVehicleStart
+                    : onVehicleStart
+                }
                 disabled={disabled}
               />
             ) : (

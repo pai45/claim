@@ -4,12 +4,15 @@ import type { BannerStage } from "./bannerRotation";
 
 export type BannerCardId =
   | "vehicle_registration"
+  | "driver_registration"
   | "internet_bill_due"
   | "internet_bill_rejected";
 
 export type BannerAction =
-  /** Hands the turn to the assistant, the way the promo card always has. */
+  /** Hands the turn to the assistant for vehicle registration. */
   | { kind: "vehicle" }
+  /** Hands the turn to the assistant for driver salary registration. */
+  | { kind: "driver" }
   /** Opens the attach drawer so a fresh bill can be uploaded. */
   | { kind: "attach" }
   /** Opens the claim the notification is about. */
@@ -23,6 +26,11 @@ export type BannerCardContent = {
   /** `alert` paints the title in the danger tone; `promo` keeps it pine. */
   tone: "promo" | "alert";
   action: BannerAction;
+};
+
+export type RegistrationStatusOptions = {
+  isVehicleRegistered?: boolean;
+  isDriverRegistered?: boolean;
 };
 
 /**
@@ -71,12 +79,37 @@ const VEHICLE_CARD: BannerCardContent = {
   action: { kind: "vehicle" },
 };
 
-const STAGE_CARDS: Record<BannerStage, BannerCardContent[]> = {
-  1: [VEHICLE_CARD],
-  2: [BILL_DUE_CARD, VEHICLE_CARD],
-  3: [BILL_REJECTED_CARD, BILL_DUE_CARD, VEHICLE_CARD],
+/**
+ * Once the vehicle is registered, the driver registration promo replaces the
+ * vehicle promo until the driver is also registered.
+ */
+const DRIVER_CARD: BannerCardContent = {
+  id: "driver_registration",
+  title: "Driver Registration",
+  body: "Register your driver to claim driver salary tax benefits.",
+  ctaLabel: "Start registration",
+  tone: "promo",
+  action: { kind: "driver" },
 };
 
-export function bannerCardsForStage(stage: BannerStage): BannerCardContent[] {
-  return STAGE_CARDS[stage];
+const NOTIFICATION_CARDS: Record<BannerStage, BannerCardContent[]> = {
+  1: [],
+  2: [BILL_DUE_CARD],
+  3: [BILL_REJECTED_CARD, BILL_DUE_CARD],
+};
+
+export function bannerCardsForStage(
+  stage: BannerStage,
+  options: RegistrationStatusOptions = {},
+): BannerCardContent[] {
+  const notifications = NOTIFICATION_CARDS[stage] ?? [];
+
+  let promoCard: BannerCardContent | null = null;
+  if (!options.isVehicleRegistered) {
+    promoCard = VEHICLE_CARD;
+  } else if (!options.isDriverRegistered) {
+    promoCard = DRIVER_CARD;
+  }
+
+  return promoCard ? [...notifications, promoCard] : notifications;
 }

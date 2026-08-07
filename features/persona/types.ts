@@ -10,6 +10,8 @@ export type PersonaProfile = {
   phone: string;
   employeeId: string;
   corporate: string;
+  dateOfBirth?: string;
+  dateOfBirthFormatted?: string;
 };
 
 export type PersonaConfig = {

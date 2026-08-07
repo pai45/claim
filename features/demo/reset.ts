@@ -23,6 +23,7 @@ import {
   clearRegisteredVehicle,
   saveRegisteredVehicle,
 } from "@/features/vehicle/registration";
+import { clearRegisteredDriver } from "@/features/driver/registration";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import { setActivePersonaId } from "@/features/persona/store";
 import type { PersonaId } from "@/features/persona/types";
@@ -81,12 +82,14 @@ export function resetDemoJourney(
   if (targetPersona === "new_user") {
     setActivePersonaId("new_user", local);
     clearRegisteredVehicle(local);
+    clearRegisteredDriver(local);
     clearOnboarding(local);
     clearMpin(local);
     clearMpinLock(local);
     remove(local, UPI_CREATED_STORAGE_KEY);
   } else {
     setActivePersonaId("returning", local);
+    clearRegisteredDriver(local);
     saveOnboardingState(createCompletedOnboardingState("returning"), local);
     const vehicleLookup = buildVehicleLookup("MH 12 AB 1234", "Vishal Sharma");
     if (vehicleLookup.ok) {

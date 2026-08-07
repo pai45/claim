@@ -13,8 +13,10 @@ import type {
   BillExtract,
   ChatMessage,
   DocumentProcessingStage,
+  DocumentUploadKind,
   DriverSalaryPayload,
   PolicyModelStatus,
+  UploadOptionId,
 } from "@/features/chat/types";
 import type { PolicyTabId } from "@/features/policy/constants";
 import type { VehicleLookup } from "@/lib/vehicle/types";
@@ -33,8 +35,8 @@ type MessageListProps = {
   isLocating?: boolean;
   policyModelStatus?: PolicyModelStatus | null;
   onAwayFromBottomChange?: (away: boolean) => void;
-  onFileSelected?: (file: File) => void;
-  onDlFileSelected?: (file: File) => void;
+  onBillSourceSelected?: (source: UploadOptionId) => void;
+  onDlSourceSelected?: (source: UploadOptionId) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
   onSaveClaimEdit?: (
@@ -45,6 +47,7 @@ type MessageListProps = {
   onReplaceBill?: (messageId: string) => void;
   onStartAnotherBill?: () => void;
   documentProcessingStage?: DocumentProcessingStage | null;
+  documentProcessingKind?: DocumentUploadKind;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
   onSelectMerchantSearchMode?: (
@@ -95,14 +98,15 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       isLocating,
       policyModelStatus,
       onAwayFromBottomChange,
-      onFileSelected,
-      onDlFileSelected,
+      onBillSourceSelected,
+      onDlSourceSelected,
       onUpdateBillExtract,
       onSubmitBillClaim,
       onSaveClaimEdit,
       onReplaceBill,
       onStartAnotherBill,
       documentProcessingStage,
+      documentProcessingKind,
       onSelectPolicyCategory,
       onSelectMerchantBenefitType,
       onSelectMerchantSearchMode,
@@ -250,7 +254,10 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
     } else if (isScanning) {
       statusNode = (
         <div aria-label={documentStageLabel(documentProcessingStage)}>
-          <ScannedDocumentCard stage={documentProcessingStage} />
+          <ScannedDocumentCard
+            stage={documentProcessingStage}
+            documentKind={documentProcessingKind}
+          />
         </div>
       );
     } else if (isLocating) {
@@ -278,8 +285,8 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                   message.role === "assistant" &&
                   Date.now() - message.createdAt < 4000
                 }
-                onFileSelected={onFileSelected}
-                onDlFileSelected={onDlFileSelected}
+                onBillSourceSelected={onBillSourceSelected}
+                onDlSourceSelected={onDlSourceSelected}
                 onUpdateBillExtract={onUpdateBillExtract}
                 onSubmitBillClaim={onSubmitBillClaim}
                 onSaveClaimEdit={onSaveClaimEdit}

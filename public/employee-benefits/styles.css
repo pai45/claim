@@ -9581,6 +9581,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 
 .scan-pay-sheet h2 {
   margin: 0;
+  font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: 22px;
   font-weight: var(--fw-bold);
 }
@@ -11445,7 +11446,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 .track-activation-header h2 {
   margin: 0;
   color: #202328;
-  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: 20px;
   font-weight: 700;
 }
@@ -11821,7 +11822,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 .card-lock-header h2 {
   margin: 0;
   color: #202328;
-  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: 20px;
   font-weight: var(--fw-bold);
   line-height: 25px;
@@ -11936,34 +11937,31 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 .card-status-sheet {
   gap: 10px;
   justify-items: center;
-  padding: 46px 20px 20px;
+  padding: 62px 20px 20px;
   overflow: visible;
   text-align: center;
 }
 
+/* Sized to match .card-success-badge so both sheets show the seal identically;
+   the badge straddles the top edge, so half of it eats into the top padding. */
 .card-status-badge {
   position: absolute;
   top: 0;
   left: 50%;
   display: grid;
   place-items: center;
-  width: 54px;
-  height: 54px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
-  background: #2fa84f;
-  color: #ffffff;
+  background: transparent;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 9px #ffffff;
 }
 
 .card-status-badge svg {
-  width: 26px;
-  height: 26px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  width: 96px;
+  height: 96px;
+  display: block;
+  stroke: none;
 }
 
 .card-status-dismiss {
@@ -11994,7 +11992,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   margin: 0;
   max-width: 280px;
   color: #202328;
-  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: 19px;
   font-weight: var(--fw-bold);
   line-height: 25px;
@@ -12153,7 +12151,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 .fallback-header h2 {
   margin: 0;
   color: #202328;
-  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
@@ -12313,15 +12311,75 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 }
 
 .fallback-wallet-row {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   min-height: 72px;
   padding: 16px;
   border-radius: 16px;
   background: #ffffff;
   box-shadow: 0 5px 14px rgba(26, 40, 38, 0.045);
+  transition: all 200ms ease;
+}
+
+.fallback-wallet-header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
+.fallback-warning-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #fbd786;
+  border-radius: 8px;
+  background: #fffbeb;
+  animation: fallbackWarningFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fallback-warning-box[hidden] {
+  display: none !important;
+}
+
+.fallback-warning-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  color: #b25e00;
+}
+
+.fallback-warning-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.8;
+}
+
+.fallback-warning-text {
+  margin: 0;
+  color: #7a5a00;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@keyframes fallbackWarningFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .fallback-wallet-icon {
@@ -12674,7 +12732,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
   width: calc(100% - 40px);
   max-width: 368px;
-  padding: 72px 24px 24px;
+  padding: 68px 24px 24px;
   border-radius: 18px;
   background: #ffffff;
   color: #202328;
@@ -12691,31 +12749,59 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   transform: translate(50%, 0);
 }
 
+/* The seal carries its own white disc, so the badge is centred on the sheet's
+   top edge and the sheet's 68px top padding clears the half that hangs inside. */
 .card-success-badge {
   position: absolute;
-  top: -42px;
+  top: -48px;
   left: 50%;
   display: grid;
-  width: 84px;
-  height: 84px;
+  width: 96px;
+  height: 96px;
   place-items: center;
-  border: 10px solid #ffffff;
   border-radius: 50%;
-  background: #32a852;
-  color: #ffffff;
+  background: transparent;
   transform: translateX(-50%);
 }
 
 .card-success-badge svg {
-  width: 34px;
-  height: 34px;
-  stroke-width: 2.4;
+  width: 96px;
+  height: 96px;
+  display: block;
+  /* The seal is filled artwork; opt out of the global icon stroke so its disc
+     and check do not pick up a hairline outline. */
+  stroke: none;
+}
+
+.card-success-dismiss {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #596176;
+  cursor: pointer;
+}
+
+.card-success-dismiss svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .card-success-sheet h2 {
   margin: 0;
   color: #202328;
-  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.2;
@@ -12770,6 +12856,157 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   outline-offset: 2px;
 }
 
+/* Fallback Confirmation Sheet */
+.fallback-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+}
+
+.fallback-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(28, 30, 31, 0.8);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.fallback-confirm-sheet {
+  position: absolute;
+  right: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  width: calc(100% - 40px);
+  max-width: 368px;
+  padding: 22px 20px 20px;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(0, 42, 25, 0.18);
+  transform: translate(50%, calc(100% + 60px));
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.fallback-confirm-overlay.is-open .fallback-confirm-backdrop {
+  opacity: 1;
+}
+
+.fallback-confirm-overlay.is-open .fallback-confirm-sheet {
+  transform: translate(50%, 0);
+}
+
+.fallback-confirm-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.fallback-confirm-header h2 {
+  margin: 0;
+  color: #1c2725;
+  font-family: "PP Telegraf", "Times New Roman", serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.fallback-confirm-header button {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-top: -2px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #596176;
+  cursor: pointer;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.fallback-confirm-header button:hover {
+  background: #f4f8f6;
+  color: #1c2725;
+}
+
+.fallback-confirm-header svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fallback-confirm-body p {
+  margin: 0 0 12px;
+  color: #535862;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 14.5px;
+  line-height: 1.42;
+}
+
+.fallback-confirm-body p:last-child {
+  margin-bottom: 0;
+}
+
+.fallback-confirm-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.fallback-confirm-actions button {
+  min-height: 48px;
+  border-radius: 10px;
+  font-family: "Lato", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.fallback-confirm-actions button:active {
+  transform: scale(0.98);
+}
+
+.fallback-confirm-cancel {
+  border: 1.5px solid #005656;
+  background: #ffffff;
+  color: #005656;
+}
+
+.fallback-confirm-cancel:hover {
+  background: #f4f8f6;
+}
+
+.fallback-confirm-disable {
+  border: 1.5px solid #005656;
+  background: #005656;
+  color: #ffffff;
+}
+
+.fallback-confirm-disable:hover {
+  background: #004646;
+  border-color: #004646;
+}
+
+.fallback-confirm-disable:active {
+  background: #003838;
+  border-color: #003838;
+}
+
+.fallback-confirm-cancel:focus-visible,
+.fallback-confirm-disable:focus-visible,
+.fallback-confirm-header button:focus-visible {
+  outline: 2px solid #005656;
+  outline-offset: 2px;
+}
+
 @media (max-width: 340px) {
   .card-pin-header,
   .card-pin-scroll,
@@ -12786,5 +13023,11 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
     width: calc(100% - 24px);
     padding-right: 18px;
     padding-left: 18px;
+  }
+
+  .fallback-confirm-sheet {
+    width: calc(100% - 24px);
+    padding-right: 16px;
+    padding-left: 16px;
   }
 }

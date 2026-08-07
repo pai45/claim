@@ -37,9 +37,11 @@ export const QUICK_ACTIONS: QuickAction[] = [
 ];
 
 export const VEHICLE_REGISTRATION_INTENT = "vehicle_registration";
+export const DRIVER_REGISTRATION_INTENT = "driver_registration";
 
 /** The turn that starts the flow, shared by the chat CTA and the full-page CTAs. */
 export const VEHICLE_REGISTRATION_LABEL = "Start registration";
+export const DRIVER_REGISTRATION_LABEL = "Register driver";
 
 export const CLAIM_CATEGORIES = EMPLOYER_BENEFITS_CATALOG.benefits
   .filter((benefit) => benefit.id !== "driver")

@@ -89,6 +89,11 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "**Vehicle registration**\n\nEnter your vehicle number below and I'll pull up the details.\n\nYou can review them and send the registration to HR for approval.",
   },
   {
+    id: "driver_registration",
+    keywords: ["register driver", "driver registration", "driver salary"],
+    reply: "Let's register your driver. What's the driver's full name?",
+  },
+  {
     id: "merchant_locator",
     keywords: [
       "merchant locator",

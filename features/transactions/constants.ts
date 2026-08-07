@@ -36,6 +36,19 @@ export type TransactionItem = {
 
 export type AnalyticsWalletId = "meal" | "fuel" | "reimbursement";
 
+export type TransactionWalletFilterId = "meal" | "fuel" | "reimbursement";
+
+export type WalletFilterOption = {
+  id: TransactionWalletFilterId;
+  label: string;
+};
+
+export const WALLET_FILTER_OPTIONS: readonly WalletFilterOption[] = [
+  { id: "meal", label: "Meal Wallet" },
+  { id: "fuel", label: "Fuel Wallet" },
+  { id: "reimbursement", label: "Reimbursement Wallet" },
+] as const;
+
 export type AnalyticsCategory = {
   id: string;
   name: string;
@@ -156,7 +169,7 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
     category: "E-Commerce",
     location: "Mumbai, Maharashtra",
     cardMasked: "Rupay Card ••••7845",
-    walletName: "Main Wallet",
+    walletName: "Reimbursement Wallet",
     paymentMode: "Card Payment",
     transactionId: "TXN0000000000003",
     referenceNumber: "REFUCK477Q4A",
@@ -216,7 +229,7 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
     category: "Wallet Top Up",
     location: "Mumbai, Maharashtra",
     cardMasked: "Savings ••••2210",
-    walletName: "Main Wallet",
+    walletName: "Reimbursement Wallet",
     paymentMode: "Bank Transfer",
     transactionId: "TXN0000000000006",
     referenceNumber: "REFTOP5500M1",
@@ -276,7 +289,7 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
     category: "Shopping",
     location: "Bengaluru, Karnataka",
     cardMasked: "Rupay Card ••••7845",
-    walletName: "Gift Wallet",
+    walletName: "Reimbursement Wallet",
     paymentMode: "Card Payment",
     transactionId: "TXN0000000000009",
     referenceNumber: "REFLFS2400S5",
@@ -316,7 +329,7 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
     category: "E-Commerce",
     location: "Mumbai, Maharashtra",
     cardMasked: "Rupay Card ••••7845",
-    walletName: "Main Wallet",
+    walletName: "Reimbursement Wallet",
     paymentMode: "Card Payment",
     transactionId: "TXN0000000000011",
     referenceNumber: "REFAMZ1899N2",
@@ -336,7 +349,7 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
     category: "Wallet Top Up",
     location: "Mumbai, Maharashtra",
     cardMasked: "Savings ••••2210",
-    walletName: "Main Wallet",
+    walletName: "Reimbursement Wallet",
     paymentMode: "Bank Transfer",
     transactionId: "TXN0000000000012",
     referenceNumber: "REFTOP3000N3",
@@ -355,6 +368,38 @@ export function getTransactionItems(personaId?: PersonaId): TransactionItem[] {
     return [];
   }
   return TRANSACTION_ITEMS;
+}
+
+export function filterTransactionsByWallet(
+  items: TransactionItem[],
+  walletId: TransactionWalletFilterId,
+): TransactionItem[] {
+  if (walletId === "meal") {
+    return items.filter(
+      (item) =>
+        item.wallet === "meal" ||
+        item.walletName.toLowerCase().includes("meal"),
+    );
+  }
+  if (walletId === "fuel") {
+    return items.filter(
+      (item) =>
+        item.wallet === "fuel" ||
+        item.walletName.toLowerCase().includes("fuel"),
+    );
+  }
+  if (walletId === "reimbursement") {
+    return items.filter(
+      (item) =>
+        item.wallet === "main" ||
+        item.wallet === "misc" ||
+        item.wallet === "gift" ||
+        item.walletName.toLowerCase().includes("reimbursement") ||
+        item.walletName.toLowerCase().includes("main") ||
+        item.walletName.toLowerCase().includes("gift"),
+    );
+  }
+  return items;
 }
 
 export function getAnalyticsData(personaId?: PersonaId): {

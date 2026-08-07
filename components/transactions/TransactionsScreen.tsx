@@ -7,6 +7,7 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
+import { WalletFilterDropdown } from "@/components/transactions/WalletFilterDropdown";
 import {
   CategoryGlyph,
   SpendingChart,
@@ -15,6 +16,8 @@ import {
   ANALYTICS_VIEW_PILLS,
   ANALYTICS_WALLETS,
   HISTORY_TABS,
+  WALLET_FILTER_OPTIONS,
+  filterTransactionsByWallet,
   formatINR,
   formatSignedINR,
   getAnalyticsData,
@@ -23,6 +26,7 @@ import {
   type AnalyticsViewId,
   type AnalyticsWalletId,
   type HistoryTabId,
+  type TransactionWalletFilterId,
 } from "@/features/transactions/constants";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
@@ -35,19 +39,26 @@ export function TransactionsScreen() {
   const [tab, setTab] = useState<HistoryTabId>(
     searchParams.get("tab") === "analytics" ? "analytics" : "transactions",
   );
+  const [selectedWallet, setSelectedWallet] =
+    useState<TransactionWalletFilterId>("meal");
   const [analyticsView, setAnalyticsView] =
     useState<AnalyticsViewId>("category");
   const [analyticsWallet, setAnalyticsWallet] =
     useState<AnalyticsWalletId>("meal");
 
-  const transactions = useMemo(
+  const allTransactions = useMemo(
     () => getTransactionItems(personaId),
     [personaId],
   );
 
+  const filteredTransactions = useMemo(
+    () => filterTransactionsByWallet(allTransactions, selectedWallet),
+    [allTransactions, selectedWallet],
+  );
+
   const groups = useMemo(
-    () => groupTransactions(transactions),
-    [transactions],
+    () => groupTransactions(filteredTransactions),
+    [filteredTransactions],
   );
 
   const analytics = useMemo(
@@ -103,7 +114,12 @@ export function TransactionsScreen() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
         {tab === "transactions" ? (
-          <TransactionsPanel groups={groups} totalTransactions={transactions.length} />
+          <TransactionsPanel
+            selectedWallet={selectedWallet}
+            onSelectWallet={setSelectedWallet}
+            groups={groups}
+            totalTransactions={filteredTransactions.length}
+          />
         ) : (
           <AnalyticsPanel
             view={analyticsView}
@@ -121,32 +137,37 @@ export function TransactionsScreen() {
 }
 
 function TransactionsPanel({
+  selectedWallet,
+  onSelectWallet,
   groups,
   totalTransactions,
 }: {
+  selectedWallet: TransactionWalletFilterId;
+  onSelectWallet: (wallet: TransactionWalletFilterId) => void;
   groups: ReturnType<typeof groupTransactions>;
   totalTransactions: number;
 }) {
+  const currentWalletOption = WALLET_FILTER_OPTIONS.find(
+    (o) => o.id === selectedWallet,
+  );
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <button
-          type="button"
-          className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-pill bg-pine-primary px-4 text-body-sm font-bold text-white"
-        >
-          Main Wallet
-          <ChevronDownIcon color="#fff" />
-        </button>
+      <div className="flex items-center gap-2 overflow-visible">
+        <WalletFilterDropdown
+          selectedWallet={selectedWallet}
+          onSelectWallet={onSelectWallet}
+        />
         <button
           type="button"
           aria-label="Filter by date"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-muted"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-muted transition-colors hover:bg-surface-tint"
         >
           <CalendarIcon />
         </button>
         <button
           type="button"
-          className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-pill border border-border-muted bg-white px-3 text-body-sm font-bold text-pine-primary"
+          className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-pill border border-border-muted bg-white px-3 text-body-sm font-bold text-pine-primary transition-colors hover:bg-surface-tint"
         >
           <UpiBoltIcon />
           UPI Transactions
@@ -154,20 +175,30 @@ function TransactionsPanel({
       </div>
 
       {totalTransactions === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 shadow-card text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted text-subtle mb-3">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 text-center shadow-card">
+          <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted text-subtle">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
               <rect x="2" y="5" width="20" height="14" rx="2" />
               <line x1="2" y1="10" x2="22" y2="10" />
             </svg>
           </div>
-          <h3 className="type-section-title text-ink mb-1">No transactions yet</h3>
-          <p className="type-body-secondary max-w-[260px] mb-5">
-            Your wallet is fresh and ready to use! Make your first spend to see transactions here.
+          <h3 className="type-section-title mb-1 text-ink">No transactions yet</h3>
+          <p className="type-body-secondary mb-5 max-w-[260px]">
+            No transactions found for {currentWalletOption?.label ?? "this wallet"}. Make a spend to see activity here.
           </p>
           <Link
             href="/"
-            className="btn-primary min-h-11 h-auto py-2.5 px-6 text-sm font-semibold inline-flex items-center gap-2"
+            className="btn-primary inline-flex h-auto min-h-11 items-center gap-2 px-6 py-2.5 text-sm font-semibold"
           >
             Go to Home
           </Link>

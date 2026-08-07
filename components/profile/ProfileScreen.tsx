@@ -6,6 +6,8 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
+import { AppIcon } from "@/components/shared/AppIcon";
+import { ProfileDetailsScreen } from "@/components/profile/ProfileDetailsScreen";
 import {
   clearMpin,
   clearMpinLock,
@@ -22,6 +24,7 @@ import {
 } from "@/features/profile/constants";
 import { clearRegisteredVehicle } from "@/features/vehicle/registration";
 import { colors } from "@/lib/ui/colors";
+import { PROFILE_ICONS } from "@/lib/ui/assets";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 export function ProfileScreen() {
@@ -62,6 +65,10 @@ export function ProfileScreen() {
     setLogoutOpen(false);
     resetDemoJourney(targetPersona);
     router.push("/");
+  }
+
+  if (profileDetailsOpen) {
+    return <ProfileDetailsScreen onBack={() => setProfileDetailsOpen(false)} />;
   }
 
   return (
@@ -140,74 +147,6 @@ export function ProfileScreen() {
         </nav>
       </main>
 
-      {/* Profile Details Dialog */}
-      {profileDetailsOpen ? (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-fade-in"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="profile-details-title"
-        >
-          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl animate-rise-in border border-border-line">
-            <div className="flex items-center justify-between pb-3 border-b border-border-line">
-              <h3 id="profile-details-title" className="text-lg font-bold text-ink">
-                Profile Details
-              </h3>
-              <button
-                type="button"
-                onClick={() => setProfileDetailsOpen(false)}
-                className="h-8 w-8 rounded-full bg-surface-muted flex items-center justify-center text-subtle hover:text-ink transition-colors"
-                aria-label="Close details"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="mt-4 flex flex-col gap-3 text-sm">
-              <div className="flex justify-between py-1 border-b border-border-line/40">
-                <span className="text-subtle">Full Name</span>
-                <span className="font-semibold text-ink">{persona.profile.name}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border-line/40">
-                <span className="text-subtle">Employee ID</span>
-                <span className="font-semibold text-ink">{persona.profile.employeeId}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border-line/40">
-                <span className="text-subtle">Corporate</span>
-                <span className="font-semibold text-ink">{persona.profile.corporate}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border-line/40">
-                <span className="text-subtle">Work Email</span>
-                <span className="font-semibold text-ink">{persona.profile.email}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border-line/40">
-                <span className="text-subtle">Mobile</span>
-                <span className="font-semibold text-ink">{persona.profile.phone}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-border-line/40">
-                <span className="text-subtle">Account Type</span>
-                <span className="font-semibold text-pine-dark">{persona.label}</span>
-              </div>
-              <div className="flex justify-between py-1">
-                <span className="text-subtle">Status</span>
-                <span className="inline-flex items-center gap-1 font-semibold text-success">
-                  <span className="h-2 w-2 rounded-full bg-success" />
-                  Active
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setProfileDetailsOpen(false)}
-              className="mt-5 w-full rounded-xl bg-pine py-2.5 font-bold text-white shadow-sm hover:bg-pine-dark active:scale-[0.99] transition-all"
-            >
-              Done
-            </button>
-          </div>
-        </div>
-      ) : null}
-
       <ConfirmDialog
         open={logoutOpen}
         title="Log out?"
@@ -236,14 +175,20 @@ export function ProfileScreen() {
 }
 
 function MenuIcon({ id }: { id: ProfileMenuId }) {
+  if (id === "profile") {
+    return <AppIcon src={PROFILE_ICONS.user} size={20} alt="" />;
+  }
+
+  if (id === "autopay") {
+    return <AppIcon src={PROFILE_ICONS.autopay} size={22} alt="" />;
+  }
+
+  if (id === "collect") {
+    return <AppIcon src={PROFILE_ICONS.collect} size={20} alt="" />;
+  }
+
   const stroke =
-    id === "logout"
-      ? colors.subtle
-      : id === "collect"
-        ? colors.warning
-        : id === "autopay"
-          ? colors.pinePrimary
-          : colors.pinePrimary;
+    id === "logout" ? colors.subtle : colors.pinePrimary;
 
   const common = {
     width: 22,
@@ -252,61 +197,6 @@ function MenuIcon({ id }: { id: ProfileMenuId }) {
     fill: "none" as const,
     "aria-hidden": true as const,
   };
-
-  if (id === "profile") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="8" r="3.5" stroke={stroke} strokeWidth="1.7" />
-        <path
-          d="M5 19.5c1.8-4 5-6 7-6s5.2 2 7 6"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-
-  if (id === "autopay") {
-    return (
-      <svg {...common}>
-        <path
-          d="M12 3 4.5 6.5v5.2c0 5 3.2 8.4 7.5 9.8 4.3-1.4 7.5-4.8 7.5-9.8V6.5L12 3Z"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-        <path
-          d="m9 12 2.2 2.2L15.5 10"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (id === "collect") {
-    return (
-      <svg {...common}>
-        <path
-          d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-        <path d="M14 3v4h4" stroke={stroke} strokeWidth="1.7" />
-        <path
-          d="m9 14 2 2 4-4"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
 
   return (
     <svg {...common}>

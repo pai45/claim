@@ -4,7 +4,6 @@ import {
   useCallback,
   useRef,
   useState,
-  type ChangeEvent,
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -28,7 +27,7 @@ type DrawerTab = "upload" | "history";
 type AttachBottomDrawerProps = {
   open: boolean;
   onClose: () => void;
-  onFileSelected: (file: File) => void;
+  onUploadSourceSelected: (source: UploadOptionId) => void;
   onSend: (message: string) => void;
   disabled?: boolean;
   onClearData?: () => void;
@@ -77,7 +76,7 @@ const UPLOAD_OPTIONS: {
 export function AttachBottomDrawer({
   open,
   onClose,
-  onFileSelected,
+  onUploadSourceSelected,
   onSend,
   disabled,
   onClearData,
@@ -85,9 +84,6 @@ export function AttachBottomDrawer({
   const router = useRouter();
   const [tab, setTab] = useState<DrawerTab>("upload");
   const [activeFilter, setActiveFilter] = useState<ClaimStatusFilter>("all");
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const pdfRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   const handleDrawerClose = useCallback(() => {
@@ -107,22 +103,9 @@ export function AttachBottomDrawer({
     router.push(href);
   }
 
-  const refs = {
-    camera: cameraRef,
-    pdf: pdfRef,
-    gallery: galleryRef,
-  } as const;
-
   function handlePick(optionId: UploadOptionId) {
     if (disabled) return;
-    refs[optionId].current?.click();
-  }
-
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    onFileSelected(file);
+    onUploadSourceSelected(optionId);
     handleDrawerClose();
   }
 
@@ -154,12 +137,12 @@ export function AttachBottomDrawer({
         role="dialog"
         aria-modal="true"
         aria-label="Upload bill and claim history"
-        className={`absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col gap-2 overflow-y-auto rounded-t-3xl bg-white px-4 pb-8 pt-3 shadow-drawer transition-transform duration-200 ease-out ${
+        className={`absolute inset-x-0 bottom-0 flex max-h-[92dvh] flex-col gap-2 overflow-y-auto rounded-t-bubble bg-white px-page pb-8 pt-3 shadow-drawer transition-transform duration-200 ease-out ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >
         <div className="flex justify-center pb-1">
-          <div className="h-1 w-11 rounded-sm bg-border-tab" />
+          <div className="h-1 w-11 rounded-pill bg-border-tab" />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -248,28 +231,6 @@ export function AttachBottomDrawer({
           />
         </div>
 
-        <input
-          ref={cameraRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          className="hidden"
-          onChange={handleChange}
-        />
-        <input
-          ref={pdfRef}
-          type="file"
-          accept="application/pdf"
-          className="hidden"
-          onChange={handleChange}
-        />
-        <input
-          ref={galleryRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleChange}
-        />
       </div>
     </div>
   );

@@ -1,45 +1,27 @@
-import { colors } from "@/lib/ui/colors";
-
-/** Scalloped verified seal used on onboarding success sheets. */
-export function SuccessSealIcon({ size = 72 }: { size?: number }) {
+/**
+ * Scalloped verified seal used on success sheets and confirmation screens.
+ *
+ * Traced from the supplied `success icon.svg`, so the green is that asset's own
+ * `#16A34A` rather than `colors.success` — the seal is artwork, not a themed
+ * surface, and the two must not drift apart.
+ */
+export function SuccessSealIcon({ size = 70 }: { size?: number }) {
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 72 72"
+      viewBox="0 0 70 70"
       fill="none"
       aria-hidden="true"
     >
-      <circle cx="36" cy="36" r="36" fill="white" />
+      <path d={SEAL_PATH} fill="#16A34A" />
       <path
-        d={SEAL_PATH}
-        fill={colors.success}
-      />
-      <path
-        d="M28.5 36.8 33.2 41.4 44 30.2"
-        stroke="white"
-        strokeWidth="3.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M30.9162 44.4236L22.0254 35.5327L23.8071 33.7507L30.9162 40.8598L46.1921 25.584L47.9737 27.3661L30.9162 44.4236Z"
+        fill="white"
       />
     </svg>
   );
 }
 
-/** 12-lobe scalloped disc centered at (36,36). */
-const SEAL_PATH = (() => {
-  const cx = 36;
-  const cy = 36;
-  const outer = 28;
-  const inner = 24;
-  const lobes = 12;
-  const points: string[] = [];
-  for (let i = 0; i < lobes * 2; i += 1) {
-    const angle = (Math.PI * i) / lobes - Math.PI / 2;
-    const radius = i % 2 === 0 ? outer : inner;
-    const x = cx + Math.cos(angle) * radius;
-    const y = cy + Math.sin(angle) * radius;
-    points.push(`${i === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`);
-  }
-  return `${points.join(" ")} Z`;
-})();
+const SEAL_PATH =
+  "M64.4008 28.5367L62.0164 25.6492C61.2836 24.7523 60.8352 23.6695 60.7258 22.5211L60.3648 18.7914C59.9055 13.957 56.0555 10.107 51.2211 9.64766L47.4914 9.28672C46.343 9.17734 45.2602 8.72891 44.3633 7.98516L41.4758 5.60078C37.7242 2.50547 32.2883 2.50547 28.5367 5.60078L25.6492 7.98516C24.7523 8.71797 23.6695 9.17734 22.5211 9.28672L18.7914 9.64766C13.957 10.107 10.107 13.957 9.64766 18.7914L9.28672 22.5211C9.17734 23.6805 8.72891 24.7633 7.98516 25.6492L5.60078 28.5367C2.50547 32.2883 2.50547 37.7242 5.60078 41.4758L7.98516 44.3633C8.71797 45.2602 9.16641 46.343 9.27578 47.4914L9.63672 51.2211C10.0961 56.0555 13.9461 59.9055 18.7805 60.3648L22.5102 60.7258C23.6586 60.8352 24.7414 61.2836 25.6383 62.0273L28.5258 64.4117C30.3961 65.9539 32.693 66.7305 34.9898 66.7305C37.2867 66.7305 39.5836 65.9539 41.4539 64.4117L44.3414 62.0273C45.2383 61.2945 46.3211 60.8352 47.4695 60.7258L51.1992 60.3648C56.0336 59.9055 59.8836 56.0555 60.343 51.2211L60.7039 47.4914C60.8133 46.332 61.2617 45.2492 62.0055 44.3633L64.3898 41.4758C67.4852 37.7242 67.4852 32.2883 64.3898 28.5367H64.4008Z";

@@ -8,6 +8,7 @@ import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
 import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
 import { ONBOARDING_STORAGE_KEY } from "@/features/onboarding/constants";
 import { VEHICLE_STORAGE_KEY } from "@/features/vehicle/registration";
+import { DRIVER_STORAGE_KEY } from "@/features/driver/registration";
 import { PERSONA_STORAGE_KEY } from "@/features/persona/constants";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 import { UPI_CREATED_STORAGE_KEY, resetDemoJourney } from "./reset";
@@ -31,6 +32,7 @@ const LOCAL_KEYS = [
   CHAT_STORAGE_KEY,
   ONBOARDING_STORAGE_KEY,
   VEHICLE_STORAGE_KEY,
+  DRIVER_STORAGE_KEY,
   MANAGE_LIMIT_STORAGE_KEY,
   BANNER_STAGE_KEY,
   WIDGET_POSITION_KEY,
@@ -56,6 +58,7 @@ describe("resetDemoJourney", () => {
     expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("new_user");
     expect(local.getItem(ONBOARDING_STORAGE_KEY)).toBeNull();
     expect(local.getItem(VEHICLE_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(DRIVER_STORAGE_KEY)).toBeNull();
     expect(local.getItem(MPIN_STORAGE_KEY)).toBeNull();
     expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
@@ -67,6 +70,7 @@ describe("resetDemoJourney", () => {
     expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("returning");
     expect(local.getItem(ONBOARDING_STORAGE_KEY)).toBeTruthy();
     expect(local.getItem(VEHICLE_STORAGE_KEY)).toBeTruthy();
+    expect(local.getItem(DRIVER_STORAGE_KEY)).toBeNull();
     expect(local.getItem(MPIN_STORAGE_KEY)).toBeTruthy();
     expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBe("true");
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();

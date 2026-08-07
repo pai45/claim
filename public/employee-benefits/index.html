@@ -167,9 +167,28 @@
       <symbol id="icon-check" viewBox="0 0 24 24">
         <path d="m4 12.5 5.5 5.5L20 6.5" />
       </symbol>
+      <!-- The 70x70 seal artwork sits on a white disc, so the badge reads as a
+           cut-out where it overhangs the top edge of a success sheet. -->
+      <symbol id="icon-success-seal" viewBox="0 0 106 106">
+        <circle cx="53" cy="53" r="53" fill="#ffffff" />
+        <g transform="translate(18 18)">
+          <path
+            d="M64.4008 28.5367L62.0164 25.6492C61.2836 24.7523 60.8352 23.6695 60.7258 22.5211L60.3648 18.7914C59.9055 13.957 56.0555 10.107 51.2211 9.64766L47.4914 9.28672C46.343 9.17734 45.2602 8.72891 44.3633 7.98516L41.4758 5.60078C37.7242 2.50547 32.2883 2.50547 28.5367 5.60078L25.6492 7.98516C24.7523 8.71797 23.6695 9.17734 22.5211 9.28672L18.7914 9.64766C13.957 10.107 10.107 13.957 9.64766 18.7914L9.28672 22.5211C9.17734 23.6805 8.72891 24.7633 7.98516 25.6492L5.60078 28.5367C2.50547 32.2883 2.50547 37.7242 5.60078 41.4758L7.98516 44.3633C8.71797 45.2602 9.16641 46.343 9.27578 47.4914L9.63672 51.2211C10.0961 56.0555 13.9461 59.9055 18.7805 60.3648L22.5102 60.7258C23.6586 60.8352 24.7414 61.2836 25.6383 62.0273L28.5258 64.4117C30.3961 65.9539 32.693 66.7305 34.9898 66.7305C37.2867 66.7305 39.5836 65.9539 41.4539 64.4117L44.3414 62.0273C45.2383 61.2945 46.3211 60.8352 47.4695 60.7258L51.1992 60.3648C56.0336 59.9055 59.8836 56.0555 60.343 51.2211L60.7039 47.4914C60.8133 46.332 61.2617 45.2492 62.0055 44.3633L64.3898 41.4758C67.4852 37.7242 67.4852 32.2883 64.3898 28.5367H64.4008Z"
+            fill="#16A34A"
+          />
+          <path
+            d="M30.9162 44.4236L22.0254 35.5327L23.8071 33.7507L30.9162 40.8598L46.1921 25.584L47.9737 27.3661L30.9162 44.4236Z"
+            fill="#ffffff"
+          />
+        </g>
+      </symbol>
       <symbol id="icon-info" viewBox="0 0 24 24">
         <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
         <path d="M12 16.5v-5M12 7.75h.01" />
+      </symbol>
+      <symbol id="icon-warning-circle" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M12 8v4.5M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </symbol>
       <symbol id="icon-nfc" viewBox="0 0 24 24">
         <path
@@ -494,7 +513,7 @@
           <button
             class="pluspay-action-card"
             type="button"
-            data-toast="Send money opened"
+            data-send-money-open
           >
             <span class="pluspay-action-icon" aria-hidden="true"
               ><svg><use href="#icon-send" /></svg
@@ -1448,37 +1467,57 @@
           </section>
 
           <ul class="fallback-wallet-list">
-            <li class="fallback-wallet-row">
-              <span class="fallback-wallet-icon meal" aria-hidden="true">
-                <svg><use href="#icon-cutlery" /></svg>
-              </span>
-              <span class="fallback-wallet-name" id="fallback-wallet-meal"
-                >Meal Wallet</span
-              >
-              <button
-                class="fallback-toggle"
-                type="button"
-                role="switch"
-                aria-checked="false"
-                aria-labelledby="fallback-wallet-meal"
-                data-fallback-toggle="meal"
-              ></button>
+            <li class="fallback-wallet-row" data-fallback-card="meal">
+              <div class="fallback-wallet-header">
+                <span class="fallback-wallet-icon meal" aria-hidden="true">
+                  <svg><use href="#icon-cutlery" /></svg>
+                </span>
+                <span class="fallback-wallet-name" id="fallback-wallet-meal"
+                  >Meal Wallet</span
+                >
+                <button
+                  class="fallback-toggle"
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  aria-labelledby="fallback-wallet-meal"
+                  data-fallback-toggle="meal"
+                ></button>
+              </div>
+              <div class="fallback-warning-box" data-fallback-warning="meal" hidden>
+                <span class="fallback-warning-icon" aria-hidden="true">
+                  <svg><use href="#icon-warning-circle" /></svg>
+                </span>
+                <p class="fallback-warning-text">
+                  If the meal wallet balance is insufficient, the transaction will be debited from the reimbursement wallet.
+                </p>
+              </div>
             </li>
-            <li class="fallback-wallet-row">
-              <span class="fallback-wallet-icon fuel" aria-hidden="true">
-                <svg><use href="#icon-fuel" /></svg>
-              </span>
-              <span class="fallback-wallet-name" id="fallback-wallet-fuel"
-                >Fuel Wallet</span
-              >
-              <button
-                class="fallback-toggle"
-                type="button"
-                role="switch"
-                aria-checked="false"
-                aria-labelledby="fallback-wallet-fuel"
-                data-fallback-toggle="fuel"
-              ></button>
+            <li class="fallback-wallet-row" data-fallback-card="fuel">
+              <div class="fallback-wallet-header">
+                <span class="fallback-wallet-icon fuel" aria-hidden="true">
+                  <svg><use href="#icon-fuel" /></svg>
+                </span>
+                <span class="fallback-wallet-name" id="fallback-wallet-fuel"
+                  >Fuel Wallet</span
+                >
+                <button
+                  class="fallback-toggle"
+                  type="button"
+                  role="switch"
+                  aria-checked="false"
+                  aria-labelledby="fallback-wallet-fuel"
+                  data-fallback-toggle="fuel"
+                ></button>
+              </div>
+              <div class="fallback-warning-box" data-fallback-warning="fuel" hidden>
+                <span class="fallback-warning-icon" aria-hidden="true">
+                  <svg><use href="#icon-warning-circle" /></svg>
+                </span>
+                <p class="fallback-warning-text">
+                  If the fuel wallet balance is insufficient, the transaction will be debited from the reimbursement wallet.
+                </p>
+              </div>
             </li>
           </ul>
         </div>
@@ -1739,8 +1778,16 @@
         data-card-success-sheet
       >
         <span class="card-success-badge" aria-hidden="true">
-          <svg><use href="#icon-check" /></svg>
+          <svg><use href="#icon-success-seal" /></svg>
         </span>
+        <button
+          class="card-success-dismiss"
+          type="button"
+          aria-label="Close success message"
+          data-card-success-close
+        >
+          <svg aria-hidden="true"><use href="#icon-close" /></svg>
+        </button>
 
         <div data-card-success-activation>
           <h2 id="card-success-title">Card Activated Successfully</h2>
@@ -1756,6 +1803,69 @@
             Your Benefits Card PIN has been<br />Set Successfully
           </h2>
           <button class="card-success-ok" type="button" data-card-success-ok>OK</button>
+        </div>
+
+        <div data-card-success-fallback hidden>
+          <h2 data-card-success-fallback-title>Meal Wallet Fallback Enabled</h2>
+          <p data-card-success-fallback-desc>
+            Transactions from meal wallet will fallback to reimbursement wallet when the balance is insufficient.
+          </p>
+          <button class="card-success-ok" type="button" data-card-success-ok>OK</button>
+        </div>
+      </section>
+    </div>
+
+    <div class="fallback-confirm-overlay" data-fallback-confirm-overlay hidden>
+      <button
+        class="fallback-confirm-backdrop"
+        type="button"
+        aria-label="Close disable fallback confirmation"
+        data-fallback-confirm-close
+      ></button>
+      <section
+        class="fallback-confirm-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="fallback-confirm-title"
+        data-fallback-confirm-sheet
+      >
+        <header class="fallback-confirm-header">
+          <h2 id="fallback-confirm-title" data-fallback-confirm-title>
+            Disable Meal Wallet Fallback Control?
+          </h2>
+          <button
+            type="button"
+            aria-label="Close disable fallback confirmation"
+            data-fallback-confirm-close
+          >
+            <svg aria-hidden="true"><use href="#icon-close" /></svg>
+          </button>
+        </header>
+
+        <div class="fallback-confirm-body">
+          <p data-fallback-confirm-desc-1>
+            Transactions from meal wallet will no longer fallback to reimbursement wallet when the balance is insufficient.
+          </p>
+          <p data-fallback-confirm-desc-2>
+            Are you sure you want to disable meal wallet fallback control?
+          </p>
+        </div>
+
+        <div class="fallback-confirm-actions">
+          <button
+            type="button"
+            class="fallback-confirm-cancel"
+            data-fallback-confirm-cancel
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="fallback-confirm-disable"
+            data-fallback-confirm-disable
+          >
+            Disable
+          </button>
         </div>
       </section>
     </div>
@@ -1834,7 +1944,7 @@
         aria-labelledby="card-status-title"
       >
         <span class="card-status-badge" aria-hidden="true">
-          <svg><use href="#icon-check" /></svg>
+          <svg><use href="#icon-success-seal" /></svg>
         </span>
         <button
           class="card-status-dismiss"

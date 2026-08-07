@@ -11,11 +11,11 @@ function ids(cards: BannerCardContent[]): string[] {
 }
 
 describe("bannerCardsForStage", () => {
-  it("shows only the evergreen promo on a first visit", () => {
+  it("shows only the evergreen vehicle promo on a first visit when unregistered", () => {
     expect(ids(bannerCardsForStage(1))).toEqual(["vehicle_registration"]);
   });
 
-  it("adds the bill reminder ahead of the promo on a second visit", () => {
+  it("adds the bill reminder ahead of the vehicle promo on a second visit", () => {
     expect(ids(bannerCardsForStage(2))).toEqual([
       "internet_bill_due",
       "vehicle_registration",
@@ -35,6 +35,71 @@ describe("bannerCardsForStage", () => {
       const cards = bannerCardsForStage(stage);
       expect(cards[cards.length - 1]?.id).toBe("vehicle_registration");
     }
+  });
+
+  it("replaces vehicle promo with driver promo when vehicle is registered", () => {
+    const stage1 = bannerCardsForStage(1, {
+      isVehicleRegistered: true,
+      isDriverRegistered: false,
+    });
+    expect(ids(stage1)).toEqual(["driver_registration"]);
+
+    const stage2 = bannerCardsForStage(2, {
+      isVehicleRegistered: true,
+      isDriverRegistered: false,
+    });
+    expect(ids(stage2)).toEqual(["internet_bill_due", "driver_registration"]);
+
+    const stage3 = bannerCardsForStage(3, {
+      isVehicleRegistered: true,
+      isDriverRegistered: false,
+    });
+    expect(ids(stage3)).toEqual([
+      "internet_bill_rejected",
+      "internet_bill_due",
+      "driver_registration",
+    ]);
+  });
+
+  it("removes both registration cards when both are registered", () => {
+    const stage1 = bannerCardsForStage(1, {
+      isVehicleRegistered: true,
+      isDriverRegistered: true,
+    });
+    expect(ids(stage1)).toEqual([]);
+
+    const stage2 = bannerCardsForStage(2, {
+      isVehicleRegistered: true,
+      isDriverRegistered: true,
+    });
+    expect(ids(stage2)).toEqual(["internet_bill_due"]);
+
+    const stage3 = bannerCardsForStage(3, {
+      isVehicleRegistered: true,
+      isDriverRegistered: true,
+    });
+    expect(ids(stage3)).toEqual([
+      "internet_bill_rejected",
+      "internet_bill_due",
+    ]);
+  });
+});
+
+describe("driver registration card copy and actions", () => {
+  it("contains expected copy and action payload for driver registration", () => {
+    const cards = bannerCardsForStage(1, {
+      isVehicleRegistered: true,
+      isDriverRegistered: false,
+    });
+    const driverCard = cards[0];
+    expect(driverCard.id).toBe("driver_registration");
+    expect(driverCard.title).toBe("Driver Registration");
+    expect(driverCard.body).toBe(
+      "Register your driver to claim driver salary tax benefits.",
+    );
+    expect(driverCard.ctaLabel).toBe("Start registration");
+    expect(driverCard.tone).toBe("promo");
+    expect(driverCard.action).toEqual({ kind: "driver" });
   });
 });
 

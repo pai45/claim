@@ -179,8 +179,9 @@ export function evaluateClaimPrecheck(
     checks.push({
       id: "deadline",
       label: "Submission deadline",
-      detail: "No exact deadline is configured for this demo benefit; HR will review the policy window.",
-      status: "warning",
+      detail:
+        "No exact monthly deadline is configured for this demo benefit.",
+      status: "pass",
     });
   }
 

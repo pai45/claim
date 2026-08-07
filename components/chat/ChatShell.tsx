@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  DRIVER_REGISTRATION_INTENT,
+  DRIVER_REGISTRATION_LABEL,
   USER_DISPLAY_NAME,
   VEHICLE_REGISTRATION_INTENT,
   VEHICLE_REGISTRATION_LABEL,
@@ -10,8 +12,13 @@ import {
 import { bannerCardsForStage } from "@/features/chat/bannerCards";
 import { takePendingChatIntent } from "@/features/chat/pendingIntent";
 import { useBannerStage } from "@/features/chat/useBannerStage";
+import { useRegistrationStatus } from "@/features/chat/useRegistrationStatus";
 import { useChat } from "@/features/chat/useChat";
-import type { QuickAction } from "@/features/chat/types";
+import type {
+  DocumentUploadKind,
+  QuickAction,
+  UploadOptionId,
+} from "@/features/chat/types";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
 import { AttachBottomDrawer } from "./AttachBottomDrawer";
@@ -23,6 +30,10 @@ import { NewChatWidget } from "./NewChatWidget";
 import { PromoCarousel } from "./PromoCarousel";
 import { QuickActions } from "./QuickActions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import {
+  DocumentScenarioDrawer,
+  type DocumentScenarioSelection,
+} from "./DocumentScenarioDrawer";
 
 const ColorBends = dynamic(() => import("@/components/shared/ColorBends"), {
   ssr: false,
@@ -47,6 +58,10 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const [replacementBillId, setReplacementBillId] = useState<string | null>(
     null,
   );
+  const [scenarioPicker, setScenarioPicker] = useState<{
+    kind: DocumentUploadKind;
+    source: UploadOptionId;
+  } | null>(null);
   const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [awayFromBottom, setAwayFromBottom] = useState(false);
@@ -58,13 +73,13 @@ export function ChatShell({ onClose }: ChatShellProps) {
     isScanning,
     isLocating,
     documentProcessingStage,
+    documentProcessingKind,
     isHydrated,
     policyModelStatus,
     sendMessage,
     startClaimEdit,
-    processBillFile,
-    replaceBillFile,
-    processDlFile,
+    processBillScenario,
+    processDlScenario,
     updateBillExtract,
     submitBillClaim,
     saveClaimEdit,
@@ -123,20 +138,43 @@ export function ChatShell({ onClose }: ChatShellProps) {
   // Which empty-state banners this app open shows. Null until the stage is
   // read from storage on the client, which the empty state already waits for.
   const bannerStage = useBannerStage();
+  const registrationStatus = useRegistrationStatus();
   const bannerCards = useMemo(
-    () => (bannerStage ? bannerCardsForStage(bannerStage) : []),
-    [bannerStage],
+    () =>
+      bannerStage
+        ? bannerCardsForStage(bannerStage, registrationStatus)
+        : [],
+    [bannerStage, registrationStatus],
   );
 
   function handleQuickAction(action: QuickAction) {
     void sendMessage(action.label, action.intentId);
   }
 
-  async function handleBillSelected(file: File) {
-    const target = replacementBillId;
+  function openBillScenarioPicker(source: UploadOptionId) {
+    setAttachOpen(false);
+    setScenarioPicker({ kind: "bill", source });
+  }
+
+  function openDlScenarioPicker(source: UploadOptionId) {
+    setScenarioPicker({ kind: "dl", source });
+  }
+
+  function closeScenarioPicker() {
+    setScenarioPicker(null);
     setReplacementBillId(null);
-    if (target) await replaceBillFile(target, file);
-    else await processBillFile(file);
+  }
+
+  function handleScenarioSelected(selection: DocumentScenarioSelection) {
+    const target = replacementBillId;
+    setScenarioPicker(null);
+    setReplacementBillId(null);
+
+    if (selection.kind === "bill") {
+      void processBillScenario(selection.scenarioId, target ?? undefined);
+      return;
+    }
+    void processDlScenario(selection.scenarioId);
   }
 
   function handleReplaceBill(messageId: string) {
@@ -152,6 +190,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
   function handleConfirmedClear() {
     setConfirmClearOpen(false);
     setAttachOpen(false);
+    setScenarioPicker(null);
     setReplacementBillId(null);
     startNewChat();
   }
@@ -163,6 +202,10 @@ export function ChatShell({ onClose }: ChatShellProps) {
 
   function handleVehicleRegistration() {
     void sendMessage(VEHICLE_REGISTRATION_LABEL, VEHICLE_REGISTRATION_INTENT);
+  }
+
+  function handleDriverRegistration() {
+    void sendMessage(DRIVER_REGISTRATION_LABEL, DRIVER_REGISTRATION_INTENT);
   }
 
   const busy = isLoading || isScanning || isLocating;
@@ -213,6 +256,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
                   <PromoCarousel
                     cards={bannerCards}
                     onVehicleStart={handleVehicleRegistration}
+                    onDriverStart={handleDriverRegistration}
                     onUploadBill={handleStartAnotherBill}
                     disabled={busy}
                     reduceMotion={reduceMotion}
@@ -228,10 +272,11 @@ export function ChatShell({ onClose }: ChatShellProps) {
               isScanning={isScanning}
               isLocating={isLocating}
               documentProcessingStage={documentProcessingStage}
+              documentProcessingKind={documentProcessingKind}
               policyModelStatus={policyModelStatus}
               onAwayFromBottomChange={setAwayFromBottom}
-              onFileSelected={(file) => void processBillFile(file)}
-              onDlFileSelected={(file) => void processDlFile(file)}
+              onBillSourceSelected={openBillScenarioPicker}
+              onDlSourceSelected={openDlScenarioPicker}
               onUpdateBillExtract={updateBillExtract}
               onSubmitBillClaim={submitBillClaim}
               onSaveClaimEdit={saveClaimEdit}
@@ -312,10 +357,18 @@ export function ChatShell({ onClose }: ChatShellProps) {
         <AttachBottomDrawer
           open={attachOpen}
           onClose={() => setAttachOpen(false)}
-          onFileSelected={(file) => void handleBillSelected(file)}
+          onUploadSourceSelected={openBillScenarioPicker}
           onSend={(message) => void sendMessage(message)}
           disabled={busy}
           onClearData={requestClear}
+        />
+
+        <DocumentScenarioDrawer
+          open={Boolean(scenarioPicker)}
+          kind={scenarioPicker?.kind ?? "bill"}
+          source={scenarioPicker?.source ?? "gallery"}
+          onSelect={handleScenarioSelected}
+          onClose={closeScenarioPicker}
         />
 
         <ConfirmDialog

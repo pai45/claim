@@ -23,6 +23,13 @@ export const UI_ICONS = {
   claimHistory: "/assets/icons/claim-history.svg",
 } as const;
 
+/** Supplied artwork used by the Profile screen's menu rows. */
+export const PROFILE_ICONS = {
+  user: "/assets/icons/profile-user.svg",
+  autopay: "/assets/icons/profile-autopay.svg",
+  collect: "/assets/icons/profile-collect.svg",
+} as const;
+
 export const CATEGORY_ICONS = {
   meal: "/assets/icons/meal.svg",
   gift: "/assets/icons/gift.svg",
@@ -34,3 +41,21 @@ export const CATEGORY_ICONS = {
 } as const;
 
 export type CategoryIconId = keyof typeof CATEGORY_ICONS;
+
+/** Clearly watermarked, fictional documents used by the upload demo. */
+export const DEMO_DOCUMENT_ASSETS = {
+  billMeal: "/assets/demo-documents/bill-meal.jpg",
+  billMealMissing: "/assets/demo-documents/bill-meal-missing.jpg",
+  billFuel: "/assets/demo-documents/bill-fuel.jpg",
+  billFuelExceeding: "/assets/demo-documents/bill-fuel-exceeding.jpg",
+  billInternet: "/assets/demo-documents/bill-internet.jpg",
+  billMobile: "/assets/demo-documents/bill-mobile.jpg",
+  billGift: "/assets/demo-documents/bill-gift.jpg",
+  billBooks: "/assets/demo-documents/bill-books.jpg",
+  billProfessional: "/assets/demo-documents/bill-professional.jpg",
+  billDuplicate: "/assets/demo-documents/bill-duplicate.jpg",
+  billLate: "/assets/demo-documents/bill-late.jpg",
+  billOther: "/assets/demo-documents/bill-other.jpg",
+  dlFound: "/assets/demo-documents/dl-found.jpg",
+  dlNotFound: "/assets/demo-documents/dl-not-found.jpg",
+} as const;

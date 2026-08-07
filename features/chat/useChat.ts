@@ -37,7 +37,11 @@ import {
 } from "@/lib/assistant/policyModel";
 import { buildAssistantHistory } from "@/lib/assistant/history";
 import { routePlanFor } from "@/lib/assistant/route";
-import { USER_DISPLAY_NAME, VEHICLE_REGISTRATION_INTENT } from "./constants";
+import {
+  DRIVER_REGISTRATION_INTENT,
+  USER_DISPLAY_NAME,
+  VEHICLE_REGISTRATION_INTENT,
+} from "./constants";
 import {
   searchMerchantsByName,
   searchMerchantsNearby,
@@ -46,18 +50,29 @@ import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runBillOcr } from "@/lib/ocr/runOcr";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import { saveRegisteredVehicle } from "@/features/vehicle/registration";
+import { saveRegisteredDriver } from "@/features/driver/registration";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { BenefitType } from "@/lib/merchants/types";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 import type {
   BillExtract,
+  BillUploadScenarioId,
   ChatMessage,
   DocumentProcessingStage,
+  DocumentUploadKind,
+  DlUploadScenarioId,
   DriverSalaryPayload,
   PolicyModelStatus,
   VehicleLookupPayload,
 } from "./types";
+import {
+  buildBillExtractFromScenario,
+  buildDlPayloadFromScenario,
+  getBillUploadScenario,
+  getDemoPrecheckDate,
+  getDlUploadScenario,
+} from "./demoUploadScenarios";
 import {
   clearChatSession,
   createPersistedChatSession,
@@ -90,6 +105,8 @@ export function useChat() {
   const [isLocating, setIsLocating] = useState(false);
   const [documentProcessingStage, setDocumentProcessingStage] =
     useState<DocumentProcessingStage | null>(null);
+  const [documentProcessingKind, setDocumentProcessingKind] =
+    useState<DocumentUploadKind>("bill");
   const [isHydrated, setIsHydrated] = useState(false);
   const [policyModelStatus, setPolicyModelStatus] =
     useState<PolicyModelStatus | null>(null);
@@ -162,6 +179,7 @@ export function useChat() {
     setIsScanning(false);
     setIsLocating(false);
     setDocumentProcessingStage(null);
+    setDocumentProcessingKind("bill");
     setPolicyModelStatus(null);
     setError(null);
     setActiveBenefitType(null);
@@ -444,6 +462,22 @@ export function useChat() {
 
         if (data.intentId === VEHICLE_REGISTRATION_INTENT) {
           appendVehicleNumberInput();
+        }
+
+        if (data.intentId === DRIVER_REGISTRATION_INTENT) {
+          const draft: DriverSalaryPayload = {};
+          driverSalaryDraftRef.current = draft;
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: createId(),
+              role: "assistant",
+              content: "Driver name",
+              createdAt: Date.now(),
+              kind: "driver_name_input",
+              driverSalary: draft,
+            },
+          ]);
         }
       };
 
@@ -835,11 +869,144 @@ export function useChat() {
     [activeBenefitType, isLoading, isLocating, isScanning],
   );
 
+  const processBillScenario = useCallback(
+    async (
+      scenarioId: BillUploadScenarioId,
+      replaceMessageId?: string,
+    ) => {
+      if (isScanning || isLoading || isLocating) return;
+
+      const scenario = getBillUploadScenario(scenarioId);
+      const billMessageId = replaceMessageId ?? createId();
+      setIsScanning(true);
+      setDocumentProcessingKind("bill");
+      setDocumentProcessingStage("preparing");
+      setError(null);
+
+      setMessages((prev) =>
+        prev.concat({
+          id: createId(),
+          role: "user",
+          content: `${replaceMessageId ? "Replaced with" : "Selected demo"}: ${scenario.label}`,
+          createdAt: Date.now(),
+          kind: "text",
+        }),
+      );
+
+      try {
+        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        setDocumentProcessingStage("reading");
+        await new Promise((resolve) => window.setTimeout(resolve, 260));
+        setDocumentProcessingStage("checking");
+        await new Promise((resolve) => window.setTimeout(resolve, 220));
+
+        const nextExtract = buildBillExtractFromScenario(scenarioId);
+        setMessages((prev) => {
+          const previousExtract = replaceMessageId
+            ? prev.find((message) => message.id === replaceMessageId)
+                ?.billExtract
+            : undefined;
+          const nextMessage: ChatMessage = {
+            id: billMessageId,
+            role: "assistant",
+            content: scenario.assistantMessage,
+            createdAt: Date.now(),
+            kind: "bill_extract",
+            billExtract: {
+              ...nextExtract,
+              editClaimId: previousExtract?.editClaimId,
+              warningAcknowledged: false,
+            },
+          };
+
+          if (replaceMessageId) {
+            return prev.map((message) =>
+              message.id === replaceMessageId ? nextMessage : message,
+            );
+          }
+
+          return [
+            ...prev,
+            {
+              id: `${billMessageId}-scan`,
+              role: "assistant",
+              content: "Bill scanned",
+              createdAt: Date.now(),
+              kind: "document_scan",
+            },
+            nextMessage,
+          ];
+        });
+      } finally {
+        setIsScanning(false);
+        setDocumentProcessingStage(null);
+      }
+    },
+    [isLoading, isLocating, isScanning],
+  );
+
+  const processDlScenario = useCallback(
+    async (scenarioId: DlUploadScenarioId) => {
+      if (isScanning || isLoading || isLocating) return;
+
+      const scenario = getDlUploadScenario(scenarioId);
+      const draftBase = { ...driverSalaryDraftRef.current };
+      setIsScanning(true);
+      setDocumentProcessingKind("dl");
+      setDocumentProcessingStage("preparing");
+      setError(null);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: `Selected demo: ${scenario.label}`,
+          createdAt: Date.now(),
+          kind: "text",
+        },
+      ]);
+
+      try {
+        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        setDocumentProcessingStage("reading");
+        await new Promise((resolve) => window.setTimeout(resolve, 260));
+        setDocumentProcessingStage("checking");
+        await new Promise((resolve) => window.setTimeout(resolve, 220));
+
+        const draft: DriverSalaryPayload = {
+          ...draftBase,
+          ...buildDlPayloadFromScenario(scenarioId),
+        };
+        driverSalaryDraftRef.current = draft;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: createId(),
+            role: "assistant",
+            content: scenario.assistantMessage,
+            createdAt: Date.now(),
+            kind: "driver_dl_extract",
+            driverSalary: draft,
+          },
+        ]);
+      } finally {
+        setIsScanning(false);
+        setDocumentProcessingStage(null);
+      }
+    },
+    [isLoading, isLocating, isScanning],
+  );
+
+  // Preserved for future live-upload reactivation. The active UI uses the
+  // deterministic scenario handlers above and never calls OCR.
   const processBillFile = useCallback(
     async (file: File, replaceMessageId?: string) => {
       if (isScanning || isLoading || isLocating) return;
 
       setIsScanning(true);
+      setDocumentProcessingKind("bill");
       setDocumentProcessingStage("preparing");
       setError(null);
 
@@ -972,7 +1139,10 @@ export function useChat() {
 
   const submitBillClaim = useCallback(
     (messageId: string, extract: BillExtract) => {
-      const precheck = evaluateClaimPrecheck(extract);
+      const precheck = evaluateClaimPrecheck(
+        extract,
+        getDemoPrecheckDate(extract),
+      );
       if (
         precheck.status === "blocked" ||
         (precheck.requiresAcknowledgement && !extract.warningAcknowledged)
@@ -1203,6 +1373,8 @@ export function useChat() {
       if (isScanning || isLoading || isLocating) return;
 
       setIsScanning(true);
+      setDocumentProcessingKind("dl");
+      setDocumentProcessingStage("preparing");
       setError(null);
 
       const draftBase = { ...driverSalaryDraftRef.current };
@@ -1219,6 +1391,7 @@ export function useChat() {
       ]);
 
       try {
+        setDocumentProcessingStage("reading");
         const ocr = await runDlOcr(file);
         const draft: DriverSalaryPayload = {
           ...draftBase,
@@ -1265,6 +1438,7 @@ export function useChat() {
         ]);
       } finally {
         setIsScanning(false);
+        setDocumentProcessingStage(null);
       }
     },
     [isLoading, isLocating, isScanning],
@@ -1355,6 +1529,7 @@ export function useChat() {
         submitted: true,
       };
       driverSalaryDraftRef.current = submitted;
+      saveRegisteredDriver(submitted);
 
       setMessages((prev) =>
         prev
@@ -1383,6 +1558,7 @@ export function useChat() {
     isScanning,
     isLocating,
     documentProcessingStage,
+    documentProcessingKind,
     isHydrated,
     policyModelStatus,
     error,
@@ -1391,6 +1567,8 @@ export function useChat() {
     processBillFile,
     replaceBillFile,
     processDlFile,
+    processBillScenario,
+    processDlScenario,
     openUploadOptions,
     updateBillExtract,
     submitBillClaim,

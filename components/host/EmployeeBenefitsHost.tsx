@@ -13,6 +13,7 @@ const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
 const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
+const OPEN_SEND_MONEY_MESSAGE = "employee-benefits:open-send-money";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
 const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
@@ -100,6 +101,10 @@ export function EmployeeBenefitsHost() {
 
   const openUpiSettings = useCallback((tab: "benefits" | "pluspay") => {
     window.location.assign(withBasePath(`/upi-settings/?tab=${tab}`));
+  }, []);
+
+  const openSendMoney = useCallback(() => {
+    window.location.assign(withBasePath("/send-money/"));
   }, []);
 
   const openScanPay = useCallback(() => {
@@ -210,6 +215,10 @@ export function EmployeeBenefitsHost() {
         openUpiSettings(
           event.data.tab === "pluspay" ? "pluspay" : "benefits",
         );
+        return;
+      }
+      if (event.data?.type === OPEN_SEND_MONEY_MESSAGE) {
+        openSendMoney();
         return;
       }
       if (

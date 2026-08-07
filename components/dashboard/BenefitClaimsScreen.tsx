@@ -1,15 +1,19 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import {
+  DRIVER_REGISTRATION_INTENT,
+  DRIVER_REGISTRATION_LABEL,
   VEHICLE_REGISTRATION_INTENT,
   VEHICLE_REGISTRATION_LABEL,
 } from "@/features/chat/constants";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
+import { useRegisteredDriver } from "@/features/driver/useRegisteredDriver";
 import {
   applyBenefitClaimOverrides,
   BENEFIT_DASHBOARD_FY_LABEL,
@@ -30,6 +34,8 @@ import { colors } from "@/lib/ui/colors";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { VehicleRegistrationPrompt } from "./VehicleRegistrationPrompt";
 import { VehicleSummaryCard } from "./VehicleSummaryCard";
+import { DriverRegistrationPrompt } from "./DriverRegistrationPrompt";
+import { DriverSummaryCard } from "./DriverSummaryCard";
 
 type BenefitClaimsScreenProps = {
   categoryId: string;
@@ -88,7 +94,9 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
   const router = useRouter();
   const { personaId } = useActivePersona();
   const { vehicle, isHydrated } = useRegisteredVehicle();
+  const { driver, isHydrated: isDriverHydrated } = useRegisteredDriver();
   const claimOverrides = useClaimOverrides();
+  const activeTabRef = useRef<HTMLButtonElement>(null);
   const data = applyBenefitClaimOverrides(
     getBenefitClaimsDashboard(categoryId, personaId),
     claimOverrides,
@@ -106,6 +114,17 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
     data.accrued > 0 ? (data.utilized / data.accrued) * 100 : 0,
   );
 
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    activeTabRef.current?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [data.categoryId]);
+
   function startVehicleRegistration() {
     setPendingChatIntent({
       intentId: VEHICLE_REGISTRATION_INTENT,
@@ -114,12 +133,64 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
     router.push("/#claims");
   }
 
+  function startDriverRegistration() {
+    setPendingChatIntent({
+      intentId: DRIVER_REGISTRATION_INTENT,
+      label: DRIVER_REGISTRATION_LABEL,
+    });
+    router.push("/#claims");
+  }
+
   return (
     <AppShell className="overflow-hidden">
-      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
-        <BackNavigationButton onClick={() => router.push("/dashboard/")} />
-        <h1 className="type-screen-title flex-1 truncate">{data.title}</h1>
-      </header>
+      <div className="w-full min-w-0 shrink-0 bg-white">
+        <header className="flex items-center gap-4 px-page pb-4 pt-2">
+          <BackNavigationButton onClick={() => router.push("/dashboard/")} />
+          <h1 className="type-screen-title flex-1 truncate">{data.title}</h1>
+        </header>
+
+        <div
+          className="flex w-full min-w-0 snap-x snap-mandatory touch-pan-x overflow-x-auto overscroll-x-contain border-b border-border-tab px-2 pb-0 pt-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="tablist"
+          aria-label="Benefit claim categories"
+        >
+          {DASHBOARD_CATEGORIES.map((category) => {
+            const active = category.id === data.categoryId;
+            return (
+              <button
+                key={category.id}
+                ref={active ? activeTabRef : undefined}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => {
+                  router.replace(`/dashboard/${category.id}/`, {
+                    scroll: false,
+                  });
+                }}
+                className="flex min-h-11 shrink-0 snap-start items-center justify-center px-3 pt-2"
+              >
+                <span className="flex flex-col items-center gap-2">
+                  <span
+                    className={`type-body whitespace-nowrap ${
+                      active
+                        ? "font-bold text-ink"
+                        : "font-normal text-ink-secondary"
+                    }`}
+                  >
+                    {category.name}
+                  </span>
+                  <span
+                    className={`h-0.5 w-full rounded-pill ${
+                      active ? "bg-pine-primary" : "bg-transparent"
+                    }`}
+                  />
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-10 pt-4">
         <section className="animate-rise-in relative flex flex-col gap-5 rounded-card border border-success bg-linear-to-b from-white to-success-tint p-card shadow-soft">
@@ -180,6 +251,28 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
           ) : (
             <>
               <VehicleSummaryCard lookup={vehicle.lookup} />
+              <MonthSummary
+                data={data}
+                icon={categoryMeta.icon}
+                staggerIndex={2}
+              />
+            </>
+          )
+        ) : data.categoryId === "driver" ? (
+          !isHydrated || !isDriverHydrated ? (
+            <div
+              className="h-40 rounded-card border border-border-line bg-white/60"
+              aria-hidden
+            />
+          ) : !vehicle || !driver ? (
+            <DriverRegistrationPrompt
+              vehicleRegistered={Boolean(vehicle)}
+              onRegisterVehicle={startVehicleRegistration}
+              onRegisterDriver={startDriverRegistration}
+            />
+          ) : (
+            <>
+              <DriverSummaryCard driver={driver} />
               <MonthSummary
                 data={data}
                 icon={categoryMeta.icon}

@@ -87,15 +87,25 @@ function SuccessBottomSheet({
         tabIndex={-1}
         aria-label="Dismiss"
         onClick={onClose}
-        className={`absolute inset-0 bg-black/35 transition-opacity ${open ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 bg-[rgba(28,30,31,0.8)] transition-opacity ${open ? "opacity-100" : "opacity-0"}`}
       />
       <section
         ref={panelRef}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="onboarding-success-title"
-        className={`absolute inset-x-0 bottom-0 rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-5 shadow-drawer transition-transform ${open ? "translate-y-0" : "translate-y-full"}`}
+        // 368px, not `max-w-card`, so this renders identically to the card
+        // success sheet in the employee-benefits prototype. The seal overhangs
+        // the top edge, so the sheet travels further than its own height to
+        // clear the viewport when closed.
+        className={`absolute inset-x-5 bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] mx-auto max-w-[368px] rounded-[18px] bg-white px-6 pb-6 pt-17 text-center shadow-drawer transition-transform ${open ? "translate-y-0" : "translate-y-[calc(100%+80px)]"}`}
       >
+        <span
+          className="absolute -top-12 left-1/2 flex h-24 w-24 -translate-x-1/2 items-center justify-center rounded-full bg-white"
+          aria-hidden="true"
+        >
+          <SuccessSealIcon size={64} />
+        </span>
         <button
           type="button"
           aria-label="Close"
@@ -104,19 +114,18 @@ function SuccessBottomSheet({
         >
           <CloseIcon />
         </button>
-        <div className="flex flex-col items-center pt-2 text-center">
-          <SuccessSealIcon size={72} />
-          <h2
-            id="onboarding-success-title"
-            className="type-section-title mt-3"
-          >
-            {title}
-          </h2>
-          <p className="type-body-secondary mt-2 max-w-[300px]">{description}</p>
-        </div>
+        <h2
+          id="onboarding-success-title"
+          className="font-display text-[24px] font-bold leading-[1.2] text-ink"
+        >
+          {title}
+        </h2>
+        <p className="type-body-secondary mt-3.5 text-[17px] leading-[1.35]">
+          {description}
+        </p>
         <button
           type="button"
-          className="btn-primary mt-5 min-h-11 h-auto py-3"
+          className="btn-primary mt-7 min-h-11 h-auto py-3"
           onClick={onConfirm}
         >
           {confirmLabel}

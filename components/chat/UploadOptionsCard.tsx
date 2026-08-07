@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type ChangeEvent, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { UploadOptionId } from "@/features/chat/types";
 import { colors } from "@/lib/ui/colors";
 import {
@@ -10,7 +10,7 @@ import {
 } from "./UploadOptionIcons";
 
 type UploadOptionsCardProps = {
-  onFileSelected: (file: File) => void;
+  onSourceSelected: (source: UploadOptionId) => void;
   disabled?: boolean;
   title?: string;
   subtitle?: string;
@@ -59,35 +59,18 @@ const OPTIONS: {
 ];
 
 export function UploadOptionsCard({
-  onFileSelected,
+  onSourceSelected,
   disabled,
   title = "Upload options",
-  subtitle = "PDF, JPG or PNG up to 10 MB",
+  subtitle = "Choose a source, then select a demo bill",
 }: UploadOptionsCardProps) {
-  const cameraRef = useRef<HTMLInputElement>(null);
-  const pdfRef = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
-
-  const refs = {
-    camera: cameraRef,
-    pdf: pdfRef,
-    gallery: galleryRef,
-  } as const;
-
   function handlePick(optionId: UploadOptionId) {
     if (disabled) return;
-    refs[optionId].current?.click();
-  }
-
-  function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    onFileSelected(file);
+    onSourceSelected(optionId);
   }
 
   return (
-    <div className="w-full max-w-card rounded-[28px] border-2 border-[#8dceb0] bg-white p-5 shadow-card">
+    <div className="w-full max-w-card rounded-bubble border border-success-border bg-white p-card shadow-card">
       <div className="mb-5 flex items-start gap-3">
         <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-control bg-surface-tint">
           <BookmarkIcon />
@@ -107,7 +90,7 @@ export function UploadOptionsCard({
             type="button"
             disabled={disabled}
             onClick={() => handlePick(option.id)}
-            className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-[18px] border border-input-border bg-white px-2 py-4 text-center shadow-soft transition-colors hover:border-success disabled:opacity-50"
+            className="flex min-h-28 flex-col items-center justify-center gap-3 rounded-card border border-input-border bg-white px-2 py-4 text-center shadow-soft transition-colors hover:border-pine-primary focus-visible:outline-2 focus-visible:outline-pine-primary disabled:opacity-50"
           >
             <span className="flex h-11 w-11 items-center justify-center rounded-full bg-surface-tint">
               {option.icon}
@@ -119,28 +102,6 @@ export function UploadOptionsCard({
         ))}
       </div>
 
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handleChange}
-      />
-      <input
-        ref={pdfRef}
-        type="file"
-        accept="application/pdf"
-        className="hidden"
-        onChange={handleChange}
-      />
-      <input
-        ref={galleryRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handleChange}
-      />
     </div>
   );
 }

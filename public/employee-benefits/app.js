@@ -193,6 +193,15 @@ const cardSuccessPin = document.querySelector("[data-card-success-pin]");
 const cardSuccessPinTitle = document.querySelector(
   "[data-card-success-pin-title]",
 );
+const cardSuccessFallback = document.querySelector(
+  "[data-card-success-fallback]",
+);
+const cardSuccessFallbackTitle = document.querySelector(
+  "[data-card-success-fallback-title]",
+);
+const cardSuccessFallbackDesc = document.querySelector(
+  "[data-card-success-fallback-desc]",
+);
 const cardSuccessCloseButtons = document.querySelectorAll(
   "[data-card-success-close], [data-card-success-done], [data-card-success-ok]",
 );
@@ -225,8 +234,32 @@ const fallbackPanel = document.querySelector(".fallback-panel");
 const fallbackOpenButtons = document.querySelectorAll("[data-fallback-open]");
 const fallbackCloseButtons = document.querySelectorAll("[data-fallback-close]");
 const fallbackInfo = document.querySelector("[data-fallback-info]");
-const fallbackInfoToggle = document.querySelector("[data-fallback-info-toggle]");
+const fallbackInfoToggle = document.querySelector(
+  "[data-fallback-info-toggle]",
+);
 const fallbackToggles = document.querySelectorAll("[data-fallback-toggle]");
+const fallbackConfirmOverlay = document.querySelector(
+  "[data-fallback-confirm-overlay]",
+);
+const fallbackConfirmSheet = document.querySelector(
+  "[data-fallback-confirm-sheet]",
+);
+const fallbackConfirmTitle = document.querySelector(
+  "[data-fallback-confirm-title]",
+);
+const fallbackConfirmDesc1 = document.querySelector(
+  "[data-fallback-confirm-desc-1]",
+);
+const fallbackConfirmDesc2 = document.querySelector(
+  "[data-fallback-confirm-desc-2]",
+);
+const fallbackConfirmCloseButtons = document.querySelectorAll(
+  "[data-fallback-confirm-close], [data-fallback-confirm-cancel]",
+);
+const fallbackConfirmDisableButton = document.querySelector(
+  "[data-fallback-confirm-disable]",
+);
+let pendingDisableFallbackKey = null;
 const claimsOpenButton = document.querySelector("[data-claims-open]");
 const claimsAssistant = document.querySelector("[data-claims-assistant]");
 const claimsCloseButtons = document.querySelectorAll("[data-claims-close]");
@@ -5149,6 +5182,16 @@ document.querySelectorAll("[data-spend-analytics-open]").forEach((button) => {
   });
 });
 
+document.querySelectorAll("[data-send-money-open]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-send-money" },
+      window.location.origin,
+    );
+  });
+});
+
 scanPayOpenButtons.forEach((button) => {
   button.addEventListener("click", () => {
     window.location.hash = "scan-pay";
@@ -5432,12 +5475,34 @@ function closeCardPinOverlay() {
   }, 280);
 }
 
-function openCardSuccessSheet(mode) {
+function openCardSuccessSheet(mode, payload) {
   if (!cardSuccessOverlay) return;
-  cardSuccessMode = mode === "pin" ? "pin" : "activation";
+  cardSuccessMode =
+    mode === "pin" ? "pin" : mode === "fallback" ? "fallback" : "activation";
   if (cardSuccessActivation)
     cardSuccessActivation.hidden = cardSuccessMode !== "activation";
   if (cardSuccessPin) cardSuccessPin.hidden = cardSuccessMode !== "pin";
+  if (cardSuccessFallback) {
+    cardSuccessFallback.hidden = cardSuccessMode !== "fallback";
+    if (cardSuccessMode === "fallback" && payload) {
+      const walletLabel =
+        payload.walletLabel ||
+        (payload.walletKey === "fuel" ? "Fuel Wallet" : "Meal Wallet");
+      const walletKeyName =
+        payload.walletKey === "fuel" ? "fuel wallet" : "meal wallet";
+      const isDisabled = payload.status === "disabled";
+      if (cardSuccessFallbackTitle) {
+        cardSuccessFallbackTitle.textContent = isDisabled
+          ? `${walletLabel} Fallback Disabled`
+          : `${walletLabel} Fallback Enabled`;
+      }
+      if (cardSuccessFallbackDesc) {
+        cardSuccessFallbackDesc.textContent = isDisabled
+          ? `${walletLabel} fallback has been turned off.`
+          : `Transactions from ${walletKeyName} will fallback to reimbursement wallet when the balance is insufficient.`;
+      }
+    }
+  }
   cardSuccessOverlay.hidden = false;
   window.requestAnimationFrame(() => {
     cardSuccessOverlay.classList.add("is-open");
@@ -5445,7 +5510,9 @@ function openCardSuccessSheet(mode) {
     const focusTarget =
       cardSuccessMode === "pin"
         ? cardSuccessPin?.querySelector("button")
-        : cardSuccessActivation?.querySelector("button");
+        : cardSuccessMode === "fallback"
+          ? cardSuccessFallback?.querySelector("button")
+          : cardSuccessActivation?.querySelector("button");
     focusTarget?.focus({ preventScroll: true });
   });
 }
@@ -5632,7 +5699,14 @@ function writeFallbackState() {
 function renderFallbackState() {
   fallbackToggles.forEach((toggle) => {
     const key = toggle.dataset.fallbackToggle;
-    toggle.setAttribute("aria-checked", String(fallbackState[key] === true));
+    const isChecked = fallbackState[key] === true;
+    toggle.setAttribute("aria-checked", String(isChecked));
+    const warningBox = document.querySelector(
+      `[data-fallback-warning="${key}"]`,
+    );
+    if (warningBox) {
+      warningBox.hidden = !isChecked;
+    }
   });
 
   // Mirror the summary on the Manage Card tile so the state is visible without
@@ -5671,17 +5745,84 @@ function closeFallbackOverlay() {
   }, 280);
 }
 
-function toggleFallbackWallet(key) {
-  if (!(key in fallbackState)) return;
-  fallbackState[key] = !fallbackState[key];
+function openFallbackConfirmSheet(key) {
+  if (!fallbackConfirmOverlay) return;
+  pendingDisableFallbackKey = key;
+  const label =
+    fallbackWalletLabels[key] ||
+    (key === "fuel" ? "Fuel Wallet" : "Meal Wallet");
+  const walletKeyName = key === "fuel" ? "fuel wallet" : "meal wallet";
+
+  if (fallbackConfirmTitle) {
+    fallbackConfirmTitle.textContent = `Disable ${label} Fallback Control?`;
+  }
+  if (fallbackConfirmDesc1) {
+    fallbackConfirmDesc1.textContent = `Transactions from ${walletKeyName} will no longer fallback to reimbursement wallet when the balance is insufficient.`;
+  }
+  if (fallbackConfirmDesc2) {
+    fallbackConfirmDesc2.textContent = `Are you sure you want to disable ${walletKeyName} fallback control?`;
+  }
+
+  fallbackConfirmOverlay.hidden = false;
+  window.requestAnimationFrame(() => {
+    fallbackConfirmOverlay.classList.add("is-open");
+    syncPageScrollLock();
+    fallbackConfirmDisableButton?.focus({ preventScroll: true });
+  });
+}
+
+function closeFallbackConfirmSheet() {
+  if (!fallbackConfirmOverlay) return;
+  fallbackConfirmOverlay.classList.remove("is-open");
+  pendingDisableFallbackKey = null;
+  window.setTimeout(() => {
+    if (!fallbackConfirmOverlay.classList.contains("is-open")) {
+      fallbackConfirmOverlay.hidden = true;
+      syncPageScrollLock();
+    }
+  }, 260);
+}
+
+function confirmDisableFallback() {
+  const key = pendingDisableFallbackKey;
+  if (!key || !(key in fallbackState)) {
+    closeFallbackConfirmSheet();
+    return;
+  }
+  fallbackState[key] = false;
   writeFallbackState();
   renderFallbackState();
-  const label = fallbackWalletLabels[key] || "Wallet";
-  showToast(
-    fallbackState[key]
-      ? `${label} will now fall back to Reimbursement Wallet`
-      : `Fallback turned off for ${label}`,
-  );
+  const label =
+    fallbackWalletLabels[key] ||
+    (key === "fuel" ? "Fuel Wallet" : "Meal Wallet");
+
+  closeFallbackConfirmSheet();
+
+  window.setTimeout(() => {
+    openCardSuccessSheet("fallback", {
+      walletKey: key,
+      walletLabel: label,
+      status: "disabled",
+    });
+  }, 220);
+}
+
+function toggleFallbackWallet(key) {
+  if (!(key in fallbackState)) return;
+  const isCurrentlyEnabled = fallbackState[key] === true;
+  if (isCurrentlyEnabled) {
+    openFallbackConfirmSheet(key);
+  } else {
+    fallbackState[key] = true;
+    writeFallbackState();
+    renderFallbackState();
+    const label = fallbackWalletLabels[key] || "Wallet";
+    openCardSuccessSheet("fallback", {
+      walletKey: key,
+      walletLabel: label,
+      status: "enabled",
+    });
+  }
 }
 
 function openMerchantDirectory() {
@@ -6110,6 +6251,12 @@ fallbackToggles.forEach((toggle) => {
   });
 });
 
+fallbackConfirmCloseButtons.forEach((button) => {
+  button.addEventListener("click", closeFallbackConfirmSheet);
+});
+
+fallbackConfirmDisableButton?.addEventListener("click", confirmDisableFallback);
+
 renderBenefitsCardLockState();
 renderBenefitsCardSecurityState();
 readFallbackState();
@@ -6117,6 +6264,10 @@ renderFallbackState();
 
 window.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if (fallbackConfirmOverlay?.classList.contains("is-open")) {
+      closeFallbackConfirmSheet();
+      return;
+    }
     if (cardSuccessOverlay?.classList.contains("is-open")) {
       closeCardSuccessSheet();
       return;

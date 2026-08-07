@@ -16,6 +16,11 @@ type PromoCardProps = {
  * bottom-right corner are specific to this card.
  */
 export function PromoCard({ card, onStart, disabled }: PromoCardProps) {
+  const illustrationSrc =
+    card.id === "driver_registration"
+      ? withBasePath("/assets/driver-registration.png")
+      : withBasePath("/assets/vehicle-registration.png");
+
   return (
     <article className="relative flex h-full w-full flex-col overflow-hidden rounded-card border border-white/60 bg-white/70 p-card shadow-promo backdrop-blur-sm">
       {/* Kept clear of the illustration. */}
@@ -52,7 +57,7 @@ export function PromoCard({ card, onStart, disabled }: PromoCardProps) {
       </div>
 
       <Image
-        src={withBasePath("/assets/vehicle-registration.png")}
+        src={illustrationSrc}
         alt=""
         width={160}
         height={160}
