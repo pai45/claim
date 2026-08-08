@@ -18,6 +18,8 @@ describe("registration declarations", () => {
         `I declare that the ${subject} details provided are correct and valid.`,
       );
       expect(html).toContain("bg-pine-primary");
+      expect(html).toContain("h-5 w-5");
+      expect(html).toContain("text-caption");
       expect(html).toContain("<svg");
     },
   );
