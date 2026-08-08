@@ -5,6 +5,7 @@ import { VehiclePhoto } from "@/components/vehicle/VehiclePhoto";
 import type { VehicleLookupPayload } from "@/features/chat/types";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { VehicleLookup } from "@/lib/vehicle/types";
+import { RegistrationDeclaration } from "./RegistrationDeclaration";
 
 type VehicleDetailsCardProps = {
   messageId: string;
@@ -72,6 +73,8 @@ export function VehicleDetailsCard({
             }
           />
         </div>
+
+        <RegistrationDeclaration subject="vehicle" />
       </div>
 
       <div className="flex flex-wrap content-start gap-2">
@@ -79,7 +82,7 @@ export function VehicleDetailsCard({
           type="button"
           disabled={disabled || payload.submitted}
           onClick={() => onSubmitToHr?.(messageId, lookup)}
-          className="rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
+          className="min-h-11 rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
         >
           {payload.submitted ? "Submitted to HR" : "Submit to HR"}
         </button>

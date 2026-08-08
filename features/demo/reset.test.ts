@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { MPIN_STORAGE_KEY, MPIN_UNLOCK_STORAGE_KEY } from "@/features/auth/mpinStorage";
 import { AUTH_STORAGE_KEY } from "@/features/auth/session";
-import { BANNER_STAGE_KEY } from "@/features/chat/bannerRotation";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
 import { CHAT_STORAGE_KEY } from "@/features/chat/persistence";
 import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
@@ -11,6 +10,7 @@ import { VEHICLE_STORAGE_KEY } from "@/features/vehicle/registration";
 import { DRIVER_STORAGE_KEY } from "@/features/driver/registration";
 import { PERSONA_STORAGE_KEY } from "@/features/persona/constants";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
+import { NOTIFICATIONS_HIDDEN_KEY } from "@/features/notifications/storage";
 import { UPI_CREATED_STORAGE_KEY, resetDemoJourney } from "./reset";
 
 function memoryStorage() {
@@ -34,9 +34,9 @@ const LOCAL_KEYS = [
   VEHICLE_STORAGE_KEY,
   DRIVER_STORAGE_KEY,
   MANAGE_LIMIT_STORAGE_KEY,
-  BANNER_STAGE_KEY,
   WIDGET_POSITION_KEY,
   NUDGE_SNOOZE_KEY,
+  NOTIFICATIONS_HIDDEN_KEY,
   UPI_CREATED_STORAGE_KEY,
 ];
 
@@ -64,13 +64,14 @@ describe("resetDemoJourney", () => {
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
   });
 
-  it("seeds onboarding and vehicle for returning persona", () => {
+  it("seeds returning history but resets registration and notifications", () => {
     resetDemoJourney("returning", local, session);
 
     expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("returning");
     expect(local.getItem(ONBOARDING_STORAGE_KEY)).toBeTruthy();
-    expect(local.getItem(VEHICLE_STORAGE_KEY)).toBeTruthy();
+    expect(local.getItem(VEHICLE_STORAGE_KEY)).toBeNull();
     expect(local.getItem(DRIVER_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(NOTIFICATIONS_HIDDEN_KEY)).toBeNull();
     expect(local.getItem(MPIN_STORAGE_KEY)).toBeTruthy();
     expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBe("true");
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();

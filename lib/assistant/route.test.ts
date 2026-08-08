@@ -118,6 +118,10 @@ describe("route planning", () => {
       kind: "intent",
       intentId: "vehicle_registration",
     });
+    expect(routePlanFor({ intent: "driver", categoryIds: [] })).toEqual({
+      kind: "intent",
+      intentId: "driver_registration",
+    });
   });
 
   it("declines to answer out-of-scope questions", () => {

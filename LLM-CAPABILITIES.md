@@ -1,9 +1,10 @@
 # Benefits Assistant — What the LLM Can Answer
 
 This document lists the questions the Benefits Assistant answers, **and what it
-answers with**. Every answer below is real output from the app's own data
-(`features/policy/constants.ts` + the dashboard and claims records), reproduced
-verbatim — nothing here is illustrative or hand-written.
+answers with**. Every fact below comes from the app's own data
+(`features/policy/constants.ts` + the dashboard and claims records). The examples
+show the guaranteed card content; the model contributes only a short grounded
+summary sentence above the structured rows.
 
 **How answers work**
 
@@ -15,6 +16,23 @@ verbatim — nothing here is illustrative or hand-written.
 | **App-data answer** | Balances, claims, wallets, rules, merchants | Reads dashboard + claim records + catalog |
 | **Guided flows** | Upload, track, merchants, vehicle | Deterministic UI workflows, not free-form Q&A |
 | **Fallback** | Model unavailable (e.g. GitHub Pages) | Same records, deterministic summaries |
+
+**Structured reply presentation**
+
+| Grounded answer | Chat-bubble presentation |
+|-----------------|--------------------------|
+| Policy overview, proof, deadline, tax | Key-value table, policy note, and required qualifier/disclaimer |
+| Coverage and eligibility | Covered-expense rows with included indicators |
+| Claim process | Numbered step rows |
+| Benefit comparison | One mobile-stacked fact table per named benefit |
+| Claims dashboards | Available balance, utilized progress bar, and totals table |
+| Claim history and a claim ID | Status summary plus the latest three claim rows, or a single claim detail table |
+| Wallets | Total available plus one allocation/utilization row and bar per wallet |
+| Claim rules and merchants | Submission/category requirement tables or merchant-network rows |
+
+The visible tables, statuses, amounts, progress values, notes, and links are
+rendered directly from typed grounded data. They are never parsed from model
+prose. Guided flows continue to use their existing interactive cards.
 
 **The model never supplies a fact.** It picks which JSON gets built, then
 narrates it. Every number in a generated answer must already appear in that JSON
@@ -166,29 +184,44 @@ After discussing one benefit you can drop the category: *What proof is required?
 > - **Utilized:** ₹18,000 of ₹60,000 accrued (FY 26/27)
 > - **July 2026 claims:** ₹18,500
 
-Category dashboards exist for Fuel, Mobile, Driver, Books, and Professional
-Development. Meal and Gift have no dashboard screen — ask about them through the
-wallet overview in §4 instead.
+> **Q — "how much my meal wallet balance remains?"** / **"What is my meal wallet balance?"**
+>
+> **Meal Wallet**
+>
+> - **Available:** ₹30,000
+> - **Utilized:** ₹0 of ₹30,000 accrued (FY 26/27)
+> - **May 2026 claims:** ₹0
 
-Also works: *How much have I utilized?* · *What is my FY limit?* · *What is pending on my fuel wallet this month?* · *Show books dashboard totals*
+> **Q — "How much balance is left in my gift wallet?"**
+>
+> **Gift Wallet**
+>
+> - **Available:** ₹5,000
+> - **Utilized:** ₹0 of ₹5,000 accrued (FY 26/27)
+> - **May 2026 claims:** ₹0
+
+All 7 categories (Meal, Gift, Fuel, Mobile, Driver, Books, and Professional Development) resolve their exact allocated and available balances accurately.
+
+Also works: *How much have I utilized?* · *What is my FY limit?* · *What is pending on my fuel wallet this month?* · *Show books dashboard totals* · *How much balance is left in my gift wallet?*
 
 ---
 
 ## 3. Claim history & status questions
 
 The assistant reads the per-benefit dashboards **and** the claims-history screen
-as one list of 25 claims, so every status is answerable.
+as one list of 26 claims, so every status is answerable.
 
 > **Q — "How many claims do I have?"**
 >
 > **Your claims**
 >
-> - **Count:** 25
-> - **Total:** ₹97,593
+> - **Count:** 26
+> - **Total:** ₹98,492
 > - **Approved:** 18
 > - **Pending:** 5
 > - **Needs info:** 1
-> - **Rejected:** 1
+> - **Rejected:** 2
+> - **Revoked:** 0
 >
 > **Latest**
 > - **CLM-44120** — Indian Oil - July 2026, ₹4,500, Approved
@@ -215,12 +248,13 @@ as one list of 25 claims, so every status is answerable.
 >
 > **Your claims**
 >
-> - **Count:** 6
-> - **Total:** ₹5,995
+> - **Count:** 7
+> - **Total:** ₹6,894
 > - **Approved:** 4
 > - **Pending:** 2
 > - **Needs info:** 0
-> - **Rejected:** 0
+> - **Rejected:** 1
+> - **Revoked:** 0
 >
 > **Latest**
 > - **CLM-44201** — Airtel Postpaid - July 2026, ₹999, Approved
@@ -233,14 +267,16 @@ as one list of 25 claims, so every status is answerable.
 >
 > **Your rejected claims**
 >
-> - **Count:** 1
-> - **Total:** ₹1,100
+> - **Count:** 2
+> - **Total:** ₹1,999
 > - **Approved:** 0
 > - **Pending:** 0
 > - **Needs info:** 0
-> - **Rejected:** 1
+> - **Rejected:** 2
+> - **Revoked:** 0
 >
 > **Latest**
+> - **CLM-124** — Jio Fiber - 05 Jul 2026, ₹899, Rejected
 > - **CLM-45033** — Shell Aundh - 20 Apr 2026, ₹1,100, Rejected
 
 > **Q — "Which claims need more information?"**
@@ -345,30 +381,41 @@ Checks the meal and fuel brand allowlist without starting the locator flow.
 
 ---
 
-## 5. Guided actions (not free-form LLM Q&A)
+## 5. Guided actions (interactive chat tasks)
 
-These start a **UI workflow**. The assistant replies with a short prompt, then
-cards and inputs take over.
+These start an **interactive workflow directly in the chat**. The assistant replies with a conversational prompt, followed by the relevant interactive card or input.
 
 | Action | Trigger phrases | What happens |
 |--------|-----------------|--------------|
-| **Upload bill** | upload / scan + bill, receipt, invoice, reimbursement | Camera / PDF / gallery → OCR → precheck → submit |
+| **Upload bill** | upload / scan / submit + bill, receipt, invoice, reimbursement | Opens Upload Options (Camera / Gallery / Demo files) → OCR → precheck → submit |
+| **Register vehicle** | register vehicle, register my car, add vehicle, vehicle registration | Opens Vehicle Number Input card → lookup → review → HR submission |
+| **Register driver** | register driver, register my driver, add driver, driver registration | Opens Driver Name Input card → DL upload & verification → salary setting |
 | **Track claim** | track claim, claim status, where is my claim | Asks for claim ID or date; explains status steps |
 | **Merchant locator** | merchant, petrol pump, meal merchant, allowed merchant | Fuel or Meal merchant search (name or nearby) |
-| **Vehicle registration** | register vehicle, car registration, vehicle | Vehicle number lookup → HR submission |
 | **View policy** | policy, coverage, benefits | Opens benefit picker, then policy answers |
 | **Greeting / help** | hi, hello, help | Lists what the assistant can do |
 
-> **Q — "Upload a bill"**
+> **Q — "Upload a bill"** / **"I want to upload my receipt"**
 >
 > Sure. Upload a bill and I'll read it for you.
 
-Then: upload options (camera, PDF, gallery) → OCR → editable fields (category,
-vendor, amount, bill date, invoice no.) → policy precheck → demo claim.
+Then: upload options (camera, PDF, gallery, demo bills) → OCR → editable fields (category, vendor, amount, bill date, invoice no.) → policy precheck → claim submission.
 
-**Categories you can claim against:** Meal Wallet, Gift Wallet, Fuel &
-Maintenance, Mobile & Internet, Books & Periodicals, Professional Development,
-Other / HR review.
+> **Q — "Register my vehicle"** / **"Register car"**
+>
+> **Vehicle registration**
+>
+> Enter your vehicle number below and I'll pull up the details.
+>
+> You can review them and send the registration to HR for approval.
+
+Then: Interactive Vehicle Number Input card appears in chat.
+
+> **Q — "Register driver"** / **"I want to add a driver"**
+>
+> Let's register your driver. What's the driver's full name?
+
+Then: Interactive Driver Name Input card appears in chat.
 
 > **Q — "Track my claim"**
 >
@@ -389,11 +436,12 @@ Other / HR review.
 >
 > I can help with:
 >
-> - Uploading bills
+> - Uploading bills & receipts
+> - Registering your vehicle
+> - Registering your driver
 > - Tracking claims
-> - Policy details
-> - Merchant locator
-> - Vehicle registration for tax benefits
+> - Policy details & wallet balances
+> - Meals merchants
 >
 > What would you like to do?
 

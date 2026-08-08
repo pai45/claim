@@ -84,8 +84,9 @@ function findScrollParent(node: HTMLElement | null): HTMLElement | null {
 
 function documentStageLabel(stage?: DocumentProcessingStage | null) {
   if (stage === "preparing") return "Preparing document…";
+  if (stage === "reading") return "Reading document…";
+  if (stage === "extracting") return "Extracting claim details…";
   if (stage === "checking") return "Checking claim details…";
-  if (stage === "reading") return "Reading claim details…";
   return "Reading document…";
 }
 
@@ -121,8 +122,8 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
     },
     ref,
   ) {
-    const bottomRef = useRef<HTMLDivElement>(null);
     const listRef = useRef<HTMLDivElement>(null);
+    const bottomRef = useRef<HTMLDivElement>(null);
     const autoFollowRef = useRef(true);
     const programmaticScrollRef = useRef(false);
     const programmaticScrollTimerRef = useRef<number | null>(null);
@@ -132,46 +133,52 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
     const lastMessageKind = lastMessage?.kind;
     const lastMessageRole = lastMessage?.role;
 
-    const updateNearBottom = useCallback((fromScrollEvent = false) => {
-      const scroller = findScrollParent(listRef.current);
-      if (!scroller) {
+    const updateNearBottom = useCallback(
+      (fromScrollEvent = false) => {
+        const scroller = findScrollParent(listRef.current);
+        if (!scroller) {
+          autoFollowRef.current = true;
+          onAwayFromBottomChange?.(false);
+          return;
+        }
+        const distance =
+          scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
+        const near = distance <= NEAR_BOTTOM_PX;
+        if (near) autoFollowRef.current = true;
+        else if (fromScrollEvent && !programmaticScrollRef.current) {
+          autoFollowRef.current = false;
+        }
+        onAwayFromBottomChange?.(
+          !near && !autoFollowRef.current && messages.length > 0,
+        );
+      },
+      [messages.length, onAwayFromBottomChange],
+    );
+
+    const scrollToBottom = useCallback(
+      (force = false) => {
+        if (!force && !autoFollowRef.current) return;
+        const prefersReducedMotion = window.matchMedia(
+          "(prefers-reduced-motion: reduce)",
+        ).matches;
+        programmaticScrollRef.current = true;
+        if (programmaticScrollTimerRef.current !== null) {
+          window.clearTimeout(programmaticScrollTimerRef.current);
+        }
+        bottomRef.current?.scrollIntoView({
+          behavior: prefersReducedMotion ? "auto" : "smooth",
+          block: "end",
+        });
         autoFollowRef.current = true;
         onAwayFromBottomChange?.(false);
-        return;
-      }
-      const distance =
-        scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight;
-      const near = distance <= NEAR_BOTTOM_PX;
-      if (near) autoFollowRef.current = true;
-      else if (fromScrollEvent && !programmaticScrollRef.current) {
-        autoFollowRef.current = false;
-      }
-      onAwayFromBottomChange?.(
-        !near && !autoFollowRef.current && messages.length > 0,
-      );
-    }, [messages.length, onAwayFromBottomChange]);
-
-    const scrollToBottom = useCallback((force = false) => {
-      if (!force && !autoFollowRef.current) return;
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      programmaticScrollRef.current = true;
-      if (programmaticScrollTimerRef.current !== null) {
-        window.clearTimeout(programmaticScrollTimerRef.current);
-      }
-      bottomRef.current?.scrollIntoView({
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-        block: "end",
-      });
-      autoFollowRef.current = true;
-      onAwayFromBottomChange?.(false);
-      programmaticScrollTimerRef.current = window.setTimeout(() => {
-        programmaticScrollRef.current = false;
-        programmaticScrollTimerRef.current = null;
-        updateNearBottom();
-      }, prefersReducedMotion ? 0 : 700);
-    }, [onAwayFromBottomChange, updateNearBottom]);
+        programmaticScrollTimerRef.current = window.setTimeout(() => {
+          programmaticScrollRef.current = false;
+          programmaticScrollTimerRef.current = null;
+          updateNearBottom();
+        }, prefersReducedMotion ? 0 : 700);
+      },
+      [onAwayFromBottomChange, updateNearBottom],
+    );
 
     useImperativeHandle(ref, () => ({ scrollToBottom }), [scrollToBottom]);
 

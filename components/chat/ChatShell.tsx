@@ -9,11 +9,12 @@ import {
   VEHICLE_REGISTRATION_INTENT,
   VEHICLE_REGISTRATION_LABEL,
 } from "@/features/chat/constants";
-import { bannerCardsForStage } from "@/features/chat/bannerCards";
+import { getHomeActionCardState } from "@/features/chat/homeActionCards";
 import { takePendingChatIntent } from "@/features/chat/pendingIntent";
-import { useBannerStage } from "@/features/chat/useBannerStage";
 import { useRegistrationStatus } from "@/features/chat/useRegistrationStatus";
 import { useChat } from "@/features/chat/useChat";
+import { useNotifications } from "@/features/notifications/useNotifications";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import type {
   DocumentUploadKind,
   QuickAction,
@@ -21,13 +22,12 @@ import type {
 } from "@/features/chat/types";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
-import { AttachBottomDrawer } from "./AttachBottomDrawer";
 import { ChatComposer } from "./ChatComposer";
 import { ChatGreeting } from "./ChatGreeting";
 import { ChatHeader } from "./ChatHeader";
+import { HomeActionCards } from "./HomeActionCards";
 import { MessageList, type MessageListHandle } from "./MessageList";
 import { NewChatWidget } from "./NewChatWidget";
-import { PromoCarousel } from "./PromoCarousel";
 import { QuickActions } from "./QuickActions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import {
@@ -54,7 +54,6 @@ type ChatShellProps = {
 };
 
 export function ChatShell({ onClose }: ChatShellProps) {
-  const [attachOpen, setAttachOpen] = useState(false);
   const [replacementBillId, setReplacementBillId] = useState<string | null>(
     null,
   );
@@ -135,16 +134,17 @@ export function ChatShell({ onClose }: ChatShellProps) {
     return null;
   }, [messages]);
 
-  // Which empty-state banners this app open shows. Null until the stage is
-  // read from storage on the client, which the empty state already waits for.
-  const bannerStage = useBannerStage();
+  const { personaId } = useActivePersona();
+  const { count: notificationCount } = useNotifications();
   const registrationStatus = useRegistrationStatus();
-  const bannerCards = useMemo(
+  const homeActionCardState = useMemo(
     () =>
-      bannerStage
-        ? bannerCardsForStage(bannerStage, registrationStatus)
-        : [],
-    [bannerStage, registrationStatus],
+      getHomeActionCardState(
+        personaId,
+        notificationCount,
+        registrationStatus,
+      ),
+    [notificationCount, personaId, registrationStatus],
   );
 
   function handleQuickAction(action: QuickAction) {
@@ -152,7 +152,6 @@ export function ChatShell({ onClose }: ChatShellProps) {
   }
 
   function openBillScenarioPicker(source: UploadOptionId) {
-    setAttachOpen(false);
     setScenarioPicker({ kind: "bill", source });
   }
 
@@ -179,17 +178,16 @@ export function ChatShell({ onClose }: ChatShellProps) {
 
   function handleReplaceBill(messageId: string) {
     setReplacementBillId(messageId);
-    setAttachOpen(true);
+    setScenarioPicker({ kind: "bill", source: "gallery" });
   }
 
   function handleStartAnotherBill() {
     setReplacementBillId(null);
-    setAttachOpen(true);
+    void sendMessage("Claim another bill", "upload_bill");
   }
 
   function handleConfirmedClear() {
     setConfirmClearOpen(false);
-    setAttachOpen(false);
     setScenarioPicker(null);
     setReplacementBillId(null);
     startNewChat();
@@ -252,14 +250,15 @@ export function ChatShell({ onClose }: ChatShellProps) {
             {showEmptyState ? (
               <>
                 <ChatGreeting />
-                {bannerCards.length ? (
-                  <PromoCarousel
-                    cards={bannerCards}
+                {homeActionCardState.showNotifications ||
+                homeActionCardState.registration ? (
+                  <HomeActionCards
+                    notificationCount={notificationCount}
+                    showNotifications={homeActionCardState.showNotifications}
+                    registration={homeActionCardState.registration}
                     onVehicleStart={handleVehicleRegistration}
                     onDriverStart={handleDriverRegistration}
-                    onUploadBill={handleStartAnotherBill}
                     disabled={busy}
-                    reduceMotion={reduceMotion}
                   />
                 ) : null}
               </>
@@ -333,35 +332,24 @@ export function ChatShell({ onClose }: ChatShellProps) {
               <QuickActions onSelect={handleQuickAction} disabled={busy} />
             </div>
           ) : null}
-          {!attachOpen ? (
-            <div
-              className="animate-rise-in"
-              style={{ animationDelay: hasMessages ? "0ms" : "380ms" }}
-            >
-              <ChatComposer
-                onSend={(message) => void sendMessage(message)}
-                disabled={busy}
-              />
-            </div>
-          ) : null}
+          <div
+            className="animate-rise-in"
+            style={{ animationDelay: hasMessages ? "0ms" : "380ms" }}
+          >
+            <ChatComposer
+              onSend={(message) => void sendMessage(message)}
+              disabled={busy}
+            />
+          </div>
         </div>
 
-        {hasMessages && !attachOpen && !confirmClearOpen ? (
+        {hasMessages && !confirmClearOpen ? (
           <NewChatWidget
             onClearChat={handleConfirmedClear}
             completedClaimKey={completedClaimKey}
             reduceMotion={reduceMotion}
           />
         ) : null}
-
-        <AttachBottomDrawer
-          open={attachOpen}
-          onClose={() => setAttachOpen(false)}
-          onUploadSourceSelected={openBillScenarioPicker}
-          onSend={(message) => void sendMessage(message)}
-          disabled={busy}
-          onClearData={requestClear}
-        />
 
         <DocumentScenarioDrawer
           open={Boolean(scenarioPicker)}

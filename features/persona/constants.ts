@@ -9,7 +9,7 @@ export const RETURNING_PERSONA: PersonaConfig = {
   id: "returning",
   label: "Returning User",
   badge: "Active User",
-  description: "Vishal Sharma • Setup done, active claims, transactions & used limits",
+  description: "Vishal Sharma • Onboarding done, active claims, transactions & used limits",
   profile: {
     id: "returning",
     name: "Vishal Sharma",
@@ -26,7 +26,7 @@ export const RETURNING_PERSONA: PersonaConfig = {
   hasClaims: true,
   hasTransactions: true,
   hasCompletedOnboarding: true,
-  hasRegisteredVehicle: true,
+  hasRegisteredVehicle: false,
   isCardActivated: true,
   hasUpiId: true,
 };

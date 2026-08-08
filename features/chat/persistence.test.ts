@@ -6,6 +6,7 @@ import {
   loadChatSession,
   saveChatSession,
 } from "./persistence";
+import { appDataPayloadForResolution } from "@/lib/assistant/appData";
 
 function fakeStorage() {
   const values = new Map<string, string>();
@@ -66,5 +67,44 @@ describe("chat persistence", () => {
     expect(loadChatSession(storage, 1001)).toBeNull();
     clearChatSession(storage);
     expect(storage.getItem(CHAT_STORAGE_KEY)).toBeNull();
+  });
+
+  it("round-trips structured replies and accepts legacy replies without them", () => {
+    const storage = fakeStorage();
+    const session = createPersistedChatSession(
+      {
+        messages: [
+          {
+            id: "structured",
+            role: "assistant",
+            content: "Here is your current balance.",
+            createdAt: 1,
+            kind: "app_data_answer",
+            appDataAnswer: appDataPayloadForResolution({ kind: "dashboard" }),
+          },
+          {
+            id: "legacy",
+            role: "assistant",
+            content: "**Meal Wallet**",
+            createdAt: 2,
+            kind: "policy_answer",
+            policyAnswer: { categoryId: "meal" },
+          },
+        ],
+        driverSalaryDraft: {},
+        activeBenefitType: null,
+        activePolicyCategory: null,
+        activeAppDataContext: null,
+      },
+      1000,
+    );
+
+    saveChatSession(session, storage);
+    const restored = loadChatSession(storage, 1001);
+
+    expect(restored?.messages[0].appDataAnswer?.structured?.kind).toBe(
+      "claims_dashboard",
+    );
+    expect(restored?.messages[1].policyAnswer?.structured).toBeUndefined();
   });
 });

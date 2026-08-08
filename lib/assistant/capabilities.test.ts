@@ -113,4 +113,43 @@ describe("documented answers", () => {
       "- **Meal Wallet:** GST food or restaurant invoice, submit by the 5th of the next month",
     );
   });
+
+  it("how much my meal wallet balance remains?", () => {
+    const reply = answer("how much my meal wallet balance remains?");
+    expect(reply).toContain("**Meal Wallet**");
+    expect(reply).toContain("- **Available:** ₹30,000");
+    expect(reply).toContain("- **Utilized:** ₹0 of ₹30,000 accrued");
+  });
+
+  it("How much balance is left in my gift wallet?", () => {
+    const reply = answer("How much balance is left in my gift wallet?");
+    expect(reply).toContain("**Gift Wallet**");
+    expect(reply).toContain("- **Available:** ₹5,000");
+  });
+
+  it("What is my total wallet balance?", () => {
+    const reply = answer("What is my total wallet balance?");
+    expect(reply).toContain("**Your wallets (FY 26/27)**");
+    expect(reply).toContain("**Total available:** ₹2,40,000");
+  });
+
+  it("Is Swiggy allowed?", () => {
+    const reply = answer("Is Swiggy allowed?");
+    expect(reply).toContain("- **Meal:** Swiggy");
+  });
+
+  it("Is Zomato allowed?", () => {
+    const reply = answer("Is Zomato allowed?");
+    expect(reply).toContain("- **Meal:** Zomato");
+  });
+
+  it("Is Starbucks eligible?", () => {
+    const reply = answer("Is Starbucks eligible?");
+    expect(reply).toContain("- **Meal:** Starbucks");
+  });
+
+  it("Can I order from Blinkit?", () => {
+    const reply = answer("Can I order from Blinkit?");
+    expect(reply).toContain("- **Meal:** Blinkit");
+  });
 });

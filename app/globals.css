@@ -580,7 +580,7 @@ textarea {
 }
 
 .claim-scan-pulse {
-  animation: claim-scan-pulse 1.35s ease-in-out infinite;
+  animation: claim-scan-pulse 1.5s ease-in-out infinite;
 }
 
 /* Magic text: char/word reveal + mint flash */

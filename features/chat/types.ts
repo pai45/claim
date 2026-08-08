@@ -1,12 +1,15 @@
 import type { BenefitType, MerchantResult } from "@/lib/merchants/types";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 import type { PolicyTabId } from "@/features/policy/constants";
+import type { GroundedAppData } from "@/lib/assistant/appData";
+import type { StructuredPolicyAnswer } from "@/lib/assistant/policy";
 
 export type MessageRole = "user" | "assistant";
 
 export type DocumentProcessingStage =
   | "preparing"
   | "reading"
+  | "extracting"
   | "checking";
 
 export type DocumentUploadKind = "bill" | "dl";
@@ -108,6 +111,13 @@ export type BillExtract = {
   demoScenarioId?: BillUploadScenarioId;
   /** Opens incomplete demo data directly in the editable review state. */
   manualReview?: boolean;
+  /** Field-level extraction states, used to call out missing or unreliable details. */
+  reviewFields?: Partial<
+    Record<
+      "category" | "vendor" | "amount" | "billDate" | "billingMonth" | "invoiceNo",
+      "missing" | "review"
+    >
+  >;
   warningAcknowledged?: boolean;
   submitted?: boolean;
   /** Present when the card edits an existing claim instead of creating one. */
@@ -140,6 +150,7 @@ export type PolicyAnswerPayload = {
   categoryId: PolicyTabId;
   /** Every category the answer covered, when the question named more than one. */
   categoryIds?: PolicyTabId[];
+  structured?: StructuredPolicyAnswer;
 };
 
 export type PolicyModelStatus = {
@@ -158,6 +169,7 @@ export type AppDataAnswerPayload = {
     | "none";
   categoryId?: PolicyTabId;
   claimId?: string;
+  structured?: GroundedAppData;
 };
 
 export type ChatMessage = {

@@ -127,15 +127,30 @@ function CardIcon() {
 function DetailTile({
   label,
   value,
+  issue,
   children,
 }: {
   label: string;
   value?: string;
+  issue?: "missing" | "review";
   children?: ReactNode;
 }) {
   return (
-    <div className="field-focus-shell min-w-0 rounded-control border border-border-line bg-input-soft px-3 py-2.5">
-      <span className="type-field-label block">{label}</span>
+    <div
+      className={`field-focus-shell min-w-0 rounded-control border px-3 py-2.5 ${
+        issue
+          ? "border-warning-border bg-warning-soft"
+          : "border-border-line bg-input-soft"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-1">
+        <span className="type-field-label block">{label}</span>
+        {issue ? (
+          <span className="shrink-0 text-caption font-bold text-warning-ink">
+            {issue === "missing" ? "Missing" : "Check"}
+          </span>
+        ) : null}
+      </div>
       {children ?? (
         <strong className="mt-1 block truncate text-body-sm font-bold text-pine" title={value}>
           {value || "—"}
@@ -202,6 +217,17 @@ export function BillExtractCard({
     precheck.status === "blocked" ||
     (precheck.requiresAcknowledgement && !acknowledged);
   const reviewItems = precheck.checks.filter((check) => check.status !== "pass");
+
+  function issueFor(
+    field: keyof EditableFields,
+    value: string,
+  ): "missing" | "review" | undefined {
+    const issue = extract.reviewFields?.[field];
+    return issue === "missing" && value.trim() ? undefined : issue;
+  }
+
+  const amountIssue = issueFor("amount", fields.amount);
+  const billDateIssue = issueFor("billDate", fields.billDate);
 
   function updateField(key: keyof EditableFields, value: string) {
     setFields((current) => ({ ...current, [key]: value }));
@@ -337,7 +363,11 @@ export function BillExtractCard({
               />
             ) : undefined}
           </DetailTile>
-          <DetailTile label="Amount" value={amount ? formatINR(amount) : fields.amount}>
+          <DetailTile
+            label="Amount"
+            value={amount ? formatINR(amount) : fields.amount}
+            issue={amountIssue}
+          >
             {editing ? (
               <input
                 inputMode="decimal"
@@ -345,10 +375,16 @@ export function BillExtractCard({
                 onChange={(event) => updateField("amount", event.target.value)}
                 className={editorClass}
                 aria-label="Amount"
+                aria-invalid={Boolean(amountIssue)}
+                placeholder={amountIssue === "missing" ? "Enter amount" : undefined}
               />
             ) : undefined}
           </DetailTile>
-          <DetailTile label="Bill date" value={formatDate(fields.billDate)}>
+          <DetailTile
+            label="Bill date"
+            value={formatDate(fields.billDate)}
+            issue={billDateIssue}
+          >
             {editing ? (
               <input
                 type="date"
@@ -356,6 +392,7 @@ export function BillExtractCard({
                 onChange={(event) => updateField("billDate", event.target.value)}
                 className={editorClass}
                 aria-label="Bill date"
+                aria-invalid={Boolean(billDateIssue)}
               />
             ) : undefined}
           </DetailTile>

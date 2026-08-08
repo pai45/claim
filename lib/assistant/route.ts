@@ -8,7 +8,10 @@ import {
 import type { BenefitType } from "@/lib/merchants/types";
 import type { AppDataResolution, ClaimAnswerStatus } from "./appData";
 import type { AssistantTurn } from "./assistantApiTypes";
-import { VEHICLE_REGISTRATION_INTENT } from "@/features/chat/constants";
+import {
+  DRIVER_REGISTRATION_INTENT,
+  VEHICLE_REGISTRATION_INTENT,
+} from "@/features/chat/constants";
 
 /**
  * Tier 1 routing: the model classifies the question, the app still owns
@@ -28,6 +31,7 @@ export const ROUTE_INTENTS = [
   "track",
   "merchant_locator",
   "vehicle",
+  "driver",
   "greeting",
   "unknown",
 ] as const;
@@ -86,10 +90,11 @@ intent must be exactly one of:
   "wallets"   - comparing or ranking several benefits, or asking where budget is left overall
   "rules"     - what makes a claim pass or fail, required fields, duplicate or deadline checks
   "merchants" - whether a named shop, restaurant, or petrol pump is allowed
-  "upload"    - wants to upload, scan, or submit a bill or receipt
+  "upload"    - wants to upload, scan, submit, or claim a bill or receipt
   "track"     - wants to track a claim without naming one
   "merchant_locator" - wants to find or search for nearby merchants
-  "vehicle"   - wants to register a vehicle or add driver salary
+  "vehicle"   - wants to register or add a vehicle / car for fuel benefit
+  "driver"    - wants to register or add a driver / chauffeur for salary claim
   "greeting"  - hello, help, what can you do
   "unknown"   - anything else, or not about benefits at all
 
@@ -103,10 +108,17 @@ merchantQuery is the shop name if one is mentioned, else null.
 
 Examples:
 Q: What proof do I need for fuel? -> {"intent":"policy","categoryIds":["fuel"],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
+Q: How much my meal wallet balance remains? -> {"intent":"dashboard","categoryIds":["meal"],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
+Q: What is my available balance? -> {"intent":"dashboard","categoryIds":[],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
 Q: Which wallet has the most left? -> {"intent":"wallets","categoryIds":[],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
+Q: What is my total available balance? -> {"intent":"wallets","categoryIds":[],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
 Q: Why was my claim rejected? -> {"intent":"claims","categoryIds":[],"claimId":null,"status":"Rejected","benefitType":null,"merchantQuery":null}
 Q: Is Shell allowed? -> {"intent":"merchants","categoryIds":["fuel"],"claimId":null,"status":null,"benefitType":"fuel","merchantQuery":"Shell"}
-Q: Compare meal and gift -> {"intent":"wallets","categoryIds":["meal","gift"],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}`,
+Q: Is Swiggy allowed for meals? -> {"intent":"merchants","categoryIds":["meal"],"claimId":null,"status":null,"benefitType":"meal","merchantQuery":"Swiggy"}
+Q: Compare the meal and fuel benefits -> {"intent":"policy","categoryIds":["meal","fuel"],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
+Q: I want to upload a bill -> {"intent":"upload","categoryIds":[],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
+Q: Register my car -> {"intent":"vehicle","categoryIds":["fuel"],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}
+Q: I want to register my driver -> {"intent":"driver","categoryIds":["driver"],"claimId":null,"status":null,"benefitType":null,"merchantQuery":null}`,
     },
     ...history,
     { role: "user", content: `Q: ${question}` },
@@ -267,6 +279,8 @@ export function routePlanFor(route: AssistantRoute): RoutePlan | null {
       return { kind: "intent", intentId: "merchant_locator" };
     case "vehicle":
       return { kind: "intent", intentId: VEHICLE_REGISTRATION_INTENT };
+    case "driver":
+      return { kind: "intent", intentId: DRIVER_REGISTRATION_INTENT };
     case "greeting":
       return { kind: "intent", intentId: "greeting" };
     case "unknown":

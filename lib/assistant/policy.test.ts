@@ -4,8 +4,11 @@ import {
   getPolicyCategory,
 } from "@/features/policy/constants";
 import {
+  buildStructuredPolicyAnswer,
+  createPolicyLeadSummary,
   createPolicyFallbackSummary,
   isGroundedPolicyAnswer,
+  policyPayloadForAnswer,
   resolvePolicyQuestion,
 } from "./policy";
 
@@ -68,6 +71,39 @@ describe("policy question routing", () => {
 
     expect(answer).toContain("Meal Wallet");
     expect(answer).toContain("Fuel & Maintenance");
+  });
+
+  it.each([
+    ["Tell me benefits about meals", "overview"],
+    ["What proof is required for meals?", "proof"],
+    ["When must I submit meal claims?", "deadline"],
+    ["What is covered under meal wallet?", "coverage"],
+    ["How does meal wallet work?", "process"],
+    ["What is the tax treatment for meals?", "tax"],
+  ])("builds a typed %s policy card", (question, expectedView) => {
+    const categories = [getPolicyCategory("meal")];
+    const structured = buildStructuredPolicyAnswer(question, categories);
+    const payload = policyPayloadForAnswer(question, categories, structured);
+
+    expect(structured.view).toBe(expectedView);
+    expect(structured.categories[0].id).toBe("meal");
+    expect(payload.structured).toBe(structured);
+    expect(createPolicyLeadSummary(structured).length).toBeGreaterThan(0);
+  });
+
+  it("builds a mobile-stacked comparison payload", () => {
+    const categories = [getPolicyCategory("meal"), getPolicyCategory("fuel")];
+    const structured = buildStructuredPolicyAnswer(
+      "Compare meal and fuel benefits",
+      categories,
+    );
+
+    expect(structured.view).toBe("comparison");
+    expect(structured.categories.map((category) => category.id)).toEqual([
+      "meal",
+      "fuel",
+    ]);
+    expect(structured.categories.every((category) => category.facts.length >= 3)).toBe(true);
   });
 
   it.each([

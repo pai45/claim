@@ -84,7 +84,7 @@ export function DriverSalaryReceiptCard({
           <CheckIcon />
           <div className="flex min-w-0 flex-col">
             <span className="text-caption font-bold uppercase tracking-[0.3px] text-success">
-              Claim submitted
+              Submitted to HR
             </span>
             <span className="truncate text-body-sm font-bold text-pine">
               {claimId}
@@ -92,7 +92,7 @@ export function DriverSalaryReceiptCard({
           </div>
         </div>
         <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
-          Submitted
+          With HR
         </span>
       </div>
 
@@ -101,8 +101,8 @@ export function DriverSalaryReceiptCard({
           <p className="truncate text-body font-bold text-pine">
             {payload.driverName || "Driver"}
           </p>
-          <p className="truncate type-body-secondary">
-            Driver Salary
+          <p className="truncate type-body-secondary tracking-wide">
+            Driver registration
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export function DriverSalaryReceiptCard({
           ) : null}
           {startDate ? <ReceiptRow label="Start date" value={startDate} /> : null}
           {payload.vehicleClaimId ? (
-            <ReceiptRow label="Vehicle claim" value={payload.vehicleClaimId} />
+            <ReceiptRow label="Vehicle registration" value={payload.vehicleClaimId} />
           ) : null}
           <ReceiptRow
             label="Submitted"

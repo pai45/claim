@@ -30,6 +30,9 @@ import { MerchantSearchModeCard } from "./MerchantSearchModeCard";
 import { MerchantTypeCard } from "./MerchantTypeCard";
 import { PolicyOptionsCard } from "./PolicyOptionsCard";
 import { ScannedDocumentCard } from "./ScannedDocumentCard";
+import { AppDataAnswerCard } from "./AppDataAnswerCard";
+import { PolicyAnswerCard } from "./PolicyAnswerCard";
+import { StructuredAssistantBubble } from "./StructuredAssistantBubble";
 import { UploadOptionsCard } from "./UploadOptionsCard";
 import { VehicleClaimReceiptCard } from "./VehicleClaimReceiptCard";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
@@ -60,7 +63,7 @@ function AssistantText({
     <div className="flex w-full max-w-[96%] flex-col items-start gap-2.5">
       <ChatAvatar className="ml-0.5" />
       <div className="flex min-w-0 flex-col gap-1">
-        <div className="px-0.5 text-[#123f36]">
+        <div className="px-0.5 text-pine">
           <AssistantMarkdown content={visible} />
         </div>
       </div>
@@ -361,11 +364,10 @@ export function MessageBubble({
             payload={message.driverSalary}
             submittedAt={message.createdAt}
           />
-          <Link
-            href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
-            className={pillClass}
-          >
-            View claim details
+          {/* Registering a driver files no bill, so there is no claim to
+              open — the registered driver on the dashboard is what the user wants to see. */}
+          <Link href="/dashboard/driver/" className={pillClass}>
+            View driver details
           </Link>
         </div>
       );
@@ -418,22 +420,46 @@ export function MessageBubble({
   if (message.kind === "policy_answer" && message.policyAnswer) {
     const policy = getPolicyCategory(message.policyAnswer.categoryId);
 
-    return (
-      <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText
+    if (message.policyAnswer.structured) {
+      return (
+        <PolicyAnswerCard
           content={message.content}
-          createdAt={message.createdAt}
+          payload={message.policyAnswer}
           reveal={textReveal}
         />
-        <Link href={`/policy-details/${policy.id}/`} className={pillClass}>
-          View all {policy.tabLabel} details
-        </Link>
-      </div>
+      );
+    }
+
+    return (
+      <StructuredAssistantBubble
+        title={policy.tabLabel}
+        actions={[
+          {
+            href: `/policy-details/${policy.id}/`,
+            label: `View all ${policy.tabLabel} details`,
+          },
+        ]}
+      >
+        <div className="text-pine">
+          <AssistantMarkdown content={message.content} />
+        </div>
+      </StructuredAssistantBubble>
     );
   }
 
   if (message.kind === "app_data_answer" && message.appDataAnswer) {
     const payload = message.appDataAnswer;
+
+    if (payload.structured) {
+      return (
+        <AppDataAnswerCard
+          content={message.content}
+          payload={payload}
+          reveal={textReveal}
+        />
+      );
+    }
+
     const category = DASHBOARD_CATEGORIES.find(
       (item) => item.id === payload.categoryId,
     );
@@ -461,28 +487,15 @@ export function MessageBubble({
               ? "View claims history"
               : "View claims dashboard";
 
-    // Merchant and catalog-wide answers have no single screen to deep-link to.
-    if (payload.target === "none") {
-      return (
-        <AssistantText
-          content={message.content}
-          createdAt={message.createdAt}
-          reveal={textReveal}
-        />
-      );
-    }
-
     return (
-      <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText
-          content={message.content}
-          createdAt={message.createdAt}
-          reveal={textReveal}
-        />
-        <Link href={href} className={pillClass}>
-          {label}
-        </Link>
-      </div>
+      <StructuredAssistantBubble
+        title="Claims answer"
+        actions={payload.target === "none" ? [] : [{ href, label }]}
+      >
+        <div className="text-pine">
+          <AssistantMarkdown content={message.content} />
+        </div>
+      </StructuredAssistantBubble>
     );
   }
 
@@ -492,7 +505,7 @@ export function MessageBubble({
     return (
       <div className="flex w-full justify-end">
         <div className="flex max-w-[85%] flex-col items-end gap-1">
-          <div className="whitespace-pre-wrap rounded-bubble rounded-br-md bg-pine-primary px-3.5 py-2.5 text-body-sm leading-5 text-white shadow-soft">
+          <div className="whitespace-pre-wrap rounded-bubble rounded-br-control bg-pine-primary px-3.5 py-2.5 text-body-sm leading-5 text-white shadow-soft">
             {message.content}
           </div>
           <div className="flex items-center justify-end gap-1 px-1">

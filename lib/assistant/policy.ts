@@ -76,8 +76,17 @@ const POLICY_FOLLOW_UP_TERMS = [
 
 const EXPLICIT_ACTION_PHRASES = [
   "upload bill",
+  "upload a bill",
+  "upload bills",
   "submit bill",
+  "submit a bill",
   "scan bill",
+  "scan a bill",
+  "upload receipt",
+  "upload invoice",
+  "submit receipt",
+  "claim another bill",
+  "claim a bill",
   "track claim",
   "claim status",
   "claim history",
@@ -87,8 +96,18 @@ const EXPLICIT_ACTION_PHRASES = [
   "nearest merchant",
   "allowed merchant",
   "register vehicle",
+  "register my vehicle",
+  "register car",
+  "register my car",
+  "add vehicle",
   "vehicle registration",
   "start registration",
+  "register driver",
+  "register my driver",
+  "driver registration",
+  "add driver",
+  "add my driver",
+  "enroll driver",
 ] as const;
 
 /**
@@ -98,6 +117,46 @@ const EXPLICIT_ACTION_PHRASES = [
 export type PolicyQuestionResolution = {
   type: "match";
   categories: PolicyCategory[];
+};
+
+export type PolicyAnswerView =
+  | "overview"
+  | "proof"
+  | "deadline"
+  | "coverage"
+  | "process"
+  | "comparison"
+  | "tax";
+
+export type StructuredPolicyFact = {
+  label: string;
+  value: string;
+};
+
+export type StructuredPolicyCategory = {
+  id: PolicyTabId;
+  label: string;
+  description?: string;
+  facts: StructuredPolicyFact[];
+  items: string[];
+  steps: Array<{ title: string; detail: string }>;
+  note?: string;
+};
+
+export type StructuredPolicyAnswer = {
+  view: PolicyAnswerView;
+  title: string;
+  categories: StructuredPolicyCategory[];
+  qualifier?: string;
+  disclaimer?: string;
+};
+
+export type PolicyAnswerPayload = {
+  /** Primary category drives backward-compatible single-detail navigation. */
+  categoryId: PolicyTabId;
+  categoryIds?: PolicyTabId[];
+  /** Optional so saved v2 transcripts continue to load without migration. */
+  structured?: StructuredPolicyAnswer;
 };
 
 type PolicyInput = PolicyCategory | PolicyCategory[];
@@ -128,14 +187,16 @@ export function isExplicitAssistantAction(message: string): boolean {
     EXPLICIT_ACTION_PHRASES.some((phrase) =>
       includesPhrase(normalized, phrase),
     ) ||
-    (/\b(upload|scan)\b/.test(normalized) &&
-      /\b(bill|receipt|invoice|document)\b/.test(normalized)) ||
+    (/\b(upload|scan|submit|attach)\b/.test(normalized) &&
+      /\b(bill|bills|receipt|receipts|invoice|invoices|document|documents)\b/.test(normalized)) ||
     (/\b(track|status)\b/.test(normalized) &&
-      /\bclaim\b/.test(normalized)) ||
+      /\bclaims?\b/.test(normalized)) ||
     (/\b(find|nearest|search|allowed)\b/.test(normalized) &&
-      /\b(merchant|station|pump|restaurant)\b/.test(normalized)) ||
-    (/\b(register|registration)\b/.test(normalized) &&
-      /\b(vehicle|car)\b/.test(normalized))
+      /\b(merchant|merchants|station|pump|restaurant)\b/.test(normalized)) ||
+    (/\b(register|registration|add|enroll)\b/.test(normalized) &&
+      /\b(vehicle|car|bike|automobile)\b/.test(normalized)) ||
+    (/\b(register|registration|add|enroll)\b/.test(normalized) &&
+      /\b(driver|chauffeur)\b/.test(normalized))
   );
 }
 
@@ -188,6 +249,170 @@ function relevantDeadline(policy: PolicyCategory): string | undefined {
   return policy.notes.find((note) =>
     /submit|before|deadline|window|next month|subsequent month/i.test(note),
   );
+}
+
+function resolvePolicyAnswerView(
+  question: string,
+  categories: PolicyCategory[],
+): PolicyAnswerView {
+  if (categories.length > 1) return "comparison";
+
+  const normalized = normalizeAssistantText(question);
+  if (/covered|cover|coverage|eligible|eligibility/.test(normalized)) {
+    return "coverage";
+  }
+  if (/proof|invoice|receipt|document/.test(normalized)) return "proof";
+  if (/deadline|submit|submission|when/.test(normalized)) return "deadline";
+  if (/how|step|process/.test(normalized)) return "process";
+  if (/tax|saving|savings/.test(normalized)) return "tax";
+  return "overview";
+}
+
+export function buildStructuredPolicyAnswer(
+  question: string,
+  categories: PolicyCategory[],
+): StructuredPolicyAnswer {
+  const view = resolvePolicyAnswerView(question, categories);
+  const structuredCategories = categories.map((policy) => {
+    const employerBenefit = getEmployerBenefit(policy.id);
+    const limit = findBenefit(policy, /limit/i);
+    const proof = findBenefit(policy, /proof/i);
+    const frequency = findBenefit(policy, /frequency/i);
+    const tax = findBenefit(policy, /tax/i);
+    const deadline = relevantDeadline(policy);
+
+    let facts: StructuredPolicyFact[] = [];
+    let items: string[] = [];
+    let steps: Array<{ title: string; detail: string }> = [];
+    let description: string | undefined;
+    let note: string | undefined;
+
+    if (view === "coverage") {
+      items = policy.covered ?? [];
+      description = items.length === 0 ? policy.description : undefined;
+      note = policy.notes[0];
+    } else if (view === "proof") {
+      facts = [
+        {
+          label: "Proof required",
+          value: proof?.detail ?? employerBenefit.claimRules.proofRequired,
+        },
+      ];
+      note = deadline ?? policy.notes[0];
+    } else if (view === "deadline") {
+      facts = [
+        ...(deadline
+          ? [{ label: "Submission deadline", value: deadline }]
+          : []),
+        ...(frequency
+          ? [{ label: frequency.title, value: frequency.detail }]
+          : []),
+      ];
+      if (facts.length === 0) {
+        note = "The policy does not specify a separate submission deadline.";
+      }
+    } else if (view === "process") {
+      steps = policy.steps;
+    } else if (view === "tax") {
+      facts = tax ? [{ label: tax.title, value: tax.detail }] : [];
+    } else if (view === "comparison") {
+      facts = [
+        ...(limit ? [{ label: limit.title, value: limit.detail }] : []),
+        ...(frequency
+          ? [{ label: frequency.title, value: frequency.detail }]
+          : []),
+        {
+          label: "Proof required",
+          value: employerBenefit.claimRules.proofRequired,
+        },
+      ];
+    } else {
+      description = policy.description;
+      facts = [tax, limit, proof, frequency]
+        .filter((benefit): benefit is NonNullable<typeof benefit> =>
+          Boolean(benefit),
+        )
+        .map((benefit) => ({
+          label: benefit.title,
+          value: benefit.detail,
+        }));
+      note = deadline ?? policy.notes[0];
+    }
+
+    return {
+      id: policy.id,
+      label: policy.tabLabel,
+      description,
+      facts,
+      items,
+      steps,
+      note,
+    };
+  });
+
+  const primary = categories[0];
+  const title =
+    view === "comparison"
+      ? `Comparing ${categories.map((category) => category.tabLabel).join(" and ")}`
+      : view === "coverage"
+        ? `${primary.tabLabel} coverage`
+        : view === "proof"
+          ? `${primary.tabLabel} proof required`
+          : view === "deadline"
+            ? `${primary.tabLabel} deadline`
+            : view === "process"
+              ? `How ${primary.tabLabel} works`
+              : view === "tax"
+                ? `${primary.tabLabel} tax treatment`
+                : primary.tabLabel;
+  const taxTreatment = getEmployerBenefit(primary.id).taxTreatment;
+  const includeTaxDisclaimer =
+    view === "overview" || view === "comparison" || view === "tax";
+
+  return {
+    view,
+    title,
+    categories: structuredCategories,
+    qualifier: includeTaxDisclaimer ? taxTreatment.qualifier : undefined,
+    disclaimer: includeTaxDisclaimer ? taxTreatment.disclaimer : undefined,
+  };
+}
+
+export function createPolicyLeadSummary(
+  structured: StructuredPolicyAnswer,
+): string {
+  switch (structured.view) {
+    case "comparison":
+      return "Here is a side-by-side view of the policy details you asked about.";
+    case "coverage":
+      return "These are the expenses currently listed as covered by the policy.";
+    case "proof":
+      return "Here are the documents required for this benefit claim.";
+    case "deadline":
+      return "Here are the current submission timing and frequency requirements.";
+    case "process":
+      return "This is the claim process from setup through payroll review.";
+    case "tax":
+      return "Here is the qualified tax treatment stated in your employer policy.";
+    case "overview":
+      return "Here are the key benefit, limit, proof, and frequency details.";
+  }
+}
+
+export function policyPayloadForAnswer(
+  question: string,
+  categories: PolicyCategory[],
+  structured: StructuredPolicyAnswer = buildStructuredPolicyAnswer(
+    question,
+    categories,
+  ),
+): PolicyAnswerPayload {
+  const categoryIds = categories.map((category) => category.id);
+  return {
+    categoryId: categoryIds[0],
+    categoryIds,
+    structured,
+  };
 }
 
 function summarizeOneCategory(
@@ -329,7 +554,7 @@ export function createPolicyPrompt(
         (multi
           ? " The JSON is an array of benefits: cover each one the question names, keeping them clearly separated."
           : "") +
-        " Format the reply like a helpful chat answer using short markdown: a bold title line, then short paragraphs and bullet lists for key facts (limits, proof, deadlines, steps). Keep it concise (about 80-160 words). Respond in the user's language.",
+        " The app renders all policy facts in a structured card, so return only one or two short plain-text summary sentences. Do not use headings, markdown, bullets, tables, or a CTA. Keep the summary under 40 words and respond in the user's language.",
     },
     ...history,
     {

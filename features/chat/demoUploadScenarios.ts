@@ -73,6 +73,10 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       invoiceNo: "MEAL-0804",
       confidence: 42,
       manualReview: true,
+      reviewFields: {
+        amount: "missing",
+        billDate: "missing",
+      },
       warning:
         "The amount and bill date were not found in this demo. Enter them manually.",
     },

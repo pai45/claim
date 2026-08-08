@@ -18,15 +18,17 @@ import {
   appDataPayloadForResolution,
   buildGroundedAppData,
   checkAppDataGrounding,
-  createAppDataFallbackSummary,
+  createAppDataLeadSummary,
   resolveAppDataQuestion,
   type AppDataContext,
   type AppDataResolution,
 } from "@/lib/assistant/appData";
 import {
   checkPolicyGrounding,
-  createPolicyFallbackSummary,
+  buildStructuredPolicyAnswer,
+  createPolicyLeadSummary,
   isExplicitAssistantAction,
+  policyPayloadForAnswer,
   resolvePolicyQuestion,
 } from "@/lib/assistant/policy";
 import {
@@ -329,7 +331,7 @@ export function useChat() {
         setActiveAppDataContext(appDataContextForResolution(resolution));
         setActivePolicyCategory(null);
 
-        let reply = createAppDataFallbackSummary(trimmed, resolution);
+        let reply = createAppDataLeadSummary(source);
 
         if (supportsOnDevicePolicyModel()) {
           setPolicyModelStatus({});
@@ -367,17 +369,18 @@ export function useChat() {
             content: reply,
             createdAt: Date.now(),
             kind: "app_data_answer",
-            appDataAnswer: appDataPayloadForResolution(resolution),
+            appDataAnswer: appDataPayloadForResolution(resolution, source),
           },
         ]);
       };
 
       const answerFromPolicy = async (categories: PolicyCategory[]) => {
         const categoryIds = categories.map((category) => category.id);
+        const structured = buildStructuredPolicyAnswer(trimmed, categories);
         setActivePolicyCategory(categoryIds[0]);
         setActiveAppDataContext(null);
 
-        let reply = createPolicyFallbackSummary(trimmed, categories);
+        let reply = createPolicyLeadSummary(structured);
 
         if (supportsOnDevicePolicyModel()) {
           setPolicyModelStatus({});
@@ -415,7 +418,11 @@ export function useChat() {
             content: reply,
             createdAt: Date.now(),
             kind: "policy_answer",
-            policyAnswer: { categoryId: categoryIds[0], categoryIds },
+            policyAnswer: policyPayloadForAnswer(
+              trimmed,
+              categories,
+              structured,
+            ),
           },
         ]);
       };
@@ -894,11 +901,13 @@ export function useChat() {
       );
 
       try {
-        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
         setDocumentProcessingStage("reading");
-        await new Promise((resolve) => window.setTimeout(resolve, 260));
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
+        setDocumentProcessingStage("extracting");
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
         setDocumentProcessingStage("checking");
-        await new Promise((resolve) => window.setTimeout(resolve, 220));
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
 
         const nextExtract = buildBillExtractFromScenario(scenarioId);
         setMessages((prev) => {
@@ -968,11 +977,11 @@ export function useChat() {
       ]);
 
       try {
-        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        await new Promise((resolve) => window.setTimeout(resolve, 1000));
         setDocumentProcessingStage("reading");
-        await new Promise((resolve) => window.setTimeout(resolve, 260));
+        await new Promise((resolve) => window.setTimeout(resolve, 1000));
         setDocumentProcessingStage("checking");
-        await new Promise((resolve) => window.setTimeout(resolve, 220));
+        await new Promise((resolve) => window.setTimeout(resolve, 1000));
 
         const draft: DriverSalaryPayload = {
           ...draftBase,
@@ -1027,15 +1036,26 @@ export function useChat() {
       );
 
       try {
+        const startTime = Date.now();
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
         setDocumentProcessingStage("reading");
-        const extract = await runBillOcr(file);
+        const [extract] = await Promise.all([
+          runBillOcr(file),
+          new Promise((resolve) => window.setTimeout(resolve, 750)),
+        ]);
         const nextExtract: BillExtract = {
           ...extract,
           previewUrl,
           previewType: file.type,
         };
+        setDocumentProcessingStage("extracting");
+        await new Promise((resolve) => window.setTimeout(resolve, 750));
         setDocumentProcessingStage("checking");
-        await new Promise((resolve) => window.setTimeout(resolve, 180));
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 3000 - elapsed);
+        if (remaining > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, remaining));
+        }
 
         setMessages((prev) => {
           const vendor = nextExtract.vendor || nextExtract.merchant || "";
@@ -1272,7 +1292,7 @@ export function useChat() {
         {
           id: createId(),
           role: "assistant",
-          content: `Claim ${claimId} submitted to HR.`,
+          content: `Vehicle registration ${claimId} submitted to HR.`,
           createdAt: Date.now(),
           kind: "claim_cta",
           claimId,
@@ -1282,7 +1302,7 @@ export function useChat() {
           id: createId(),
           role: "assistant",
           content:
-            "Next up — you can register your driver and claim Driver Salary.",
+            "Next up — you can register your driver for Driver Salary benefits.",
           createdAt: Date.now(),
           kind: "text",
         },
@@ -1391,13 +1411,24 @@ export function useChat() {
       ]);
 
       try {
+        const startTime = Date.now();
+        await new Promise((resolve) => window.setTimeout(resolve, 1000));
         setDocumentProcessingStage("reading");
-        const ocr = await runDlOcr(file);
+        const [ocr] = await Promise.all([
+          runDlOcr(file),
+          new Promise((resolve) => window.setTimeout(resolve, 1000)),
+        ]);
         const draft: DriverSalaryPayload = {
           ...draftBase,
           ...ocr,
         };
         driverSalaryDraftRef.current = draft;
+        setDocumentProcessingStage("checking");
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, 3000 - elapsed);
+        if (remaining > 0) {
+          await new Promise((resolve) => window.setTimeout(resolve, remaining));
+        }
 
         setMessages((prev) => [
           ...prev,
@@ -1510,7 +1541,7 @@ export function useChat() {
         {
           id: createId(),
           role: "assistant",
-          content: "Review driver salary",
+          content: "Review driver details",
           createdAt: Date.now(),
           kind: "driver_salary_review",
           driverSalary: draft,
@@ -1541,7 +1572,7 @@ export function useChat() {
           .concat({
             id: createId(),
             role: "assistant",
-            content: `Claim ${claimId} submitted.`,
+            content: `Driver registration ${claimId} submitted to HR.`,
             createdAt: Date.now(),
             kind: "claim_cta",
             claimId,

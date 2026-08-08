@@ -1,4 +1,5 @@
 import type { DriverSalaryPayload } from "@/features/chat/types";
+import { RegistrationDeclaration } from "./RegistrationDeclaration";
 
 type DriverSalaryReviewCardProps = {
   payload: DriverSalaryPayload;
@@ -39,7 +40,7 @@ export function DriverSalaryReviewCard({
       <div className="flex flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card">
         <div className="flex flex-col gap-0.5">
           <h3 className="text-body font-bold text-pine">
-            Review driver salary
+            Review driver details
           </h3>
           <p className="type-body-secondary">
             Confirm details before submitting
@@ -51,17 +52,19 @@ export function DriverSalaryReviewCard({
           <Row label="DL number" value={payload.dlNumber} />
           <Row label="Salary" value={payload.salary} />
           <Row label="Start date" value={formatStartDate(payload.startDate)} />
-          <Row label="Vehicle claim" value={payload.vehicleClaimId} />
+          <Row label="Vehicle registration" value={payload.vehicleClaimId} />
         </div>
+
+        <RegistrationDeclaration subject="driver" />
       </div>
 
       <button
         type="button"
         disabled={disabled || payload.submitted}
         onClick={() => onSubmit(payload)}
-        className="rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
+        className="min-h-11 rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
       >
-        {payload.submitted ? "Submitted" : "Submit claim"}
+        {payload.submitted ? "Submitted to HR" : "Submit to HR"}
       </button>
     </div>
   );

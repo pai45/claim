@@ -1135,7 +1135,7 @@ body.is-pluspay .transactions-section {
   overflow: hidden;
 }
 
-body.is-upi-created .scan-pay-card {
+body.is-upi-created:not(.is-pluspay) .scan-pay-card {
   display: grid !important;
 }
 

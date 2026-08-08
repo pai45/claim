@@ -270,12 +270,46 @@ function professionalDashboard(): BenefitClaimsDashboard {
   };
 }
 
+function mealDashboard(): BenefitClaimsDashboard {
+  return {
+    categoryId: "meal",
+    title: "Meal Wallet",
+    availableLimit: 30000,
+    utilized: 0,
+    accrued: 30000,
+    frequencyLabel: "Monthly",
+    monthLabel: "July 2026",
+    monthTotal: 0,
+    monthApproved: 0,
+    monthPending: 0,
+    claims: [],
+  };
+}
+
+function giftDashboard(): BenefitClaimsDashboard {
+  return {
+    categoryId: "gift",
+    title: "Gift Wallet",
+    availableLimit: 5000,
+    utilized: 0,
+    accrued: 5000,
+    frequencyLabel: "As incurred",
+    monthLabel: "July 2026",
+    monthTotal: 0,
+    monthApproved: 0,
+    monthPending: 0,
+    claims: [],
+  };
+}
+
 const DASHBOARDS: Record<string, BenefitClaimsDashboard> = {
   books: booksDashboard(),
   fuel: fuelDashboard(),
   mobile: mobileDashboard(),
   driver: driverDashboard(),
   professional: professionalDashboard(),
+  meal: mealDashboard(),
+  gift: giftDashboard(),
 };
 
 /** Flat list of all sample benefit claims (for claim-details lookup). */
@@ -296,7 +330,7 @@ export function getBenefitClaimsDashboard(
   if (activePersona === "new_user") {
     const title =
       known?.title ??
-      DASHBOARD_CATEGORIES.find((item) => item.id === categoryId)?.name ??
+      policy.display.label ??
       "Benefit Claims";
 
     return {
@@ -323,14 +357,18 @@ export function getBenefitClaimsDashboard(
     };
   }
 
-  const fallback =
-    DASHBOARD_CATEGORIES.find((item) => item.id === categoryId) ??
-    DASHBOARD_CATEGORIES[0];
-
   return {
-    ...booksDashboard(),
-    categoryId: fallback.id,
-    title: fallback.name,
+    categoryId: (policy.id ?? categoryId) as PolicyTabId,
+    title: policy.display.label,
+    availableLimit: policy.balance.available,
+    utilized: policy.balance.utilized,
+    accrued: policy.balance.allocation,
+    frequencyLabel: "Monthly",
+    monthLabel: "July 2026",
+    monthTotal: 0,
+    monthApproved: 0,
+    monthPending: 0,
+    claims: [],
   };
 }
 

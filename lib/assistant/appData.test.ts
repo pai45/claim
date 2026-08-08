@@ -4,6 +4,7 @@ import {
   buildGroundedAppData,
   checkAppDataGrounding,
   createAppDataFallbackSummary,
+  createAppDataLeadSummary,
   isGroundedAppDataAnswer,
   resolveAppDataQuestion,
 } from "./appData";
@@ -32,10 +33,9 @@ describe("app-data question routing", () => {
   it("routes a known claim ID to claim details", () => {
     const resolution = resolveAppDataQuestion("What happened to CLM-44088?");
     expect(resolution).toEqual({ kind: "claims", claimId: "CLM-44088" });
-    expect(resolution && appDataPayloadForResolution(resolution)).toEqual({
-      target: "claim",
-      claimId: "CLM-44088",
-    });
+    const payload = resolution && appDataPayloadForResolution(resolution);
+    expect(payload).toMatchObject({ target: "claim", claimId: "CLM-44088" });
+    expect(payload?.structured?.kind).toBe("claims_history");
   });
 
   it("routes claim questions that name a category", () => {
@@ -149,12 +149,28 @@ describe("grounded sources beyond the dashboard", () => {
   });
 
   it("links rule answers to the policy screen and merchant answers nowhere", () => {
-    expect(appDataPayloadForResolution({ kind: "rules", categoryId: "fuel" })).toEqual(
+    expect(appDataPayloadForResolution({ kind: "rules", categoryId: "fuel" })).toMatchObject(
       { target: "policy", categoryId: "fuel" },
     );
-    expect(appDataPayloadForResolution({ kind: "merchants" })).toEqual({
+    expect(appDataPayloadForResolution({ kind: "merchants" })).toMatchObject({
       target: "none",
     });
+  });
+
+  it.each([
+    [{ kind: "dashboard" as const }, "claims_dashboard"],
+    [{ kind: "dashboard" as const, categoryId: "fuel" as const }, "category_dashboard"],
+    [{ kind: "claims" as const, status: "Pending" as const }, "claims_history"],
+    [{ kind: "wallets" as const }, "wallet_overview"],
+    [{ kind: "rules" as const }, "claim_rules"],
+    [{ kind: "merchants" as const, benefitType: "fuel" as const, query: "Shell" }, "merchant_allowlist"],
+  ])("builds a structured payload for %s", (resolution, expectedKind) => {
+    const source = buildGroundedAppData(resolution);
+    const payload = appDataPayloadForResolution(resolution, source);
+
+    expect(payload.structured).toBe(source);
+    expect(payload.structured?.kind).toBe(expectedKind);
+    expect(createAppDataLeadSummary(source).length).toBeGreaterThan(0);
   });
 });
 

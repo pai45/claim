@@ -28,6 +28,13 @@ export const MERCHANT_ALLOWLIST: Record<BenefitType, string[]> = {
     "Taco Bell",
     "Sagar Ratna",
     "Bikanervala",
+    "Swiggy",
+    "Zomato",
+    "Zepto",
+    "Blinkit",
+    "BigBasket",
+    "Instamart",
+    "Dunzo",
   ],
   fuel: [
     "Indian Oil",

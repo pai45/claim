@@ -21,6 +21,12 @@ export const UI_ICONS = {
   claimsDashboard: "/assets/icons/claims-dashboard.svg",
   policyDetails: "/assets/icons/policy-details.svg",
   claimHistory: "/assets/icons/claim-history.svg",
+  notification: "/assets/icons/notification-bell.svg",
+} as const;
+
+export const CHAT_ASSETS = {
+  vehicleRegistration: "/assets/vehicle-registration-cta.png",
+  driverRegistration: "/assets/driver-registration-cta.png",
 } as const;
 
 /** Supplied artwork used by the Profile screen's menu rows. */

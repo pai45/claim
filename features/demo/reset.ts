@@ -5,7 +5,6 @@ import {
   saveMpin,
 } from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
-import { BANNER_STAGE_KEY } from "@/features/chat/bannerRotation";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
 import { clearChatSession } from "@/features/chat/persistence";
 import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
@@ -19,12 +18,9 @@ import {
   VKYC_DONE_KEY,
   VKYC_ROUTE_KEY,
 } from "@/features/onboarding/vkycHandoff";
-import {
-  clearRegisteredVehicle,
-  saveRegisteredVehicle,
-} from "@/features/vehicle/registration";
+import { clearRegisteredVehicle } from "@/features/vehicle/registration";
 import { clearRegisteredDriver } from "@/features/driver/registration";
-import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
+import { clearNotificationsHidden } from "@/features/notifications/storage";
 import { setActivePersonaId } from "@/features/persona/store";
 import type { PersonaId } from "@/features/persona/types";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
@@ -38,10 +34,13 @@ type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
  */
 export const UPI_CREATED_STORAGE_KEY = "employee-benefits:upi-created:v1";
 
+/** Clears the retired promo-carousel rotation state during demo resets. */
+const LEGACY_BANNER_STAGE_KEY = "eb-claims:banner-stage";
+
 /** Keys with no owning module that exposes a clear helper. */
 const LOCAL_KEYS = [
   MANAGE_LIMIT_STORAGE_KEY,
-  BANNER_STAGE_KEY,
+  LEGACY_BANNER_STAGE_KEY,
   WIDGET_POSITION_KEY,
   NUDGE_SNOOZE_KEY,
   VKYC_DONE_KEY,
@@ -63,8 +62,8 @@ function remove(storage: StorageLike, key: string): void {
  * - "new_user": Wipes every trace so the next screen is the very first one
  *   a new user sees: signed out, onboarding untouched, 0 claims, 0 txns,
  *   full wallet balances.
- * - "returning": Pre-populates completed onboarding, MPIN (1234), registered
- *   vehicle, and full history, returning to the login gate for seamless sign-in.
+ * - "returning": Pre-populates completed onboarding, MPIN (1234), and full
+ *   history, while leaving vehicle and driver registration ready to demo.
  */
 export function resetDemoJourney(
   targetPersona: PersonaId = "new_user",
@@ -78,23 +77,19 @@ export function resetDemoJourney(
 
   LOCAL_KEYS.forEach((key) => remove(local, key));
   SESSION_KEYS.forEach((key) => remove(session, key));
+  clearRegisteredVehicle(local);
+  clearRegisteredDriver(local);
+  clearNotificationsHidden(local);
 
   if (targetPersona === "new_user") {
     setActivePersonaId("new_user", local);
-    clearRegisteredVehicle(local);
-    clearRegisteredDriver(local);
     clearOnboarding(local);
     clearMpin(local);
     clearMpinLock(local);
     remove(local, UPI_CREATED_STORAGE_KEY);
   } else {
     setActivePersonaId("returning", local);
-    clearRegisteredDriver(local);
     saveOnboardingState(createCompletedOnboardingState("returning"), local);
-    const vehicleLookup = buildVehicleLookup("MH 12 AB 1234", "Vishal Sharma");
-    if (vehicleLookup.ok) {
-      saveRegisteredVehicle(vehicleLookup.lookup, local);
-    }
     // SHA-256 for demo_salt:1234
     saveMpin(
       {

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useRef, type ReactNode } from "react";
 import { AppIcon } from "@/components/shared/AppIcon";
+import { useNotifications } from "@/features/notifications/useNotifications";
 import { UI_ICONS } from "@/lib/ui/assets";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
 
@@ -39,9 +40,16 @@ const MENU_ITEMS: {
     href: "/claims-history",
     icon: <AppIcon src={UI_ICONS.claimHistory} size={20} alt="" />,
   },
+  {
+    id: "notifications",
+    label: "Notification",
+    href: "/notifications/",
+    icon: <AppIcon src={UI_ICONS.notification} size={20} alt="" />,
+  },
 ];
 
 export function HeaderMenu({ open, onClose, onNewChat }: HeaderMenuProps) {
+  const { count: notificationCount } = useNotifications();
   const modalRef = useRef<HTMLDivElement>(null);
   const handleClose = useCallback(() => onClose(), [onClose]);
   useModalFocus(modalRef, open, handleClose);
@@ -87,6 +95,11 @@ export function HeaderMenu({ open, onClose, onNewChat }: HeaderMenuProps) {
                   {item.icon}
                 </span>
                 <span>{item.label}</span>
+                {item.id === "notifications" && notificationCount > 0 ? (
+                  <span className="ml-auto flex min-h-6 min-w-6 items-center justify-center rounded-pill bg-mint px-1.5 text-caption font-bold text-pine-dark">
+                    {notificationCount}
+                  </span>
+                ) : null}
               </Link>
             </li>
           ))}

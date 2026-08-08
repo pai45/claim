@@ -1,6 +1,7 @@
 import {
   BENEFIT_DASHBOARD_FY_LABEL,
   getBenefitClaimsDashboard,
+  type BenefitClaimsDashboard,
 } from "@/features/dashboard/benefitClaims";
 import {
   AVAILABLE_LIMIT,
@@ -11,19 +12,21 @@ import {
   formatINR,
 } from "@/features/dashboard/constants";
 import {
+  POLICY_CATEGORIES,
   getEmployerBenefit,
   getPolicyCategory,
+  type BenefitClaimRules,
   type PolicyTabId,
 } from "@/features/policy/constants";
 import { MERCHANT_ALLOWLIST } from "@/lib/merchants/allowlist";
 import type { BenefitType } from "@/lib/merchants/types";
-import type { AppDataAnswerPayload } from "@/features/chat/types";
 import {
   ASSISTANT_CLAIMS,
   matchesClaimStatus,
   summarizeAssistantClaims,
   type AssistantClaim,
   type ClaimAnswerStatus,
+  type ClaimSummary,
 } from "./claimIndex";
 import { normalizeAssistantText } from "./policy";
 import {
@@ -52,23 +55,79 @@ export type AppDataResolution =
   | { kind: "rules"; categoryId?: PolicyTabId }
   | { kind: "merchants"; benefitType?: BenefitType; query?: string };
 
-export type GroundedAppData = Record<string, unknown>;
+export type ClaimsDashboardData = {
+  kind: "claims_dashboard";
+  overview: {
+    financialYear: string;
+    availableLimit: number;
+    utilizedAmount: number;
+    financialYearLimit: number;
+    utilizedPercent: number;
+  };
+  categories: Array<{ id: PolicyTabId; name: string; amount: number }>;
+};
+
+export type CategoryDashboardData = {
+  kind: "category_dashboard";
+  financialYear: string;
+  dashboard: BenefitClaimsDashboard;
+  utilizedPercent: number;
+  claimRules: BenefitClaimRules;
+  claimSummary: ClaimSummary;
+};
+
+export type ClaimsHistoryData = {
+  kind: "claims_history";
+  filters: {
+    categoryId?: PolicyTabId;
+    claimId?: string;
+    status?: ClaimAnswerStatus;
+  };
+  summary: ClaimSummary;
+  claims: AssistantClaim[];
+  claimRules?: BenefitClaimRules;
+};
+
+export type GroundedAppData =
+  | ReturnType<typeof buildWalletOverview>
+  | ReturnType<typeof buildClaimRules>
+  | ReturnType<typeof buildMerchantSource>
+  | ClaimsDashboardData
+  | CategoryDashboardData
+  | ClaimsHistoryData;
+
+export type AppDataAnswerTarget =
+  | "dashboard"
+  | "category_dashboard"
+  | "claims_history"
+  | "claim"
+  | "policy"
+  | "none";
+
+export type AppDataAnswerPayload = {
+  target: AppDataAnswerTarget;
+  categoryId?: PolicyTabId;
+  claimId?: string;
+  /** Optional so saved v2 transcripts continue to load without migration. */
+  structured?: GroundedAppData;
+};
 
 const CLAIM_QUESTION =
   /\b(claim history|claims history|my claims|past claims|previous claims|recent claims|latest claims|approved claims|pending claims|rejected claims|show claims|list claims|how many claims)\b/;
 const DASHBOARD_QUESTION =
-  /\b(dashboard|balance|balances|available balance|available limit|utilized|accrued|benefit balance|claim balance|fy limit|financial year limit|how much is left|remaining balance)\b/;
+  /\b(dashboard|balance|balances|available balance|available limit|utilized|accrued|benefit balance|claim balance|wallet balance|fy limit|financial year limit|how much is left|remaining balance|balance remains|balance left|how much.*(left|remain|remains|available)|budget left|remaining limit|check balance|my balance)\b/;
 const CLAIM_FOLLOW_UP =
   /\b(approved|pending|rejected|needs info|under review|recent|latest|amount|how many|which ones|status)\b/;
 const DASHBOARD_FOLLOW_UP =
   /\b(available|utilized|accrued|balance|limit|pending|approved|total|how much|left|remaining)\b/;
 const WALLET_QUESTION =
-  /\b(all my wallets|all wallets|every wallet|all my benefits|all benefits|every benefit|wallet overview|across benefits|across wallets|which wallet|which benefit|total available|overall balance)\b/;
+  /\b(all my wallets|all wallets|every wallet|all my benefits|all benefits|every benefit|wallet overview|across benefits|across wallets|which wallet|which benefit|total available|overall balance|total (wallet )?balance|balance of all wallets|all wallet balances|total.*remaining|where do i (still )?have (room|budget|balance))\b/;
 // Deliberately generic-only: "why was MY claim rejected" is a question about
 // this employee's claims and must fall through to the claims branch below.
 const RULES_QUESTION =
-  /\b(claim rules|submission rules|what makes a claim (fail|get rejected)|why do claims get rejected|why are claims rejected|before i submit|required fields|precheck|what documents do i need)\b/;
-const MERCHANT_ELIGIBILITY = /\b(allowed|eligible|accepted|approved|covered|valid)\b/;
+  /\b(claim rules|submission rules|what makes a claim (fail|get rejected)|why do claims get rejected|why are claims rejected|before i submit|required fields|precheck|what documents do i need|mandatory fields)\b/;
+const MERCHANT_ELIGIBILITY =
+  /\b(allowed|eligible|accepted|approved|covered|valid|can i (use|claim|pay|buy|order)|is .* (allowed|eligible|accepted|approved|valid|covered))\b/;
 // "When must I submit books claims?" names a category and says "claims", but it
 // is asking the policy a question — not asking to see this employee's records.
 const POLICY_INTENT_HINT =
@@ -81,14 +140,12 @@ function includesPhrase(message: string, phrase: string): boolean {
   return (` ${message} `).includes(` ${normalizedPhrase} `);
 }
 
-function findDashboardCategory(message: string) {
-  return DASHBOARD_CATEGORIES.find((category) => {
-    const policy = getPolicyCategory(category.id);
+function findBenefitCategory(message: string) {
+  return POLICY_CATEGORIES.find((policy) => {
     const phrases = [
       ...policy.aliases,
       policy.tabLabel,
       policy.title,
-      category.name,
     ];
     return phrases.some((phrase) => includesPhrase(message, phrase));
   });
@@ -132,7 +189,7 @@ export function resolveAppDataQuestion(
   activeContext?: AppDataContext | null,
 ): AppDataResolution | null {
   const normalized = normalizeAssistantText(question);
-  const category = findDashboardCategory(normalized);
+  const category = findBenefitCategory(normalized);
 
   if (intentId === "view_dashboard") {
     return { kind: "dashboard", categoryId: category?.id };
@@ -155,14 +212,6 @@ export function resolveAppDataQuestion(
       : { kind: "claims", claimId };
   }
 
-  if (WALLET_QUESTION.test(normalized)) {
-    return { kind: "wallets" };
-  }
-
-  if (RULES_QUESTION.test(normalized)) {
-    return { kind: "rules", categoryId: category?.id };
-  }
-
   const brand = findMerchantBrand(normalized);
   if (brand && MERCHANT_ELIGIBILITY.test(normalized)) {
     return {
@@ -170,6 +219,21 @@ export function resolveAppDataQuestion(
       benefitType: brand.benefitType,
       query: brand.brand,
     };
+  }
+
+  if (RULES_QUESTION.test(normalized)) {
+    return { kind: "rules", categoryId: category?.id };
+  }
+
+  if (WALLET_QUESTION.test(normalized)) {
+    const isExplicitCrossWallet =
+      /\b(all (my )?wallets|all wallets|every wallet|all (my )?benefits|all benefits|every benefit|wallet overview|across benefits|across wallets|which wallet|which benefit|total available|overall balance|total (wallet )?balance|balance of all wallets|all wallet balances|total.*remaining|where do i (still )?have (room|budget|balance))\b/.test(
+        normalized,
+      );
+    if (!category || isExplicitCrossWallet) {
+      return { kind: "wallets" };
+    }
+    return { kind: "dashboard", categoryId: category.id };
   }
 
   if (DASHBOARD_QUESTION.test(normalized)) {
@@ -268,6 +332,10 @@ export function buildGroundedAppData(
       kind: "category_dashboard",
       financialYear: BENEFIT_DASHBOARD_FY_LABEL,
       dashboard,
+      utilizedPercent:
+        dashboard.accrued > 0
+          ? Math.round((dashboard.utilized / dashboard.accrued) * 100)
+          : 0,
       claimRules: benefit.claimRules,
       claimSummary: summarizeAssistantClaims(
         ASSISTANT_CLAIMS.filter(
@@ -285,6 +353,8 @@ export function buildGroundedAppData(
         availableLimit: AVAILABLE_LIMIT,
         utilizedAmount: UTILIZED_AMOUNT,
         financialYearLimit: FY_LIMIT,
+        utilizedPercent:
+          FY_LIMIT > 0 ? Math.round((UTILIZED_AMOUNT / FY_LIMIT) * 100) : 0,
       },
       categories: DASHBOARD_CATEGORIES.map(({ id, name, amount }) => ({
         id,
@@ -467,7 +537,7 @@ export function createAppDataPrompt(
     {
       role: "system",
       content:
-        "You are a private claims assistant. Answer only with facts present in the supplied app data JSON. Do not invent claims, IDs, statuses, amounts, dates, limits, categories, explanations, or a CTA. Every number you write must already appear in the JSON — never add, subtract, or convert amounts yourself; the JSON already contains any total, count, or percentage you need. If the data does not contain the answer, say so. Format the reply like a helpful chat answer using short markdown: a bold title line, then bullet lists for amounts, statuses, claim IDs, and dates. Keep it concise (about 80-160 words). Respond in the user's language.",
+        "You are a private claims assistant. Answer only with facts present in the supplied app data JSON. Do not invent claims, IDs, statuses, amounts, dates, limits, categories, explanations, or a CTA. Every number you write must already appear in the JSON — never add, subtract, or convert amounts yourself; the JSON already contains any total, count, or percentage you need. If the data does not contain the answer, say so. The app renders all facts in a structured card, so return only one or two short plain-text summary sentences. Do not use headings, markdown, bullets, tables, or a CTA. Keep the summary under 40 words and respond in the user's language.",
     },
     ...history,
     {
@@ -491,40 +561,64 @@ export function appDataContextForResolution(
   };
 }
 
+export function createAppDataLeadSummary(source: GroundedAppData): string {
+  switch (source.kind) {
+    case "claims_dashboard":
+      return "Here is a structured view of your current claims balance.";
+    case "category_dashboard":
+      return `Here is the latest ${source.dashboard.title} balance and claim activity.`;
+    case "claims_history":
+      return source.filters.claimId
+        ? "Here are the recorded details for this claim."
+        : source.claims.length > 0
+          ? "Here is a structured summary of the claims matching your request."
+          : "There are no claims matching your current filters.";
+    case "wallet_overview":
+      return "Here is how your available benefit balance is distributed across wallets.";
+    case "claim_rules":
+      return "These are the checks and documents used when a claim is submitted.";
+    case "merchant_allowlist":
+      return "Here are the merchant networks that match your eligibility question.";
+  }
+}
+
 export function appDataPayloadForResolution(
   resolution: AppDataResolution,
+  structured: GroundedAppData = buildGroundedAppData(resolution),
 ): AppDataAnswerPayload {
   if (resolution.kind === "wallets") {
-    return { target: "dashboard" };
+    return { target: "dashboard", structured };
   }
 
   if (resolution.kind === "merchants") {
-    return { target: "none" };
+    return { target: "none", structured };
   }
 
   if (resolution.kind === "rules") {
     return resolution.categoryId
-      ? { target: "policy", categoryId: resolution.categoryId }
-      : { target: "none" };
+      ? { target: "policy", categoryId: resolution.categoryId, structured }
+      : { target: "none", structured };
   }
 
   if (resolution.kind === "dashboard") {
     return {
       target: resolution.categoryId ? "category_dashboard" : "dashboard",
       categoryId: resolution.categoryId,
+      structured,
     };
   }
 
   if (resolution.claimId) {
-    return { target: "claim", claimId: resolution.claimId };
+    return { target: "claim", claimId: resolution.claimId, structured };
   }
 
   if (resolution.categoryId) {
     return {
       target: "category_dashboard",
       categoryId: resolution.categoryId,
+      structured,
     };
   }
 
-  return { target: "claims_history" };
+  return { target: "claims_history", structured };
 }
