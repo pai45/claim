@@ -1,10 +1,12 @@
-import type { VehicleLookup } from "@/lib/vehicle/types";
+import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import { colors } from "@/lib/ui/colors";
+import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 
 type VehicleClaimReceiptCardProps = {
   claimId: string;
   lookup: VehicleLookup;
+  ownership?: VehicleOwnership;
   submittedAt: number;
 };
 
@@ -63,6 +65,7 @@ function formatSubmittedAt(timestamp: number) {
 export function VehicleClaimReceiptCard({
   claimId,
   lookup,
+  ownership,
   submittedAt,
 }: VehicleClaimReceiptCardProps) {
   const name = vehicleDisplayName(lookup.profile);
@@ -115,6 +118,12 @@ export function VehicleClaimReceiptCard({
             value={lookup.regNumber.formatted}
             emphasize
           />
+          {ownership ? (
+            <ReceiptRow
+              label="Ownership"
+              value={vehicleOwnershipLabel(ownership)}
+            />
+          ) : null}
           <ReceiptRow label="Owner" value={lookup.ownerName} />
           {lookup.registrationDate ? (
             <ReceiptRow label="Registered" value={lookup.registrationDate} />

@@ -68,6 +68,8 @@ import type {
   PolicyModelStatus,
   VehicleLookupPayload,
 } from "./types";
+import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
+import type { VehicleOwnership } from "@/lib/vehicle/types";
 import {
   buildBillExtractFromScenario,
   buildDlPayloadFromScenario,
@@ -1255,9 +1257,9 @@ export function useChat() {
           ? {
               id: createId(),
               role: "assistant",
-              content: `That's a ${vehicleDisplayName(result.lookup.profile)}. Check the details and send them to HR.`,
+              content: `I found your ${vehicleDisplayName(result.lookup.profile)}. Is this vehicle Self Owned or Company Leased?`,
               createdAt: Date.now(),
-              kind: "vehicle_details",
+              kind: "vehicle_ownership",
               vehicleLookup: { lookup: result.lookup },
             }
           : {
@@ -1273,8 +1275,43 @@ export function useChat() {
     [isLoading, isLocating, isScanning],
   );
 
+  const selectVehicleOwnership = useCallback(
+    (
+      messageId: string,
+      lookup: VehicleLookup,
+      ownership: VehicleOwnership,
+    ) => {
+      if (isLoading || isScanning || isLocating) return;
+
+      patchVehicleLookup(messageId, { ownership });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createId(),
+          role: "user",
+          content: vehicleOwnershipLabel(ownership),
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
+          role: "assistant",
+          content: "Here's a summary. Submit when everything looks right.",
+          createdAt: Date.now(),
+          kind: "vehicle_details",
+          vehicleLookup: { lookup, ownership },
+        },
+      ]);
+    },
+    [isLoading, isLocating, isScanning, patchVehicleLookup],
+  );
+
   const submitVehicleToHr = useCallback(
-    (messageId: string, lookup: VehicleLookup) => {
+    (
+      messageId: string,
+      lookup: VehicleLookup,
+      ownership: VehicleOwnership,
+    ) => {
       // Takes `lookup` rather than searching `messages` for it: depending on
       // `messages` would change this callback's identity on every append and
       // push a new function reference through every MessageBubble each turn.
@@ -1284,7 +1321,7 @@ export function useChat() {
       // The commit point for the whole app: submitVehicleNumber only produces a
       // preview the user is asked to confirm, so registering there would flip
       // the dashboard before the transcript says registration happened.
-      saveRegisteredVehicle(lookup);
+      saveRegisteredVehicle(lookup, ownership);
 
       patchVehicleLookup(messageId, { submitted: true });
       setMessages((prev) => [
@@ -1296,7 +1333,7 @@ export function useChat() {
           createdAt: Date.now(),
           kind: "claim_cta",
           claimId,
-          vehicleLookup: { lookup, submitted: true },
+          vehicleLookup: { lookup, ownership, submitted: true },
         },
         {
           id: createId(),
@@ -1609,6 +1646,7 @@ export function useChat() {
     selectMerchantSearchMode,
     searchMerchantByName,
     submitVehicleNumber,
+    selectVehicleOwnership,
     submitVehicleToHr,
     startDriverSalary,
     submitDriverName,

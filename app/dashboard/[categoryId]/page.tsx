@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { BenefitClaimsScreen } from "@/components/dashboard/BenefitClaimsScreen";
+import { PersonaAccessGate } from "@/components/shared/PersonaAccessGate";
 import { isDashboardCategoryId } from "@/features/dashboard/benefitClaims";
 import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
 
@@ -24,7 +25,9 @@ export default async function BenefitDashboardPage({
 
   return (
     <main className="min-h-dvh w-full">
-      <BenefitClaimsScreen categoryId={categoryId} />
+      <PersonaAccessGate requireLens>
+        <BenefitClaimsScreen categoryId={categoryId} />
+      </PersonaAccessGate>
     </main>
   );
 }

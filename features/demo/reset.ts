@@ -9,6 +9,8 @@ import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
 import { clearChatSession } from "@/features/chat/persistence";
 import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
 import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
+import { BENEFICIARY_LIMITS_STORAGE_KEY } from "@/features/beneficiary-limits/store";
+import { PAYMENT_LIMITS_STORAGE_KEY } from "@/features/payment-limits/store";
 import {
   clearOnboarding,
   createCompletedOnboardingState,
@@ -22,6 +24,7 @@ import { clearRegisteredVehicle } from "@/features/vehicle/registration";
 import { clearRegisteredDriver } from "@/features/driver/registration";
 import { clearNotificationsHidden } from "@/features/notifications/storage";
 import { setActivePersonaId } from "@/features/persona/store";
+import { getPersonaConfig } from "@/features/persona/constants";
 import type { PersonaId } from "@/features/persona/types";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 
@@ -39,6 +42,8 @@ const LEGACY_BANNER_STAGE_KEY = "eb-claims:banner-stage";
 
 /** Keys with no owning module that exposes a clear helper. */
 const LOCAL_KEYS = [
+  BENEFICIARY_LIMITS_STORAGE_KEY,
+  PAYMENT_LIMITS_STORAGE_KEY,
   MANAGE_LIMIT_STORAGE_KEY,
   LEGACY_BANNER_STAGE_KEY,
   WIDGET_POSITION_KEY,
@@ -58,12 +63,9 @@ function remove(storage: StorageLike, key: string): void {
 }
 
 /**
- * Resets the demo journey for a specific persona:
- * - "new_user": Wipes every trace so the next screen is the very first one
- *   a new user sees: signed out, onboarding untouched, 0 claims, 0 txns,
- *   full wallet balances.
- * - "returning": Pre-populates completed onboarding, MPIN (1234), and full
- *   history, while leaving vehicle and driver registration ready to demo.
+ * Resets the demo journey for a specific persona. Fresh personas start before
+ * onboarding; ready personas receive completed onboarding, MPIN 1234, and the
+ * product state declared by their access configuration.
  */
 export function resetDemoJourney(
   targetPersona: PersonaId = "new_user",
@@ -81,15 +83,16 @@ export function resetDemoJourney(
   clearRegisteredDriver(local);
   clearNotificationsHidden(local);
 
-  if (targetPersona === "new_user") {
-    setActivePersonaId("new_user", local);
+  const persona = getPersonaConfig(targetPersona);
+  setActivePersonaId(targetPersona, local);
+
+  if (!persona.hasCompletedOnboarding) {
     clearOnboarding(local);
     clearMpin(local);
     clearMpinLock(local);
     remove(local, UPI_CREATED_STORAGE_KEY);
   } else {
-    setActivePersonaId("returning", local);
-    saveOnboardingState(createCompletedOnboardingState("returning"), local);
+    saveOnboardingState(createCompletedOnboardingState(targetPersona), local);
     // SHA-256 for demo_salt:1234
     saveMpin(
       {
@@ -100,10 +103,14 @@ export function resetDemoJourney(
       local,
     );
     clearMpinLock(local);
-    try {
-      local.setItem(UPI_CREATED_STORAGE_KEY, "true");
-    } catch {
-      // Storage blocked
+    if (persona.access.upiEnabled && persona.hasUpiId) {
+      try {
+        local.setItem(UPI_CREATED_STORAGE_KEY, "true");
+      } catch {
+        // Storage blocked
+      }
+    } else {
+      remove(local, UPI_CREATED_STORAGE_KEY);
     }
   }
 }

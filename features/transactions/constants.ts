@@ -1,8 +1,17 @@
 import { formatINR as formatClaimsINR } from "@/features/claims-history/constants";
+import {
+  ALL_BENEFIT_CLAIMS,
+  type BenefitClaimItem,
+} from "@/features/dashboard/benefitClaims";
 import { getActivePersonaId } from "@/features/persona/store";
 import type { PersonaId } from "@/features/persona/types";
+import {
+  EMPLOYER_BENEFITS_CATALOG,
+  type PolicyTabId,
+} from "@/features/policy/constants";
+import { colors } from "@/lib/ui/colors";
 
-export type TransactionWallet = "main" | "meal" | "fuel" | "misc" | "gift";
+export type TransactionWallet = PolicyTabId;
 
 export type TransactionIconId =
   | "bag"
@@ -18,11 +27,12 @@ export type TransactionItem = {
   paymentMethod: string;
   refId: string;
   amount: number;
-  /** Positive amounts are credits (top-ups); negative are debits. */
+  /** Credits load a wallet; debits are approved claims deducted from it. */
   type: "debit" | "credit";
   dateLabel: string;
   dateTime: string;
-  monthGroup: "current" | "november";
+  postedOn: string;
+  monthKey: string;
   wallet: TransactionWallet;
   icon: TransactionIconId;
   category: string;
@@ -34,20 +44,33 @@ export type TransactionItem = {
   referenceNumber: string;
 };
 
-export type AnalyticsWalletId = "meal" | "fuel" | "reimbursement";
-
-export type TransactionWalletFilterId = "meal" | "fuel" | "reimbursement";
+export type AnalyticsWalletId = TransactionWallet;
+export type TransactionWalletFilterId = TransactionWallet;
 
 export type WalletFilterOption = {
   id: TransactionWalletFilterId;
   label: string;
 };
 
-export const WALLET_FILTER_OPTIONS: readonly WalletFilterOption[] = [
-  { id: "meal", label: "Meal Wallet" },
-  { id: "fuel", label: "Fuel Wallet" },
-  { id: "reimbursement", label: "Reimbursement Wallet" },
-] as const;
+export const WALLET_FILTER_OPTIONS: readonly WalletFilterOption[] =
+  EMPLOYER_BENEFITS_CATALOG.benefits.map((benefit) => ({
+    id: benefit.id,
+    label: benefit.display.label,
+  }));
+
+export type TransactionMonth = {
+  key: string;
+  label: string;
+  shortLabel: string;
+};
+
+export const TRANSACTION_MONTHS: readonly TransactionMonth[] = [
+  { key: "2026-04", label: "April 2026", shortLabel: "Apr" },
+  { key: "2026-05", label: "May 2026", shortLabel: "May" },
+  { key: "2026-06", label: "June 2026", shortLabel: "Jun" },
+  { key: "2026-07", label: "July 2026", shortLabel: "Jul" },
+  { key: "2026-08", label: "August 2026", shortLabel: "Aug" },
+];
 
 export type AnalyticsCategory = {
   id: string;
@@ -74,351 +97,233 @@ export const ANALYTICS_VIEW_PILLS = [
 
 export type AnalyticsViewId = (typeof ANALYTICS_VIEW_PILLS)[number]["id"];
 
-export const ANALYTICS_WALLETS: {
-  id: AnalyticsWalletId;
-  label: string;
-  bg: string;
-  ink: string;
-}[] = [
-  { id: "meal", label: "Meal Wallet", bg: "#FFF4DB", ink: "#8A5A00" },
-  { id: "fuel", label: "Fuel Wallet", bg: "#E5F3FF", ink: "#0B5CAD" },
-  {
-    id: "reimbursement",
-    label: "Reimbursement",
-    bg: "#ECE9FF",
-    ink: "#4B3FA8",
-  },
-];
+export const ANALYTICS_WALLETS = EMPLOYER_BENEFITS_CATALOG.benefits.map(
+  (benefit) => ({
+    id: benefit.id,
+    label: benefit.display.label,
+    bg: benefit.display.iconBg,
+    ink: benefit.display.iconTone,
+  }),
+);
 
-export const ANALYTICS_TOTAL_SPENT = 50000;
-export const ANALYTICS_MONTH_LABEL = "Feb 2026";
+const ICON_BY_WALLET: Record<TransactionWallet, TransactionIconId> = {
+  meal: "food",
+  gift: "gift",
+  fuel: "fuel",
+  mobile: "money",
+  driver: "car",
+  books: "bag",
+  professional: "bag",
+};
 
-/**
- * Category palette for the analytics chart (data colors, not brand chrome).
- */
-export const ANALYTICS_CATEGORIES: AnalyticsCategory[] = [
-  {
-    id: "groceries",
-    name: "Groceries",
-    transactionCount: 7,
-    amount: 15000,
-    percent: 30,
-    color: "#3B6EF5",
-    icon: "groceries",
-  },
-  {
-    id: "entertainment",
-    name: "Entertainment",
-    transactionCount: 4,
-    amount: 6000,
-    percent: 12,
-    color: "#E85D4C",
-    icon: "entertainment",
-  },
-  {
-    id: "dining",
-    name: "Dining",
-    transactionCount: 5,
-    amount: 6000,
-    percent: 12,
-    color: "#A0479E",
-    icon: "dining",
-  },
-  {
-    id: "shopping",
-    name: "Shopping",
-    transactionCount: 6,
-    amount: 9000,
-    percent: 18,
-    color: "#2BB673",
-    icon: "shopping",
-  },
-  {
-    id: "travel",
-    name: "Travel",
-    transactionCount: 3,
-    amount: 6500,
-    percent: 13,
-    color: "#4BA3E3",
-    icon: "travel",
-  },
-  {
-    id: "bills",
-    name: "Bills",
-    transactionCount: 4,
-    amount: 7500,
-    percent: 15,
-    color: "#CE9A22",
-    icon: "bills",
-  },
-];
+const CATEGORY_ICON: Record<TransactionWallet, AnalyticsCategory["icon"]> = {
+  meal: "dining",
+  gift: "shopping",
+  fuel: "travel",
+  mobile: "bills",
+  driver: "travel",
+  books: "shopping",
+  professional: "bills",
+};
+
+function claimWallet(claim: BenefitClaimItem): TransactionWallet {
+  const title = `${claim.category} ${claim.title}`.toLowerCase();
+  if (title.includes("fuel") || title.includes("petrol") || title.includes("tyre") || title.includes("service")) return "fuel";
+  if (title.includes("mobile") || title.includes("airtel") || title.includes("jio") || title.includes("internet")) return "mobile";
+  if (title.includes("driver salary")) return "driver";
+  if (title.includes("book") || title.includes("kindle") || title.includes("crossword") || title.includes("periodical")) return "books";
+  if (title.includes("professional") || title.includes("course") || title.includes("certificate") || title.includes("learning")) return "professional";
+  if (title.includes("meal") || title.includes("food")) return "meal";
+  return "gift";
+}
+
+function transactionSequence(id: string): string {
+  return id.replace(/\D/g, "").padStart(5, "0").slice(-5);
+}
+
+function openingTransaction(
+  wallet: TransactionWallet,
+  label: string,
+  allocation: number,
+  index: number,
+): TransactionItem {
+  const sequence = String(index + 1).padStart(5, "0");
+  return {
+    id: `txn-${wallet}-opening-load`,
+    merchant: "Annual wallet load",
+    paymentMethod: "Employer funding",
+    refId: `LOAD-${sequence}`,
+    amount: allocation,
+    type: "credit",
+    dateLabel: "01 Apr",
+    dateTime: "01 April 2026 at 09:00 am",
+    postedOn: "2026-04-01",
+    monthKey: "2026-04",
+    wallet,
+    icon: "money",
+    category: "Wallet Load",
+    location: "Pine Labs Benefits",
+    cardMasked: "Employer benefits account",
+    walletName: label,
+    paymentMode: "Wallet Load",
+    transactionId: `TXN20260401${sequence}`,
+    referenceNumber: `FY2627-${wallet.toUpperCase()}-LOAD`,
+  };
+}
+
+function claimTransaction(claim: BenefitClaimItem): TransactionItem {
+  const wallet = claimWallet(claim);
+  const benefit = EMPLOYER_BENEFITS_CATALOG.benefits.find(
+    (item) => item.id === wallet,
+  )!;
+  const sequence = transactionSequence(claim.id);
+  const merchant =
+    claim.id === "CLM-43872" ? "Amazon" : claim.title.split(" - ")[0];
+  return {
+    id: claim.id === "CLM-43872" ? "txn-amazon" : `txn-${claim.id.toLowerCase()}`,
+    merchant,
+    paymentMethod: "Approved claim",
+    refId: claim.id,
+    amount: claim.amount,
+    type: "debit",
+    dateLabel: new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      timeZone: "UTC",
+    }).format(new Date(`${claim.submittedOn}T00:00:00Z`)),
+    dateTime: `${claim.date} at 06:00 pm`,
+    postedOn: claim.submittedOn,
+    monthKey: claim.submittedOn.slice(0, 7),
+    wallet,
+    icon: ICON_BY_WALLET[wallet],
+    category: claim.category,
+    location: "Benefits reimbursement",
+    cardMasked: "Employee benefits account",
+    walletName: benefit.display.label,
+    paymentMode: "Claim Reimbursement",
+    transactionId: `TXN2026${sequence}`,
+    referenceNumber: claim.id,
+  };
+}
+
+const OPENING_LOADS = EMPLOYER_BENEFITS_CATALOG.benefits.map(
+  (benefit, index) =>
+    openingTransaction(
+      benefit.id,
+      benefit.display.label,
+      benefit.balance.allocation,
+      index,
+    ),
+);
+
+const APPROVED_CLAIM_DEBITS = ALL_BENEFIT_CLAIMS.filter(
+  (claim) => claim.status === "Approved",
+).map(claimTransaction);
 
 export const TRANSACTION_ITEMS: TransactionItem[] = [
-  {
-    id: "txn-amazon",
-    merchant: "Amazon",
-    paymentMethod: "Rupay Card",
-    refId: "12345678",
-    amount: 4250,
-    type: "debit",
-    dateLabel: "20 Dec",
-    dateTime: "20 December at 02:32 pm",
-    monthGroup: "current",
-    wallet: "gift",
-    icon: "bag",
-    category: "E-Commerce",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Reimbursement Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000003",
-    referenceNumber: "REFUCK477Q4A",
-  },
-  {
-    id: "txn-zomato",
-    merchant: "Zomato Payment",
-    paymentMethod: "Rupay Card",
-    refId: "12345678",
-    amount: 650,
-    type: "debit",
-    dateLabel: "14 Dec",
-    dateTime: "14 December at 08:15 pm",
-    monthGroup: "current",
-    wallet: "meal",
-    icon: "food",
-    category: "Dining",
-    location: "Bengaluru, Karnataka",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Meal Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000004",
-    referenceNumber: "REFZOM8821K2",
-  },
-  {
-    id: "txn-uber",
-    merchant: "Uber",
-    paymentMethod: "Rupay Card",
-    refId: "12345678",
-    amount: 650,
-    type: "debit",
-    dateLabel: "12 Dec",
-    dateTime: "12 December at 09:40 am",
-    monthGroup: "current",
-    wallet: "fuel",
-    icon: "car",
-    category: "Travel",
-    location: "Pune, Maharashtra",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Fuel Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000005",
-    referenceNumber: "REFUBR3391P8",
-  },
-  {
-    id: "txn-topup",
-    merchant: "Top Up",
-    paymentMethod: "Bank Transfer",
-    refId: "12345678",
-    amount: 5000,
-    type: "credit",
-    dateLabel: "10 Dec",
-    dateTime: "10 December at 11:05 am",
-    monthGroup: "current",
-    wallet: "misc",
-    icon: "money",
-    category: "Wallet Top Up",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Savings ••••2210",
-    walletName: "Reimbursement Wallet",
-    paymentMode: "Bank Transfer",
-    transactionId: "TXN0000000000006",
-    referenceNumber: "REFTOP5500M1",
-  },
-  {
-    id: "txn-shell",
-    merchant: "Shell Select",
-    paymentMethod: "Rupay Card",
-    refId: "123456791",
-    amount: 2200,
-    type: "debit",
-    dateLabel: "08 Dec",
-    dateTime: "08 December at 06:22 pm",
-    monthGroup: "current",
-    wallet: "fuel",
-    icon: "fuel",
-    category: "Fuel",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Fuel Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000007",
-    referenceNumber: "REFSHE2200F3",
-  },
-  {
-    id: "txn-starbazaar",
-    merchant: "Star Bazaar",
-    paymentMethod: "Rupay Card",
-    refId: "123456792",
-    amount: 1180,
-    type: "debit",
-    dateLabel: "06 Dec",
-    dateTime: "06 December at 01:10 pm",
-    monthGroup: "current",
-    wallet: "meal",
-    icon: "bag",
-    category: "Groceries",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Meal Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000008",
-    referenceNumber: "REFSTR1180G4",
-  },
-  {
-    id: "txn-lifestyle",
-    merchant: "Lifestyle Store",
-    paymentMethod: "Rupay Card",
-    refId: "123456793",
-    amount: 2400,
-    type: "debit",
-    dateLabel: "04 Dec",
-    dateTime: "04 December at 04:45 pm",
-    monthGroup: "current",
-    wallet: "gift",
-    icon: "gift",
-    category: "Shopping",
-    location: "Bengaluru, Karnataka",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Reimbursement Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000009",
-    referenceNumber: "REFLFS2400S5",
-  },
-  {
-    id: "txn-swiggy-nov",
-    merchant: "Swiggy",
-    paymentMethod: "Rupay Card",
-    refId: "123456700",
-    amount: 420,
-    type: "debit",
-    dateLabel: "28 Nov",
-    dateTime: "28 November at 07:55 pm",
-    monthGroup: "november",
-    wallet: "meal",
-    icon: "food",
-    category: "Dining",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Meal Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000010",
-    referenceNumber: "REFSWG0420N1",
-  },
-  {
-    id: "txn-amazon-nov",
-    merchant: "Amazon",
-    paymentMethod: "Rupay Card",
-    refId: "123456701",
-    amount: 1899,
-    type: "debit",
-    dateLabel: "18 Nov",
-    dateTime: "18 November at 03:20 pm",
-    monthGroup: "november",
-    wallet: "gift",
-    icon: "bag",
-    category: "E-Commerce",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Rupay Card ••••7845",
-    walletName: "Reimbursement Wallet",
-    paymentMode: "Card Payment",
-    transactionId: "TXN0000000000011",
-    referenceNumber: "REFAMZ1899N2",
-  },
-  {
-    id: "txn-topup-nov",
-    merchant: "Top Up",
-    paymentMethod: "Bank Transfer",
-    refId: "123456702",
-    amount: 3000,
-    type: "credit",
-    dateLabel: "05 Nov",
-    dateTime: "05 November at 10:00 am",
-    monthGroup: "november",
-    wallet: "misc",
-    icon: "money",
-    category: "Wallet Top Up",
-    location: "Mumbai, Maharashtra",
-    cardMasked: "Savings ••••2210",
-    walletName: "Reimbursement Wallet",
-    paymentMode: "Bank Transfer",
-    transactionId: "TXN0000000000012",
-    referenceNumber: "REFTOP3000N3",
-  },
-];
-
-export const MONTH_GROUP_LABELS: Record<TransactionItem["monthGroup"], string> =
-  {
-    current: "Current Month",
-    november: "November",
-  };
+  ...OPENING_LOADS,
+  ...APPROVED_CLAIM_DEBITS,
+].sort((left, right) => {
+  const dateOrder = right.postedOn.localeCompare(left.postedOn);
+  return dateOrder === 0 ? left.id.localeCompare(right.id) : dateOrder;
+});
 
 export function getTransactionItems(personaId?: PersonaId): TransactionItem[] {
   const activePersona = personaId ?? getActivePersonaId();
-  if (activePersona === "new_user") {
-    return [];
-  }
-  return TRANSACTION_ITEMS;
+  return activePersona === "new_user" ? [] : TRANSACTION_ITEMS;
 }
 
 export function filterTransactionsByWallet(
   items: TransactionItem[],
   walletId: TransactionWalletFilterId,
 ): TransactionItem[] {
-  if (walletId === "meal") {
-    return items.filter(
-      (item) =>
-        item.wallet === "meal" ||
-        item.walletName.toLowerCase().includes("meal"),
-    );
-  }
-  if (walletId === "fuel") {
-    return items.filter(
-      (item) =>
-        item.wallet === "fuel" ||
-        item.walletName.toLowerCase().includes("fuel"),
-    );
-  }
-  if (walletId === "reimbursement") {
-    return items.filter(
-      (item) =>
-        item.wallet === "main" ||
-        item.wallet === "misc" ||
-        item.wallet === "gift" ||
-        item.walletName.toLowerCase().includes("reimbursement") ||
-        item.walletName.toLowerCase().includes("main") ||
-        item.walletName.toLowerCase().includes("gift"),
-    );
-  }
-  return items;
+  return items.filter((item) => item.wallet === walletId);
 }
 
-export function getAnalyticsData(personaId?: PersonaId): {
+export function filterTransactionsByMonth(
+  items: TransactionItem[],
+  monthKey: string,
+): TransactionItem[] {
+  return items.filter((item) => item.monthKey === monthKey);
+}
+
+export function getWalletLedgerSummary(
+  items: TransactionItem[],
+  walletId: TransactionWalletFilterId,
+  monthKey: string,
+): {
+  openingBalance: number;
+  credits: number;
+  debits: number;
+  closingBalance: number;
+} {
+  const walletItems = filterTransactionsByWallet(items, walletId);
+  const beforeMonth = walletItems.filter((item) => item.monthKey < monthKey);
+  const inMonth = walletItems.filter((item) => item.monthKey === monthKey);
+  const net = (rows: TransactionItem[]) =>
+    rows.reduce(
+      (sum, item) => sum + (item.type === "credit" ? item.amount : -item.amount),
+      0,
+    );
+  const credits = inMonth.reduce(
+    (sum, item) => sum + (item.type === "credit" ? item.amount : 0),
+    0,
+  );
+  const debits = inMonth.reduce(
+    (sum, item) => sum + (item.type === "debit" ? item.amount : 0),
+    0,
+  );
+  const openingBalance = net(beforeMonth);
+  return {
+    openingBalance,
+    credits,
+    debits,
+    closingBalance: openingBalance + credits - debits,
+  };
+}
+
+export function getAnalyticsData(
+  personaId?: PersonaId,
+  walletId: AnalyticsWalletId = "meal",
+  monthKey = "2026-07",
+): {
   totalSpent: number;
   monthLabel: string;
   categories: AnalyticsCategory[];
 } {
-  const activePersona = personaId ?? getActivePersonaId();
-  if (activePersona === "new_user") {
-    return {
-      totalSpent: 0,
-      monthLabel: ANALYTICS_MONTH_LABEL,
-      categories: [],
-    };
+  const items = filterTransactionsByMonth(
+    filterTransactionsByWallet(getTransactionItems(personaId), walletId),
+    monthKey,
+  ).filter((item) => item.type === "debit");
+  const totalSpent = items.reduce((sum, item) => sum + item.amount, 0);
+  const grouped = new Map<string, TransactionItem[]>();
+  for (const item of items) {
+    grouped.set(item.category, [...(grouped.get(item.category) ?? []), item]);
   }
+  const palette = [
+    colors.pinePrimary,
+    colors.success,
+    colors.warning,
+    colors.pine,
+    colors.mint,
+  ];
+  const categories = [...grouped.entries()].map(([name, rows], index) => {
+    const amount = rows.reduce((sum, row) => sum + row.amount, 0);
+    return {
+      id: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      name,
+      transactionCount: rows.length,
+      amount,
+      percent: totalSpent > 0 ? Math.round((amount / totalSpent) * 100) : 0,
+      color: palette[index % palette.length],
+      icon: CATEGORY_ICON[walletId],
+    };
+  });
   return {
-    totalSpent: ANALYTICS_TOTAL_SPENT,
-    monthLabel: ANALYTICS_MONTH_LABEL,
-    categories: ANALYTICS_CATEGORIES,
+    totalSpent,
+    monthLabel:
+      TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label ?? monthKey,
+    categories,
   };
 }
 
@@ -438,19 +343,19 @@ export function getTransaction(
   id: string,
   personaId?: PersonaId,
 ): TransactionItem | undefined {
-  const items = getTransactionItems(personaId);
-  return items.find((item) => item.id === id);
+  return getTransactionItems(personaId).find((item) => item.id === id);
 }
 
 export function groupTransactions(
   items: TransactionItem[],
-): { group: TransactionItem["monthGroup"]; label: string; items: TransactionItem[] }[] {
-  const order: TransactionItem["monthGroup"][] = ["current", "november"];
-  return order
-    .map((group) => ({
-      group,
-      label: MONTH_GROUP_LABELS[group],
-      items: items.filter((item) => item.monthGroup === group),
-    }))
-    .filter((section) => section.items.length > 0);
+): { group: string; label: string; items: TransactionItem[] }[] {
+  const monthKeys = [...new Set(items.map((item) => item.monthKey))].sort().reverse();
+  return monthKeys.map((monthKey) => ({
+    group: monthKey,
+    label:
+      TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label ?? monthKey,
+    items: items
+      .filter((item) => item.monthKey === monthKey)
+      .sort((left, right) => right.postedOn.localeCompare(left.postedOn)),
+  }));
 }

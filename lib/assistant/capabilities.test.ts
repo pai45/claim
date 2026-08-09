@@ -27,8 +27,8 @@ describe("documented answers", () => {
       [
         "**Claims dashboard (FY 26/27)**",
         "",
-        "- **Available:** ₹2,05,000",
-        "- **Utilized:** ₹80,000",
+        "- **Available:** ₹1,95,000",
+        "- **Utilized:** ₹90,000",
         "- **FY limit:** ₹2,85,000",
         "- **Categories:** 5",
       ].join("\n"),
@@ -39,16 +39,16 @@ describe("documented answers", () => {
     const reply = answer("Which wallet has the most left?");
 
     // Ranked by available balance, and covers the wallets with no dashboard.
-    expect(reply).toContain("- **Driver Salary:** ₹55,000 available of ₹90,000");
+    expect(reply).toContain("- **Driver Salary:** ₹45,000 available of ₹90,000");
     expect(reply).toContain("- **Gift Wallet:** ₹5,000 available of ₹5,000");
-    expect(reply).toContain("**Total available:** ₹2,40,000");
+    expect(reply).toContain("**Total available:** ₹2,30,000");
   });
 
   it("How many claims do I have?", () => {
     const reply = answer("How many claims do I have?");
 
-    expect(reply).toContain("- **Count:** 26");
-    expect(reply).toContain("- **Approved:** 18");
+    expect(reply).toContain("- **Count:** 31");
+    expect(reply).toContain("- **Approved:** 23");
     expect(reply).toContain("- **Pending:** 5");
     expect(reply).toContain("- **Needs info:** 1");
     expect(reply).toContain("- **Rejected:** 2");
@@ -69,9 +69,9 @@ describe("documented answers", () => {
   it("Show mobile claims merges both datasets", () => {
     const reply = answer("Show mobile claims");
 
-    // 4 dashboard rows + 3 from the claims-history screen.
-    expect(reply).toContain("- **Count:** 7");
-    expect(reply).toContain("- **Total:** ₹6,894");
+    // 6 dashboard rows + 3 from the claims-history screen.
+    expect(reply).toContain("- **Count:** 9");
+    expect(reply).toContain("- **Total:** ₹11,597");
   });
 
   it("When must I submit books claims?", () => {
@@ -130,7 +130,7 @@ describe("documented answers", () => {
   it("What is my total wallet balance?", () => {
     const reply = answer("What is my total wallet balance?");
     expect(reply).toContain("**Your wallets (FY 26/27)**");
-    expect(reply).toContain("**Total available:** ₹2,40,000");
+    expect(reply).toContain("**Total available:** ₹2,30,000");
   });
 
   it("Is Swiggy allowed?", () => {

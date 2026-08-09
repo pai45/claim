@@ -171,8 +171,8 @@ After discussing one benefit you can drop the category: *What proof is required?
 >
 > **Claims dashboard (FY 26/27)**
 >
-> - **Available:** ₹2,05,000
-> - **Utilized:** ₹80,000
+> - **Available:** ₹1,95,000
+> - **Utilized:** ₹90,000
 > - **FY limit:** ₹2,85,000
 > - **Categories:** 5
 
@@ -215,9 +215,9 @@ as one list of 26 claims, so every status is answerable.
 >
 > **Your claims**
 >
-> - **Count:** 26
+> - **Count:** 31
 > - **Total:** ₹98,492
-> - **Approved:** 18
+> - **Approved:** 23
 > - **Pending:** 5
 > - **Needs info:** 1
 > - **Rejected:** 2
@@ -248,8 +248,8 @@ as one list of 26 claims, so every status is answerable.
 >
 > **Your claims**
 >
-> - **Count:** 7
-> - **Total:** ₹6,894
+> - **Count:** 9
+> - **Total:** ₹11,597
 > - **Approved:** 4
 > - **Pending:** 2
 > - **Needs info:** 0
@@ -316,14 +316,14 @@ After a claims answer: *Which ones are approved?* · *Which are pending?* ·
 ### All wallets at once
 
 Covers all seven benefits, including Meal and Gift, which have no dashboard
-screen. This is why the total here (₹2,40,000) is higher than the dashboard's
-₹2,05,000 — the dashboard only sums the five categories that have screens.
+screen. This is why the total here (₹2,30,000) is higher than the dashboard's
+₹1,95,000 — the dashboard only sums the five categories that have screens.
 
 > **Q — "Which wallet has the most left?"** / **"What is my total available?"**
 >
 > **Your wallets (FY 26/27)**
 >
-> - **Driver Salary:** ₹55,000 available of ₹90,000
+> - **Driver Salary:** ₹45,000 available of ₹90,000
 > - **Books & Periodicals:** ₹48,000 available of ₹55,000
 > - **Fuel & Maintenance:** ₹42,000 available of ₹60,000
 > - **Professional Development:** ₹38,000 available of ₹50,000
@@ -331,7 +331,7 @@ screen. This is why the total here (₹2,40,000) is higher than the dashboard's
 > - **Mobile & Internet:** ₹22,000 available of ₹30,000
 > - **Gift Wallet:** ₹5,000 available of ₹5,000
 >
-> **Total available:** ₹2,40,000
+> **Total available:** ₹2,30,000
 
 Also works: *Where do I still have budget?* · *Compare meal and gift* · *Which benefit should I use?*
 

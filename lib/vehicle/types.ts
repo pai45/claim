@@ -46,6 +46,8 @@ export type RtoLocation = {
 
 export type FuelType = "Petrol" | "Diesel" | "CNG" | "Electric" | "Hybrid";
 
+export type VehicleOwnership = "self_owned" | "company_leased";
+
 /**
  * One of the demo vehicles in `roster.ts`. None of this comes from VAHAN — a
  * plate is mapped onto a roster entry by hash, not looked up.

@@ -1,5 +1,10 @@
-import { getPersonaConfig } from "@/features/persona/constants";
+import {
+  canUseAutoPay,
+  canUseCollectRequests,
+  getPersonaConfig,
+} from "@/features/persona/constants";
 import type { PersonaId } from "@/features/persona/types";
+import type { PersonaConfig } from "@/features/persona/types";
 
 export const PROFILE_USER = {
   name: "Vishal Sharma",
@@ -56,3 +61,13 @@ export const PROFILE_MENU_ITEMS: ProfileMenuItem[] = [
     showChevron: false,
   },
 ];
+
+export function getProfileMenuItems(
+  persona: PersonaConfig,
+): ProfileMenuItem[] {
+  return PROFILE_MENU_ITEMS.filter((item) => {
+    if (item.id === "autopay") return canUseAutoPay(persona);
+    if (item.id === "collect") return canUseCollectRequests(persona);
+    return true;
+  });
+}

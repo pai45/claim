@@ -2,8 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useReducer, useRef, useState } from "react";
+import { ProductIntroScreen } from "@/components/product-intro/ProductIntroScreen";
 import { AppShell } from "@/components/shared/AppShell";
 import { saveAuthSession } from "@/features/auth/session";
+import { resetDemoJourney } from "@/features/demo/reset";
+import type { PersonaId } from "@/features/persona/types";
+import { shouldShowProductIntro } from "@/features/product-intro/controller";
+import { useProductIntroProgress } from "@/features/product-intro/useProductIntroProgress";
 import {
   canSubmitMobile,
   canSubmitOtp,
@@ -15,8 +20,8 @@ import { verifyOtp } from "@/features/auth/otp";
 import { useViewportHeight } from "@/features/auth/useViewportHeight";
 import { OtpStep } from "./OtpStep";
 import { PhoneStep } from "./PhoneStep";
-import { PlusPayWordmark } from "./PlusPayWordmark";
-import { PersonaBadgeSwitcher } from "./PersonaBadgeSwitcher";
+import { ProductWordmark } from "./ProductWordmark";
+import { PersonaSelectionStep } from "./PersonaSelectionStep";
 import type { OtpInputHandle } from "./OtpInput";
 
 // Same pattern as ColorBends in ChatShell: lottie touches `document` at module
@@ -31,10 +36,19 @@ const RESEND_COOLDOWN_SECONDS = 30;
 
 export function LoginScreen() {
   const [state, dispatch] = useReducer(loginReducer, initialLoginState);
+  const {
+    completed: productIntroCompleted,
+    isHydrated: productIntroHydrated,
+    complete: completeProductIntro,
+  } = useProductIntroProgress();
   // Cooldown is derived from a deadline set in the handlers that start it, so
   // no effect has to reset it on the way in.
   const [resendDeadline, setResendDeadline] = useState(0);
   const [now, setNow] = useState(0);
+  const [selectedPersonaId, setSelectedPersonaId] = useState<PersonaId | null>(
+    null,
+  );
+  const [productIntroDismissed, setProductIntroDismissed] = useState(false);
 
   const phoneRef = useRef<HTMLInputElement>(null);
   const otpRef = useRef<OtpInputHandle>(null);
@@ -105,11 +119,53 @@ export function LoginScreen() {
     });
   }
 
+  function handleSelectPersona(personaId: PersonaId) {
+    resetDemoJourney(personaId);
+    dispatch({ type: "change-number" });
+    setProductIntroDismissed(false);
+    setSelectedPersonaId(personaId);
+  }
+
+  const personaSelected = selectedPersonaId !== null;
+
+  if (personaSelected && !productIntroHydrated) {
+    return (
+      <AppShell
+        variant="login"
+        className="login-viewport overflow-hidden"
+      >
+        <div className="min-h-0 flex-1" aria-hidden="true" />
+      </AppShell>
+    );
+  }
+
+  if (
+    shouldShowProductIntro(
+      selectedPersonaId,
+      productIntroCompleted,
+      productIntroDismissed,
+    )
+  ) {
+    return (
+      <ProductIntroScreen
+        onComplete={() => {
+          completeProductIntro();
+          setProductIntroDismissed(true);
+        }}
+      />
+    );
+  }
+
   return (
     <AppShell variant="login" className="login-viewport overflow-hidden">
       <header className="flex flex-col shrink-0 items-center justify-center px-page pb-2 pt-6 gap-2">
-        <PlusPayWordmark />
-        <PersonaBadgeSwitcher />
+        {personaSelected ? (
+          <ProductWordmark />
+        ) : (
+          <span className="font-display text-title font-semibold tracking-tight text-pine-dark">
+            Lens + PlusPay
+          </span>
+        )}
       </header>
 
       {/* The only flexible row, so the on-screen keyboard squeezes the
@@ -123,7 +179,9 @@ export function LoginScreen() {
           (flex basis 0), and only once it is gone does the sheet give way and
           scroll its own content — instead of being clipped by the shell. */}
       <section className="animate-sheet-rise z-10 min-h-0 overflow-y-auto rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-6 shadow-drawer">
-        {state.step === "phone" ? (
+        {!personaSelected ? (
+          <PersonaSelectionStep onSelect={handleSelectPersona} />
+        ) : state.step === "phone" ? (
           <PhoneStep
             ref={phoneRef}
             mobile={state.mobile}

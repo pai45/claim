@@ -52,13 +52,17 @@ describe("registration declarations", () => {
     const html = renderToStaticMarkup(
       createElement(VehicleDetailsCard, {
         messageId: "vehicle-review",
-        payload: { lookup: result.lookup },
+        payload: { lookup: result.lookup, ownership: "company_leased" },
       }),
     );
 
+    expect(html).toContain("Review vehicle details");
+    expect(html).toContain("Company Leased");
+    expect(html).toContain('type="checkbox"');
     expect(html).toContain(
       "I declare that the vehicle details provided are correct and valid.",
     );
     expect(html.indexOf("I declare")).toBeLessThan(html.indexOf("Submit to HR"));
+    expect(html).toContain('disabled=""');
   });
 });

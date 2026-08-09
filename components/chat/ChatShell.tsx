@@ -87,6 +87,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
     selectMerchantSearchMode,
     searchMerchantByName,
     submitVehicleNumber,
+    selectVehicleOwnership,
     submitVehicleToHr,
     startDriverSalary,
     submitDriverName,
@@ -288,6 +289,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
                 void searchMerchantByName(query, benefitType)
               }
               onSubmitVehicleNumber={submitVehicleNumber}
+              onSelectVehicleOwnership={selectVehicleOwnership}
               onSubmitVehicleToHr={submitVehicleToHr}
               onStartDriverSalary={startDriverSalary}
               onSubmitDriverName={submitDriverName}

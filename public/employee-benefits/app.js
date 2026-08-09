@@ -306,6 +306,63 @@ const FALLBACK_STORAGE_KEY = "employee-benefits:fallback-control:v1";
 // funds, so it never appears as a fallback candidate itself.
 const fallbackWalletLabels = { meal: "Meal Wallet", fuel: "Fuel Wallet" };
 const fallbackState = { meal: false, fuel: false };
+const personaDefinitions = {
+  returning: {
+    name: "Vishal Sharma",
+    initials: "V",
+    access: {
+      products: { lens: true, plusPay: true },
+      upiEnabled: true,
+      defaultProduct: "lens",
+    },
+    hasTransactions: true,
+    hasUpiId: true,
+  },
+  new_user: {
+    name: "Aarav Patel",
+    initials: "A",
+    access: {
+      products: { lens: true, plusPay: true },
+      upiEnabled: true,
+      defaultProduct: "lens",
+    },
+    hasTransactions: false,
+    hasUpiId: false,
+  },
+  lens_only: {
+    name: "Neha Kapoor",
+    initials: "N",
+    access: {
+      products: { lens: true, plusPay: false },
+      upiEnabled: true,
+      defaultProduct: "lens",
+    },
+    hasTransactions: true,
+    hasUpiId: true,
+  },
+  pluspay_only: {
+    name: "Rohan Mehta",
+    initials: "R",
+    access: {
+      products: { lens: false, plusPay: true },
+      upiEnabled: true,
+      defaultProduct: "pluspay",
+    },
+    hasTransactions: true,
+    hasUpiId: true,
+  },
+  lens_no_upi: {
+    name: "Kavya Iyer",
+    initials: "K",
+    access: {
+      products: { lens: true, plusPay: false },
+      upiEnabled: false,
+      defaultProduct: "lens",
+    },
+    hasTransactions: true,
+    hasUpiId: false,
+  },
+};
 const personaFinancialState = {
   returning: {
     wallets: {
@@ -1312,6 +1369,7 @@ function bindUpiSetupActions() {
 }
 
 function openUpiSetupFlow() {
+  if (document.body.classList.contains("is-no-upi")) return;
   if (!upiSetupFlow || upiSetupFlow.classList.contains("is-open")) return;
   closeCardOverlay();
   closeWalletOverlay();
@@ -1398,6 +1456,7 @@ function clearScanPayTimers() {
 }
 
 function openScanPayFlow() {
+  if (document.body.classList.contains("is-no-upi")) return;
   if (!scanPayFlow) return;
   closeCardOverlay();
   closeWalletOverlay();
@@ -5249,6 +5308,13 @@ claimsInput?.addEventListener("input", syncClaimsComposer);
 
 walletOverlayViewAllHistory?.addEventListener("click", (event) => {
   event.preventDefault();
+  window.parent.postMessage(
+    {
+      type: "employee-benefits:open-wallet-statement",
+      wallet: activeWalletTone,
+    },
+    window.location.origin,
+  );
 });
 
 function applyMode(isPluspay) {
@@ -5281,6 +5347,7 @@ function applyMode(isPluspay) {
 }
 
 pluspayToggle?.addEventListener("click", () => {
+  if (document.body.classList.contains("is-product-locked")) return;
   const nextState = pluspayToggle.getAttribute("aria-pressed") !== "true";
   applyMode(nextState);
 });
@@ -6306,14 +6373,41 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-function syncPersonaToApp() {
+function syncPersonaToApp(payload) {
   const activePersona = window.localStorage.getItem("eb-claims:active-persona") || "returning";
-  const isNewUser = activePersona === "new_user";
+  const persona = payload || personaDefinitions[activePersona] || personaDefinitions.returning;
+  const isNewUser = !persona.hasTransactions;
   const financialState = personaFinancialState[activePersona] || personaFinancialState.returning;
-  const name = isNewUser ? "Aarav Patel" : "Vishal Sharma";
-  const upperName = isNewUser ? "AARAV PATEL" : "VISHAL SHARMA";
-  const initials = isNewUser ? "A" : "V";
-  const upiHandle = isNewUser ? "aarav.patel@pluspay" : "vishal.sharma@pluspay";
+  const name = persona.name;
+  const upperName = name.toUpperCase();
+  const initials = persona.initials;
+  const upiHandle = `${name.toLowerCase().replace(/\s+/g, ".")}@pluspay`;
+  const access = persona.access;
+
+  document.body.classList.toggle(
+    "is-product-locked",
+    !(access.products.lens && access.products.plusPay),
+  );
+  document.body.classList.toggle("is-no-upi", !access.upiEnabled);
+  document.body.classList.toggle("is-lens-disabled", !access.products.lens);
+  document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);
+  applyMode(access.defaultProduct === "pluspay");
+  applyUpiCreatedState(access.upiEnabled && persona.hasUpiId);
+
+  document.querySelectorAll("[data-no-upi-detail]").forEach((node) => {
+    node.dataset.upiDetail ||= node.dataset.walletDetail || "";
+    node.dataset.upiActions ||= node.dataset.walletActions || "";
+    node.dataset.upiCta ||= node.dataset.walletCta || "";
+    node.dataset.walletDetail = access.upiEnabled
+      ? node.dataset.upiDetail
+      : node.dataset.noUpiDetail;
+    node.dataset.walletActions = access.upiEnabled
+      ? node.dataset.upiActions
+      : node.dataset.noUpiActions;
+    node.dataset.walletCta = access.upiEnabled
+      ? node.dataset.upiCta
+      : node.dataset.noUpiCta;
+  });
 
   // 1. Avatar button
   const avatarBtn = document.querySelector("[data-profile-open]");
@@ -6348,6 +6442,9 @@ function syncPersonaToApp() {
       manageWalletState[key].balance = financialState.wallets[key].display;
       manageWalletState[key].limitUsed = financialState.limitUsed;
     });
+    if (!access.upiEnabled && manageWalletState.misc) {
+      manageWalletState.misc.accessCopy = "Claims, Card Payments, Approved Vendors";
+    }
   }
 
   // 5. Update wallet chips on home screen
@@ -6411,8 +6508,11 @@ window.addEventListener("storage", (e) => {
 });
 window.addEventListener("message", (e) => {
   if (e.data?.type === "employee-benefits:sync-persona") {
-    syncPersonaToApp();
+    syncPersonaToApp(e.data.persona);
   }
 });
 if (window.location.hash === "#claims") openClaimsAssistant();
-if (window.location.hash === "#scan-pay") openScanPayFlow();
+if (
+  window.location.hash === "#scan-pay" &&
+  !document.body.classList.contains("is-no-upi")
+) openScanPayFlow();

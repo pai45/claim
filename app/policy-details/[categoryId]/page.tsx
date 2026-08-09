@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { PolicyDetailScreen } from "@/components/policy/PolicyDetailScreen";
+import { PersonaAccessGate } from "@/components/shared/PersonaAccessGate";
 import {
   isPolicyTabId,
   EMPLOYER_BENEFITS_CATALOG,
@@ -26,7 +27,9 @@ export default async function PolicyCategoryPage({
 
   return (
     <main className="min-h-dvh w-full">
-      <PolicyDetailScreen initialTab={categoryId} />
+      <PersonaAccessGate requireLens>
+        <PolicyDetailScreen initialTab={categoryId} />
+      </PersonaAccessGate>
     </main>
   );
 }

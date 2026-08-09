@@ -23,6 +23,11 @@ export const RETURNING_PERSONA: PersonaConfig = {
     dateOfBirth: "15/03/1995",
     dateOfBirthFormatted: "15 March 1995",
   },
+  access: {
+    products: { lens: true, plusPay: true },
+    upiEnabled: true,
+    defaultProduct: "lens",
+  },
   hasClaims: true,
   hasTransactions: true,
   hasCompletedOnboarding: true,
@@ -49,6 +54,11 @@ export const NEW_USER_PERSONA: PersonaConfig = {
     dateOfBirth: "15/08/1995",
     dateOfBirthFormatted: "15 August 1995",
   },
+  access: {
+    products: { lens: true, plusPay: true },
+    upiEnabled: true,
+    defaultProduct: "lens",
+  },
   hasClaims: false,
   hasTransactions: false,
   hasCompletedOnboarding: false,
@@ -57,15 +67,133 @@ export const NEW_USER_PERSONA: PersonaConfig = {
   hasUpiId: false,
 };
 
+export const LENS_ONLY_PERSONA: PersonaConfig = {
+  id: "lens_only",
+  label: "Lens Only",
+  badge: "Lens Plan",
+  description: "Neha Kapoor • Lens benefits with UPI, without PlusPay",
+  profile: {
+    id: "lens_only",
+    name: "Neha Kapoor",
+    initials: "N",
+    email: "neha.kapoor@infosys.com",
+    memberSince: "Lens member since April 2023",
+    mobile: "9876543210",
+    phone: "+91 98765 43210",
+    employeeId: "EMP-31587",
+    corporate: "Infosys Technologies Ltd.",
+    dateOfBirth: "10/09/1994",
+    dateOfBirthFormatted: "10 September 1994",
+  },
+  access: {
+    products: { lens: true, plusPay: false },
+    upiEnabled: true,
+    defaultProduct: "lens",
+  },
+  hasClaims: true,
+  hasTransactions: true,
+  hasCompletedOnboarding: true,
+  hasRegisteredVehicle: false,
+  isCardActivated: true,
+  hasUpiId: true,
+};
+
+export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
+  id: "pluspay_only",
+  label: "PlusPay Only",
+  badge: "PlusPay Plan",
+  description: "Rohan Mehta • PlusPay payments without Lens benefits",
+  profile: {
+    id: "pluspay_only",
+    name: "Rohan Mehta",
+    initials: "R",
+    email: "rohan.mehta@infosys.com",
+    memberSince: "PlusPay member since February 2024",
+    mobile: "9876543210",
+    phone: "+91 98765 43210",
+    employeeId: "EMP-62841",
+    corporate: "Infosys Technologies Ltd.",
+    dateOfBirth: "22/11/1993",
+    dateOfBirthFormatted: "22 November 1993",
+  },
+  access: {
+    products: { lens: false, plusPay: true },
+    upiEnabled: true,
+    defaultProduct: "pluspay",
+  },
+  hasClaims: false,
+  hasTransactions: true,
+  hasCompletedOnboarding: true,
+  hasRegisteredVehicle: false,
+  isCardActivated: true,
+  hasUpiId: true,
+};
+
+export const LENS_NO_UPI_PERSONA: PersonaConfig = {
+  id: "lens_no_upi",
+  label: "Lens Without UPI",
+  badge: "Card Only",
+  description: "Kavya Iyer • Lens card benefits without UPI or PlusPay",
+  profile: {
+    id: "lens_no_upi",
+    name: "Kavya Iyer",
+    initials: "K",
+    email: "kavya.iyer@infosys.com",
+    memberSince: "Lens member since September 2024",
+    mobile: "9876543210",
+    phone: "+91 98765 43210",
+    employeeId: "EMP-73624",
+    corporate: "Infosys Technologies Ltd.",
+    dateOfBirth: "05/06/1996",
+    dateOfBirthFormatted: "5 June 1996",
+  },
+  access: {
+    products: { lens: true, plusPay: false },
+    upiEnabled: false,
+    defaultProduct: "lens",
+  },
+  hasClaims: true,
+  hasTransactions: true,
+  hasCompletedOnboarding: true,
+  hasRegisteredVehicle: false,
+  isCardActivated: true,
+  hasUpiId: false,
+};
+
 export const PERSONAS: Record<PersonaId, PersonaConfig> = {
   returning: RETURNING_PERSONA,
   new_user: NEW_USER_PERSONA,
+  lens_only: LENS_ONLY_PERSONA,
+  pluspay_only: PLUSPAY_ONLY_PERSONA,
+  lens_no_upi: LENS_NO_UPI_PERSONA,
 };
+
+export const PERSONA_OPTIONS: PersonaConfig[] = [
+  RETURNING_PERSONA,
+  NEW_USER_PERSONA,
+  LENS_ONLY_PERSONA,
+  PLUSPAY_ONLY_PERSONA,
+  LENS_NO_UPI_PERSONA,
+];
 
 export function getPersonaConfig(id: PersonaId): PersonaConfig {
   return PERSONAS[id] ?? RETURNING_PERSONA;
 }
 
 export function isPersonaId(value: unknown): value is PersonaId {
-  return value === "returning" || value === "new_user";
+  return (
+    value === "returning" ||
+    value === "new_user" ||
+    value === "lens_only" ||
+    value === "pluspay_only" ||
+    value === "lens_no_upi"
+  );
+}
+
+export function canUseAutoPay(persona: PersonaConfig): boolean {
+  return persona.access.products.plusPay;
+}
+
+export function canUseCollectRequests(persona: PersonaConfig): boolean {
+  return persona.access.products.plusPay;
 }

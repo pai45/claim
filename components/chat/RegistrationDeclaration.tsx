@@ -1,31 +1,72 @@
 type RegistrationDeclarationProps = {
   subject: "vehicle" | "driver";
+  checked?: boolean;
+  onChange?: (checked: boolean) => void;
+  disabled?: boolean;
 };
 
 export function RegistrationDeclaration({
   subject,
+  checked = true,
+  onChange,
+  disabled,
 }: RegistrationDeclarationProps) {
+  const text = `I declare that the ${subject} details provided are correct and valid.`;
+
+  if (onChange) {
+    return (
+      <label
+        className={`flex min-h-11 items-center gap-3 pt-1 ${
+          disabled ? "cursor-default" : "cursor-pointer"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.checked)}
+          className="peer sr-only"
+        />
+        <span
+          aria-hidden="true"
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-control border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-pine-primary ${
+            checked
+              ? "border-pine-primary bg-pine-primary text-white"
+              : "border-input-border bg-white text-transparent"
+          }`}
+        >
+          <CheckIcon />
+        </span>
+        <span className="text-caption text-ink">{text}</span>
+      </label>
+    );
+  }
+
   return (
     <div className="flex items-center gap-3 pt-1">
       <span
         aria-hidden="true"
         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-control bg-pine-primary text-white"
       >
-        <svg
-          viewBox="0 0 24 24"
-          className="h-3 w-3"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="m5 12 4 4L19 6" />
-        </svg>
+        <CheckIcon />
       </span>
-      <p className="text-caption text-ink">
-        I declare that the {subject} details provided are correct and valid.
-      </p>
+      <p className="text-caption text-ink">{text}</p>
     </div>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3 w-3"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="m5 12 4 4L19 6" />
+    </svg>
   );
 }

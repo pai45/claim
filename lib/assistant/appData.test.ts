@@ -179,8 +179,8 @@ describe("grounded app-data answers", () => {
     const resolution = { kind: "dashboard" as const };
     const answer = createAppDataFallbackSummary("Show my dashboard", resolution);
 
-    expect(answer).toContain("2,05,000");
-    expect(answer).toContain("80,000");
+    expect(answer).toContain("1,95,000");
+    expect(answer).toContain("90,000");
     expect(answer).toContain("2,85,000");
   });
 

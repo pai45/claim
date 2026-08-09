@@ -27,7 +27,7 @@ describe("registered vehicle store", () => {
     const storage = fakeStorage();
     const lookup = lookupOrThrow("KA 05 RS 1035");
 
-    saveRegisteredVehicle(lookup, storage, 1000);
+    saveRegisteredVehicle(lookup, "self_owned", storage, 1000);
     const loaded = loadRegisteredVehicle(storage);
 
     expect(loaded?.registeredAt).toBe(1000);
@@ -36,19 +36,21 @@ describe("registered vehicle store", () => {
     expect(loaded?.lookup.ownerName).toBe("Vishal Sharma");
     expect(loaded?.lookup.chassisNumber).toBe(lookup.chassisNumber);
     expect(loaded?.lookup.engineNumber).toBe(lookup.engineNumber);
+    expect(loaded?.ownership).toBe("self_owned");
   });
 
-  it("stores the plate only, never a snapshot of the vehicle", () => {
+  it("stores minimal registration data, never a vehicle snapshot", () => {
     // The point of re-deriving: a persisted lookup written before chassis
     // numbers existed would be missing them forever.
     const storage = fakeStorage();
-    saveRegisteredVehicle(lookupOrThrow("KA05RS1035"), storage);
+    saveRegisteredVehicle(lookupOrThrow("KA05RS1035"), "company_leased", storage);
 
     const stored = JSON.parse(storage.getItem(VEHICLE_STORAGE_KEY) ?? "{}");
     expect(stored).toEqual({
-      version: 1,
+      version: 2,
       regNumber: "KA05RS1035",
       ownerName: "Vishal Sharma",
+      ownership: "company_leased",
       registeredAt: expect.any(Number),
     });
   });
@@ -76,14 +78,32 @@ describe("registered vehicle store", () => {
     expect(storage.getItem(VEHICLE_STORAGE_KEY)).toBeNull();
   });
 
+  it("discards a record without a supported ownership choice", () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      VEHICLE_STORAGE_KEY,
+      JSON.stringify({
+        version: 2,
+        regNumber: "KA05RS1035",
+        ownerName: "Vishal Sharma",
+        ownership: "rented",
+        registeredAt: 1,
+      }),
+    );
+
+    expect(loadRegisteredVehicle(storage)).toBeNull();
+    expect(storage.getItem(VEHICLE_STORAGE_KEY)).toBeNull();
+  });
+
   it("discards a plate that no longer parses", () => {
     const storage = fakeStorage();
     storage.setItem(
       VEHICLE_STORAGE_KEY,
       JSON.stringify({
-        version: 1,
+        version: 2,
         regNumber: "ZZ99ZZ9999",
         ownerName: "Vishal Sharma",
+        ownership: "self_owned",
         registeredAt: 1,
       }),
     );
@@ -96,7 +116,12 @@ describe("registered vehicle store", () => {
     const storage = fakeStorage();
     storage.setItem(
       VEHICLE_STORAGE_KEY,
-      JSON.stringify({ version: 1, regNumber: "KA05RS1035", registeredAt: 1 }),
+      JSON.stringify({
+        version: 2,
+        regNumber: "KA05RS1035",
+        ownership: "self_owned",
+        registeredAt: 1,
+      }),
     );
 
     expect(loadRegisteredVehicle(storage)?.lookup.ownerName).toBe("Vishal Sharma");
@@ -104,7 +129,7 @@ describe("registered vehicle store", () => {
 
   it("clears the stored vehicle", () => {
     const storage = fakeStorage();
-    saveRegisteredVehicle(lookupOrThrow("KA05RS1035"), storage);
+    saveRegisteredVehicle(lookupOrThrow("KA05RS1035"), "self_owned", storage);
 
     clearRegisteredVehicle(storage);
 

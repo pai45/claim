@@ -1,5 +1,5 @@
 import type { BenefitType, MerchantResult } from "@/lib/merchants/types";
-import type { VehicleLookup } from "@/lib/vehicle/types";
+import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
 import type { PolicyTabId } from "@/features/policy/constants";
 import type { GroundedAppData } from "@/lib/assistant/appData";
 import type { StructuredPolicyAnswer } from "@/lib/assistant/policy";
@@ -70,6 +70,7 @@ export type MessageKind =
   | "merchant_name_input"
   | "merchant_results"
   | "vehicle_number_input"
+  | "vehicle_ownership"
   | "vehicle_details"
   | "driver_name_input"
   | "driver_dl_upload"
@@ -139,6 +140,7 @@ export type MerchantLocatorPayload = {
 
 export type VehicleLookupPayload = {
   lookup?: VehicleLookup;
+  ownership?: VehicleOwnership;
   /** Set when the plate couldn't be parsed. */
   error?: string;
   /** Mirrors BillExtract.submitted — hides the action once sent to HR. */

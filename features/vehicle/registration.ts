@@ -1,16 +1,17 @@
 import { getActivePersonaConfig } from "@/features/persona/store";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
-import type { VehicleLookup } from "@/lib/vehicle/types";
+import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
 
 export const VEHICLE_STORAGE_KEY = "eb-claims:registered-vehicle";
-export const VEHICLE_STORAGE_VERSION = 1;
+export const VEHICLE_STORAGE_VERSION = 2;
 /** localStorage's `storage` event never fires in the tab that wrote it. */
 export const VEHICLE_REGISTRATION_EVENT = "eb-claims:registered-vehicle-changed";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 /**
- * Only the plate is stored — the lookup is re-derived on every read.
+ * Only the plate, ownership selection and registration metadata are stored.
+ * The vehicle lookup is re-derived on every read.
  *
  * `buildVehicleLookup` is pure, synchronous and offline, so re-deriving costs
  * nothing and makes it impossible for a stored record to drift from the roster
@@ -23,11 +24,13 @@ export type PersistedVehicleRegistration = {
   /** Canonical, punctuation-free form, e.g. "KA05RS1035". */
   regNumber: string;
   ownerName: string;
+  ownership: VehicleOwnership;
   registeredAt: number;
 };
 
 export type RegisteredVehicle = {
   lookup: VehicleLookup;
+  ownership: VehicleOwnership;
   registeredAt: number;
 };
 
@@ -39,6 +42,7 @@ function notify(): void {
 
 export function saveRegisteredVehicle(
   lookup: VehicleLookup,
+  ownership: VehicleOwnership,
   storage: StorageLike = window.localStorage,
   now = Date.now(),
 ): void {
@@ -46,6 +50,7 @@ export function saveRegisteredVehicle(
     version: VEHICLE_STORAGE_VERSION,
     regNumber: lookup.regNumber.normalized,
     ownerName: lookup.ownerName,
+    ownership,
     registeredAt: now,
   };
 
@@ -69,6 +74,8 @@ export function loadRegisteredVehicle(
     if (
       parsed.version !== VEHICLE_STORAGE_VERSION ||
       typeof parsed.regNumber !== "string" ||
+      (parsed.ownership !== "self_owned" &&
+        parsed.ownership !== "company_leased") ||
       typeof parsed.registeredAt !== "number"
     ) {
       storage.removeItem(VEHICLE_STORAGE_KEY);
@@ -87,7 +94,11 @@ export function loadRegisteredVehicle(
       return null;
     }
 
-    return { lookup: result.lookup, registeredAt: parsed.registeredAt };
+    return {
+      lookup: result.lookup,
+      ownership: parsed.ownership,
+      registeredAt: parsed.registeredAt,
+    };
   } catch {
     try {
       storage.removeItem(VEHICLE_STORAGE_KEY);

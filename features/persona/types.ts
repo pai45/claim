@@ -1,4 +1,20 @@
-export type PersonaId = "returning" | "new_user";
+export type PersonaId =
+  | "returning"
+  | "new_user"
+  | "lens_only"
+  | "pluspay_only"
+  | "lens_no_upi";
+
+export type ProductMode = "lens" | "pluspay";
+
+export type PersonaAccess = {
+  products: {
+    lens: boolean;
+    plusPay: boolean;
+  };
+  upiEnabled: boolean;
+  defaultProduct: ProductMode;
+};
 
 export type PersonaProfile = {
   id: PersonaId;
@@ -20,10 +36,20 @@ export type PersonaConfig = {
   badge: string;
   description: string;
   profile: PersonaProfile;
+  access: PersonaAccess;
   hasClaims: boolean;
   hasTransactions: boolean;
   hasCompletedOnboarding: boolean;
   hasRegisteredVehicle: boolean;
   isCardActivated: boolean;
+  hasUpiId: boolean;
+};
+
+export type EmployeeBenefitsPersonaPayload = {
+  id: PersonaId;
+  name: string;
+  initials: string;
+  access: PersonaAccess;
+  hasTransactions: boolean;
   hasUpiId: boolean;
 };

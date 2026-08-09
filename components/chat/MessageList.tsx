@@ -19,7 +19,7 @@ import type {
   UploadOptionId,
 } from "@/features/chat/types";
 import type { PolicyTabId } from "@/features/policy/constants";
-import type { VehicleLookup } from "@/lib/vehicle/types";
+import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
 import { ChatStatusBubble } from "./ChatStatusBubble";
 import { MessageBubble } from "./MessageBubble";
 import { ScannedDocumentCard } from "./ScannedDocumentCard";
@@ -56,7 +56,16 @@ type MessageListProps = {
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
   onSubmitVehicleNumber?: (regNumber: string) => void;
-  onSubmitVehicleToHr?: (messageId: string, lookup: VehicleLookup) => void;
+  onSelectVehicleOwnership?: (
+    messageId: string,
+    lookup: VehicleLookup,
+    ownership: VehicleOwnership,
+  ) => void;
+  onSubmitVehicleToHr?: (
+    messageId: string,
+    lookup: VehicleLookup,
+    ownership: VehicleOwnership,
+  ) => void;
   onStartDriverSalary?: (vehicleClaimId?: string) => void;
   onSubmitDriverName?: (name: string) => void;
   onConfirmDriverDl?: (payload: DriverSalaryPayload) => void;
@@ -113,6 +122,7 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       onSelectMerchantSearchMode,
       onSearchMerchantByName,
       onSubmitVehicleNumber,
+      onSelectVehicleOwnership,
       onSubmitVehicleToHr,
       onStartDriverSalary,
       onSubmitDriverName,
@@ -304,6 +314,7 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onSelectMerchantSearchMode={onSelectMerchantSearchMode}
                 onSearchMerchantByName={onSearchMerchantByName}
                 onSubmitVehicleNumber={onSubmitVehicleNumber}
+                onSelectVehicleOwnership={onSelectVehicleOwnership}
                 onSubmitVehicleToHr={onSubmitVehicleToHr}
                 onStartDriverSalary={onStartDriverSalary}
                 onSubmitDriverName={onSubmitDriverName}

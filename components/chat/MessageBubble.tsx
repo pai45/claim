@@ -9,7 +9,7 @@ import type {
   DriverSalaryPayload,
   UploadOptionId,
 } from "@/features/chat/types";
-import type { VehicleLookup } from "@/lib/vehicle/types";
+import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
 import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
 import {
   getPolicyCategory,
@@ -37,6 +37,7 @@ import { UploadOptionsCard } from "./UploadOptionsCard";
 import { VehicleClaimReceiptCard } from "./VehicleClaimReceiptCard";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
 import { VehicleNumberInputCard } from "./VehicleNumberInputCard";
+import { VehicleOwnershipCard } from "./VehicleOwnershipCard";
 import { useRevealText } from "./useRevealText";
 
 const pillClass =
@@ -93,7 +94,16 @@ type MessageBubbleProps = {
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
   onSubmitVehicleNumber?: (regNumber: string) => void;
-  onSubmitVehicleToHr?: (messageId: string, lookup: VehicleLookup) => void;
+  onSelectVehicleOwnership?: (
+    messageId: string,
+    lookup: VehicleLookup,
+    ownership: VehicleOwnership,
+  ) => void;
+  onSubmitVehicleToHr?: (
+    messageId: string,
+    lookup: VehicleLookup,
+    ownership: VehicleOwnership,
+  ) => void;
   onStartDriverSalary?: (vehicleClaimId?: string) => void;
   onSubmitDriverName?: (name: string) => void;
   onConfirmDriverDl?: (payload: DriverSalaryPayload) => void;
@@ -117,6 +127,7 @@ export function MessageBubble({
   onSelectMerchantSearchMode,
   onSearchMerchantByName,
   onSubmitVehicleNumber,
+  onSelectVehicleOwnership,
   onSubmitVehicleToHr,
   onStartDriverSalary,
   onSubmitDriverName,
@@ -217,6 +228,28 @@ export function MessageBubble({
       <div className="flex w-full justify-start">
         <VehicleNumberInputCard
           onSubmit={(regNumber) => onSubmitVehicleNumber?.(regNumber)}
+          disabled={uploadDisabled}
+        />
+      </div>
+    );
+  }
+
+  if (
+    message.kind === "vehicle_ownership" &&
+    message.vehicleLookup?.lookup
+  ) {
+    return (
+      <div className="flex w-full flex-col items-start gap-2">
+        <AssistantText content={message.content} createdAt={message.createdAt} />
+        <VehicleOwnershipCard
+          selected={message.vehicleLookup.ownership}
+          onSelect={(ownership) =>
+            onSelectVehicleOwnership?.(
+              message.id,
+              message.vehicleLookup!.lookup!,
+              ownership,
+            )
+          }
           disabled={uploadDisabled}
         />
       </div>
@@ -379,6 +412,7 @@ export function MessageBubble({
           <VehicleClaimReceiptCard
             claimId={message.claimId}
             lookup={message.vehicleLookup.lookup}
+            ownership={message.vehicleLookup.ownership}
             submittedAt={message.createdAt}
           />
           <div className="flex flex-wrap content-start gap-2">

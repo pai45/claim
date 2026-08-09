@@ -59,8 +59,39 @@ export const NEW_USER_IDENTITY: IdentityForm = {
   dateOfBirth: "15/08/1995",
 };
 
+const READY_PERSONA_IDENTITIES: Partial<Record<PersonaId, IdentityForm>> = {
+  lens_only: {
+    email: "neha.kapoor@infosys.com",
+    emailVerified: true,
+    title: "Ms.",
+    firstName: "Neha",
+    middleName: "",
+    lastName: "Kapoor",
+    dateOfBirth: "10/09/1994",
+  },
+  pluspay_only: {
+    email: "rohan.mehta@infosys.com",
+    emailVerified: true,
+    title: "Mr.",
+    firstName: "Rohan",
+    middleName: "",
+    lastName: "Mehta",
+    dateOfBirth: "22/11/1993",
+  },
+  lens_no_upi: {
+    email: "kavya.iyer@infosys.com",
+    emailVerified: true,
+    title: "Ms.",
+    firstName: "Kavya",
+    middleName: "",
+    lastName: "Iyer",
+    dateOfBirth: "05/06/1996",
+  },
+};
+
 export function getIdentityForPersona(personaId: PersonaId = "returning"): IdentityForm {
-  return personaId === "new_user" ? { ...NEW_USER_IDENTITY } : { ...DEFAULT_IDENTITY };
+  if (personaId === "new_user") return { ...NEW_USER_IDENTITY };
+  return { ...(READY_PERSONA_IDENTITIES[personaId] ?? DEFAULT_IDENTITY) };
 }
 
 export function createInitialOnboardingState(personaId: PersonaId = "returning"): OnboardingState {

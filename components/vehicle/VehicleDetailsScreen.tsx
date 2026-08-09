@@ -13,6 +13,7 @@ import {
 } from "@/features/chat/constants";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
 import { useRegisteredVehicle } from "@/features/vehicle/useRegisteredVehicle";
+import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 
 export function VehicleDetailsScreen() {
@@ -94,6 +95,10 @@ export function VehicleDetailsScreen() {
             </span>
 
             <section className="divide-y divide-border-soft rounded-card border border-border-line bg-white px-card py-1 shadow-card">
+              <VehicleDetailRow
+                label="Ownership"
+                value={vehicleOwnershipLabel(vehicle.ownership)}
+              />
               <VehicleDetailRow
                 label="Vehicle Owner"
                 value={vehicle.lookup.ownerName}

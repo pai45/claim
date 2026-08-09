@@ -4,11 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatShell } from "@/components/chat/ChatShell";
 import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
+import { useActivePersona } from "@/features/persona/useActivePersona";
+import type { EmployeeBenefitsPersonaPayload } from "@/features/persona/types";
 import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
 
 const CLAIMS_HASH = "#claims";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
+const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
@@ -21,9 +24,14 @@ const MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
 const MANAGE_CARDS_RETURN_QUERY = "returnTo";
 const MANAGE_CARDS_RETURN_VALUE = "manage-cards";
 type CardMpinIntent = "activate-card" | "set-card-pin";
+type WalletStatementKey = "meal" | "fuel" | "misc" | "gift";
 
 function isCardMpinIntent(value: unknown): value is CardMpinIntent {
   return value === "activate-card" || value === "set-card-pin";
+}
+
+function isWalletStatementKey(value: unknown): value is WalletStatementKey {
+  return value === "meal" || value === "fuel" || value === "misc" || value === "gift";
 }
 
 /**
@@ -34,11 +42,14 @@ function isCardMpinIntent(value: unknown): value is CardMpinIntent {
 const SOURCE_OVERLAY_CLASSES = ["is-overlay-open", "is-merchant-directory-open"];
 
 export function EmployeeBenefitsHost() {
+  const { persona } = useActivePersona();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(false);
   const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
-  const [plusPayMode, setPlusPayMode] = useState(false);
+  const [plusPayMode, setPlusPayMode] = useState(
+    persona.access.defaultProduct === "pluspay",
+  );
   const [cardMpinIntent, setCardMpinIntent] = useState<CardMpinIntent | null>(
     null,
   );
@@ -66,11 +77,12 @@ export function EmployeeBenefitsHost() {
   }, [cardMpinIntent, replyToEmployeeBenefits]);
 
   const openClaims = useCallback(() => {
+    if (!persona.access.products.lens) return;
     setClaimsOpen(true);
     if (window.location.hash !== CLAIMS_HASH) {
       window.history.replaceState(null, "", CLAIMS_HASH);
     }
-  }, []);
+  }, [persona.access.products.lens]);
 
   const closeClaims = useCallback(() => {
     setClaimsOpen(false);
@@ -87,6 +99,12 @@ export function EmployeeBenefitsHost() {
     window.location.assign(withBasePath("/transactions/"));
   }, []);
 
+  const openWalletStatement = useCallback((wallet: WalletStatementKey) => {
+    window.location.assign(
+      withBasePath(`/wallet-statement/?wallet=${encodeURIComponent(wallet)}`),
+    );
+  }, []);
+
   const openSpendAnalytics = useCallback(() => {
     window.location.assign(withBasePath("/transactions/?tab=analytics"));
   }, []);
@@ -100,18 +118,23 @@ export function EmployeeBenefitsHost() {
   }, []);
 
   const openUpiSettings = useCallback((tab: "benefits" | "pluspay") => {
+    if (!persona.access.upiEnabled) return;
+    if (tab === "benefits" && !persona.access.products.lens) return;
+    if (tab === "pluspay" && !persona.access.products.plusPay) return;
     window.location.assign(withBasePath(`/upi-settings/?tab=${tab}`));
-  }, []);
+  }, [persona.access]);
 
   const openSendMoney = useCallback(() => {
+    if (!persona.access.upiEnabled || !persona.access.products.plusPay) return;
     window.location.assign(withBasePath("/send-money/"));
-  }, []);
+  }, [persona.access]);
 
   const openScanPay = useCallback(() => {
+    if (!persona.access.upiEnabled) return;
     frameRef.current?.contentDocument
       ?.querySelector<HTMLElement>("[data-scan-pay-open]")
       ?.click();
-  }, []);
+  }, [persona.access.upiEnabled]);
 
   const connectClaimsBridge = useCallback(() => {
     const document = frameRef.current?.contentDocument;
@@ -165,11 +188,19 @@ export function EmployeeBenefitsHost() {
       );
     }
 
+    const payload: EmployeeBenefitsPersonaPayload = {
+      id: persona.id,
+      name: persona.profile.name,
+      initials: persona.profile.initials,
+      access: persona.access,
+      hasTransactions: persona.hasTransactions,
+      hasUpiId: persona.hasUpiId,
+    };
     frameRef.current?.contentWindow?.postMessage(
-      { type: "employee-benefits:sync-persona" },
-      "*",
+      { type: "employee-benefits:sync-persona", persona: payload },
+      window.location.origin,
     );
-  }, []);
+  }, [persona]);
 
   useEffect(() => () => bodyObserverRef.current?.disconnect(), []);
 
@@ -178,7 +209,10 @@ export function EmployeeBenefitsHost() {
     // URL through the history API, which fires neither of these — screens that
     // are already mounted have to call `openClaims` directly.
     const syncHash = () => {
-      setClaimsOpen(window.location.hash.toLowerCase() === CLAIMS_HASH);
+      setClaimsOpen(
+        persona.access.products.lens &&
+          window.location.hash.toLowerCase() === CLAIMS_HASH,
+      );
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -197,6 +231,13 @@ export function EmployeeBenefitsHost() {
       }
       if (event.data?.type === OPEN_TRANSACTIONS_MESSAGE) {
         openTransactions();
+        return;
+      }
+      if (
+        event.data?.type === OPEN_WALLET_STATEMENT_MESSAGE &&
+        isWalletStatementKey(event.data.wallet)
+      ) {
+        openWalletStatement(event.data.wallet);
         return;
       }
       if (event.data?.type === OPEN_SPEND_ANALYTICS_MESSAGE) {
@@ -250,8 +291,11 @@ export function EmployeeBenefitsHost() {
     openManageLimits,
     openProfile,
     openSpendAnalytics,
+    openSendMoney,
     openTransactions,
+    openWalletStatement,
     openUpiSettings,
+    persona.access.products.lens,
   ]);
 
   return (
@@ -270,7 +314,12 @@ export function EmployeeBenefitsHost() {
           claimsOpen || sourceOverlayOpen ? " is-hidden" : ""
         }`}
         hidden={claimsOpen || sourceOverlayOpen}
-        variant={plusPayMode ? "pluspay" : "benefits"}
+        variant={
+          persona.access.products.plusPay &&
+          (!persona.access.products.lens || plusPayMode)
+            ? "pluspay"
+            : "benefits"
+        }
         onBenefits={openClaims}
         onScanPay={openScanPay}
       />

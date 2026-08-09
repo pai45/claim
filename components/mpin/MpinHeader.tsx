@@ -1,6 +1,6 @@
 "use client";
 
-import { PlusPayWordmark } from "@/components/login/PlusPayWordmark";
+import { ProductWordmark } from "@/components/login/ProductWordmark";
 import { colors } from "@/lib/ui/colors";
 
 type MpinHeaderProps = {
@@ -40,7 +40,7 @@ export function MpinHeader({ onBack }: MpinHeaderProps) {
       )}
 
       <div className="flex min-w-0 flex-1 justify-center">
-        <PlusPayWordmark className="h-7" />
+        <ProductWordmark className="h-7" />
       </div>
 
       {/* Mirrors the arrow's width so the wordmark lands on the true centre. */}

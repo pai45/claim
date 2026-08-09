@@ -787,6 +787,11 @@ body.is-pluspay .upi-card[data-pluspay-show] {
   display: grid !important;
 }
 
+body.is-product-locked [data-pluspay-toggle],
+body.is-no-upi [data-upi-feature] {
+  display: none !important;
+}
+
 body.is-upi-created .upi-card-create {
   display: none !important;
 }

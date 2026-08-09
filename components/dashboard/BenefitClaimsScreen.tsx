@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import { NativeMonthPicker } from "@/components/shared/NativeMonthPicker";
 import {
   DRIVER_REGISTRATION_INTENT,
   DRIVER_REGISTRATION_LABEL,
@@ -18,6 +19,7 @@ import {
   applyBenefitClaimOverrides,
   BENEFIT_DASHBOARD_FY_LABEL,
   getBenefitClaimsDashboard,
+  selectBenefitClaimsMonth,
   statusStyles,
   type BenefitClaimStatus,
   type BenefitClaimsDashboard,
@@ -97,10 +99,12 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
   const { driver, isHydrated: isDriverHydrated } = useRegisteredDriver();
   const claimOverrides = useClaimOverrides();
   const activeTabRef = useRef<HTMLButtonElement>(null);
-  const data = applyBenefitClaimOverrides(
+  const [selectedMonth, setSelectedMonth] = useState("2026-07");
+  const allData = applyBenefitClaimOverrides(
     getBenefitClaimsDashboard(categoryId, personaId),
     claimOverrides,
   );
+  const data = selectBenefitClaimsMonth(allData, selectedMonth);
   const categoryMeta =
     DASHBOARD_CATEGORIES.find((item) => item.id === data.categoryId) ??
     DASHBOARD_CATEGORIES[0];
@@ -255,6 +259,8 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
                 data={data}
                 icon={categoryMeta.icon}
                 staggerIndex={2}
+                selectedMonth={selectedMonth}
+                onSelectMonth={setSelectedMonth}
               />
             </>
           )
@@ -277,11 +283,19 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
                 data={data}
                 icon={categoryMeta.icon}
                 staggerIndex={2}
+                selectedMonth={selectedMonth}
+                onSelectMonth={setSelectedMonth}
               />
             </>
           )
         ) : (
-          <MonthSummary data={data} icon={categoryMeta.icon} staggerIndex={1} />
+          <MonthSummary
+            data={data}
+            icon={categoryMeta.icon}
+            staggerIndex={1}
+            selectedMonth={selectedMonth}
+            onSelectMonth={setSelectedMonth}
+          />
         )}
       </main>
     </AppShell>
@@ -292,18 +306,32 @@ type MonthSummaryProps = {
   data: BenefitClaimsDashboard;
   icon: CategoryIconId;
   staggerIndex: number;
+  selectedMonth: string;
+  onSelectMonth: (monthKey: string) => void;
 };
 
-function MonthSummary({ data, icon, staggerIndex }: MonthSummaryProps) {
+function MonthSummary({
+  data,
+  icon,
+  staggerIndex,
+  selectedMonth,
+  onSelectMonth,
+}: MonthSummaryProps) {
   return (
     <section
       className="animate-rise-in flex flex-col"
       style={staggerStyle(staggerIndex)}
     >
       <div className="flex flex-col gap-3 rounded-t-bubble border border-border-line bg-white p-card">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h2 className="type-body font-bold text-ink">{data.monthLabel}</h2>
-          <CalendarIcon />
+          <NativeMonthPicker
+            value={selectedMonth}
+            onChange={onSelectMonth}
+            label={`Choose claim month, currently ${data.monthLabel}. Available from April to August 2026.`}
+          >
+            <CalendarIcon />
+          </NativeMonthPicker>
         </div>
 
         <div className="flex gap-2">
@@ -329,7 +357,11 @@ function MonthSummary({ data, icon, staggerIndex }: MonthSummaryProps) {
       </div>
 
       <div className="overflow-hidden rounded-b-card border border-t-0 border-border-line bg-white">
-        {data.claims.map((claim, index) => (
+        {data.claims.length === 0 ? (
+          <p className="type-body-secondary px-page py-6 text-center">
+            No claims submitted in {data.monthLabel}.
+          </p>
+        ) : data.claims.map((claim, index) => (
           <Link
             key={claim.id}
             href={`/claim-details/?id=${encodeURIComponent(claim.id)}&from=dashboard`}

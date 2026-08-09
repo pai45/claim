@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
+import { NativeMonthPicker } from "@/components/shared/NativeMonthPicker";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
 import { WalletFilterDropdown } from "@/components/transactions/WalletFilterDropdown";
 import {
@@ -16,12 +17,15 @@ import {
   ANALYTICS_VIEW_PILLS,
   ANALYTICS_WALLETS,
   HISTORY_TABS,
+  TRANSACTION_MONTHS,
   WALLET_FILTER_OPTIONS,
+  filterTransactionsByMonth,
   filterTransactionsByWallet,
   formatINR,
   formatSignedINR,
   getAnalyticsData,
   getTransactionItems,
+  getWalletLedgerSummary,
   groupTransactions,
   type AnalyticsViewId,
   type AnalyticsWalletId,
@@ -45,6 +49,7 @@ export function TransactionsScreen() {
     useState<AnalyticsViewId>("category");
   const [analyticsWallet, setAnalyticsWallet] =
     useState<AnalyticsWalletId>("meal");
+  const [selectedMonth, setSelectedMonth] = useState("2026-07");
 
   const allTransactions = useMemo(
     () => getTransactionItems(personaId),
@@ -52,8 +57,17 @@ export function TransactionsScreen() {
   );
 
   const filteredTransactions = useMemo(
-    () => filterTransactionsByWallet(allTransactions, selectedWallet),
-    [allTransactions, selectedWallet],
+    () =>
+      filterTransactionsByMonth(
+        filterTransactionsByWallet(allTransactions, selectedWallet),
+        selectedMonth,
+      ),
+    [allTransactions, selectedMonth, selectedWallet],
+  );
+
+  const ledgerSummary = useMemo(
+    () => getWalletLedgerSummary(allTransactions, selectedWallet, selectedMonth),
+    [allTransactions, selectedMonth, selectedWallet],
   );
 
   const groups = useMemo(
@@ -62,8 +76,8 @@ export function TransactionsScreen() {
   );
 
   const analytics = useMemo(
-    () => getAnalyticsData(personaId),
-    [personaId],
+    () => getAnalyticsData(personaId, analyticsWallet, selectedMonth),
+    [analyticsWallet, personaId, selectedMonth],
   );
 
   return (
@@ -119,6 +133,9 @@ export function TransactionsScreen() {
             onSelectWallet={setSelectedWallet}
             groups={groups}
             totalTransactions={filteredTransactions.length}
+            monthKey={selectedMonth}
+            onSelectMonth={setSelectedMonth}
+            ledgerSummary={ledgerSummary}
           />
         ) : (
           <AnalyticsPanel
@@ -127,6 +144,8 @@ export function TransactionsScreen() {
             wallet={analyticsWallet}
             onWalletChange={setAnalyticsWallet}
             analytics={analytics}
+            monthKey={selectedMonth}
+            onSelectMonth={setSelectedMonth}
           />
         )}
       </main>
@@ -141,11 +160,17 @@ function TransactionsPanel({
   onSelectWallet,
   groups,
   totalTransactions,
+  monthKey,
+  onSelectMonth,
+  ledgerSummary,
 }: {
   selectedWallet: TransactionWalletFilterId;
   onSelectWallet: (wallet: TransactionWalletFilterId) => void;
   groups: ReturnType<typeof groupTransactions>;
   totalTransactions: number;
+  monthKey: string;
+  onSelectMonth: (monthKey: string) => void;
+  ledgerSummary: ReturnType<typeof getWalletLedgerSummary>;
 }) {
   const currentWalletOption = WALLET_FILTER_OPTIONS.find(
     (o) => o.id === selectedWallet,
@@ -158,21 +183,28 @@ function TransactionsPanel({
           selectedWallet={selectedWallet}
           onSelectWallet={onSelectWallet}
         />
-        <button
-          type="button"
-          aria-label="Filter by date"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-muted transition-colors hover:bg-surface-tint"
+        <NativeMonthPicker
+          value={monthKey}
+          onChange={onSelectMonth}
+          label={`Choose transaction month, currently ${TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}. Available from April to August 2026.`}
+          className="h-11 w-11 shrink-0"
         >
           <CalendarIcon />
-        </button>
-        <button
-          type="button"
-          className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-pill border border-border-muted bg-white px-3 text-body-sm font-bold text-pine-primary transition-colors hover:bg-surface-tint"
-        >
-          <UpiBoltIcon />
-          UPI Transactions
-        </button>
+        </NativeMonthPicker>
+        <span className="type-body-secondary truncate font-bold">
+          {TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}
+        </span>
       </div>
+
+      <section
+        className="grid grid-cols-2 gap-2 rounded-card border border-border-line bg-white p-card shadow-card"
+        aria-label={`${currentWalletOption?.label ?? "Wallet"} balance for ${TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}`}
+      >
+        <BalanceValue label="Opening" amount={ledgerSummary.openingBalance} />
+        <BalanceValue label="Wallet loads" amount={ledgerSummary.credits} tone="success" />
+        <BalanceValue label="Deducted" amount={ledgerSummary.debits} tone="warning" />
+        <BalanceValue label="Closing balance" amount={ledgerSummary.closingBalance} emphasized />
+      </section>
 
       {totalTransactions === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 text-center shadow-card">
@@ -194,7 +226,7 @@ function TransactionsPanel({
           </div>
           <h3 className="type-section-title mb-1 text-ink">No transactions yet</h3>
           <p className="type-body-secondary mb-5 max-w-[260px]">
-            No transactions found for {currentWalletOption?.label ?? "this wallet"}. Make a spend to see activity here.
+            No wallet activity for {currentWalletOption?.label ?? "this wallet"} in {TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}.
           </p>
           <Link
             href="/"
@@ -255,18 +287,51 @@ function TransactionsPanel({
   );
 }
 
+function BalanceValue({
+  label,
+  amount,
+  tone = "default",
+  emphasized = false,
+}: {
+  label: string;
+  amount: number;
+  tone?: "default" | "success" | "warning";
+  emphasized?: boolean;
+}) {
+  const toneClass =
+    tone === "success"
+      ? "text-success"
+      : tone === "warning"
+        ? "text-warning"
+        : emphasized
+          ? "text-pine-primary"
+          : "text-ink";
+  return (
+    <div className={`rounded-control p-3 ${emphasized ? "bg-surface-tint" : "bg-surface"}`}>
+      <p className="type-field-label">{label}</p>
+      <p className={`mt-1 text-body-sm font-bold tabular-nums ${toneClass}`}>
+        {formatINR(amount)}
+      </p>
+    </div>
+  );
+}
+
 function AnalyticsPanel({
   view,
   onViewChange,
   wallet,
   onWalletChange,
   analytics,
+  monthKey,
+  onSelectMonth,
 }: {
   view: AnalyticsViewId;
   onViewChange: (view: AnalyticsViewId) => void;
   wallet: AnalyticsWalletId;
   onWalletChange: (wallet: AnalyticsWalletId) => void;
   analytics: ReturnType<typeof getAnalyticsData>;
+  monthKey: string;
+  onSelectMonth: (monthKey: string) => void;
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -332,13 +397,17 @@ function AnalyticsPanel({
             <h2 className="type-section-title text-pine-primary">
               Spending by Category
             </h2>
-            <button
-              type="button"
-              className="flex min-h-11 items-center gap-1 text-body-sm font-bold text-ink"
+            <NativeMonthPicker
+              value={monthKey}
+              onChange={onSelectMonth}
+              label={`Choose analytics month, currently ${analytics.monthLabel}. Available from April to August 2026.`}
+              className="gap-1 bg-transparent px-2 text-body-sm font-bold text-ink hover:bg-surface-tint"
             >
-              {analytics.monthLabel}
-              <ChevronDownIcon color={colors.ink} />
-            </button>
+              <span className="pointer-events-none flex items-center gap-1">
+                {analytics.monthLabel}
+                <ChevronDownIcon color={colors.ink} />
+              </span>
+            </NativeMonthPicker>
           </div>
 
           {analytics.categories.length === 0 ? (
@@ -433,19 +502,6 @@ function CalendarIcon() {
         stroke={colors.ink}
         strokeWidth="1.7"
         strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function UpiBoltIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M13 2 4 14h7l-1 8 10-14h-7l0-6Z"
-        fill="#FF6B35"
-        stroke="#097A4B"
-        strokeWidth="0.6"
       />
     </svg>
   );

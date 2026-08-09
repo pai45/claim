@@ -431,7 +431,7 @@
         </section>
       </section>
 
-      <section class="upi-panel" aria-label="UPI payment">
+      <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
         <!-- <div class="section-heading compact-heading">
           <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
           <a href="#" data-lens-text="Manage" data-pluspay-text="View QR">Manage</a>
@@ -513,7 +513,8 @@
           <button
             class="pluspay-action-card"
             type="button"
-            data-send-money-open
+          data-send-money-open
+          data-upi-feature
           >
             <span class="pluspay-action-icon" aria-hidden="true"
               ><svg><use href="#icon-send" /></svg
@@ -525,6 +526,7 @@
             class="pluspay-action-card is-highlight"
             type="button"
             data-toast="Scan & pay opened"
+            data-upi-feature
           >
             <span class="pluspay-action-icon" aria-hidden="true"
               ><svg><use href="#icon-scan" /></svg
@@ -576,6 +578,9 @@
             data-wallet-detail="Built for on-the-go spends with both card-present tap and QR-based merchant acceptance."
             data-wallet-actions="tap,scan"
             data-wallet-cta="Fuel Wallet supports Tap & Pay and Scan & Pay"
+            data-no-upi-detail="Built for on-the-go card and contactless spends at eligible fuel merchants."
+            data-no-upi-actions="tap"
+            data-no-upi-cta="Fuel Wallet supports Tap & Pay"
             aria-pressed="false"
           >
             <div class="wallet-topline">
@@ -596,6 +601,9 @@
             data-wallet-detail="PPI on UPI flow for reimbursement-led spend categories where QR acceptance matters most."
             data-wallet-actions="tap,scan"
             data-wallet-cta="Reimbursement Wallet supports Tap & Pay and Scan & Pay"
+            data-no-upi-detail="Card-enabled reimbursement spending at approved vendors and eligible merchants."
+            data-no-upi-actions="card"
+            data-no-upi-cta="Reimbursement Wallet supports card payments"
             aria-pressed="false"
           >
             <div class="wallet-topline">
@@ -643,6 +651,7 @@
             type="button"
             data-upi-settings-open
             data-upi-created-only
+            data-upi-feature
           >
             <span class="utility-icon" aria-hidden="true">
               <img src="./assets/icons/upi-settings.svg" alt="" />

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 const CLAIMS_HASH = "#claims";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
+const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
@@ -32,6 +33,13 @@ describe("Employee Benefits claims bridge", () => {
       "employee-benefits:open-transactions",
     );
     expect(OPEN_BENEFITS_MESSAGE).not.toBe(OPEN_TRANSACTIONS_MESSAGE);
+  });
+
+  it("uses a dedicated message type for wallet-specific statements", () => {
+    expect(OPEN_WALLET_STATEMENT_MESSAGE).toBe(
+      "employee-benefits:open-wallet-statement",
+    );
+    expect(OPEN_WALLET_STATEMENT_MESSAGE).not.toBe(OPEN_TRANSACTIONS_MESSAGE);
   });
 
   it("uses a distinct message type for Manage Limits", () => {

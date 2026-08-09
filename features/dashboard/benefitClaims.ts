@@ -3,7 +3,6 @@ import {
   getEmployerBenefit,
   type PolicyTabId,
 } from "@/features/policy/constants";
-import { DASHBOARD_CATEGORIES } from "./constants";
 import type { ClaimOverrides } from "@/features/claims/store";
 import { getActivePersonaId } from "@/features/persona/store";
 import type { PersonaId } from "@/features/persona/types";
@@ -22,6 +21,7 @@ export type BenefitClaimItem = {
   category: string;
   amount: number;
   date: string;
+  submittedOn: string;
   status: BenefitClaimStatus;
 };
 
@@ -40,6 +40,60 @@ export type BenefitClaimsDashboard = {
 };
 
 const FY = EMPLOYER_BENEFITS_CATALOG.financialYear;
+const DEFAULT_MONTH_KEY = "2026-07";
+
+const MONTH_FORMATTER = new Intl.DateTimeFormat("en-IN", {
+  month: "long",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+function monthKeyForClaim(claim: BenefitClaimItem): string {
+  return claim.submittedOn.slice(0, 7);
+}
+
+function monthLabelForKey(monthKey: string): string {
+  return MONTH_FORMATTER.format(new Date(`${monthKey}-01T00:00:00Z`));
+}
+
+function isPendingStatus(status: BenefitClaimStatus): boolean {
+  return (
+    status === "Pending" ||
+    status === "Under review" ||
+    status === "Needs info"
+  );
+}
+
+function calculateDashboard(
+  dashboard: BenefitClaimsDashboard,
+  monthKey = DEFAULT_MONTH_KEY,
+): BenefitClaimsDashboard {
+  const monthClaims = dashboard.claims.filter(
+    (claim) => monthKeyForClaim(claim) === monthKey,
+  );
+  const utilized = dashboard.claims.reduce(
+    (sum, claim) => sum + (claim.status === "Approved" ? claim.amount : 0),
+    0,
+  );
+  const monthApproved = monthClaims.reduce(
+    (sum, claim) => sum + (claim.status === "Approved" ? claim.amount : 0),
+    0,
+  );
+  const monthPending = monthClaims.reduce(
+    (sum, claim) => sum + (isPendingStatus(claim.status) ? claim.amount : 0),
+    0,
+  );
+
+  return {
+    ...dashboard,
+    utilized,
+    availableLimit: Math.max(0, dashboard.accrued - utilized),
+    monthLabel: monthLabelForKey(monthKey),
+    monthTotal: monthApproved + monthPending,
+    monthApproved,
+    monthPending,
+  };
+}
 
 function booksDashboard(): BenefitClaimsDashboard {
   return {
@@ -60,6 +114,7 @@ function booksDashboard(): BenefitClaimsDashboard {
         category: "Books & Periodicals",
         amount: 1450,
         date: "08 May 2026",
+        submittedOn: "2026-05-08",
         status: "Approved",
       },
       {
@@ -68,6 +123,7 @@ function booksDashboard(): BenefitClaimsDashboard {
         category: "Books & Periodicals",
         amount: 890,
         date: "22 Apr 2026",
+        submittedOn: "2026-04-22",
         status: "Approved",
       },
       {
@@ -76,6 +132,7 @@ function booksDashboard(): BenefitClaimsDashboard {
         category: "Books & Periodicals",
         amount: 660,
         date: "15 Apr 2026",
+        submittedOn: "2026-04-15",
         status: "Approved",
       },
       {
@@ -84,7 +141,17 @@ function booksDashboard(): BenefitClaimsDashboard {
         category: "Books & Periodicals",
         amount: 1000,
         date: "02 Apr 2026",
+        submittedOn: "2026-04-02",
         status: "Pending",
+      },
+      {
+        id: "CLM-43920",
+        title: "Harvard Business Review - June 2026",
+        category: "Books & Periodicals",
+        amount: 4000,
+        date: "14 June 2026",
+        submittedOn: "2026-06-14",
+        status: "Approved",
       },
     ],
   };
@@ -109,6 +176,7 @@ function fuelDashboard(): BenefitClaimsDashboard {
         category: "Fuel & Maintenance",
         amount: 4500,
         date: "10 July 2026",
+        submittedOn: "2026-07-10",
         status: "Approved",
       },
       {
@@ -117,6 +185,7 @@ function fuelDashboard(): BenefitClaimsDashboard {
         category: "Fuel & Maintenance",
         amount: 3200,
         date: "04 July 2026",
+        submittedOn: "2026-07-04",
         status: "Pending",
       },
       {
@@ -125,6 +194,7 @@ function fuelDashboard(): BenefitClaimsDashboard {
         category: "Fuel & Maintenance",
         amount: 6800,
         date: "22 June 2026",
+        submittedOn: "2026-06-22",
         status: "Approved",
       },
       {
@@ -133,6 +203,16 @@ function fuelDashboard(): BenefitClaimsDashboard {
         category: "Fuel & Maintenance",
         amount: 4000,
         date: "12 June 2026",
+        submittedOn: "2026-06-12",
+        status: "Approved",
+      },
+      {
+        id: "CLM-43890",
+        title: "Indian Oil - April 2026",
+        category: "Fuel & Maintenance",
+        amount: 2700,
+        date: "18 Apr 2026",
+        submittedOn: "2026-04-18",
         status: "Approved",
       },
     ],
@@ -158,6 +238,7 @@ function mobileDashboard(): BenefitClaimsDashboard {
         category: "Mobile & Internet",
         amount: 999,
         date: "05 July 2026",
+        submittedOn: "2026-07-05",
         status: "Approved",
       },
       {
@@ -166,6 +247,7 @@ function mobileDashboard(): BenefitClaimsDashboard {
         category: "Mobile & Internet",
         amount: 1299,
         date: "03 July 2026",
+        submittedOn: "2026-07-03",
         status: "Approved",
       },
       {
@@ -174,6 +256,7 @@ function mobileDashboard(): BenefitClaimsDashboard {
         category: "Mobile & Internet",
         amount: 500,
         date: "28 June 2026",
+        submittedOn: "2026-06-28",
         status: "Pending",
       },
       {
@@ -182,6 +265,25 @@ function mobileDashboard(): BenefitClaimsDashboard {
         category: "Mobile & Internet",
         amount: 999,
         date: "05 June 2026",
+        submittedOn: "2026-06-05",
+        status: "Approved",
+      },
+      {
+        id: "CLM-43955",
+        title: "Jio Fiber - May 2026",
+        category: "Mobile & Internet",
+        amount: 1304,
+        date: "06 May 2026",
+        submittedOn: "2026-05-06",
+        status: "Approved",
+      },
+      {
+        id: "CLM-43840",
+        title: "Airtel Annual Data Plan - April 2026",
+        category: "Mobile & Internet",
+        amount: 3399,
+        date: "09 Apr 2026",
+        submittedOn: "2026-04-09",
         status: "Approved",
       },
     ],
@@ -207,6 +309,7 @@ function driverDashboard(): BenefitClaimsDashboard {
         category: "Driver Salary",
         amount: 15000,
         date: "01 July 2026",
+        submittedOn: "2026-07-01",
         status: "Approved",
       },
       {
@@ -215,6 +318,7 @@ function driverDashboard(): BenefitClaimsDashboard {
         category: "Driver Salary",
         amount: 15000,
         date: "01 June 2026",
+        submittedOn: "2026-06-01",
         status: "Approved",
       },
       {
@@ -223,6 +327,7 @@ function driverDashboard(): BenefitClaimsDashboard {
         category: "Driver Salary",
         amount: 15000,
         date: "01 May 2026",
+        submittedOn: "2026-05-01",
         status: "Approved",
       },
     ],
@@ -248,6 +353,7 @@ function professionalDashboard(): BenefitClaimsDashboard {
         category: "Professional Development",
         amount: 4500,
         date: "09 July 2026",
+        submittedOn: "2026-07-09",
         status: "Approved",
       },
       {
@@ -256,6 +362,7 @@ function professionalDashboard(): BenefitClaimsDashboard {
         category: "Professional Development",
         amount: 2000,
         date: "02 July 2026",
+        submittedOn: "2026-07-02",
         status: "Approved",
       },
       {
@@ -264,7 +371,17 @@ function professionalDashboard(): BenefitClaimsDashboard {
         category: "Professional Development",
         amount: 2000,
         date: "18 June 2026",
+        submittedOn: "2026-06-18",
         status: "Pending",
+      },
+      {
+        id: "CLM-44280",
+        title: "LinkedIn Learning - May 2026",
+        category: "Professional Development",
+        amount: 5500,
+        date: "20 May 2026",
+        submittedOn: "2026-05-20",
+        status: "Approved",
       },
     ],
   };
@@ -349,12 +466,10 @@ export function getBenefitClaimsDashboard(
   }
 
   if (known) {
-    return {
+    return calculateDashboard({
       ...known,
-      availableLimit: policy.balance.available,
-      utilized: policy.balance.utilized,
       accrued: policy.balance.allocation,
-    };
+    });
   }
 
   return {
@@ -376,9 +491,6 @@ export function applyBenefitClaimOverrides(
   dashboard: BenefitClaimsDashboard,
   overrides: ClaimOverrides,
 ): BenefitClaimsDashboard {
-  let monthTotal = dashboard.monthTotal;
-  let monthApproved = dashboard.monthApproved;
-  let monthPending = dashboard.monthPending;
   const claims = dashboard.claims.map((claim) => {
     const override = overrides[claim.id];
     if (!override) return claim;
@@ -391,33 +503,54 @@ export function applyBenefitClaimOverrides(
       amount: override.amount ?? claim.amount,
       status: override.status ?? claim.status,
     };
-    const wasApproved = claim.status === "Approved";
-    const wasPending =
-      claim.status === "Pending" ||
-      claim.status === "Under review" ||
-      claim.status === "Needs info";
-    const isActive = next.status !== "Revoked";
-    const isApproved = next.status === "Approved";
-    const isPending =
-      next.status === "Pending" ||
-      next.status === "Under review" ||
-      next.status === "Needs info";
-    monthTotal += (isActive ? next.amount : 0) - claim.amount;
-    monthApproved += (isApproved ? next.amount : 0) - (wasApproved ? claim.amount : 0);
-    monthPending += (isPending ? next.amount : 0) - (wasPending ? claim.amount : 0);
     return next;
   });
-  return {
+  const monthKey = dashboard.monthLabel
+    ? dashboard.claims.find(
+        (claim) => monthLabelForKey(monthKeyForClaim(claim)) === dashboard.monthLabel,
+      )?.submittedOn.slice(0, 7) ?? DEFAULT_MONTH_KEY
+    : DEFAULT_MONTH_KEY;
+  return calculateDashboard({
     ...dashboard,
     claims,
-    monthTotal: Math.max(0, monthTotal),
-    monthApproved: Math.max(0, monthApproved),
-    monthPending: Math.max(0, monthPending),
+  }, monthKey);
+}
+
+export function getBenefitClaimMonthKeys(
+  dashboard: BenefitClaimsDashboard,
+): string[] {
+  const months = new Set(
+    dashboard.claims.map(monthKeyForClaim),
+  );
+  for (const month of [
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07",
+    "2026-08",
+  ]) {
+    months.add(month);
+  }
+  return [...months].sort();
+}
+
+export function selectBenefitClaimsMonth(
+  dashboard: BenefitClaimsDashboard,
+  monthKey: string,
+): BenefitClaimsDashboard {
+  const calculated = calculateDashboard(dashboard, monthKey);
+  return {
+    ...calculated,
+    claims: calculated.claims.filter(
+      (claim) => monthKeyForClaim(claim) === monthKey,
+    ),
   };
 }
 
 export function isDashboardCategoryId(value: string): boolean {
-  return DASHBOARD_CATEGORIES.some((item) => item.id === value);
+  return EMPLOYER_BENEFITS_CATALOG.benefits.some(
+    (item) => item.id === value && item.display.dashboardEnabled,
+  );
 }
 
 export function statusStyles(status: BenefitClaimStatus): {

@@ -15,11 +15,9 @@ import {
 } from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
 import { clearChatSession } from "@/features/chat/persistence";
-import { resetDemoJourney } from "@/features/demo/reset";
 import { useActivePersona } from "@/features/persona/useActivePersona";
-import type { PersonaId } from "@/features/persona/types";
 import {
-  PROFILE_MENU_ITEMS,
+  getProfileMenuItems,
   type ProfileMenuId,
 } from "@/features/profile/constants";
 import { clearRegisteredVehicle } from "@/features/vehicle/registration";
@@ -58,12 +56,6 @@ export function ProfileScreen() {
     clearMpin();
     clearMpinLock();
     clearMpinUnlock();
-    router.push("/");
-  }
-
-  function confirmDemoReset(targetPersona: PersonaId) {
-    setLogoutOpen(false);
-    resetDemoJourney(targetPersona);
     router.push("/");
   }
 
@@ -114,7 +106,7 @@ export function ProfileScreen() {
         ) : null}
 
         <nav className="flex flex-col gap-3" aria-label="Profile menu">
-          {PROFILE_MENU_ITEMS.map((item, index) => (
+          {getProfileMenuItems(persona).map((item, index) => (
             <button
               key={item.id}
               type="button"
@@ -153,20 +145,6 @@ export function ProfileScreen() {
         description="You will return to the login screen. Your current onboarding is saved, so signing back in takes you straight to home."
         confirmLabel="Logout"
         cancelLabel="Stay signed in"
-        extraActions={[
-          {
-            label: "Restart as Brand New User (Aarav)",
-            hint: "Fresh start: 0 claims, 0 txns, 100% full wallet funds, no setup done.",
-            tone: "danger",
-            onSelect: () => confirmDemoReset("new_user"),
-          },
-          {
-            label: "Restart as Returning User (Vishal)",
-            hint: "Established user: Active claims, transactions, limits used & setup done.",
-            tone: "brand",
-            onSelect: () => confirmDemoReset("returning"),
-          },
-        ]}
         onConfirm={confirmLogout}
         onClose={() => setLogoutOpen(false)}
       />

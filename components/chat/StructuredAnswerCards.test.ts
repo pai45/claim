@@ -23,7 +23,7 @@ describe("structured assistant answer cards", () => {
 
     expect(html).toContain("Claims dashboard (FY 26/27)");
     expect(html).toContain('role="progressbar"');
-    expect(html).toContain('aria-valuenow="28"');
+    expect(html).toContain('aria-valuenow="32"');
     expect(html).toContain('aria-label="Claims dashboard totals"');
     expect(html).toContain('href="/dashboard"');
     expect(html).not.toContain("btn-secondary");

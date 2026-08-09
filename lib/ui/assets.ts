@@ -29,11 +29,30 @@ export const CHAT_ASSETS = {
   driverRegistration: "/assets/driver-registration-cta.png",
 } as const;
 
+/** Supplied full-screen Lottie used by the pre-registration product intro. */
+export const PRODUCT_INTRO_ASSETS = {
+  animation: "/assets/product-intro/onboarding-animation.json",
+  images: "/assets/product-intro/",
+} as const;
+
 /** Supplied artwork used by the Profile screen's menu rows. */
 export const PROFILE_ICONS = {
   user: "/assets/icons/profile-user.svg",
   autopay: "/assets/icons/profile-autopay.svg",
   collect: "/assets/icons/profile-collect.svg",
+} as const;
+
+export const UPI_SETTINGS_ASSETS = {
+  benefits: "/assets/upi-settings/eb-benefits.svg",
+  anq: "/assets/upi-settings/anq.svg",
+  poweredByUpi: "/assets/upi-settings/powered-by-upi.png",
+  beneficiaryLimits: "/assets/upi-settings/shield-plus.svg",
+  beneficiaryCount: "/assets/upi-settings/users-group.svg",
+  paymentLimits: "/assets/upi-settings/slash-circle.svg",
+  paymentIndividuals: "/assets/upi-settings/payment-individuals.svg",
+  paymentMerchants: "/assets/upi-settings/payment-merchants.svg",
+  editBeneficiary: "/assets/upi-settings/edit-beneficiary.svg",
+  deleteBeneficiary: "/assets/upi-settings/delete-beneficiary.svg",
 } as const;
 
 export const CATEGORY_ICONS = {

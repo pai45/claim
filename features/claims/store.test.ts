@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { CLAIM_HISTORY_ITEMS, applyClaimHistoryOverrides } from "@/features/claims-history/constants";
 import {
   applyBenefitClaimOverrides,
+  getBenefitClaimMonthKeys,
   getBenefitClaimsDashboard,
+  selectBenefitClaimsMonth,
 } from "@/features/dashboard/benefitClaims";
 import {
   CLAIM_OVERRIDES_STORAGE_KEY,
@@ -83,5 +85,33 @@ describe("claim override store", () => {
     expect(next.claims.find((claim) => claim.id === "CLM-44088")?.status).toBe("Revoked");
     expect(next.monthTotal).toBe(base.monthTotal - 3200);
     expect(next.monthPending).toBe(base.monthPending - 3200);
+  });
+
+  it("derives every monthly total from its approved and pending claims", () => {
+    for (const category of ["books", "fuel", "mobile", "driver", "professional"]) {
+      const dashboard = getBenefitClaimsDashboard(category, "returning");
+      for (const monthKey of getBenefitClaimMonthKeys(dashboard)) {
+        const month = selectBenefitClaimsMonth(dashboard, monthKey);
+        expect(month.monthTotal).toBe(month.monthApproved + month.monthPending);
+        expect(
+          month.claims.reduce(
+            (sum, claim) =>
+              sum +
+              (claim.status === "Rejected" || claim.status === "Revoked"
+                ? 0
+                : claim.amount),
+            0,
+          ),
+        ).toBe(month.monthTotal);
+      }
+    }
+  });
+
+  it("limits claim month navigation to August 2026", () => {
+    expect(
+      getBenefitClaimMonthKeys(
+        getBenefitClaimsDashboard("fuel", "returning"),
+      ),
+    ).toEqual(["2026-04", "2026-05", "2026-06", "2026-07", "2026-08"]);
   });
 });

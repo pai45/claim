@@ -665,7 +665,7 @@ const BENEFIT_CONFIGURATION: Record<
       dashboardEnabled: true,
       dashboardIcon: "driver",
     },
-    balance: { allocation: 90000, utilized: 35000, available: 55000 },
+    balance: { allocation: 90000, utilized: 45000, available: 45000 },
     claimRules: {
       proofRequired: "Monthly salary receipt and driver licence",
       submissionDeadlineDay: 5,

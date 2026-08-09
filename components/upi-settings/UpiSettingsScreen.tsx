@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { withBasePath } from "@/lib/basePath";
 import "./upiSettings.css";
 
-type UpiTab = "benefits" | "pluspay";
+export type UpiTab = "benefits" | "pluspay";
+
+export function getAllowedUpiTabs(
+  lensEnabled: boolean,
+  plusPayEnabled: boolean,
+): UpiTab[] {
+  return [
+    ...(lensEnabled ? (["benefits"] as const) : []),
+    ...(plusPayEnabled ? (["pluspay"] as const) : []),
+  ];
+}
 
 const TAB_DETAILS: Record<
   UpiTab,
@@ -27,17 +38,20 @@ const TAB_DETAILS: Record<
 
 const SETTINGS = [
   {
+    id: "beneficiary-limits",
     title: "Beneficiary Limits",
     description:
       "Set spending limits for specific UPI IDs to manage your expenses.",
     icon: "shield-plus.svg",
   },
   {
+    id: "beneficiary-count-limits",
     title: "Beneficiary Count Limits",
     description: "Control the maximum number of beneficiaries allowed per wallet",
     icon: "users-group.svg",
   },
   {
+    id: "payment-limits",
     title: "Payment Limits",
     description: "Set daily and monthly limits for payments.",
     icon: "slash-circle.svg",
@@ -50,13 +64,34 @@ const asset = (name: string) =>
 export function UpiSettingsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { persona } = useActivePersona();
   const queryTab = searchParams.get("tab");
+  const allowedTabs = useMemo(
+    () =>
+      getAllowedUpiTabs(
+        persona.access.products.lens,
+        persona.access.products.plusPay,
+      ),
+    [persona.access.products.lens, persona.access.products.plusPay],
+  );
+  const requestedTab: UpiTab = queryTab === "pluspay" ? "pluspay" : "benefits";
   const [activeTab, setActiveTab] = useState<UpiTab>(
-    queryTab === "pluspay" ? "pluspay" : "benefits",
+    allowedTabs.includes(requestedTab) ? requestedTab : (allowedTabs[0] ?? "benefits"),
   );
   const [revealed, setRevealed] = useState(false);
   const [notice, setNotice] = useState("");
-  const details = TAB_DETAILS[activeTab];
+  const resolvedActiveTab = allowedTabs.includes(activeTab)
+    ? activeTab
+    : (allowedTabs[0] ?? "benefits");
+  const baseDetails = TAB_DETAILS[resolvedActiveTab];
+  const plusPayHandle = `${persona.profile.name.toLowerCase().replace(/\s+/g, ".")}@pluspay`;
+  const details = resolvedActiveTab === "pluspay"
+    ? {
+        ...baseDetails,
+        fullId: plusPayHandle,
+        maskedId: `${"*".repeat(plusPayHandle.split("@")[0].length)}@pluspay`,
+      }
+    : baseDetails;
 
   useEffect(() => {
     if (!notice) return;
@@ -88,34 +123,34 @@ export function UpiSettingsScreen() {
   }
 
   return (
-    <div className="upi-settings-shell" data-active-tab={activeTab}>
+    <div className="upi-settings-shell" data-active-tab={resolvedActiveTab}>
       <ScreenHeader
         title="UPI Settings"
         onBack={goBack}
         className="upi-settings-header"
       />
       <nav className="upi-account-tabs" aria-label="UPI account" role="tablist">
-        <button
+        {persona.access.products.lens ? <button
           type="button"
           role="tab"
-          aria-selected={activeTab === "benefits"}
+          aria-selected={resolvedActiveTab === "benefits"}
           className="upi-account-tab upi-benefits-tab"
           onClick={() => selectTab("benefits")}
         >
           <Image src={asset("eb-benefits.svg")} alt="" width={30} height={30} />
           <span>Benefits</span>
-        </button>
-        <button
+        </button> : null}
+        {persona.access.products.plusPay ? <button
           type="button"
           role="tab"
           aria-label="PlusPay ANQ"
-          aria-selected={activeTab === "pluspay"}
+          aria-selected={resolvedActiveTab === "pluspay"}
           className="upi-account-tab upi-pluspay-tab"
           onClick={() => selectTab("pluspay")}
         >
           <Image src={asset("anq.svg")} alt="" width={24} height={24} />
           <span>ANQ</span>
-        </button>
+        </button> : null}
       </nav>
 
       <main className="upi-settings-panel" aria-label={`${details.label} UPI settings`}>
@@ -147,8 +182,22 @@ export function UpiSettingsScreen() {
             <button
               type="button"
               className="upi-setting-card"
-              key={setting.title}
-              onClick={() => setNotice(`${setting.title} selected`)}
+              key={setting.id}
+              onClick={() => {
+                if (setting.id === "beneficiary-limits") {
+                  router.push(
+                    `/upi-settings/beneficiary-limits/?account=${resolvedActiveTab}&source=upi-settings`,
+                  );
+                  return;
+                }
+                if (setting.id === "payment-limits") {
+                  router.push(
+                    `/upi-settings/payment-limits/?account=${resolvedActiveTab}&source=upi-settings`,
+                  );
+                  return;
+                }
+                setNotice(`${setting.title} selected`);
+              }}
             >
               <span className="upi-setting-icon" aria-hidden="true">
                 <Image src={asset(setting.icon)} alt="" width={24} height={24} />

@@ -5,6 +5,7 @@ import {
   setActivePersonaId,
 } from "./store";
 import { PERSONA_STORAGE_KEY } from "./constants";
+import { PERSONA_OPTIONS } from "./constants";
 
 function memoryStorage() {
   const map = new Map<string, string>();
@@ -46,5 +47,27 @@ describe("persona store", () => {
   it("handles corrupted/invalid persona key by falling back to returning", () => {
     local.setItem(PERSONA_STORAGE_KEY, "invalid_id_123");
     expect(getActivePersonaId(local)).toBe("returning");
+  });
+
+  it("persists every supported persona and resolves its access plan", () => {
+    for (const persona of PERSONA_OPTIONS) {
+      setActivePersonaId(persona.id, local);
+      expect(getActivePersonaId(local)).toBe(persona.id);
+      expect(getActivePersonaConfig(local).access).toEqual(persona.access);
+    }
+  });
+
+  it("maps the three restricted personas to the expected products", () => {
+    setActivePersonaId("lens_only", local);
+    expect(getActivePersonaConfig(local).access.products).toEqual({
+      lens: true,
+      plusPay: false,
+    });
+
+    setActivePersonaId("pluspay_only", local);
+    expect(getActivePersonaConfig(local).access.defaultProduct).toBe("pluspay");
+
+    setActivePersonaId("lens_no_upi", local);
+    expect(getActivePersonaConfig(local).access.upiEnabled).toBe(false);
   });
 });
