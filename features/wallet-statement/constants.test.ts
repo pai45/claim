@@ -21,9 +21,9 @@ describe("wallet statements", () => {
     const august = filterWalletStatementTransactions(statement.transactions, "2026-08");
     const groups = groupWalletStatementTransactions(august);
 
-    expect(august).toHaveLength(5);
+    expect(august).toHaveLength(7);
     expect(groups).toHaveLength(1);
     expect(groups[0].label).toBe("Current Month");
-    expect(groups[0].transactions[0].postedOn).toBe("2026-08-14");
+    expect(groups[0].transactions[0].postedOn).toBe("2026-08-28");
   });
 });

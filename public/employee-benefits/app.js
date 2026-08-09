@@ -276,7 +276,6 @@ const claimsActionMenuButton = document.querySelector(
 );
 const tapPayDiscovery = document.querySelector("[data-tap-pay-discovery]");
 const scanPayOpenButtons = document.querySelectorAll("[data-scan-pay-open]");
-const scanPayFlow = document.querySelector("[data-scan-pay-flow]");
 const upiSetupOpenButton = document.querySelector("[data-upi-setup-open]");
 const upiSetupFlow = document.querySelector("[data-upi-setup-flow]");
 const upiIdCards = document.querySelectorAll("[data-upi-id-card]");
@@ -288,6 +287,8 @@ const upiSettingsOpenButtons = document.querySelectorAll(
 let toastTimer;
 let activeWalletTone = "meal";
 let activeManageWalletKey = "meal";
+let syncedTransactionItems = [];
+let syncedWalletTransactions = {};
 const UPI_CREATED_STORAGE_KEY = "employee-benefits:upi-created:v1";
 const CREATED_UPI_ID = "xxxxxxxx79@infosys";
 const UPI_SETUP_STEP_DURATION = 1500;
@@ -476,7 +477,6 @@ function syncPageScrollLock() {
     cardStatusOverlay,
     fallbackOverlay,
     claimsAssistant,
-    scanPayFlow,
     upiSetupFlow,
   ].some((overlay) => overlay?.classList.contains("is-open"));
   document.body.classList.toggle("is-overlay-open", hasOpenOverlay);
@@ -1127,96 +1127,6 @@ const CLAIMS_GREETING_TEXT =
   "Hi, I’m your Benefits assistant. Let’s get your claim sorted quickly.";
 let claimsGreetingShown = false;
 
-const scanPayMock = {
-  merchant: {
-    name: "Coffee Shop Cafe",
-    upiId: "coffeecafe@paytm",
-    category: "Cafe",
-    verified: true,
-  },
-  cashWallet: {
-    label: "Cash wallet",
-    balanceCopy: "Balance : 400",
-  },
-  transaction: {
-    defaultAmount: 500,
-    id: "429817356982",
-    dateTime: "12 May 2025, 09:41 AM",
-  },
-  reward: {
-    coinsWon: 72,
-    baseBalance: 2450,
-    finalBalance: 2522,
-  },
-  activity: [
-    {
-      source: "Scan & Pay",
-      merchant: "Coffee Shop Cafe",
-      coins: "+72",
-      time: "Today, 9:40 AM",
-    },
-    {
-      source: "Scan & Pay",
-      merchant: "BookWorld Store",
-      coins: "+45",
-      time: "Yesterday, 6:15 PM",
-    },
-    {
-      source: "Scan & Pay",
-      merchant: "Green Bites",
-      coins: "+28",
-      time: "Yesterday, 1:20 PM",
-    },
-    {
-      source: "Scan & Pay",
-      merchant: "Metro Mart",
-      coins: "+36",
-      time: "12 May, 7:18 PM",
-    },
-  ],
-  vouchers: [
-    {
-      name: "FoodHub Gift Card",
-      brand: "FoodHub",
-      cost: "500",
-      icon: "icon-food",
-      tone: "food",
-    },
-    {
-      name: "ShopNest Gift Card",
-      brand: "ShopNest",
-      cost: "750",
-      icon: "icon-bag",
-      tone: "shop",
-    },
-    {
-      name: "TravelGo Voucher",
-      brand: "TravelGo",
-      cost: "1,000",
-      icon: "icon-send",
-      tone: "travel",
-    },
-    {
-      name: "CineJoy Voucher",
-      brand: "CineJoy",
-      cost: "400",
-      icon: "icon-grid",
-      tone: "cine",
-    },
-  ],
-};
-
-const scanPayState = {
-  step: "scanning",
-  scannerDetected: false,
-  amount: "",
-  amountTouched: false,
-  rewardRevealed: false,
-};
-
-let scanPayScanTimer;
-let scanPayProcessingTimer;
-
 const UPI_SETUP_STEPS = [
   {
     title: "Verifying Wallet",
@@ -1376,7 +1286,6 @@ function openUpiSetupFlow() {
   closeMerchantDirectory();
   closeManageCardsOverlay();
   closeClaimsAssistant();
-  closeScanPayFlow();
   upiSetupState.stage = 0;
   upiSetupState.view = "setup";
   upiSetupFlow.hidden = false;
@@ -1431,690 +1340,6 @@ function resetClaimJourney() {
   claimState.isActionMenuOpen = false;
   claimState.isThinking = false;
   claimState.greetingAnimating = false;
-}
-
-function scanPayIcon(id) {
-  return `<svg aria-hidden="true"><use href="#${id}" /></svg>`;
-}
-
-function formatScanPayAmount(value) {
-  const amount = Number(value || scanPayMock.transaction.defaultAmount);
-  return `₹${amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function getScanPayAmountValue() {
-  return Number(scanPayState.amount || 0);
-}
-
-function isScanPayAmountValid() {
-  return getScanPayAmountValue() >= 1;
-}
-
-function clearScanPayTimers() {
-  window.clearTimeout(scanPayScanTimer);
-  window.clearTimeout(scanPayProcessingTimer);
-}
-
-function openScanPayFlow() {
-  if (document.body.classList.contains("is-no-upi")) return;
-  if (!scanPayFlow) return;
-  closeCardOverlay();
-  closeWalletOverlay();
-  closeMerchantDirectory();
-  closeManageCardsOverlay();
-  closeClaimsAssistant();
-  scanPayState.step = "scanning";
-  scanPayState.scannerDetected = false;
-  scanPayState.amount = "";
-  scanPayState.amountTouched = false;
-  scanPayFlow.hidden = false;
-  renderScanPayFlow();
-  window.requestAnimationFrame(() => {
-    scanPayFlow.classList.add("is-open");
-    syncPageScrollLock();
-  });
-}
-
-function closeScanPayFlow() {
-  if (!scanPayFlow) return;
-  clearScanPayTimers();
-  scanPayFlow.classList.remove("is-open");
-  window.setTimeout(() => {
-    scanPayFlow.hidden = true;
-    syncPageScrollLock();
-  }, 260);
-  if (window.location.hash === "#scan-pay") {
-    history.replaceState(
-      null,
-      "",
-      window.location.pathname + window.location.search,
-    );
-  }
-}
-
-function setScanPayStep(step) {
-  clearScanPayTimers();
-  scanPayState.step = step;
-  if (step === "success") scanPayState.scannerDetected = true;
-  renderScanPayFlow();
-}
-
-function simulateScanPayDetection() {
-  if (!["scanning", "upiFallback"].includes(scanPayState.step)) return;
-  scanPayState.scannerDetected = true;
-  renderScanPayFlow();
-  scanPayScanTimer = window.setTimeout(() => setScanPayStep("merchant"), 650);
-}
-
-function scheduleScanPayStep() {
-  clearScanPayTimers();
-  if (scanPayState.step === "scanning" && !scanPayState.scannerDetected) {
-    scanPayScanTimer = window.setTimeout(simulateScanPayDetection, 1500);
-  }
-  if (scanPayState.step === "processing") {
-    scanPayProcessingTimer = window.setTimeout(
-      () => setScanPayStep("success"),
-      2100,
-    );
-  }
-}
-
-function renderScanPayFlow() {
-  if (!scanPayFlow) return;
-  const renderer = {
-    scanning: renderScanPayScanner,
-    upiFallback: renderScanPayScanner,
-    merchant: renderScanPayMerchant,
-    review: () => renderScanPayMerchant(true),
-    processing: renderScanPayProcessing,
-    success: renderScanPaySuccess,
-    scratch: renderScanPayScratch,
-    reward: renderScanPayReward,
-    coinsWallet: renderScanPayCoinsWallet,
-    vouchers: renderScanPayVouchers,
-  }[scanPayState.step];
-  scanPayFlow.innerHTML = renderer ? renderer() : renderScanPayScanner();
-  bindScanPayFlowActions();
-  if (scanPayState.step === "scratch") initScratchCard();
-  if (scanPayState.step === "reward") animateCoinCount();
-  scheduleScanPayStep();
-}
-
-function renderScanPayDeviceStatus() {
-  return `
-    <div class="scan-pay-status" aria-hidden="true">
-      <span>9:41</span>
-      <span class="claims-device-icons">
-        <i class="claims-signal"></i>
-        <i class="claims-wifi"></i>
-        <i class="claims-battery"></i>
-      </span>
-    </div>
-  `;
-}
-
-function renderScanPayScanner() {
-  const isFallback = scanPayState.step === "upiFallback";
-  const detected = scanPayState.scannerDetected;
-  return `
-    <section class="scan-pay-screen scanner ${isFallback ? "has-sheet" : ""}" aria-label="Scan and Pay scanner">
-      ${renderScanPayDeviceStatus()}
-      <header class="scan-pay-topbar">
-        <button type="button" class="scan-pay-icon-button" aria-label="Close Scan and Pay" data-scan-pay-action="close">${scanPayIcon("icon-close")}</button>
-        <strong>Scan &amp; Pay</strong>
-        <button type="button" class="scan-pay-icon-button" aria-label="Upload QR">${scanPayIcon("icon-image") || scanPayIcon("icon-card")}</button>
-      </header>
-      <button type="button" class="qr-scan-frame ${detected ? "is-detected" : ""}" data-scan-pay-action="simulate-scan" aria-label="Simulate QR scan">
-        <span class="qr-scan-corners" aria-hidden="true"></span>
-        <span class="qr-scan-surface" aria-hidden="true"></span>
-        <span class="qr-scan-line" aria-hidden="true"></span>
-        ${detected ? `<em>${scanPayIcon("icon-checks")} QR detected</em>` : ""}
-      </button>
-      <p>Align the QR inside the frame</p>
-      <div class="scan-pay-action-dock">
-        <button type="button" data-scan-pay-action="upi-fallback"><span>${scanPayIcon("icon-grid")}</span>Enter UPI ID</button>
-        <button type="button" data-scan-pay-action="simulate-scan"><span>${scanPayIcon("icon-image") || scanPayIcon("icon-card")}</span>Upload QR</button>
-        <button type="button"><span>${scanPayIcon("icon-fuel")}</span>Torch</button>
-      </div>
-      ${isFallback ? renderScanPayUpiFallbackSheet() : ""}
-    </section>
-  `;
-}
-
-function renderScanPayUpiFallbackSheet() {
-  return `
-    <div class="scan-pay-sheet compact">
-      <span class="scan-pay-sheet-handle" aria-hidden="true"></span>
-      <h2>Pay using UPI ID</h2>
-      <p>Enter the merchant’s UPI ID to continue</p>
-      <label class="scan-pay-input-block">
-        <span>UPI ID</span>
-        <input value="${scanPayMock.merchant.upiId}" aria-label="UPI ID" />
-        <i>${scanPayIcon("icon-checks")}</i>
-      </label>
-      <span class="scan-pay-mini-label">Popular handles</span>
-      <div class="scan-pay-handle-row">
-        ${["@paytm", "@oksbi", "@ybl", "@axl"].map((handle, index) => `<button type="button" class="${index === 0 ? "is-active" : ""}">${handle}</button>`).join("")}
-      </div>
-      <button type="button" class="scan-pay-primary" data-scan-pay-action="verify-upi">Verify</button>
-    </div>
-  `;
-}
-
-function renderScanPayMerchant(withReview = false) {
-  const valid = isScanPayAmountValid();
-  const showError = scanPayState.amountTouched && scanPayState.amount && !valid;
-  const amountDisplay = scanPayState.amount
-    ? formatScanPayAmount(scanPayState.amount).replace(".00", ".00")
-    : "";
-  return `
-    <section class="scan-pay-screen pay ${withReview ? "is-dimmed" : ""}" aria-label="Merchant payment">
-      ${renderScanPayDeviceStatus()}
-      <header class="scan-pay-light-topbar">
-        <button type="button" class="scan-pay-round-button" aria-label="Back" data-scan-pay-action="back-to-scan">${scanPayIcon("icon-chevron-right")}</button>
-        <button type="button" class="scan-pay-round-button" aria-label="More options">${scanPayIcon("icon-grid")}</button>
-      </header>
-      <main class="scan-pay-content">
-        <h1>Pay</h1>
-        ${renderScanPayMerchantCard()}
-        <section class="scan-pay-amount-section">
-          <label for="scan-pay-amount">Enter amount</label>
-          <div class="scan-pay-amount-input">
-            <span>₹</span>
-            <input id="scan-pay-amount" inputmode="decimal" placeholder="Enter amount" value="${amountDisplay ? amountDisplay.replace("₹", "") : ""}" data-scan-pay-amount />
-          </div>
-          <div class="scan-pay-quick-row">
-            ${[100, 200, 500, 1000].map((amount) => `<button type="button" class="${getScanPayAmountValue() === amount ? "is-active" : ""}" data-scan-pay-quick="${amount}">+ ₹${amount.toLocaleString("en-IN")}</button>`).join("")}
-          </div>
-          <small class="scan-pay-error" ${showError ? "" : "hidden"}>Enter an amount of ₹1 or more.</small>
-        </section>
-        <button type="button" class="scan-pay-reward-strip" data-scan-pay-quick="500">
-          <span>${scanPayIcon("icon-gift")}</span>
-          <strong>Pay now and unlock<br>a scratch card 🎁</strong>
-          ${scanPayIcon("icon-chevron-right")}
-        </button>
-        <p class="scan-pay-secure-copy">${scanPayIcon("icon-lock")} Your payments are secure &amp; encrypted</p>
-      </main>
-      <footer class="scan-pay-fixed-footer">
-        <button type="button" class="scan-pay-primary" data-scan-pay-action="open-review" ${valid ? "" : "disabled"}>Continue to Pay</button>
-      </footer>
-      ${withReview ? renderScanPayReviewSheet() : ""}
-    </section>
-  `;
-}
-
-function renderScanPayMerchantCard() {
-  return `
-    <article class="scan-pay-merchant-card">
-      <span class="scan-pay-merchant-icon">${scanPayIcon("icon-food")}</span>
-      <div>
-        <strong>${scanPayMock.merchant.name}</strong>
-        <span>${scanPayMock.merchant.upiId}</span>
-        <em>${scanPayIcon("icon-checks")} Verified merchant</em>
-      </div>
-    </article>
-  `;
-}
-
-function renderScanPayReviewSheet() {
-  return `
-    <div class="scan-pay-review-backdrop" data-scan-pay-action="close-review"></div>
-    <section class="scan-pay-sheet review" aria-label="Review payment">
-      <span class="scan-pay-sheet-handle" aria-hidden="true"></span>
-      <h2>Review payment</h2>
-      <p>Please check the details before you pay</p>
-      <strong class="scan-pay-review-amount">${formatScanPayAmount(scanPayState.amount)}</strong>
-      ${renderScanPayMerchantMini()}
-      <span class="scan-pay-mini-label">Pay from</span>
-      <button type="button" class="scan-pay-wallet-row">
-        <span>${scanPayIcon("icon-wallet")}</span>
-        <span><strong>${scanPayMock.cashWallet.label}</strong><small>${scanPayMock.cashWallet.balanceCopy}</small></span>
-        ${scanPayIcon("icon-chevron-right")}
-      </button>
-      <div class="scan-pay-reward-note">
-        <span>${scanPayIcon("icon-gift")}</span>
-        <strong>Scratch card unlocks after<br>successful payment</strong>
-      </div>
-      <button type="button" class="scan-pay-primary" data-scan-pay-action="confirm-payment">Pay ₹${getScanPayAmountValue().toLocaleString("en-IN")}</button>
-      <small class="scan-pay-sheet-footer">${scanPayIcon("icon-lock")} Secured by EB+</small>
-    </section>
-  `;
-}
-
-function renderScanPayMerchantMini() {
-  return `
-    <article class="scan-pay-merchant-mini">
-      <span>${scanPayIcon("icon-food")}</span>
-      <div><strong>${scanPayMock.merchant.name}</strong><small>${scanPayMock.merchant.upiId}</small></div>
-    </article>
-  `;
-}
-
-function renderScanPayProcessing() {
-  return `
-    <section class="scan-pay-screen light centered" aria-label="Processing payment">
-      ${renderScanPayDeviceStatus()}
-      <header class="scan-pay-light-topbar single">
-        <button type="button" class="scan-pay-round-button" aria-label="Back">${scanPayIcon("icon-chevron-right")}</button>
-      </header>
-      <main class="scan-pay-processing">
-        <div class="scan-pay-loader"><span>${scanPayIcon("icon-send")}</span></div>
-        <h1>Processing payment</h1>
-        <p>Please don’t close the app</p>
-        <strong>${formatScanPayAmount(scanPayState.amount)}</strong>
-        ${renderScanPayMerchantMini()}
-      </main>
-      <footer class="scan-pay-security-card">
-        <span>${scanPayIcon("icon-lock")} Your payment is secure</span>
-        <strong>Transaction ID: ${scanPayMock.transaction.id}</strong>
-      </footer>
-    </section>
-  `;
-}
-
-function renderConfetti() {
-  return `<div class="scan-pay-confetti" aria-hidden="true">${Array.from({ length: 18 }, (_, index) => `<i style="--i:${index}"></i>`).join("")}</div>`;
-}
-
-function renderScanPaySuccess() {
-  return `
-    <section class="scan-pay-screen light success" aria-label="Payment successful">
-      ${renderScanPayDeviceStatus()}
-      ${renderConfetti()}
-      <main class="scan-pay-success-content">
-        <span class="scan-pay-success-check">
-          <span class="scan-pay-success-burst" aria-hidden="true"></span>
-          ${scanPayIcon("icon-checks")}
-        </span>
-        <strong class="scan-pay-success-amount">${formatScanPayAmount(scanPayState.amount)}</strong>
-        <h1>Payment Successful</h1>
-        <p>Paid to ${scanPayMock.merchant.name}<br>${scanPayMock.merchant.upiId}</p>
-        <button type="button" class="scan-pay-mystery-card" data-scan-pay-action="scratch-now" aria-label="Scratch card unlocked, tap to scratch and win">
-          <span class="scan-pay-mystery-shine" aria-hidden="true"></span>
-          <span class="scan-pay-mystery-badge">🎁 Reward unlocked</span>
-          <span class="scan-pay-mystery-gift" aria-hidden="true">${scanPayIcon("icon-gift")}</span>
-          <strong>You won a scratch card!</strong>
-          <small>Scratch &amp; win up to <b>500</b> Woohoo Coins</small>
-          <span class="scan-pay-mystery-cta">Scratch &amp; win ${scanPayIcon("icon-chevron-right")}</span>
-        </button>
-        <div class="scan-pay-secondary-actions">
-          <button type="button">${scanPayIcon("icon-receipt")} View receipt</button>
-          <button type="button" data-scan-pay-action="close">${scanPayIcon("icon-home")} Return to Home</button>
-        </div>
-        <section class="scan-pay-details-card">
-          <h2>Transaction details</h2>
-          ${[
-            ["Transaction ID", scanPayMock.transaction.id],
-            ["Date & Time", scanPayMock.transaction.dateTime],
-            ["Paid to", scanPayMock.merchant.name],
-            [
-              "Paid from",
-              `${scanPayMock.cashWallet.label}<br>${scanPayMock.cashWallet.balanceCopy}`,
-            ],
-          ]
-            .map(
-              ([label, value]) =>
-                `<div><span>${label}</span><strong>${value}</strong></div>`,
-            )
-            .join("")}
-        </section>
-      </main>
-    </section>
-  `;
-}
-
-function renderScanPayScratch() {
-  return `
-    <section class="scan-pay-screen light reward" aria-label="Scratch card reward">
-      ${renderScanPayDeviceStatus()}
-      <header class="scan-pay-light-topbar single">
-        <button type="button" class="scan-pay-round-button" aria-label="Back" data-scan-pay-action="success">${scanPayIcon("icon-chevron-right")}</button>
-      </header>
-      <main class="scan-pay-reward-content">
-        <h1>You earned a reward</h1>
-        <p>Scratch the card to reveal your Woohoo Coins</p>
-        <div class="scratch-stage" data-scratch-stage>
-          <div class="scratch-prize" aria-hidden="true">
-            <span class="scratch-prize-label">You won</span>
-            <strong class="scratch-prize-amount">${scanPayMock.reward.coinsWon}<i>🪙</i></strong>
-            <span class="scratch-prize-sub">Woohoo Coins</span>
-          </div>
-          <canvas class="scratch-foil" data-scratch-foil></canvas>
-          <span class="scratch-hint" data-scratch-hint aria-hidden="true">
-            ${scanPayIcon("icon-gift")}
-            <em>Scratch here</em>
-          </span>
-        </div>
-        <p class="scratch-progress-copy" data-scratch-copy>Use your finger to scratch &amp; win ✨</p>
-      </main>
-      <footer class="scan-pay-fixed-footer">
-        <button type="button" class="scan-pay-secondary" data-scan-pay-action="reveal-reward">Reveal instantly</button>
-      </footer>
-    </section>
-  `;
-}
-
-function renderScanPayReward() {
-  return `
-    <section class="scan-pay-screen light reward-revealed" aria-label="Reward revealed">
-      ${renderScanPayDeviceStatus()}
-      ${renderConfetti()}
-      <main class="scan-pay-reward-content revealed">
-        <span class="scan-pay-reward-rays" aria-hidden="true"></span>
-        <h1>Woohoo!</h1>
-        <p>You won</p>
-        <strong class="scan-pay-coin-win"><span class="scan-pay-coin-count" data-coin-count data-coin-target="${scanPayMock.reward.coinsWon}">0</span><span class="scan-pay-coin-emoji">🪙</span></strong>
-        <p>Woohoo Coins</p>
-        <div class="scan-pay-coin-box" aria-hidden="true"><span></span><i></i><b></b></div>
-        <article class="scan-pay-confirm-card">
-          <span>${scanPayIcon("icon-checks")}</span>
-          <div>
-            <strong>${scanPayMock.reward.coinsWon} Woohoo Coins added</strong>
-            <small>Your new balance is ${scanPayMock.reward.finalBalance.toLocaleString("en-IN")} Woohoo Coins</small>
-          </div>
-        </article>
-      </main>
-      <footer class="scan-pay-fixed-footer stack">
-        <button type="button" class="scan-pay-primary" data-scan-pay-action="coins-wallet">Redeem Gift Vouchers ${scanPayIcon("icon-chevron-right")}</button>
-        <button type="button" class="scan-pay-secondary" data-scan-pay-action="close">Back to Home</button>
-      </footer>
-    </section>
-  `;
-}
-
-function renderScanPayCoinsWallet() {
-  return `
-    <section class="scan-pay-screen light coins" aria-label="Woohoo Coins wallet">
-      ${renderScanPayDeviceStatus()}
-      <header class="scan-pay-light-topbar">
-        <button type="button" class="scan-pay-round-button" aria-label="Back" data-scan-pay-action="reward">${scanPayIcon("icon-chevron-right")}</button>
-        <strong>Woohoo Coins</strong>
-        <button type="button" class="scan-pay-round-button" aria-label="Information">${scanPayIcon("icon-help")}</button>
-      </header>
-      <main class="scan-pay-content compact">
-        <section class="woohoo-balance-card">
-          <span>Total balance</span>
-          <strong>${scanPayMock.reward.finalBalance.toLocaleString("en-IN")} 🪙</strong>
-          <small>Woohoo Coins</small>
-          <button type="button" data-scan-pay-action="vouchers">View rewards ${scanPayIcon("icon-arrow-right")}</button>
-        </section>
-        <section class="scan-pay-white-card">
-          <h2>Coin history</h2>
-          <div class="scan-pay-summary-grid">
-            <span>Total earned<strong>6,845 🪙</strong></span>
-            <span>Total redeemed<strong>4,323 🪙</strong></span>
-          </div>
-        </section>
-        <section class="scan-pay-activity-list">
-          <h2>Recent activity <button type="button">See all</button></h2>
-          ${scanPayMock.activity
-            .map(
-              (item) => `
-            <article>
-              <span>${scanPayIcon("icon-scan")}</span>
-              <div><strong>${item.source}</strong><small>${item.merchant}</small></div>
-              <strong>${item.coins} 🪙<small>${item.time}</small></strong>
-            </article>
-          `,
-            )
-            .join("")}
-        </section>
-      </main>
-      <footer class="scan-pay-fixed-footer">
-        <button type="button" class="scan-pay-primary" data-scan-pay-action="vouchers">${scanPayIcon("icon-gift")} Redeem Gift Vouchers ${scanPayIcon("icon-chevron-right")}</button>
-      </footer>
-    </section>
-  `;
-}
-
-function renderScanPayVouchers() {
-  return `
-    <section class="scan-pay-screen light vouchers" aria-label="Redeem vouchers">
-      ${renderScanPayDeviceStatus()}
-      <header class="scan-pay-light-topbar">
-        <button type="button" class="scan-pay-round-button" aria-label="Back" data-scan-pay-action="coins-wallet">${scanPayIcon("icon-chevron-right")}</button>
-        <strong>Redeem vouchers</strong>
-        <button type="button" class="scan-pay-round-button" aria-label="Search">${scanPayIcon("icon-search")}</button>
-      </header>
-      <main class="scan-pay-content compact">
-        <section class="scan-pay-available-card">
-          <span class="coin-badge">🪙</span>
-          <div><span>Available balance</span><strong>${scanPayMock.reward.finalBalance.toLocaleString("en-IN")}</strong><small>Woohoo Coins</small></div>
-          ${scanPayIcon("icon-chevron-right")}
-        </section>
-        <h2 class="scan-pay-section-title">Popular vouchers</h2>
-        <div class="voucher-grid">
-          ${scanPayMock.vouchers
-            .map(
-              (voucher) => `
-            <article class="voucher-card ${voucher.tone}">
-              <div><span>${scanPayIcon(voucher.icon)}</span><strong>${voucher.brand}</strong></div>
-              <p>${voucher.name}</p>
-              <strong>${voucher.cost} 🪙</strong>
-              <button type="button">Redeem</button>
-            </article>
-          `,
-            )
-            .join("")}
-        </div>
-        <section class="scan-pay-promo-strip">
-          <span>${scanPayIcon("icon-trophy")}</span>
-          <div><strong>More brands. More rewards.</strong><small>New vouchers added every week!</small></div>
-          ${scanPayIcon("icon-chevron-right")}
-        </section>
-      </main>
-    </section>
-  `;
-}
-
-function bindScanPayFlowActions() {
-  if (!scanPayFlow) return;
-  scanPayFlow.querySelectorAll("[data-scan-pay-action]").forEach((control) => {
-    control.addEventListener("click", () =>
-      handleScanPayAction(control.dataset.scanPayAction),
-    );
-  });
-  scanPayFlow.querySelectorAll("[data-scan-pay-quick]").forEach((button) => {
-    button.addEventListener("click", () => {
-      scanPayState.amount = button.dataset.scanPayQuick;
-      scanPayState.amountTouched = true;
-      setScanPayStep("merchant");
-    });
-  });
-  const amountInput = scanPayFlow.querySelector("[data-scan-pay-amount]");
-  amountInput?.addEventListener("input", () => {
-    const cleaned = amountInput.value.replace(/[^\d.]/g, "");
-    scanPayState.amount = cleaned;
-    scanPayState.amountTouched = true;
-    const continueButton = scanPayFlow.querySelector(
-      '[data-scan-pay-action="open-review"]',
-    );
-    const error = scanPayFlow.querySelector(".scan-pay-error");
-    if (continueButton) continueButton.disabled = Number(cleaned || 0) < 1;
-    if (error) error.hidden = Number(cleaned || 0) >= 1;
-  });
-}
-
-function initScratchCard() {
-  const stage = scanPayFlow.querySelector("[data-scratch-stage]");
-  const canvas = scanPayFlow.querySelector("[data-scratch-foil]");
-  if (!stage || !canvas) return;
-  const hint = stage.querySelector("[data-scratch-hint]");
-  const copy = scanPayFlow.querySelector("[data-scratch-copy]");
-  const ctx = canvas.getContext("2d");
-
-  // Reduced-motion / no-canvas fallback: reveal instantly.
-  if (!ctx || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    revealReward();
-    return;
-  }
-
-  let revealed = false;
-  let drawing = false;
-  let lastPoint = null;
-
-  const paintFoil = () => {
-    const rect = stage.getBoundingClientRect();
-    if (!rect.width || !rect.height) return false;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(rect.width * dpr);
-    canvas.height = Math.round(rect.height * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const gradient = ctx.createLinearGradient(0, 0, rect.width, rect.height);
-    gradient.addColorStop(0, "#0a8a7c");
-    gradient.addColorStop(0.5, "#00605a");
-    gradient.addColorStop(1, "#01433f");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, rect.width, rect.height);
-    // Sparkle speckles so the foil reads as a real scratch coating.
-    ctx.fillStyle = "rgba(255, 255, 255, 0.10)";
-    for (let n = 0; n < 90; n += 1) {
-      const sx = Math.random() * rect.width;
-      const sy = Math.random() * rect.height;
-      ctx.beginPath();
-      ctx.arc(sx, sy, Math.random() * 1.6 + 0.4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    ctx.fillStyle = "rgba(255, 255, 255, 0.82)";
-    ctx.font = "600 15px 'PP Telegraf', system-ui, -apple-system, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("SCRATCH HERE", rect.width / 2, rect.height / 2 + 56);
-    return true;
-  };
-
-  const pointerPos = (event) => {
-    const rect = canvas.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
-  };
-
-  const scratchTo = (point) => {
-    ctx.globalCompositeOperation = "destination-out";
-    ctx.lineWidth = 46;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    if (lastPoint) {
-      ctx.beginPath();
-      ctx.moveTo(lastPoint.x, lastPoint.y);
-      ctx.lineTo(point.x, point.y);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 23, 0, Math.PI * 2);
-    ctx.fill();
-    lastPoint = point;
-  };
-
-  const clearedRatio = () => {
-    const { width, height } = canvas;
-    if (!width || !height) return 0;
-    const sample = ctx.getImageData(0, 0, width, height).data;
-    let cleared = 0;
-    const total = width * height;
-    // Sample every 64th pixel's alpha for speed.
-    for (let i = 3; i < sample.length; i += 256) {
-      if (sample[i] === 0) cleared += 1;
-    }
-    return cleared / (total / 64);
-  };
-
-  const finish = () => {
-    if (revealed) return;
-    revealed = true;
-    stage.classList.add("is-clearing");
-    if (copy) copy.textContent = "Nice! Revealing your reward…";
-    window.setTimeout(revealReward, 620);
-  };
-
-  const onDown = (event) => {
-    if (revealed) return;
-    drawing = true;
-    lastPoint = null;
-    stage.classList.add("is-scratching");
-    if (hint) hint.style.opacity = "0";
-    // Keep receiving move events even if the finger drifts off the card.
-    try {
-      canvas.setPointerCapture(event.pointerId);
-    } catch (error) {
-      /* pointer capture unsupported — graceful no-op */
-    }
-    scratchTo(pointerPos(event));
-  };
-  const onMove = (event) => {
-    if (!drawing || revealed) return;
-    event.preventDefault();
-    scratchTo(pointerPos(event));
-    if (clearedRatio() > 0.5) finish();
-  };
-  const onUp = () => {
-    drawing = false;
-    lastPoint = null;
-    if (!revealed && clearedRatio() > 0.5) finish();
-  };
-
-  requestAnimationFrame(() => {
-    if (!paintFoil()) {
-      // Stage not measurable yet (hidden); retry once next frame.
-      requestAnimationFrame(() => {
-        if (!paintFoil()) revealReward();
-      });
-    }
-  });
-
-  canvas.addEventListener("pointerdown", onDown);
-  canvas.addEventListener("pointermove", onMove);
-  canvas.addEventListener("pointerup", onUp);
-  canvas.addEventListener("pointercancel", onUp);
-}
-
-function revealReward() {
-  scanPayState.rewardRevealed = true;
-  setScanPayStep("reward");
-}
-
-function animateCoinCount() {
-  const node = scanPayFlow.querySelector("[data-coin-count]");
-  if (!node) return;
-  const target = Number(node.dataset.coinTarget) || 0;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    node.textContent = String(target);
-    return;
-  }
-  const duration = 900;
-  const start = performance.now();
-  const tick = (now) => {
-    const progress = Math.min(1, (now - start) / duration);
-    const eased = 1 - Math.pow(1 - progress, 3);
-    node.textContent = String(Math.round(target * eased));
-    if (progress < 1) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}
-
-function handleScanPayAction(action) {
-  if (action === "close") closeScanPayFlow();
-  if (action === "simulate-scan") simulateScanPayDetection();
-  if (action === "upi-fallback") setScanPayStep("upiFallback");
-  if (action === "verify-upi") setScanPayStep("merchant");
-  if (action === "back-to-scan") setScanPayStep("scanning");
-  if (action === "open-review") {
-    scanPayState.amountTouched = true;
-    if (!isScanPayAmountValid()) {
-      renderScanPayFlow();
-      return;
-    }
-    setScanPayStep("review");
-  }
-  if (action === "close-review") setScanPayStep("merchant");
-  if (action === "confirm-payment") setScanPayStep("processing");
-  if (action === "scratch-now") setScanPayStep("scratch");
-  if (action === "success") setScanPayStep("success");
-  if (action === "reveal-reward") {
-    scanPayState.rewardRevealed = true;
-    setScanPayStep("reward");
-  }
-  if (action === "reward") setScanPayStep("reward");
-  if (action === "coins-wallet") setScanPayStep("coinsWallet");
-  if (action === "vouchers") setScanPayStep("vouchers");
 }
 
 resetClaimJourney();
@@ -4915,26 +4140,53 @@ function renderModeSwitch(actionKeys, selectedKey) {
 }
 
 function createHistoryItem(item) {
-  const article = document.createElement("article");
-  article.className = `transaction-item${item.positive ? " positive" : ""}`;
+  const isPositive = item.positive || item.type === "credit";
+  const article = document.createElement(item.id ? "button" : "article");
+  if (item.id) article.type = "button";
+  article.className = `transaction-item${isPositive ? " positive" : ""}`;
+  if (item.wallet) article.dataset.wallet = item.wallet;
   const statusKey = item.status
     ? item.status.toLowerCase().replace(/\s+/g, "-")
     : "";
   const status = item.status
     ? `<span class="transaction-status ${statusKey}">${item.status}</span>`
     : "";
+  const icon = item.icon
+    ? item.icon.startsWith("icon-")
+      ? item.icon
+      : `icon-${item.icon}`
+    : "icon-arrow-right";
+  const reference =
+    item.reference || `${item.paymentMethod} | Ref ID: ${item.refId}`;
+  const amount =
+    typeof item.amount === "number"
+      ? `${isPositive ? "+" : "-"} ${formatCurrency(item.amount)}`
+      : item.amount;
+  const date = item.date || item.dateLabel;
   article.innerHTML = `
-    <span class="transaction-icon" aria-hidden="true"><svg><use href="#${item.icon || "icon-arrow-right"}" /></svg></span>
+    <span class="transaction-icon" aria-hidden="true"><svg><use href="#${icon}" /></svg></span>
     <span class="transaction-meta">
       <strong>${item.merchant}</strong>
-      <span>${item.reference}</span>
+      <span>${reference}</span>
     </span>
-    <span class="transaction-amount${item.positive ? " positive" : ""}">
-      <strong>${item.amount}</strong>
-      <span>${item.date}</span>
+    <span class="transaction-amount${isPositive ? " positive" : ""}">
+      <strong>${amount}</strong>
+      <span>${date}</span>
       ${status}
     </span>
   `;
+  if (item.id) {
+    article.setAttribute("aria-label", `Open ${item.merchant} transaction details`);
+    article.addEventListener("click", () => {
+      window.parent.postMessage(
+        {
+          type: "employee-benefits:open-transaction-details",
+          transactionId: item.id,
+        },
+        window.location.origin,
+      );
+    });
+  }
   return article;
 }
 
@@ -4949,7 +4201,7 @@ function createEmptyTransactionState(message) {
   return notice;
 }
 
-function renderWalletHistory(overlayContent) {
+function renderWalletHistory() {
   if (!walletOverlayHistory) return;
 
   walletOverlayHistory.replaceChildren();
@@ -4961,10 +4213,63 @@ function renderWalletHistory(overlayContent) {
     return;
   }
 
-  overlayContent.history.forEach((item) => {
+  const history = Array.isArray(syncedWalletTransactions[activeWalletTone])
+    ? syncedWalletTransactions[activeWalletTone]
+    : syncedTransactionItems
+        .filter((item) => item.wallet === activeWalletTone)
+        .sort((left, right) => {
+          const dateOrder = right.postedOn.localeCompare(left.postedOn);
+          return dateOrder === 0
+            ? left.id.localeCompare(right.id)
+            : dateOrder;
+        })
+        .slice(0, 10);
+  if (history.length === 0) {
+    walletOverlayHistory.append(
+      createEmptyTransactionState("No transactions yet for this wallet."),
+    );
+    if (walletOverlayViewAllHistory) walletOverlayViewAllHistory.hidden = true;
+    return;
+  }
+  history.forEach((item) => {
     walletOverlayHistory.append(createHistoryItem(item));
   });
   if (walletOverlayViewAllHistory) walletOverlayViewAllHistory.hidden = false;
+}
+
+function renderSyncedTransactions(items, walletTransactions) {
+  syncedTransactionItems = Array.isArray(items) ? items : [];
+  syncedWalletTransactions =
+    walletTransactions && typeof walletTransactions === "object"
+      ? walletTransactions
+      : {};
+  const transactionList = document.querySelector("[data-transaction-list]");
+  if (transactionList) {
+    transactionList.replaceChildren();
+    if (syncedTransactionItems.length === 0) {
+      transactionList.append(
+        createEmptyTransactionState("No transactions yet for your new account."),
+      );
+    } else {
+      syncedTransactionItems
+        .slice(0, 10)
+        .forEach((item) => transactionList.append(createHistoryItem(item)));
+    }
+  }
+
+  const activeFilter =
+    document.querySelector("[data-filter].active")?.dataset.filter || "all";
+  document.querySelectorAll("[data-transaction-list] [data-wallet]").forEach((item) => {
+    item.classList.toggle(
+      "is-hidden",
+      activeFilter !== "all" && item.dataset.wallet !== activeFilter,
+    );
+  });
+
+  const activeOverlayContent = walletOverlayContent[activeWalletTone];
+  if (activeOverlayContent && walletOverlay?.classList.contains("is-open")) {
+    renderWalletHistory();
+  }
 }
 
 function createMerchantChip(label, isActive) {
@@ -5252,9 +4557,12 @@ document.querySelectorAll("[data-send-money-open]").forEach((button) => {
 });
 
 scanPayOpenButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    window.location.hash = "scan-pay";
-    openScanPayFlow();
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-scan-pay" },
+      window.location.origin,
+    );
   });
 });
 
@@ -5340,7 +4648,7 @@ function applyMode(isPluspay) {
     });
     lensFilterButton?.classList.add("active");
     lensFilterButton?.setAttribute("aria-selected", "true");
-    transactions.forEach((transaction) => {
+    document.querySelectorAll("[data-transaction-list] [data-wallet]").forEach((transaction) => {
       transaction.classList.remove("is-hidden");
     });
   }
@@ -5362,7 +4670,7 @@ filterButtons.forEach((button) => {
     button.classList.add("active");
     button.setAttribute("aria-selected", "true");
 
-    transactions.forEach((transaction) => {
+    document.querySelectorAll("[data-transaction-list] [data-wallet]").forEach((transaction) => {
       const shouldShow =
         selectedWallet === "all" ||
         transaction.dataset.wallet === selectedWallet;
@@ -6013,7 +5321,7 @@ function openWalletOverlay(button) {
     renderPrimaryAction(primaryAction);
   }
 
-  renderWalletHistory(overlayContent);
+  renderWalletHistory();
 
   walletOverlay.hidden = false;
   window.requestAnimationFrame(() => {
@@ -6368,7 +5676,6 @@ window.addEventListener("keydown", (event) => {
     closeMerchantDirectory();
     closeManageCardsOverlay();
     closeClaimsAssistant();
-    closeScanPayFlow();
     closeUpiSetupFlow();
   }
 });
@@ -6494,7 +5801,7 @@ function syncPersonaToApp(payload) {
 
   const activeOverlayContent = walletOverlayContent[activeWalletTone];
   if (activeOverlayContent && walletOverlay?.classList.contains("is-open")) {
-    renderWalletHistory(activeOverlayContent);
+    renderWalletHistory();
   }
 }
 
@@ -6510,9 +5817,11 @@ window.addEventListener("message", (e) => {
   if (e.data?.type === "employee-benefits:sync-persona") {
     syncPersonaToApp(e.data.persona);
   }
+  if (e.data?.type === "employee-benefits:sync-transactions") {
+    renderSyncedTransactions(
+      e.data.transactions,
+      e.data.walletTransactions,
+    );
+  }
 });
 if (window.location.hash === "#claims") openClaimsAssistant();
-if (
-  window.location.hash === "#scan-pay" &&
-  !document.body.classList.contains("is-no-upi")
-) openScanPayFlow();

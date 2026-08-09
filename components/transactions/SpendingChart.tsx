@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import {
+  formatCompactAmount,
   formatINR,
   type AnalyticsCategory,
+  type AnalyticsMerchant,
+  type AnalyticsWeek,
 } from "@/features/transactions/constants";
 import { colors } from "@/lib/ui/colors";
 
@@ -12,6 +15,100 @@ type SpendingChartProps = {
   totalLabel: string;
   totalSubLabel: string;
 };
+
+type WeeklySpendingChartProps = {
+  weeks: AnalyticsWeek[];
+  monthLabel: string;
+};
+
+export function WeeklySpendingChart({
+  weeks,
+  monthLabel,
+}: WeeklySpendingChartProps) {
+  const maxAmount = Math.max(...weeks.map((week) => week.amount), 1);
+  const month = monthLabel.split(" ")[0].slice(0, 3);
+
+  return (
+    <figure
+      aria-label={`Weekly spending for ${monthLabel}: ${weeks
+        .map((week) => `${month} ${week.label}, ${formatINR(week.amount)}`)
+        .join("; ")}`}
+    >
+      <div className="flex h-64 items-end gap-3 border-b border-border-line px-1 pb-3">
+        {weeks.map((week) => {
+          const heightPercent =
+            week.amount === 0 ? 2 : Math.max(8, (week.amount / maxAmount) * 86);
+          return (
+            <div key={week.id} className="flex h-full min-w-0 flex-1 flex-col justify-end">
+              <span className="mb-2 text-center text-caption font-bold text-ink-secondary tabular-nums">
+                {formatCompactAmount(week.amount)}
+              </span>
+              <span
+                className={`mx-auto w-full max-w-10 rounded-control ${
+                  week.amount === 0 ? "bg-surface-muted" : "bg-success"
+                }`}
+                style={{ height: `${heightPercent}%` }}
+                aria-hidden="true"
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-2 flex gap-3 px-1">
+        {weeks.map((week) => (
+          <span
+            key={`${week.id}-label`}
+            className="min-w-0 flex-1 text-center text-caption text-ink-secondary"
+          >
+            {month} {week.label}
+          </span>
+        ))}
+      </div>
+    </figure>
+  );
+}
+
+type MerchantSpendingChartProps = {
+  merchants: AnalyticsMerchant[];
+};
+
+export function MerchantSpendingChart({
+  merchants,
+}: MerchantSpendingChartProps) {
+  const rows = merchants.slice(0, 6);
+  const maxAmount = Math.max(...rows.map((merchant) => merchant.amount), 1);
+  const ticks = [0, 0.25, 0.5, 0.75, 1];
+
+  return (
+    <figure
+      aria-label={`Top merchants: ${rows
+        .map((merchant) => `${merchant.name}, ${formatINR(merchant.amount)}`)
+        .join("; ")}`}
+    >
+      <div className="flex flex-col gap-2.5 py-2">
+        {rows.map((merchant) => (
+          <div key={merchant.id} className="flex min-h-7 items-center gap-2">
+            <span className="w-20 shrink-0 truncate text-right text-caption text-ink-secondary">
+              {merchant.name}
+            </span>
+            <span className="relative h-6 min-w-0 flex-1 overflow-hidden rounded-control bg-surface">
+              <span
+                className={`block h-full rounded-control ${merchant.barClass}`}
+                style={{ width: `${Math.max(4, (merchant.amount / maxAmount) * 100)}%` }}
+                aria-hidden="true"
+              />
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className="ml-22 flex justify-between border-t border-border-line pt-2 text-caption text-ink-tertiary tabular-nums">
+        {ticks.map((tick) => (
+          <span key={tick}>₹{formatCompactAmount(Math.round(maxAmount * tick))}</span>
+        ))}
+      </div>
+    </figure>
+  );
+}
 
 const SIZE = 240;
 const CENTER = SIZE / 2;
@@ -224,8 +321,8 @@ function fitsInside(
  * white or ink contrasts better against the fill.
  */
 function labelInk(fill: string): string {
-  return contrastRatio(fill, "#FFFFFF") >= contrastRatio(fill, colors.ink)
-    ? "#FFFFFF"
+  return contrastRatio(fill, colors.white) >= contrastRatio(fill, colors.ink)
+    ? colors.white
     : colors.ink;
 }
 
@@ -256,7 +353,7 @@ type CategoryGlyphProps = {
 
 export function CategoryGlyph({
   icon,
-  color = "#fff",
+  color = "currentColor",
 }: CategoryGlyphProps) {
   const common = {
     width: 18,

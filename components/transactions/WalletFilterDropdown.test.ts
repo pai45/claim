@@ -17,21 +17,21 @@ describe("WalletFilterDropdown", () => {
     expect(markup).toContain('aria-expanded="false"');
   });
 
-  it("updates trigger label for other benefit wallets", () => {
+  it("updates trigger label for other wallets", () => {
     const fuelMarkup = renderToStaticMarkup(
       createElement(WalletFilterDropdown, {
         selectedWallet: "fuel",
         onSelectWallet: () => {},
       }),
     );
-    expect(fuelMarkup).toContain("Fuel &amp; Maintenance");
+    expect(fuelMarkup).toContain("Fuel Wallet");
 
-    const professionalMarkup = renderToStaticMarkup(
+    const reimbursementMarkup = renderToStaticMarkup(
       createElement(WalletFilterDropdown, {
-        selectedWallet: "professional",
+        selectedWallet: "misc",
         onSelectWallet: () => {},
       }),
     );
-    expect(professionalMarkup).toContain("Professional Development");
+    expect(reimbursementMarkup).toContain("Reimbursement Wallet");
   });
 });

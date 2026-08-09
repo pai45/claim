@@ -1,11 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import { NativeMonthPicker } from "@/components/shared/NativeMonthPicker";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
+import { formatSignedINR } from "@/features/transactions/constants";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import {
   WALLET_STATEMENT_MAX_MONTH,
   filterWalletStatementTransactions,
@@ -13,12 +16,6 @@ import {
   groupWalletStatementTransactions,
   monthLabel,
 } from "@/features/wallet-statement/constants";
-
-const currencyFormatter = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
 
 const dateFormatter = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
@@ -30,7 +27,8 @@ const dateFormatter = new Intl.DateTimeFormat("en-GB", {
 export function WalletStatementScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const statement = getWalletStatement(searchParams.get("wallet"));
+  const { personaId } = useActivePersona();
+  const statement = getWalletStatement(searchParams.get("wallet"), personaId);
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   const visibleTransactions = useMemo(
@@ -97,9 +95,10 @@ export function WalletStatementScreen() {
                 <h2 className="type-section-title text-pine-primary">{group.label}</h2>
                 <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
                   {group.transactions.map((transaction, index) => (
-                    <article
+                    <Link
                       key={transaction.id}
-                      className={`flex items-center gap-3 px-card py-3 ${
+                      href={`/transaction-details/?id=${encodeURIComponent(transaction.id)}`}
+                      className={`flex min-h-11 items-center gap-3 px-card py-3 transition-colors hover:bg-surface ${
                         index < group.transactions.length - 1 ? "border-b border-border-soft" : ""
                       }`}
                     >
@@ -111,18 +110,22 @@ export function WalletStatementScreen() {
                           {transaction.merchant}
                         </span>
                         <span className="truncate text-caption text-ink-secondary">
-                          Ref ID: {transaction.referenceId}
+                          {transaction.paymentMethod} | Ref ID: {transaction.refId}
                         </span>
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-0.5">
-                        <span className="text-body-sm font-bold tabular-nums text-ink">
-                          - {currencyFormatter.format(transaction.amount)}
+                        <span
+                          className={`text-body-sm font-bold tabular-nums ${
+                            transaction.type === "credit" ? "text-success" : "text-ink"
+                          }`}
+                        >
+                          {formatSignedINR(transaction.amount, transaction.type)}
                         </span>
                         <span className="text-caption text-ink-secondary">
                           {dateFormatter.format(new Date(`${transaction.postedOn}T00:00:00Z`))}
                         </span>
                       </span>
-                    </article>
+                    </Link>
                   ))}
                 </div>
               </section>

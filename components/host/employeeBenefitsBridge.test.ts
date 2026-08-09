@@ -6,8 +6,10 @@ const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
+const OPEN_TRANSACTION_DETAILS_MESSAGE = "employee-benefits:open-transaction-details";
 const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
 const OPEN_SEND_MONEY_MESSAGE = "employee-benefits:open-send-money";
+const OPEN_SCAN_PAY_MESSAGE = "employee-benefits:open-scan-pay";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
 const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
@@ -71,10 +73,25 @@ describe("Employee Benefits claims bridge", () => {
     );
   });
 
+  it("uses a dedicated message type for transaction details", () => {
+    expect(OPEN_TRANSACTION_DETAILS_MESSAGE).toBe(
+      "employee-benefits:open-transaction-details",
+    );
+    expect(OPEN_TRANSACTION_DETAILS_MESSAGE).not.toBe(
+      OPEN_TRANSACTIONS_MESSAGE,
+    );
+  });
+
   it("uses a dedicated message type for Send Money", () => {
     expect(OPEN_SEND_MONEY_MESSAGE).toBe("employee-benefits:open-send-money");
     expect(OPEN_SEND_MONEY_MESSAGE).not.toBe(OPEN_TRANSACTIONS_MESSAGE);
     expect(OPEN_SEND_MONEY_MESSAGE).not.toBe(OPEN_UPI_SETTINGS_MESSAGE);
+  });
+
+  it("uses a dedicated host event for the React-owned Scan & Pay journey", () => {
+    expect(OPEN_SCAN_PAY_MESSAGE).toBe("employee-benefits:open-scan-pay");
+    expect(OPEN_SCAN_PAY_MESSAGE).not.toBe(OPEN_SEND_MONEY_MESSAGE);
+    expect(OPEN_SCAN_PAY_MESSAGE).not.toBe(OPEN_BENEFITS_MESSAGE);
   });
 
   it("uses a dedicated request/result contract for card MPIN verification", () => {

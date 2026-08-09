@@ -84,3 +84,13 @@ export const DEMO_DOCUMENT_ASSETS = {
   dlFound: "/assets/demo-documents/dl-found.jpg",
   dlNotFound: "/assets/demo-documents/dl-not-found.jpg",
 } as const;
+
+/** Supplied merchant QR hardware image used by the Scan & Pay demo scanner. */
+export const SCAN_PAY_ASSETS = {
+  scannerDemo: "/assets/scan-pay/scanner-demo.png",
+  scratchCard: "/assets/scan-pay/scratch-card.png",
+  financeIllustration: "/assets/scan-pay/finance-illustration.svg",
+  categoryMore: "/assets/scan-pay/category-more.svg",
+  confirmPaymentMark: "/assets/scan-pay/confirm-payment-mark.png",
+  poweredByUpi: UPI_SETTINGS_ASSETS.poweredByUpi,
+} as const;

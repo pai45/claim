@@ -3,20 +3,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChatShell } from "@/components/chat/ChatShell";
 import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
+import { ScanPayFlow } from "@/components/scan-pay/ScanPayFlow";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { useActivePersona } from "@/features/persona/useActivePersona";
+import { resolveScanPayScenario } from "@/features/scan-pay/fixtures";
+import type { ScanPayScenario } from "@/features/scan-pay/types";
+import {
+  WALLET_FILTER_OPTIONS,
+  getRecentTransactionsByWallet,
+  getTransactionItems,
+} from "@/features/transactions/constants";
 import type { EmployeeBenefitsPersonaPayload } from "@/features/persona/types";
 import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
 
 const CLAIMS_HASH = "#claims";
+const SCAN_PAY_HASH = "#scan-pay";
+const SCAN_PAY_SCENARIO_QUERY = "scanPayScenario";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
+const OPEN_TRANSACTION_DETAILS_MESSAGE = "employee-benefits:open-transaction-details";
 const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
 const OPEN_SEND_MONEY_MESSAGE = "employee-benefits:open-send-money";
+const OPEN_SCAN_PAY_MESSAGE = "employee-benefits:open-scan-pay";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
 const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
@@ -46,6 +58,9 @@ export function EmployeeBenefitsHost() {
   const frameRef = useRef<HTMLIFrameElement>(null);
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(false);
+  const [scanPayOpen, setScanPayOpen] = useState(false);
+  const [scanPayScenario, setScanPayScenario] =
+    useState<ScanPayScenario>("success");
   const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
   const [plusPayMode, setPlusPayMode] = useState(
     persona.access.defaultProduct === "pluspay",
@@ -106,8 +121,25 @@ export function EmployeeBenefitsHost() {
   }, []);
 
   const openSpendAnalytics = useCallback(() => {
-    window.location.assign(withBasePath("/transactions/?tab=analytics"));
+    window.location.assign(withBasePath("/transactions/?tab=analytics&view=trends"));
   }, []);
+
+  const openTransactionDetails = useCallback(
+    (transactionId: unknown) => {
+      if (
+        typeof transactionId !== "string" ||
+        !getTransactionItems(persona.id).some((item) => item.id === transactionId)
+      ) {
+        return;
+      }
+      window.location.assign(
+        withBasePath(
+          `/transaction-details/?id=${encodeURIComponent(transactionId)}`,
+        ),
+      );
+    },
+    [persona.id],
+  );
 
   const openManageLimits = useCallback(() => {
     window.location.assign(withBasePath("/manage-limit/"));
@@ -131,10 +163,34 @@ export function EmployeeBenefitsHost() {
 
   const openScanPay = useCallback(() => {
     if (!persona.access.upiEnabled) return;
-    frameRef.current?.contentDocument
-      ?.querySelector<HTMLElement>("[data-scan-pay-open]")
-      ?.click();
+    setClaimsOpen(false);
+    setScanPayScenario(
+      resolveScanPayScenario(
+        new URLSearchParams(window.location.search).get(
+          SCAN_PAY_SCENARIO_QUERY,
+        ),
+      ),
+    );
+    setScanPayOpen(true);
+    if (window.location.hash.toLowerCase() !== SCAN_PAY_HASH) {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}${SCAN_PAY_HASH}`,
+      );
+    }
   }, [persona.access.upiEnabled]);
+
+  const closeScanPay = useCallback(() => {
+    setScanPayOpen(false);
+    if (window.location.hash.toLowerCase() === SCAN_PAY_HASH) {
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${window.location.search}`,
+      );
+    }
+  }, []);
 
   const connectClaimsBridge = useCallback(() => {
     const document = frameRef.current?.contentDocument;
@@ -196,8 +252,23 @@ export function EmployeeBenefitsHost() {
       hasTransactions: persona.hasTransactions,
       hasUpiId: persona.hasUpiId,
     };
+    const syncedTransactions = getTransactionItems(persona.id);
+    const walletTransactions = Object.fromEntries(
+      WALLET_FILTER_OPTIONS.map((wallet) => [
+        wallet.id,
+        getRecentTransactionsByWallet(syncedTransactions, wallet.id),
+      ]),
+    );
     frameRef.current?.contentWindow?.postMessage(
       { type: "employee-benefits:sync-persona", persona: payload },
+      window.location.origin,
+    );
+    frameRef.current?.contentWindow?.postMessage(
+      {
+        type: "employee-benefits:sync-transactions",
+        transactions: syncedTransactions,
+        walletTransactions,
+      },
       window.location.origin,
     );
   }, [persona]);
@@ -209,10 +280,23 @@ export function EmployeeBenefitsHost() {
     // URL through the history API, which fires neither of these — screens that
     // are already mounted have to call `openClaims` directly.
     const syncHash = () => {
+      const hash = window.location.hash.toLowerCase();
       setClaimsOpen(
         persona.access.products.lens &&
-          window.location.hash.toLowerCase() === CLAIMS_HASH,
+          hash === CLAIMS_HASH,
       );
+      const shouldOpenScanPay =
+        persona.access.upiEnabled && hash === SCAN_PAY_HASH;
+      setScanPayOpen(shouldOpenScanPay);
+      if (shouldOpenScanPay) {
+        setScanPayScenario(
+          resolveScanPayScenario(
+            new URLSearchParams(window.location.search).get(
+              SCAN_PAY_SCENARIO_QUERY,
+            ),
+          ),
+        );
+      }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -244,6 +328,10 @@ export function EmployeeBenefitsHost() {
         openSpendAnalytics();
         return;
       }
+      if (event.data?.type === OPEN_TRANSACTION_DETAILS_MESSAGE) {
+        openTransactionDetails(event.data.transactionId);
+        return;
+      }
       if (event.data?.type === OPEN_MANAGE_LIMITS_MESSAGE) {
         openManageLimits();
         return;
@@ -260,6 +348,10 @@ export function EmployeeBenefitsHost() {
       }
       if (event.data?.type === OPEN_SEND_MONEY_MESSAGE) {
         openSendMoney();
+        return;
+      }
+      if (event.data?.type === OPEN_SCAN_PAY_MESSAGE) {
+        openScanPay();
         return;
       }
       if (
@@ -290,12 +382,15 @@ export function EmployeeBenefitsHost() {
     openClaims,
     openManageLimits,
     openProfile,
+    openScanPay,
     openSpendAnalytics,
+    openTransactionDetails,
     openSendMoney,
     openTransactions,
     openWalletStatement,
     openUpiSettings,
     persona.access.products.lens,
+    persona.access.upiEnabled,
   ]);
 
   return (
@@ -303,7 +398,7 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-scan-nav-v2`}
+        src={`${withBasePath("/employee-benefits/index.html")}?v=react-scan-pay-v1`}
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />
@@ -311,9 +406,9 @@ export function EmployeeBenefitsHost() {
       <EbBottomNav
         active="home"
         className={`employee-benefits-shared-nav${
-          claimsOpen || sourceOverlayOpen ? " is-hidden" : ""
+          claimsOpen || scanPayOpen || sourceOverlayOpen ? " is-hidden" : ""
         }`}
-        hidden={claimsOpen || sourceOverlayOpen}
+        hidden={claimsOpen || scanPayOpen || sourceOverlayOpen}
         variant={
           persona.access.products.plusPay &&
           (!persona.access.products.lens || plusPayMode)
@@ -334,6 +429,12 @@ export function EmployeeBenefitsHost() {
           <ChatShell onClose={closeClaims} />
         </section>
       ) : null}
+
+      <ScanPayFlow
+        open={scanPayOpen}
+        scenario={scanPayScenario}
+        onClose={closeScanPay}
+      />
 
       {cardMpinIntent ? (
         <section

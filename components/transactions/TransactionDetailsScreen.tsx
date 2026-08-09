@@ -27,7 +27,7 @@ export function TransactionDetailsScreen({
     <AppShell className="overflow-hidden" variant="surface">
       <ScreenHeader
         title="Transaction Details"
-        onBack={() => router.push("/transactions/")}
+        onBack={() => router.back()}
       />
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-8 pt-2">

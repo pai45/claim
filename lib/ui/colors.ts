@@ -3,6 +3,7 @@
  * Keep in sync with @theme tokens in app/globals.css.
  */
 export const colors = {
+  white: "#FFFFFF",
   pine: "#0F3F37",
   pinePrimary: "#005656",
   pineDark: "#003434",

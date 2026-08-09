@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
@@ -11,12 +11,15 @@ import { TransactionIcon } from "@/components/transactions/TransactionIcon";
 import { WalletFilterDropdown } from "@/components/transactions/WalletFilterDropdown";
 import {
   CategoryGlyph,
+  MerchantSpendingChart,
   SpendingChart,
+  WeeklySpendingChart,
 } from "@/components/transactions/SpendingChart";
 import {
   ANALYTICS_VIEW_PILLS,
   ANALYTICS_WALLETS,
   HISTORY_TABS,
+  TRANSACTION_MAX_MONTH,
   TRANSACTION_MONTHS,
   WALLET_FILTER_OPTIONS,
   filterTransactionsByMonth,
@@ -25,8 +28,8 @@ import {
   formatSignedINR,
   getAnalyticsData,
   getTransactionItems,
-  getWalletLedgerSummary,
   groupTransactions,
+  isTransactionWallet,
   type AnalyticsViewId,
   type AnalyticsWalletId,
   type HistoryTabId,
@@ -44,12 +47,18 @@ export function TransactionsScreen() {
     searchParams.get("tab") === "analytics" ? "analytics" : "transactions",
   );
   const [selectedWallet, setSelectedWallet] =
-    useState<TransactionWalletFilterId>("meal");
+    useState<TransactionWalletFilterId>(() => {
+      const requestedWallet = searchParams.get("wallet");
+      return isTransactionWallet(requestedWallet) ? requestedWallet : "meal";
+    });
   const [analyticsView, setAnalyticsView] =
-    useState<AnalyticsViewId>("category");
-  const [analyticsWallet, setAnalyticsWallet] =
-    useState<AnalyticsWalletId>("meal");
-  const [selectedMonth, setSelectedMonth] = useState("2026-07");
+    useState<AnalyticsViewId>(() => {
+      const requestedView = searchParams.get("view");
+      return requestedView === "category" || requestedView === "merchants"
+        ? requestedView
+        : "trends";
+    });
+  const [selectedMonth, setSelectedMonth] = useState(TRANSACTION_MAX_MONTH);
 
   const allTransactions = useMemo(
     () => getTransactionItems(personaId),
@@ -65,19 +74,14 @@ export function TransactionsScreen() {
     [allTransactions, selectedMonth, selectedWallet],
   );
 
-  const ledgerSummary = useMemo(
-    () => getWalletLedgerSummary(allTransactions, selectedWallet, selectedMonth),
-    [allTransactions, selectedMonth, selectedWallet],
-  );
-
   const groups = useMemo(
     () => groupTransactions(filteredTransactions),
     [filteredTransactions],
   );
 
   const analytics = useMemo(
-    () => getAnalyticsData(personaId, analyticsWallet, selectedMonth),
-    [analyticsWallet, personaId, selectedMonth],
+    () => getAnalyticsData(personaId, selectedWallet, selectedMonth),
+    [personaId, selectedMonth, selectedWallet],
   );
 
   return (
@@ -135,14 +139,13 @@ export function TransactionsScreen() {
             totalTransactions={filteredTransactions.length}
             monthKey={selectedMonth}
             onSelectMonth={setSelectedMonth}
-            ledgerSummary={ledgerSummary}
           />
         ) : (
           <AnalyticsPanel
             view={analyticsView}
             onViewChange={setAnalyticsView}
-            wallet={analyticsWallet}
-            onWalletChange={setAnalyticsWallet}
+            wallet={selectedWallet}
+            onWalletChange={setSelectedWallet}
             analytics={analytics}
             monthKey={selectedMonth}
             onSelectMonth={setSelectedMonth}
@@ -162,7 +165,6 @@ function TransactionsPanel({
   totalTransactions,
   monthKey,
   onSelectMonth,
-  ledgerSummary,
 }: {
   selectedWallet: TransactionWalletFilterId;
   onSelectWallet: (wallet: TransactionWalletFilterId) => void;
@@ -170,7 +172,6 @@ function TransactionsPanel({
   totalTransactions: number;
   monthKey: string;
   onSelectMonth: (monthKey: string) => void;
-  ledgerSummary: ReturnType<typeof getWalletLedgerSummary>;
 }) {
   const currentWalletOption = WALLET_FILTER_OPTIONS.find(
     (o) => o.id === selectedWallet,
@@ -195,16 +196,6 @@ function TransactionsPanel({
           {TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}
         </span>
       </div>
-
-      <section
-        className="grid grid-cols-2 gap-2 rounded-card border border-border-line bg-white p-card shadow-card"
-        aria-label={`${currentWalletOption?.label ?? "Wallet"} balance for ${TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}`}
-      >
-        <BalanceValue label="Opening" amount={ledgerSummary.openingBalance} />
-        <BalanceValue label="Wallet loads" amount={ledgerSummary.credits} tone="success" />
-        <BalanceValue label="Deducted" amount={ledgerSummary.debits} tone="warning" />
-        <BalanceValue label="Closing balance" amount={ledgerSummary.closingBalance} emphasized />
-      </section>
 
       {totalTransactions === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 text-center shadow-card">
@@ -287,35 +278,6 @@ function TransactionsPanel({
   );
 }
 
-function BalanceValue({
-  label,
-  amount,
-  tone = "default",
-  emphasized = false,
-}: {
-  label: string;
-  amount: number;
-  tone?: "default" | "success" | "warning";
-  emphasized?: boolean;
-}) {
-  const toneClass =
-    tone === "success"
-      ? "text-success"
-      : tone === "warning"
-        ? "text-warning"
-        : emphasized
-          ? "text-pine-primary"
-          : "text-ink";
-  return (
-    <div className={`rounded-control p-3 ${emphasized ? "bg-surface-tint" : "bg-surface"}`}>
-      <p className="type-field-label">{label}</p>
-      <p className={`mt-1 text-body-sm font-bold tabular-nums ${toneClass}`}>
-        {formatINR(amount)}
-      </p>
-    </div>
-  );
-}
-
 function AnalyticsPanel({
   view,
   onViewChange,
@@ -335,6 +297,32 @@ function AnalyticsPanel({
 }) {
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {ANALYTICS_WALLETS.map((item) => {
+          const active = wallet === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onWalletChange(item.id)}
+              aria-pressed={active}
+              className={`flex min-h-14 min-w-[132px] shrink-0 items-center gap-2 rounded-control border px-3 py-2 text-left transition-colors ${item.toneClass} ${
+                active ? "border-pine-primary" : "border-border-line"
+              }`}
+            >
+              <span
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-white/70 ${item.iconClass}`}
+              >
+                <WalletGlyph id={item.id} />
+              </span>
+              <span className={`text-caption font-bold leading-4 ${item.iconClass}`}>
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <div
         className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         role="tablist"
@@ -361,61 +349,52 @@ function AnalyticsPanel({
         })}
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {ANALYTICS_WALLETS.map((item) => {
-          const active = wallet === item.id;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onWalletChange(item.id)}
-              className={`flex min-h-14 min-w-[132px] shrink-0 items-center gap-2 rounded-card px-3 py-2 text-left ${
-                active ? "ring-2 ring-pine-primary" : ""
-              }`}
-              style={{ background: item.bg }}
-            >
-              <span
-                className="flex h-9 w-9 items-center justify-center rounded-control bg-white/70"
-                style={{ color: item.ink }}
-              >
-                <WalletGlyph id={item.id} color={item.ink} />
-              </span>
-              <span
-                className="text-caption font-bold leading-4"
-                style={{ color: item.ink }}
-              >
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {view === "category" ? (
+      {view === "trends" ? (
         <>
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="type-section-title text-pine-primary">
-              Spending by Category
-            </h2>
-            <NativeMonthPicker
-              value={monthKey}
-              onChange={onSelectMonth}
-              label={`Choose analytics month, currently ${analytics.monthLabel}. Available from April to August 2026.`}
-              className="gap-1 bg-transparent px-2 text-body-sm font-bold text-ink hover:bg-surface-tint"
-            >
-              <span className="pointer-events-none flex items-center gap-1">
-                {analytics.monthLabel}
-                <ChevronDownIcon color={colors.ink} />
-              </span>
-            </NativeMonthPicker>
-          </div>
+          <AnalyticsSectionHeader
+            title="Spending Trends"
+            monthKey={monthKey}
+            monthLabel={analytics.monthShortLabel}
+            onSelectMonth={onSelectMonth}
+          />
+
+          {analytics.totalSpent === 0 ? (
+            <AnalyticsEmptyState />
+          ) : (
+            <>
+              <section className="rounded-card border border-border-line bg-white p-card shadow-card">
+                <WeeklySpendingChart
+                  weeks={analytics.weeks}
+                  monthLabel={analytics.monthLabel}
+                />
+              </section>
+
+              <section className="grid grid-cols-2 gap-2" aria-label="Spending trend summary">
+                <TrendMetric
+                  icon={<AverageIcon />}
+                  value={formatINR(analytics.averageWeeklySpend)}
+                  label="Avg Weekly Spend"
+                />
+                <TrendMetric
+                  icon={<RewardsIcon />}
+                  value={formatINR(analytics.rewardsEarned)}
+                  label="Rewards Earned"
+                />
+              </section>
+            </>
+          )}
+        </>
+      ) : view === "category" ? (
+        <>
+          <AnalyticsSectionHeader
+            title="Spending by Category"
+            monthKey={monthKey}
+            monthLabel={analytics.monthShortLabel}
+            onSelectMonth={onSelectMonth}
+          />
 
           {analytics.categories.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 shadow-card text-center">
-              <p className="type-body-secondary">
-                No spending data available for this period.
-              </p>
-            </div>
+            <AnalyticsEmptyState />
           ) : (
             <section className="overflow-hidden rounded-card border border-border-line bg-white p-card shadow-card">
               <SpendingChart
@@ -430,10 +409,7 @@ function AnalyticsPanel({
                     key={category.id}
                     className="flex items-center gap-3 py-3.5 first:pt-2 last:pb-0"
                   >
-                    <span
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control"
-                      style={{ background: category.color }}
-                    >
+                    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control text-white ${category.toneClass}`}>
                       <CategoryGlyph icon={category.icon} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -459,15 +435,206 @@ function AnalyticsPanel({
           )}
         </>
       ) : (
-        <div className="rounded-card border border-border-line bg-white p-card shadow-card">
-          <p className="type-body-secondary py-10 text-center">
-            {view === "trends"
-              ? "Trends analytics coming soon."
-              : "Merchant analytics coming soon."}
-          </p>
-        </div>
+        <>
+          <AnalyticsSectionHeader
+            title="Spending by Merchants"
+            monthKey={monthKey}
+            monthLabel={analytics.monthShortLabel}
+            onSelectMonth={onSelectMonth}
+          />
+
+          {analytics.topMerchant === null ? (
+            <AnalyticsEmptyState />
+          ) : (
+            <>
+              <TopMerchantCard merchant={analytics.topMerchant} />
+              <section className="rounded-card border border-border-line bg-white p-card shadow-card">
+                <h3 className="type-section-title text-ink">Top Merchants</h3>
+                <div className="mt-3">
+                  <MerchantSpendingChart merchants={analytics.merchants} />
+                </div>
+
+                <ul className="mt-4 divide-y divide-border-line">
+                  {analytics.merchants.map((merchant) => (
+                    <li key={merchant.id} className="flex items-center gap-3 py-3.5 first:pt-2 last:pb-0">
+                      <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control font-display text-body font-bold ${merchant.toneClass} ${merchant.textClass}`}>
+                        {merchant.name.charAt(0).toUpperCase()}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-body-sm font-bold text-ink">
+                          {merchant.name}
+                        </span>
+                        <span className="block text-caption text-ink-secondary">
+                          {merchant.transactionCount} {merchant.transactionCount === 1 ? "Transaction" : "Transactions"}
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-1 text-caption font-bold text-warning">
+                          <MerchantRewardIcon />
+                          +{merchant.rewardsEarned} pts
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <strong className="block text-body-sm font-bold text-ink tabular-nums">
+                          {formatINR(merchant.amount)}
+                        </strong>
+                        <span className="block text-caption text-ink-tertiary tabular-nums">
+                          Avg. {formatINR(merchant.averageSpend)}
+                        </span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </>
+          )}
+        </>
       )}
     </div>
+  );
+}
+
+function AnalyticsSectionHeader({
+  title,
+  monthKey,
+  monthLabel,
+  onSelectMonth,
+}: {
+  title: string;
+  monthKey: string;
+  monthLabel: string;
+  onSelectMonth: (monthKey: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <h2 className="type-section-title text-pine-primary">{title}</h2>
+      <NativeMonthPicker
+        value={monthKey}
+        onChange={onSelectMonth}
+        label={`Choose analytics month, currently ${monthLabel}. Available from April to August 2026.`}
+        className="gap-1 bg-white px-3 text-body-sm font-bold text-ink shadow-card hover:bg-surface-tint"
+      >
+        <span className="pointer-events-none flex items-center gap-1">
+          {monthLabel}
+          <ChevronDownIcon color={colors.ink} />
+        </span>
+      </NativeMonthPicker>
+    </div>
+  );
+}
+
+function AnalyticsEmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 text-center shadow-card">
+      <p className="type-body-secondary">
+        No spending data available for this period.
+      </p>
+    </div>
+  );
+}
+
+function TopMerchantCard({
+  merchant,
+}: {
+  merchant: NonNullable<ReturnType<typeof getAnalyticsData>["topMerchant"]>;
+}) {
+  return (
+    <article className="rounded-card border border-success-border bg-success-soft p-card shadow-card">
+      <div className="flex items-center gap-2 text-body-sm text-pine">
+        <StoreIcon />
+        <span>Top Merchant This Month</span>
+      </div>
+      <h3 className="mt-2 type-amount text-ink">{merchant.name}</h3>
+      <div className="mt-2 grid grid-cols-3 gap-3">
+        <MerchantMetric value={formatINR(merchant.amount)} label="Total Spends" />
+        <MerchantMetric
+          value={`${merchant.transactionCount} ${merchant.transactionCount === 1 ? "txn" : "txns"}`}
+          label="Transactions"
+        />
+        <MerchantMetric
+          value={`+${merchant.rewardsEarned} pts`}
+          label="Rewards"
+          icon={<MerchantRewardIcon />}
+          warning
+        />
+      </div>
+    </article>
+  );
+}
+
+function MerchantMetric({
+  value,
+  label,
+  icon,
+  warning = false,
+}: {
+  value: string;
+  label: string;
+  icon?: ReactNode;
+  warning?: boolean;
+}) {
+  return (
+    <span className="min-w-0">
+      <strong className={`flex items-center gap-1 truncate text-body-sm font-bold tabular-nums ${warning ? "text-warning" : "text-ink"}`}>
+        {icon}
+        {value}
+      </strong>
+      <span className="block truncate text-caption text-ink-secondary">{label}</span>
+    </span>
+  );
+}
+
+function StoreIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 10h16M6 10v9h12v-9M5 5h14l1 5a2 2 0 0 1-4 0 2 2 0 0 1-4 0 2 2 0 0 1-4 0 2 2 0 0 1-4 0l1-5Z" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MerchantRewardIcon() {
+  return (
+    <svg className="shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M8 5h8v4a4 4 0 0 1-8 0V5ZM10 14h4M12 14v4M8 19h8M8 7H5v2a3 3 0 0 0 3 3M16 7h3v2a3 3 0 0 1-3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TrendMetric({
+  icon,
+  value,
+  label,
+}: {
+  icon: ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <article className="flex min-h-16 items-center gap-3 rounded-card border border-border-line bg-white p-3 shadow-card">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint text-pine-primary">
+        {icon}
+      </span>
+      <span className="min-w-0">
+        <strong className="block truncate font-display text-body-sm font-bold text-ink tabular-nums">
+          {value}
+        </strong>
+        <span className="block truncate text-caption text-ink-secondary">{label}</span>
+      </span>
+    </article>
+  );
+}
+
+function AverageIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M5 19h14M7 19v-7h10v7M9 9l3-4 3 4M12 5v9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function RewardsIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M8 5h8v4a4 4 0 0 1-8 0V5ZM10 14h4M12 14v4M8 19h8M8 7H5v2a3 3 0 0 0 3 3M16 7h3v2a3 3 0 0 1-3 3" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
@@ -507,19 +674,13 @@ function CalendarIcon() {
   );
 }
 
-function WalletGlyph({
-  id,
-  color,
-}: {
-  id: AnalyticsWalletId;
-  color: string;
-}) {
+function WalletGlyph({ id }: { id: AnalyticsWalletId }) {
   if (id === "meal") {
     return (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path
           d="M8 4v16M8 8h3M16 4v7c0 2-1 3-2.5 3H16v6"
-          stroke={color}
+          stroke="currentColor"
           strokeWidth="1.7"
           strokeLinecap="round"
         />
@@ -531,7 +692,7 @@ function WalletGlyph({
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path
           d="M6 19V7.5A1.5 1.5 0 0 1 7.5 6h5A1.5 1.5 0 0 1 14 7.5V19M5 19h11M14 10h2.5a2 2 0 0 1 2 2v4.5a1.5 1.5 0 0 0 3 0V10.5L19 8"
-          stroke={color}
+          stroke="currentColor"
           strokeWidth="1.7"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -543,13 +704,13 @@ function WalletGlyph({
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
         d="M4 12a8 8 0 1 0 2.3-5.6"
-        stroke={color}
+        stroke="currentColor"
         strokeWidth="1.7"
         strokeLinecap="round"
       />
       <path
         d="M4 4v4h4"
-        stroke={color}
+        stroke="currentColor"
         strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"

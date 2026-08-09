@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  TRANSACTION_MAX_MONTH,
   WALLET_FILTER_OPTIONS,
-  TRANSACTION_MONTHS,
+  filterTransactionsByMonth,
   filterTransactionsByWallet,
   getAnalyticsData,
+  getRecentTransactionsByWallet,
   getTransaction,
   getTransactionItems,
-  getWalletLedgerSummary,
 } from "./constants";
-import { getEmployerBenefit } from "@/features/policy/constants";
 
 describe("persona transaction data", () => {
   it("keeps a brand-new user transaction history empty", () => {
@@ -20,88 +20,105 @@ describe("persona transaction data", () => {
     });
   });
 
-  it("preserves the seeded history for a returning user", () => {
-    expect(getTransactionItems("returning").length).toBeGreaterThan(0);
-    expect(getTransaction("txn-amazon", "returning")?.merchant).toBe(
-      "Amazon",
-    );
+  it("preserves the canonical history for a returning user", () => {
+    const items = getTransactionItems("returning");
+    expect(items.length).toBeGreaterThan(0);
+    expect(getTransaction("txn-amazon", "returning")?.merchant).toBe("Amazon");
+    expect(items.every((item) => getTransaction(item.id, "returning") === item)).toBe(true);
   });
 });
 
-describe("filterTransactionsByWallet", () => {
-  it("limits the native month calendar to April through August 2026", () => {
-    expect(TRANSACTION_MONTHS.map((month) => month.key)).toEqual([
-      "2026-04",
-      "2026-05",
-      "2026-06",
-      "2026-07",
-      "2026-08",
-    ]);
-  });
-
-  it("exports every benefit wallet", () => {
-    expect(WALLET_FILTER_OPTIONS.map((o) => o.id)).toEqual([
+describe("wallet transaction filters", () => {
+  it("exports the four wallets shown on the Benefits home", () => {
+    expect(WALLET_FILTER_OPTIONS.map((option) => option.id)).toEqual([
       "meal",
-      "gift",
       "fuel",
-      "mobile",
-      "driver",
-      "books",
-      "professional",
+      "misc",
+      "gift",
     ]);
   });
 
-  it("filters transactions for meal wallet", () => {
-    const items = getTransactionItems("returning");
-    const mealItems = filterTransactionsByWallet(items, "meal");
-    expect(mealItems.length).toBeGreaterThan(0);
-    expect(mealItems.every((item) => item.wallet === "meal" || item.walletName.includes("Meal"))).toBe(true);
-    expect(mealItems.some((item) => item.category === "Wallet Load")).toBe(true);
-    expect(mealItems.some((item) => item.wallet === "fuel")).toBe(false);
+  it("shows the selected wallet's current-month transactions", () => {
+    const currentMeal = filterTransactionsByMonth(
+      filterTransactionsByWallet(getTransactionItems("returning"), "meal"),
+      TRANSACTION_MAX_MONTH,
+    );
+
+    expect(currentMeal.length).toBeGreaterThan(0);
+    expect(currentMeal.every((item) => item.wallet === "meal")).toBe(true);
+    expect(currentMeal.some((item) => item.merchant === "Zomato Payment")).toBe(true);
   });
 
-  it("filters transactions for fuel wallet", () => {
-    const items = getTransactionItems("returning");
-    const fuelItems = filterTransactionsByWallet(items, "fuel");
-    expect(fuelItems.length).toBeGreaterThan(0);
-    expect(fuelItems.every((item) => item.wallet === "fuel" || item.walletName.includes("Fuel"))).toBe(true);
-    expect(fuelItems.some((item) => item.merchant.includes("Indian Oil"))).toBe(true);
-    expect(fuelItems.some((item) => item.wallet === "meal")).toBe(false);
-  });
-
-  it("keeps professional-development transactions in their own wallet", () => {
-    const items = getTransactionItems("returning");
-    const professionalItems = filterTransactionsByWallet(items, "professional");
-    expect(professionalItems.length).toBeGreaterThan(0);
-    expect(professionalItems.every((item) => item.wallet === "professional")).toBe(true);
-  });
-
-  it("loads each wallet on 1 April and deducts approved claims", () => {
+  it("returns the same latest ten rows used by each wallet preview", () => {
     const items = getTransactionItems("returning");
     for (const wallet of WALLET_FILTER_OPTIONS) {
-      const walletItems = filterTransactionsByWallet(items, wallet.id);
-      expect(
-        walletItems.some(
-          (item) =>
-            item.type === "credit" &&
-            item.postedOn === "2026-04-01" &&
-            item.category === "Wallet Load",
-        ),
-      ).toBe(true);
-    }
+      const expected = filterTransactionsByWallet(items, wallet.id)
+        .sort((left, right) => {
+          const dateOrder = right.postedOn.localeCompare(left.postedOn);
+          return dateOrder === 0
+            ? left.id.localeCompare(right.id)
+            : dateOrder;
+        })
+        .slice(0, 10);
 
-    expect(getWalletLedgerSummary(items, "fuel", "2026-07")).toEqual({
-      openingBalance: 46500,
-      credits: 0,
-      debits: 4500,
-      closingBalance: 42000,
-    });
-
-    for (const wallet of WALLET_FILTER_OPTIONS) {
-      const summary = getWalletLedgerSummary(items, wallet.id, "2026-07");
-      expect(summary.closingBalance).toBe(
-        getEmployerBenefit(wallet.id, "returning").balance.available,
-      );
+      expect(getRecentTransactionsByWallet(items, wallet.id)).toEqual(expected);
+      expect(getRecentTransactionsByWallet(items, wallet.id).length).toBeLessThanOrEqual(10);
     }
+  });
+
+  it("does not expose opening, annual load, or closing-balance rows", () => {
+    const labels = getTransactionItems("returning")
+      .map((item) => `${item.merchant} ${item.category}`.toLowerCase())
+      .join(" ");
+    expect(labels).not.toContain("opening");
+    expect(labels).not.toContain("annual wallet load");
+    expect(labels).not.toContain("closing balance");
+  });
+});
+
+describe("analytics calculations", () => {
+  it("derives weekly bars, totals, average, categories, and rewards from the same debits", () => {
+    const analytics = getAnalyticsData("returning", "meal", "2026-08");
+    const weeklyTotal = analytics.weeks.reduce((sum, week) => sum + week.amount, 0);
+    const categoryTotal = analytics.categories.reduce(
+      (sum, category) => sum + category.amount,
+      0,
+    );
+    const merchantTotal = analytics.merchants.reduce(
+      (sum, merchant) => sum + merchant.amount,
+      0,
+    );
+
+    expect(analytics.weeks).toHaveLength(4);
+    expect(weeklyTotal).toBe(analytics.totalSpent);
+    expect(categoryTotal).toBe(analytics.totalSpent);
+    expect(merchantTotal).toBe(analytics.totalSpent);
+    expect(analytics.averageWeeklySpend).toBe(
+      Math.round(analytics.totalSpent / analytics.weeks.length),
+    );
+    expect(analytics.rewardsEarned).toBe(Math.round(analytics.totalSpent * 0.02));
+    expect(analytics.topMerchant).toBe(analytics.merchants[0]);
+    expect(
+      analytics.merchants.every(
+        (merchant) =>
+          merchant.averageSpend ===
+            Math.round(merchant.amount / merchant.transactionCount) &&
+          merchant.rewardsEarned === Math.round(merchant.amount * 0.02),
+      ),
+    ).toBe(true);
+  });
+
+  it("excludes real wallet credits from spend analytics", () => {
+    const items = filterTransactionsByMonth(
+      filterTransactionsByWallet(getTransactionItems("returning"), "misc"),
+      "2026-08",
+    );
+    const debitTotal = items.reduce(
+      (sum, item) => sum + (item.type === "debit" ? item.amount : 0),
+      0,
+    );
+    expect(getAnalyticsData("returning", "misc", "2026-08").totalSpent).toBe(
+      debitTotal,
+    );
   });
 });
