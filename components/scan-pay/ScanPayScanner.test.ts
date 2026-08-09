@@ -27,6 +27,9 @@ describe("ScanPayScanner", () => {
     expect(markup).toContain('aria-label="Scan &amp; Pay help"');
     expect(markup).toContain('aria-label="Toggle torch"');
     expect(markup).toContain('accept="image/*"');
+    expect(markup).toContain("/assets/scan-pay/question-circle.svg");
+    expect(markup).toContain("/assets/scan-pay/flashlight.svg");
+    expect(markup).toContain("/assets/scan-pay/gallery.svg");
     expect(markup).toContain("Enter a UPI ID");
   });
 

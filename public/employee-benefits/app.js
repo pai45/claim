@@ -276,6 +276,9 @@ const claimsActionMenuButton = document.querySelector(
 );
 const tapPayDiscovery = document.querySelector("[data-tap-pay-discovery]");
 const scanPayOpenButtons = document.querySelectorAll("[data-scan-pay-open]");
+const bankTransferOpenButtons = document.querySelectorAll(
+  "[data-bank-transfer-open]",
+);
 const upiSetupOpenButton = document.querySelector("[data-upi-setup-open]");
 const upiSetupFlow = document.querySelector("[data-upi-setup-flow]");
 const upiIdCards = document.querySelectorAll("[data-upi-id-card]");
@@ -4556,6 +4559,16 @@ document.querySelectorAll("[data-send-money-open]").forEach((button) => {
   });
 });
 
+bankTransferOpenButtons.forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-bank-transfer" },
+      window.location.origin,
+    );
+  });
+});
+
 scanPayOpenButtons.forEach((button) => {
   button.addEventListener("click", (event) => {
     event.preventDefault();
@@ -5699,7 +5712,9 @@ function syncPersonaToApp(payload) {
   document.body.classList.toggle("is-lens-disabled", !access.products.lens);
   document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);
   applyMode(access.defaultProduct === "pluspay");
-  applyUpiCreatedState(access.upiEnabled && persona.hasUpiId);
+  applyUpiCreatedState(
+    access.upiEnabled && (persona.hasUpiId || readUpiCreatedState()),
+  );
 
   document.querySelectorAll("[data-no-upi-detail]").forEach((node) => {
     node.dataset.upiDetail ||= node.dataset.walletDetail || "";

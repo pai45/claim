@@ -78,7 +78,13 @@ export function ScanPayScanner({
             className="flex h-12 min-h-11 w-12 min-w-11 items-center justify-center rounded-control bg-white/90 text-pine shadow-soft"
             aria-label="Scan & Pay help"
           >
-            <ScanPayIcon name="help" />
+            <AppIcon
+              src={SCAN_PAY_ASSETS.questionCircle}
+              alt=""
+              width={24}
+              height={24}
+              className="h-6 w-6"
+            />
           </button>
           <button
             type="button"
@@ -92,7 +98,13 @@ export function ScanPayScanner({
             }`}
             aria-label="Toggle torch"
           >
-            <ScanPayIcon name="torch" />
+            <AppIcon
+              src={SCAN_PAY_ASSETS.flashlight}
+              alt=""
+              width={24}
+              height={24}
+              className="h-6 w-6"
+            />
           </button>
         </div>
       </header>
@@ -148,7 +160,13 @@ export function ScanPayScanner({
 
       <footer className="relative z-10 shrink-0 px-page pb-1">
         <label className="mx-auto flex h-12 min-h-11 w-fit cursor-pointer items-center justify-center gap-2 rounded-control border border-white/70 bg-pine-dark/35 px-4 text-body-sm font-bold text-white shadow-soft backdrop-blur-sm">
-          <ScanPayIcon name="gallery" />
+          <AppIcon
+            src={SCAN_PAY_ASSETS.gallery}
+            alt=""
+            width={20}
+            height={20}
+            className="h-5 w-5"
+          />
           Pick from gallery
           <input
             type="file"

@@ -9,6 +9,7 @@ const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
 const OPEN_TRANSACTION_DETAILS_MESSAGE = "employee-benefits:open-transaction-details";
 const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
 const OPEN_SEND_MONEY_MESSAGE = "employee-benefits:open-send-money";
+const OPEN_BANK_TRANSFER_MESSAGE = "employee-benefits:open-bank-transfer";
 const OPEN_SCAN_PAY_MESSAGE = "employee-benefits:open-scan-pay";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
@@ -86,6 +87,14 @@ describe("Employee Benefits claims bridge", () => {
     expect(OPEN_SEND_MONEY_MESSAGE).toBe("employee-benefits:open-send-money");
     expect(OPEN_SEND_MONEY_MESSAGE).not.toBe(OPEN_TRANSACTIONS_MESSAGE);
     expect(OPEN_SEND_MONEY_MESSAGE).not.toBe(OPEN_UPI_SETTINGS_MESSAGE);
+  });
+
+  it("uses a dedicated message type for Bank Transfer", () => {
+    expect(OPEN_BANK_TRANSFER_MESSAGE).toBe(
+      "employee-benefits:open-bank-transfer",
+    );
+    expect(OPEN_BANK_TRANSFER_MESSAGE).not.toBe(OPEN_SEND_MONEY_MESSAGE);
+    expect(OPEN_BANK_TRANSFER_MESSAGE).not.toBe(OPEN_SCAN_PAY_MESSAGE);
   });
 
   it("uses a dedicated host event for the React-owned Scan & Pay journey", () => {

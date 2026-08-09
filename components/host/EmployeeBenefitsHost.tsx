@@ -28,6 +28,7 @@ const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
 const OPEN_TRANSACTION_DETAILS_MESSAGE = "employee-benefits:open-transaction-details";
 const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
 const OPEN_SEND_MONEY_MESSAGE = "employee-benefits:open-send-money";
+const OPEN_BANK_TRANSFER_MESSAGE = "employee-benefits:open-bank-transfer";
 const OPEN_SCAN_PAY_MESSAGE = "employee-benefits:open-scan-pay";
 const OPEN_BENEFITS_MESSAGE = "employee-benefits:open-benefits-assistant";
 const VERIFY_MPIN_MESSAGE = "employee-benefits:verify-mpin";
@@ -160,6 +161,11 @@ export function EmployeeBenefitsHost() {
     if (!persona.access.upiEnabled || !persona.access.products.plusPay) return;
     window.location.assign(withBasePath("/send-money/"));
   }, [persona.access]);
+
+  const openBankTransfer = useCallback(() => {
+    if (!persona.access.products.lens) return;
+    window.location.assign(withBasePath("/bank-transfer/"));
+  }, [persona.access.products.lens]);
 
   const openScanPay = useCallback(() => {
     if (!persona.access.upiEnabled) return;
@@ -350,6 +356,10 @@ export function EmployeeBenefitsHost() {
         openSendMoney();
         return;
       }
+      if (event.data?.type === OPEN_BANK_TRANSFER_MESSAGE) {
+        openBankTransfer();
+        return;
+      }
       if (event.data?.type === OPEN_SCAN_PAY_MESSAGE) {
         openScanPay();
         return;
@@ -382,6 +392,7 @@ export function EmployeeBenefitsHost() {
     openClaims,
     openManageLimits,
     openProfile,
+    openBankTransfer,
     openScanPay,
     openSpendAnalytics,
     openTransactionDetails,
@@ -398,7 +409,7 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=react-scan-pay-v1`}
+        src={`${withBasePath("/employee-benefits/index.html")}?v=home-revamp-v1`}
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />

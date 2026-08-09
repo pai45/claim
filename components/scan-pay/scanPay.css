@@ -82,7 +82,7 @@
   border: 0;
   background: transparent;
   transform: translate(-50%, var(--scan-pay-focus-size));
-  animation: scan-pay-beam-sweep 1.5s ease-in-out infinite;
+  animation: scan-pay-beam-sweep 1.5s ease-in-out infinite alternate;
 }
 
 .scan-pay-beam::after {

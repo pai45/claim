@@ -7,6 +7,8 @@ export const BRAND_ASSETS = {
    * Moving this file means updating that markup too.
    */
   plusPay: "/assets/login/pluspay-logo.svg",
+  /** Supplied transparent artwork used in the PlusPay home hero. */
+  plusPayHero: "/assets/pluspay/hero-wallet.png",
   /** Animated scanner used by the PlusPay center navigation action. */
   scanPay: "/assets/scan.gif",
   /** Hero art for the MPIN intro screen; falls back to a padlock glyph. */
@@ -88,6 +90,9 @@ export const DEMO_DOCUMENT_ASSETS = {
 /** Supplied merchant QR hardware image used by the Scan & Pay demo scanner. */
 export const SCAN_PAY_ASSETS = {
   scannerDemo: "/assets/scan-pay/scanner-demo.png",
+  flashlight: "/assets/scan-pay/flashlight.svg",
+  gallery: "/assets/scan-pay/gallery.svg",
+  questionCircle: "/assets/scan-pay/question-circle.svg",
   scratchCard: "/assets/scan-pay/scratch-card.png",
   financeIllustration: "/assets/scan-pay/finance-illustration.svg",
   categoryMore: "/assets/scan-pay/category-more.svg",

@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=benefits-nav-v10" />
+    <link rel="stylesheet" href="./styles.css?v=home-revamp-v1" />
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true" focusable="false">
@@ -42,6 +42,10 @@
         <path
           d="M10.5 12H5m-.084.291L2.58 19.267c-.184.548-.275.822-.21.99a.5.5 0 0 0 .332.3c.174.05.438-.07.965-.306l16.711-7.52c.515-.232.772-.348.851-.508a.5.5 0 0 0 0-.444c-.08-.16-.336-.276-.85-.508L3.661 3.748c-.525-.237-.788-.355-.962-.306a.5.5 0 0 0-.332.299c-.066.168.025.442.206.988l2.342 7.057c.032.094.047.14.053.188a.5.5 0 0 1 0 .129c-.006.048-.022.095-.053.188Z"
         />
+      </symbol>
+      <symbol id="icon-bank" viewBox="0 0 24 24">
+        <path d="m3 9 9-5 9 5" />
+        <path d="M5 10h14M6 10v7m4-7v7m4-7v7m4-7v7M4 17h16M3 20h18" />
       </symbol>
       <symbol id="icon-wallet" viewBox="0 0 24 24">
         <path
@@ -267,68 +271,37 @@
             >
               V
             </button>
-            <a class="brand" href="#" aria-label="Lens home">
-              <span
-                data-lens-text="Lens"
-                data-pluspay-text="PlusPay"
-                data-pluspay-hide
-                >Lens</span
-              >
-              <!-- Lives in the Next.js public/assets tree, not this app's own
-                   assets folder, so the login screen and PlusPay mode share one
-                   file. Document-relative so it survives the /claim basePath.
-                   If the artwork is missing it hands the brand back to the text
-                   span rather than leaving a broken glyph or an empty header. -->
-              <img
-                class="brand-logo"
-                data-pluspay-show
-                src="../assets/login/pluspay-logo.svg"
-                alt="PlusPay"
-                onerror="this.previousElementSibling.removeAttribute('data-pluspay-hide'); this.remove();"
-              />
-            </a>
             <button
-              class="pluspay-toggle"
+              class="product-switcher"
               type="button"
               aria-pressed="false"
+              aria-label="Switch between Lens and PlusPay"
               data-pluspay-toggle
             >
-              <span class="pluspay-toggle-track">
-                <span class="pluspay-toggle-thumb"></span>
+              <span class="product-segment product-segment-lens">
+                Lens
               </span>
-              <span class="pluspay-toggle-label" data-pluspay-label
-                >PlusPay</span
-              >
+              <span class="product-segment product-segment-pluspay">
+                <img src="../assets/login/pluspay-logo.svg" alt="PlusPay" />
+              </span>
             </button>
+            <span class="topbar-spacer" aria-hidden="true"></span>
           </div>
         </header>
 
         <section class="pluspay-corporate-message" data-pluspay-show>
-          <p>Manage your Corporate payment with Pluspay</p>
+          <div class="pluspay-corporate-copy">
+            <p>
+              <span>Your Corporate Payments</span>
+              <span>With <strong>Pluspay</strong></span>
+            </p>
+          </div>
+          <img
+            class="pluspay-corporate-art"
+            src="../assets/pluspay/hero-wallet.png"
+            alt="Wallet with corporate ID, documents, cash and coins"
+          />
         </section>
-
-        <button
-          class="tap-pay-discovery"
-          type="button"
-          aria-label="Tap and Pay is now available. Pay instantly with your phone."
-          data-tap-pay-discovery
-          data-pluspay-hide
-        >
-          <span class="tap-pay-discovery-art" aria-hidden="true">
-            <span class="tap-pay-spark one"></span>
-            <span class="tap-pay-spark two"></span>
-            <span class="tap-pay-discovery-icon"
-              ><svg><use href="#icon-nfc" /></svg
-            ></span>
-          </span>
-          <span class="tap-pay-discovery-copy">
-            <strong>Tap &amp; Pay is now available</strong>
-            <small>Pay instantly with your phone anywhere<br />NFC works</small>
-          </span>
-          <span class="tap-pay-close" aria-hidden="true">
-            <svg><use href="#icon-close" /></svg>
-          </span>
-        </button>
 
         <section
           class="balance-card"
@@ -431,6 +404,44 @@
         </section>
       </section>
 
+      <section
+        class="payment-shortcuts"
+        aria-label="Payment shortcuts"
+        data-pluspay-hide
+      >
+        <button
+          class="payment-shortcut"
+          type="button"
+          data-scan-pay-open
+          data-upi-created-only
+        >
+          <span class="payment-shortcut-icon" aria-hidden="true">
+            <svg><use href="#icon-scan" /></svg>
+          </span>
+          <strong>Scan<br />QR</strong>
+        </button>
+        <button
+          class="payment-shortcut"
+          type="button"
+          data-bank-transfer-open
+        >
+          <span class="payment-shortcut-icon" aria-hidden="true">
+            <svg><use href="#icon-bank" /></svg>
+          </span>
+          <strong>Bank<br />Transfer</strong>
+        </button>
+        <button
+          class="payment-shortcut"
+          type="button"
+          data-tap-pay-discovery
+        >
+          <span class="payment-shortcut-icon" aria-hidden="true">
+            <svg><use href="#icon-nfc" /></svg>
+          </span>
+          <strong>Tap<br />&amp; Pay</strong>
+        </button>
+      </section>
+
       <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
         <!-- <div class="section-heading compact-heading">
           <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
@@ -439,7 +450,6 @@
         <button
           class="upi-card upi-card-create"
           type="button"
-          data-pluspay-hide
           data-upi-setup-open
           aria-label="Create UPI ID to link credit line to UPI for seamless payments"
         >
@@ -450,15 +460,14 @@
             <img src="./assets/icons/upi.svg" alt="" />
           </span>
           <span class="upi-copy upi-copy-create">
-            <!-- <strong>Pay with UPI</strong> -->
-            <strong>Link your UPI for </br> seamless payments.</strong>
+            <small>UPI ID</small>
+            <strong>Create your UPI ID</strong>
           </span>
           <span class="upi-card-cta" aria-hidden="true">Create UPI ID</span>
         </button>
         <button
           class="upi-card upi-card-id"
           type="button"
-          data-pluspay-show
           data-upi-id-card
           data-upi-settings-open
         >
@@ -483,25 +492,6 @@
             ><svg><use href="#icon-chevron-right" /></svg
           ></span>
         </button>
-        <button
-          class="scan-pay-card"
-          type="button"
-          data-scan-pay-open
-          data-pluspay-hide
-        >
-          <span class="scan-pay-main">
-            <span class="scan-pay-icon" aria-hidden="true"
-              ><svg><use href="#icon-scan" /></svg
-            ></span>
-            <span class="scan-pay-copy">
-              <strong>Scan &amp; Pay</strong>
-              <small>Scan any QR code to pay instantly</small>
-            </span>
-            <span class="scan-pay-arrow" aria-hidden="true"
-              ><svg><use href="#icon-chevron-right" /></svg
-            ></span>
-          </span>
-        </button>
       </section>
 
       <section
@@ -513,14 +503,14 @@
           <button
             class="pluspay-action-card"
             type="button"
-          data-send-money-open
-          data-upi-feature
+            data-send-money-open
+            data-upi-feature
           >
             <span class="pluspay-action-icon" aria-hidden="true"
               ><svg><use href="#icon-send" /></svg
             ></span>
-            <small>Transfer</small>
             <strong>Send Money</strong>
+            <small>Pay to any UPI ID instantly</small>
           </button>
           <button
             class="pluspay-action-card is-highlight"
@@ -531,8 +521,8 @@
             <span class="pluspay-action-icon" aria-hidden="true"
               ><svg><use href="#icon-scan" /></svg
             ></span>
-            <small>Quick Pay</small>
             <strong>Scan & Pay</strong>
+            <small>Scan any QR code for instant payments</small>
           </button>
         </div>
       </section>
