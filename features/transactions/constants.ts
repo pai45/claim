@@ -72,6 +72,44 @@ export const WALLET_FILTER_OPTIONS: readonly WalletFilterOption[] = [
   },
 ] as const;
 
+export type WalletBalance = {
+  amount: number;
+  /** Pre-formatted for display; the gift wallet is denominated in points. */
+  display: string;
+};
+
+/**
+ * Mirrors `personaFinancialState` in `public/employee-benefits/app.js` so the
+ * hosted PlusPay home and the React screens quote the same wallet balances.
+ */
+const WALLET_BALANCES: Record<
+  "returning" | "new_user",
+  Record<TransactionWallet, WalletBalance>
+> = {
+  returning: {
+    meal: { amount: 6400, display: "₹6,400" },
+    fuel: { amount: 3150, display: "₹3,150" },
+    misc: { amount: 9100, display: "₹9,100" },
+    gift: { amount: 6200, display: "6,200 pts" },
+  },
+  new_user: {
+    meal: { amount: 10000, display: "₹10,000" },
+    fuel: { amount: 10000, display: "₹10,000" },
+    misc: { amount: 10000, display: "₹10,000" },
+    gift: { amount: 10000, display: "10,000 pts" },
+  },
+};
+
+export function getWalletBalance(
+  walletId: TransactionWallet,
+  personaId?: PersonaId,
+): WalletBalance {
+  const activePersona = personaId ?? getActivePersonaId();
+  return activePersona === "new_user"
+    ? WALLET_BALANCES.new_user[walletId]
+    : WALLET_BALANCES.returning[walletId];
+}
+
 export type TransactionMonth = {
   key: string;
   label: string;

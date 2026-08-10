@@ -2,7 +2,10 @@
 
 import { useMemo, useRef, type Dispatch } from "react";
 import { ScanPayDrawer } from "@/components/scan-pay/ScanPayDrawer";
-import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
+import {
+  ScanPayIcon,
+  type ScanPayIconName,
+} from "@/components/scan-pay/ScanPayIcons";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
@@ -20,8 +23,20 @@ import type {
   ScanPayCategoryId,
   ScanPayState,
 } from "@/features/scan-pay/types";
-import { WALLET_FILTER_OPTIONS } from "@/features/transactions/constants";
+import { useActivePersona } from "@/features/persona/useActivePersona";
+import {
+  WALLET_FILTER_OPTIONS,
+  getWalletBalance,
+  type TransactionWalletFilterId,
+} from "@/features/transactions/constants";
 import { SCAN_PAY_ASSETS } from "@/lib/ui/assets";
+
+const walletIcons: Record<TransactionWalletFilterId, ScanPayIconName> = {
+  meal: "walletMeal",
+  fuel: "walletFuel",
+  misc: "walletReimbursement",
+  gift: "walletGift",
+};
 
 const categoryEmojis: Record<ScanPayCategoryId, string> = {
   food: "🍛",
@@ -371,6 +386,7 @@ function WalletDrawer({
   state: ScanPayState;
   dispatch: Dispatch<ScanPayAction>;
 }) {
+  const { personaId } = useActivePersona();
   return (
     <ScanPayDrawer
       open={state.step === "walletPicker"}
@@ -394,18 +410,23 @@ function WalletDrawer({
                   : "border-border-line bg-white"
               }`}
             >
-              <span className="flex items-center gap-3">
+              <span className="flex min-w-0 items-center gap-3">
                 <span
-                  className={`flex h-10 w-10 items-center justify-center rounded-control ${wallet.toneClass} ${wallet.iconClass}`}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${wallet.toneClass} ${wallet.iconClass}`}
                 >
-                  <ScanPayIcon name="wallet" />
+                  <ScanPayIcon name={walletIcons[wallet.id]} />
                 </span>
-                <span className="text-body-sm font-bold text-pine">
-                  {wallet.label}
+                <span className="min-w-0">
+                  <span className="block truncate text-body-sm font-bold text-pine">
+                    {wallet.label}
+                  </span>
+                  <span className="mt-0.5 block text-caption text-ink-secondary">
+                    {getWalletBalance(wallet.id, personaId).display}
+                  </span>
                 </span>
               </span>
               <span
-                className={`flex h-6 w-6 items-center justify-center rounded-pill border ${
+                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-pill border ${
                   selected
                     ? "border-pine-primary bg-pine-primary text-white"
                     : "border-input-border bg-white"
