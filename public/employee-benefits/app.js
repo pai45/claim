@@ -4514,7 +4514,12 @@ document.querySelectorAll("[data-transactions-open]").forEach((button) => {
   button.addEventListener("click", (event) => {
     event.preventDefault();
     window.parent.postMessage(
-      { type: "employee-benefits:open-transactions" },
+      {
+        type: "employee-benefits:open-transactions",
+        mode: document.body.classList.contains("is-pluspay")
+          ? "pluspay"
+          : "benefits",
+      },
       window.location.origin,
     );
   });
@@ -4554,7 +4559,12 @@ document.querySelectorAll("[data-send-money-open]").forEach((button) => {
   button.addEventListener("click", (event) => {
     event.preventDefault();
     window.parent.postMessage(
-      { type: "employee-benefits:open-send-money" },
+      {
+        type: "employee-benefits:open-send-money",
+        mode: document.body.classList.contains("is-pluspay")
+          ? "pluspay"
+          : "benefits",
+      },
       window.location.origin,
     );
   });
@@ -5712,15 +5722,27 @@ function syncPersonaToApp(payload) {
   const initials = persona.initials;
   const upiHandle = `${name.toLowerCase().replace(/\s+/g, ".")}@pluspay`;
   const access = persona.access;
+  const isProductLocked = !(access.products.ebPlus && access.products.plusPay);
 
   document.body.classList.toggle(
     "is-product-locked",
-    !(access.products.ebPlus && access.products.plusPay),
+    isProductLocked,
   );
   document.body.classList.toggle("is-no-upi", !access.upiEnabled);
   document.body.classList.toggle("is-lens-disabled", !access.products.ebPlus);
   document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);
   applyMode(access.defaultProduct === "pluspay");
+
+  if (pluspayToggle) {
+    pluspayToggle.disabled = isProductLocked;
+    pluspayToggle.setAttribute(
+      "aria-label",
+      isProductLocked
+        ? (access.products.plusPay ? "PlusPay" : "EB+")
+        : "Switch between EB+ and PlusPay",
+    );
+  }
+
   applyUpiCreatedState(
     access.upiEnabled && (persona.hasUpiId || readUpiCreatedState()),
   );

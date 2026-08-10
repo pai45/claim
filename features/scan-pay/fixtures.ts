@@ -5,6 +5,7 @@ import type {
   ScanPayOutcome,
   ScanPayMerchantType,
   ScanPayMode,
+  PaymentContext,
   ScanPayScenario,
   ScanPayTransaction,
   ScanPayWalletId,
@@ -86,6 +87,24 @@ export const SCAN_PAY_FAQS = [
   },
 ] as const;
 
+export const BANK_TRANSFER_FAQS = [
+  {
+    question: "What if the transfer is debited but not received?",
+    answer:
+      "Bank transfers can take time to settle. Ask the recipient to refresh their account, then contact support with the EB reference ID if it remains pending.",
+  },
+  {
+    question: "Can I cancel a completed bank transfer?",
+    answer:
+      "Completed bank transfers cannot be cancelled from EB+. Contact support immediately if the recipient details were incorrect.",
+  },
+  {
+    question: "Why was my bank transfer blocked?",
+    answer:
+      "A transfer can be blocked when the account details are invalid, the amount exceeds the limit, or the Reimbursement Wallet has insufficient balance.",
+  },
+] as const;
+
 export function resolveScanPayScenario(value: string | null): ScanPayScenario {
   return value === "failed" ||
     value === "processing" ||
@@ -134,6 +153,7 @@ export function createScanPayTransaction({
   mode,
   merchantType,
   fundingAllocations,
+  paymentContext = { origin: "scan-pay" },
 }: {
   amount: number;
   walletId: ScanPayWalletId;
@@ -144,6 +164,7 @@ export function createScanPayTransaction({
   mode: ScanPayMode;
   merchantType: ScanPayMerchantType;
   fundingAllocations: ScanPayTransaction["fundingAllocations"];
+  paymentContext?: PaymentContext;
 }): ScanPayTransaction {
   const category = categoryById(categoryId);
   const subcategory = category?.subcategories?.find(
@@ -151,15 +172,48 @@ export function createScanPayTransaction({
   );
   const merchant = merchantForType(merchantType);
   const now = new Date();
-  const paymentGroupId = `scan-pay-${now.getTime()}`;
+  const isBankTransfer = paymentContext.origin === "bank-transfer";
+  const isUpiTransfer = paymentContext.origin === "upi-transfer";
+  const paymentPrefix = isBankTransfer
+    ? "bank-transfer"
+    : isUpiTransfer
+      ? "upi-transfer"
+      : "scan-pay";
+  const paymentGroupId = `${paymentPrefix}-${now.getTime()}`;
+  const payee =
+    paymentContext.origin === "bank-transfer"
+      ? {
+        kind: "bank-transfer" as const,
+        name: paymentContext.recipient.accountHolder.trim(),
+        accountNumber: paymentContext.recipient.accountNumber,
+        ifsc: paymentContext.recipient.ifsc,
+      }
+      : paymentContext.origin === "upi-transfer"
+        ? {
+            kind: "upi" as const,
+            name: paymentContext.recipient.name,
+            upiId: paymentContext.recipient.upiId,
+            payeeId: paymentContext.recipient.id,
+          }
+        : {
+            kind: "merchant" as const,
+            name: merchant.name,
+            upiId: merchant.upiId,
+            merchantId: merchant.merchantId,
+          };
   return {
+    paymentContext,
+    payee,
     mode,
-    merchant: merchant.name,
-    upiId: merchant.upiId,
     amount,
-    merchantId: merchant.merchantId,
-    transactionId: paymentGroupId.replace(/\D/g, "").slice(-12),
-    paymentMethod: mode === "pluspay" ? "ANQ" : "UPI",
+    transactionId: isBankTransfer
+      ? `EB${now.getTime().toString().slice(-10)}`
+      : paymentGroupId.replace(/\D/g, "").slice(-12),
+    paymentMethod: isBankTransfer
+      ? "Bank Transfer"
+      : mode === "pluspay"
+        ? "ANQ"
+        : "UPI",
     dateTime: new Intl.DateTimeFormat("en-IN", {
       day: "2-digit",
       month: "short",
@@ -168,9 +222,13 @@ export function createScanPayTransaction({
       hour12: true,
     }).format(now),
     walletId,
-    walletLabel: mode === "pluspay" ? "ANQ" : walletLabel(walletId),
-    category: category?.label,
-    subcategory: subcategory?.label,
+    walletLabel: isBankTransfer
+      ? "Reimbursement Wallet"
+      : mode === "pluspay"
+        ? "ANQ"
+        : walletLabel(walletId),
+    category: isBankTransfer ? "Finance" : category?.label,
+    subcategory: isBankTransfer ? "Bank" : subcategory?.label,
     note: note.trim() || undefined,
     outcome,
     cashbackAmount: 56,

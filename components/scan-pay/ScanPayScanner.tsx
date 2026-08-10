@@ -1,28 +1,35 @@
 "use client";
 
-import { useState, type ChangeEvent, type Dispatch } from "react";
+import { type ChangeEvent, type Dispatch } from "react";
 import { ScanPayDrawer } from "@/components/scan-pay/ScanPayDrawer";
 import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
-import { SCAN_PAY_FAQS, SCAN_PAY_MERCHANT } from "@/features/scan-pay/fixtures";
-import type { ScanPayAction, ScanPayState } from "@/features/scan-pay/types";
+import {
+  BANK_TRANSFER_FAQS,
+  SCAN_PAY_FAQS,
+} from "@/features/scan-pay/fixtures";
+import type {
+  PaymentContext,
+  ScanPayAction,
+  ScanPayState,
+} from "@/features/scan-pay/types";
 import { SCAN_PAY_ASSETS, UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
 
 export function ScanPayScanner({
   state,
   dispatch,
   onClose,
+  onUpiEntryClose,
   detected,
 }: {
   state: ScanPayState;
   dispatch: Dispatch<ScanPayAction>;
   onClose: () => void;
+  onUpiEntryClose?: () => void;
   detected: boolean;
 }) {
-  const [upiId, setUpiId] = useState<string>(SCAN_PAY_MERCHANT.upiId);
-
   function onGalleryChange(event: ChangeEvent<HTMLInputElement>) {
     if (!event.target.files?.length) return;
     dispatch({ type: "DETECT_QR" });
@@ -205,7 +212,7 @@ export function ScanPayScanner({
         open={state.step === "upiEntry"}
         title="Pay using UPI ID"
         description="Enter the merchant’s UPI ID to continue"
-        onClose={() => dispatch({ type: "BACK" })}
+        onClose={onUpiEntryClose ?? (() => dispatch({ type: "BACK" }))}
       >
         <label htmlFor="scan-pay-upi" className="type-field-label">
           UPI ID
@@ -213,8 +220,10 @@ export function ScanPayScanner({
         <div className="field-focus-shell mt-1.5 flex min-h-11 items-center gap-2 rounded-control border border-input-border bg-input-soft px-3">
           <input
             id="scan-pay-upi"
-            value={upiId}
-            onChange={(event) => setUpiId(event.target.value)}
+            value={state.upiIdDraft}
+            onChange={(event) =>
+              dispatch({ type: "SET_UPI_ID", upiId: event.target.value })
+            }
             className="min-w-0 flex-1 bg-transparent text-body-sm font-bold text-pine outline-none"
             autoComplete="off"
           />
@@ -225,7 +234,7 @@ export function ScanPayScanner({
         <button
           type="button"
           className="btn-primary mt-5"
-          disabled={!upiId.includes("@")}
+          disabled={!state.upiIdDraft.includes("@")}
           onClick={() => dispatch({ type: "VERIFY_UPI" })}
         >
           Verify
@@ -237,18 +246,27 @@ export function ScanPayScanner({
 
 export function ScanPayFaq({
   onBack,
+  origin = "scan-pay",
 }: {
   onBack: () => void;
+  origin?: PaymentContext["origin"];
 }) {
+  const bankTransfer = origin === "bank-transfer";
+  const faqs = bankTransfer ? BANK_TRANSFER_FAQS : SCAN_PAY_FAQS;
   return (
     <AppShell className="scan-pay-shell overflow-hidden bg-white">
-      <ScreenHeader title="Scan & Pay Help" onBack={onBack} />
+      <ScreenHeader
+        title={bankTransfer ? "Bank Transfer Help" : "Scan & Pay Help"}
+        onBack={onBack}
+      />
       <main className="min-h-0 flex-1 overflow-y-auto px-page pb-8 pt-4">
         <h2 className="type-section-title text-pine">
-          Got a question about paying with QR codes?
+          {bankTransfer
+            ? "Got a question about your bank transfer?"
+            : "Got a question about paying with QR codes?"}
         </h2>
         <div className="mt-4 flex flex-col gap-2.5">
-          {SCAN_PAY_FAQS.map((faq) => (
+          {faqs.map((faq) => (
             <details
               key={faq.question}
               className="group rounded-card border border-success-border bg-white shadow-card"

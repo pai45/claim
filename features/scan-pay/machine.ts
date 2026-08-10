@@ -7,9 +7,11 @@ import {
   defaultWalletForMerchant,
   walletIsEligibleForMerchant,
 } from "@/features/scan-pay/funding";
+import type { BankRecipientDraft } from "@/features/bank-transfer/validation";
 import type {
   ScanPayAction,
   ScanPayMerchantType,
+  ScanPayLaunch,
   ScanPayMode,
   ScanPayScenario,
   ScanPayState,
@@ -19,11 +21,26 @@ export function createInitialScanPayState(
   scenario: ScanPayScenario,
   mode: ScanPayMode = "benefits",
   merchantType: ScanPayMerchantType = "meal",
+  launch: ScanPayLaunch = { kind: "scanner" },
 ): ScanPayState {
+  const payeeLaunch = launch.kind === "payee" ? launch.payee : null;
+  const startsWithUpi = launch.kind !== "scanner";
   return {
-    step: "scanner",
+    paymentContext: payeeLaunch
+      ? { origin: "upi-transfer", recipient: payeeLaunch }
+      : { origin: "scan-pay" },
+    upiIdDraft:
+      launch.kind === "upi-entry"
+        ? launch.initialUpiId ?? ""
+        : payeeLaunch?.upiId ?? "",
+    step:
+      launch.kind === "upi-entry"
+        ? "upiEntry"
+        : launch.kind === "payee"
+          ? "confirmPayment"
+          : "scanner",
     mode,
-    merchantType,
+    merchantType: startsWithUpi ? "unclassified" : merchantType,
     scenario,
     outcome: outcomeForScenario(scenario),
     qrErrorVisible: false,
@@ -36,13 +53,36 @@ export function createInitialScanPayState(
     selectedCategoryId: null,
     pendingCategoryId: null,
     selectedSubcategoryId: null,
-    walletId: defaultWalletForMerchant(mode, merchantType),
+    walletId: defaultWalletForMerchant(
+      mode,
+      startsWithUpi ? "unclassified" : merchantType,
+    ),
     fundingAllocations: [],
     transaction: null,
     rewardRevealed: false,
     receiptState: "empty",
     receiptPreview: null,
     faqReturnStep: "scanner",
+  };
+}
+
+export function createInitialBankTransferState(
+  recipient: BankRecipientDraft,
+): ScanPayState {
+  return {
+    ...createInitialScanPayState("success", "benefits", "unclassified"),
+    paymentContext: {
+      origin: "bank-transfer",
+      recipient: {
+        accountHolder: recipient.accountHolder.trim(),
+        accountNumber: recipient.accountNumber,
+        ifsc: recipient.ifsc,
+      },
+    },
+    step: "confirmPayment",
+    walletId: "misc",
+    selectedCategoryId: "finance",
+    selectedSubcategoryId: "bank",
   };
 }
 
@@ -68,6 +108,7 @@ export function scanPayReducer(
         action.scenario,
         action.mode,
         action.merchantType,
+        action.launch,
       );
     case "DETECT_QR":
       if (state.scenario === "invalid-qr") {
@@ -93,9 +134,16 @@ export function scanPayReducer(
       return { ...state, torchEnabled: !state.torchEnabled };
     case "OPEN_UPI_ENTRY":
       return { ...state, step: "upiEntry", qrErrorVisible: false };
+    case "SET_UPI_ID":
+      return { ...state, upiIdDraft: action.upiId };
     case "VERIFY_UPI":
+      if (!state.upiIdDraft.trim().includes("@")) return state;
       return {
         ...state,
+        paymentContext: {
+          origin: "upi-transfer",
+          recipient: payeeFromUpiId(state.upiIdDraft),
+        },
         step: "confirmPayment",
         qrErrorVisible: false,
         qrErrorReason: null,
@@ -169,6 +217,12 @@ export function scanPayReducer(
       return { ...state, step: "walletPicker" };
     case "SELECT_WALLET":
       if (
+        state.paymentContext.origin === "bank-transfer" &&
+        action.walletId !== "misc"
+      ) {
+        return state;
+      }
+      if (
         !walletIsEligibleForMerchant(
           action.walletId,
           state.mode,
@@ -205,17 +259,8 @@ export function scanPayReducer(
       };
     case "RESOLVE_PAYMENT": {
       if (!scanPayAmountIsValid(state.amount)) return state;
-      const transaction = createScanPayTransaction({
-        amount: Number(state.amount),
-        walletId: state.walletId,
-        categoryId: state.selectedCategoryId,
-        subcategoryId: state.selectedSubcategoryId,
-        note: state.note,
-        outcome: state.outcome,
-        mode: state.mode,
-        merchantType: state.merchantType,
-        fundingAllocations: state.fundingAllocations,
-      });
+      const transaction =
+        action.transaction ?? createPaymentTransactionForState(state);
       return {
         ...state,
         step: state.outcome === "success" ? "successReward" : "result",
@@ -262,6 +307,23 @@ export function scanPayReducer(
   }
 }
 
+export function createPaymentTransactionForState(
+  state: ScanPayState,
+) {
+  return createScanPayTransaction({
+    amount: Number(state.amount),
+    walletId: state.walletId,
+    categoryId: state.selectedCategoryId,
+    subcategoryId: state.selectedSubcategoryId,
+    note: state.note,
+    outcome: state.outcome,
+    mode: state.mode,
+    merchantType: state.merchantType,
+    fundingAllocations: state.fundingAllocations,
+    paymentContext: state.paymentContext,
+  });
+}
+
 function goBack(state: ScanPayState): ScanPayState {
   switch (state.step) {
     case "upiEntry":
@@ -274,7 +336,14 @@ function goBack(state: ScanPayState): ScanPayState {
     case "walletPicker":
       return { ...state, step: "confirmPayment", pendingCategoryId: null };
     case "confirmPayment":
-      return { ...state, step: "scanner", qrErrorVisible: false };
+      return {
+        ...state,
+        step:
+          state.paymentContext.origin === "upi-transfer"
+            ? "upiEntry"
+            : "scanner",
+        qrErrorVisible: false,
+      };
     case "submitting":
       return { ...state, step: "confirmPayment" };
     case "result":
@@ -288,4 +357,27 @@ function goBack(state: ScanPayState): ScanPayState {
     default:
       return state;
   }
+}
+
+function payeeFromUpiId(value: string) {
+  const upiId = value.trim().toLowerCase();
+  const handle = upiId.split("@")[0] ?? "upi";
+  const words = handle
+    .replace(/[._-]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  const name = words
+    .map((word) => `${word[0]?.toUpperCase() ?? ""}${word.slice(1)}`)
+    .join(" ") || "UPI recipient";
+  const initials = words
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? "")
+    .join("") || "UP";
+  return {
+    id: `upi-${upiId.replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+    name,
+    upiId,
+    initials,
+  };
 }

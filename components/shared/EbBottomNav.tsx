@@ -41,6 +41,11 @@ export function EbBottomNav({
   const current =
     active ??
     (pathname?.includes("transaction") ? "transactions" : "home");
+  const homeHref = variant === "pluspay" ? "/?mode=pluspay" : "/";
+  const transactionsHref =
+    variant === "pluspay"
+      ? "/transactions/?mode=pluspay"
+      : "/transactions/?mode=benefits";
 
   // Laid out exactly like the Home and Transactions tabs, so the label picks up
   // the same type and lands on the same line by construction rather than by a
@@ -69,9 +74,8 @@ export function EbBottomNav({
       <span className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-pine-primary shadow-cta">
         <AppIcon
           src={BRAND_ASSETS.scanPay}
-          size={40}
-          className="h-10 w-10 object-cover"
-          style={{ filter: 'url("#scan-gif-knockout-host")' }}
+          size={32}
+          className="h-8 w-8 object-contain"
         />
       </span>
       <span className="max-w-[82px] overflow-hidden text-ellipsis whitespace-nowrap">
@@ -87,25 +91,6 @@ export function EbBottomNav({
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}
     >
-      {variant === "pluspay" ? (
-        <svg
-          className="pointer-events-none absolute h-0 w-0 overflow-hidden"
-          aria-hidden="true"
-          focusable="false"
-        >
-          <defs>
-            <filter
-              id="scan-gif-knockout-host"
-              colorInterpolationFilters="sRGB"
-            >
-              <feColorMatrix
-                type="matrix"
-                values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.319 1.073 0.108 0 -0.5"
-              />
-            </filter>
-          </defs>
-        </svg>
-      ) : null}
       {/*
         The artwork is 139px tall by design and the icons, button and labels are
         all positioned from the top of that 139px box. Letting it stretch over
@@ -129,7 +114,7 @@ export function EbBottomNav({
       />
 
       <Link
-        href="/"
+        href={homeHref}
         className={`flex min-h-[139px] flex-col items-center justify-start gap-2 px-2.5 pb-[11px] pt-[67px] text-caption font-normal leading-[1.2] ${
           current === "home" ? "text-pine-primary" : "text-subtle"
         }`}
@@ -144,13 +129,17 @@ export function EbBottomNav({
 
       {variant === "pluspay" ? (
         <Link
-          href="/#scan-pay"
+          href="/?mode=pluspay#scan-pay"
           className={centerActionClassName}
           aria-label="Scan & Pay"
-          onClick={(event) => {
-            event.preventDefault();
-            onScanPay?.();
-          }}
+          onClick={
+            onScanPay
+              ? (event) => {
+                  event.preventDefault();
+                  onScanPay();
+                }
+              : undefined
+          }
         >
           {scanPayContent}
         </Link>
@@ -174,7 +163,7 @@ export function EbBottomNav({
       )}
 
       <Link
-        href="/transactions/"
+        href={transactionsHref}
         className={`flex min-h-[139px] flex-col items-center justify-start gap-2 px-2.5 pb-[11px] pt-[67px] text-caption font-normal leading-[1.2] ${
           current === "transactions" ? "text-pine-primary" : "text-subtle"
         }`}

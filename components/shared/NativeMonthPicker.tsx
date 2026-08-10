@@ -4,7 +4,7 @@ type NativeMonthPickerProps = {
   value: string;
   onChange: (month: string) => void;
   label: string;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
 };
 

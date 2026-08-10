@@ -109,7 +109,7 @@ export function WalletStatementScreen() {
                   {group.transactions.map((transaction, index) => (
                     <Link
                       key={transaction.id}
-                      href={`/transaction-details/?id=${encodeURIComponent(transaction.id)}`}
+                      href={`/transaction-details/?id=${encodeURIComponent(transaction.id)}&mode=benefits`}
                       className={`flex min-h-11 items-center gap-3 px-card py-3 transition-colors hover:bg-surface ${
                         index < group.transactions.length - 1 ? "border-b border-border-soft" : ""
                       }`}

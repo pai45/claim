@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { resolveScanPayScenario } from "@/features/scan-pay/fixtures";
 import {
   cleanScanPayAmount,
+  createInitialBankTransferState,
   createInitialScanPayState,
+  createPaymentTransactionForState,
   scanPayAmountIsValid,
   scanPayReducer,
 } from "@/features/scan-pay/machine";
@@ -112,12 +114,101 @@ describe("scan pay machine", () => {
   });
 
   it("routes manual EB+ UPI entry to reimbursement", () => {
-    const state = scanPayReducer(
-      createInitialScanPayState("success", "benefits", "meal"),
-      { type: "VERIFY_UPI" },
-    );
+    let state = createInitialScanPayState("success", "benefits", "meal", {
+      kind: "upi-entry",
+    });
+    expect(state.step).toBe("upiEntry");
+    state = scanPayReducer(state, {
+      type: "SET_UPI_ID",
+      upiId: "deevanshu@paytm",
+    });
+    state = scanPayReducer(state, { type: "VERIFY_UPI" });
     expect(state.merchantType).toBe("unclassified");
     expect(state.walletId).toBe("misc");
+    expect(state.paymentContext).toMatchObject({
+      origin: "upi-transfer",
+      recipient: { upiId: "deevanshu@paytm" },
+    });
+  });
+
+  it("starts Pay Again at confirmation with a blank amount and active mode", () => {
+    const payee = {
+      id: "deevanshu-sharma",
+      name: "Deevanshu Sharma",
+      upiId: "deevanshu@paytm",
+      initials: "DS",
+    };
+    const benefits = createInitialScanPayState(
+      "success",
+      "benefits",
+      "meal",
+      { kind: "payee", payee },
+    );
+    const pluspay = createInitialScanPayState(
+      "success",
+      "pluspay",
+      "meal",
+      { kind: "payee", payee },
+    );
+    expect(benefits).toMatchObject({
+      step: "confirmPayment",
+      mode: "benefits",
+      merchantType: "unclassified",
+      walletId: "misc",
+      amount: "",
+    });
+    expect(pluspay).toMatchObject({
+      step: "confirmPayment",
+      mode: "pluspay",
+      walletId: "misc",
+      amount: "",
+    });
+  });
+
+  it("starts bank transfers at confirmation with reimbursement locked", () => {
+    const state = createInitialBankTransferState({
+      accountHolder: "Ananya Rao",
+      accountNumber: "123456789012",
+      ifsc: "HDFC0001234",
+    });
+    expect(state.step).toBe("confirmPayment");
+    expect(state.walletId).toBe("misc");
+    expect(state.paymentContext.origin).toBe("bank-transfer");
+    expect(state.selectedCategoryId).toBe("finance");
+
+    const unchanged = scanPayReducer(state, {
+      type: "SELECT_WALLET",
+      walletId: "meal",
+    });
+    expect(unchanged).toEqual(state);
+  });
+
+  it("creates bank-specific transaction details", () => {
+    const state = {
+      ...createInitialBankTransferState({
+        accountHolder: "Ananya Rao",
+        accountNumber: "123456789012",
+        ifsc: "HDFC0001234",
+      }),
+      amount: "500",
+      fundingAllocations: [
+        {
+          walletId: "misc" as const,
+          walletLabel: "Reimbursement Wallet",
+          amount: 500,
+        },
+      ],
+    };
+    const transaction = createPaymentTransactionForState(state);
+    expect(transaction.payee).toMatchObject({
+      kind: "bank-transfer",
+      name: "Ananya Rao",
+      ifsc: "HDFC0001234",
+    });
+    expect(transaction.paymentMethod).toBe("Bank Transfer");
+    expect(transaction.transactionId).toMatch(/^EB\d{10}$/);
+    expect(transaction.category).toBe("Finance");
+    expect(transaction.subcategory).toBe("Bank");
   });
 
   it("changes the post-scan merchant scenario and resets wallet eligibility", () => {

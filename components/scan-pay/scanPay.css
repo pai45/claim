@@ -304,6 +304,10 @@
   isolation: isolate;
 }
 
+.scan-pay-reward-hero {
+  min-height: 360px;
+}
+
 .scan-pay-reward-hero::before {
   position: absolute;
   z-index: 0;

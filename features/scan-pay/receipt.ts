@@ -1,4 +1,5 @@
 import type { ScanPayTransaction } from "@/features/scan-pay/types";
+import { maskAccountNumber } from "@/features/bank-transfer/validation";
 import { colors } from "@/lib/ui/colors";
 
 export function formatScanPayINR(amount: number): string {
@@ -10,12 +11,21 @@ export function formatScanPayINR(amount: number): string {
 }
 
 export function buildScanPayReceiptText(transaction: ScanPayTransaction): string {
+  const payee = transaction.payee;
+  const bankTransfer = payee.kind === "bank-transfer";
   return [
-    "PlusPay payment receipt",
-    `${formatScanPayINR(transaction.amount)} paid to ${transaction.merchant}`,
+    receiptTitle(transaction),
+    `${formatScanPayINR(transaction.amount)} paid to ${payee.name}`,
     `Status: ${statusLabel(transaction.outcome)}`,
-    `Merchant ID: ${transaction.merchantId}`,
-    `UPI Transaction ID: ${transaction.transactionId}`,
+    payee.kind === "bank-transfer"
+      ? `Account: ${maskAccountNumber(payee.accountNumber)}`
+      : payee.kind === "upi"
+        ? `UPI ID: ${payee.upiId}`
+        : `Merchant ID: ${payee.merchantId}`,
+    payee.kind === "bank-transfer"
+      ? `IFSC: ${payee.ifsc}`
+      : `UPI Transaction ID: ${transaction.transactionId}`,
+    bankTransfer ? `Reference ID: ${transaction.transactionId}` : "",
     `Payment method: ${transaction.paymentMethod}`,
     ...fundingTextLines(transaction),
     `Date & time: ${transaction.dateTime}`,
@@ -32,7 +42,7 @@ export async function downloadScanPayReceipt(
   const blob = await createScanPayReceiptImage(transaction);
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `pluspay-${transaction.transactionId}.png`;
+  link.download = receiptFilename(transaction);
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(link.href), 0);
 }
@@ -42,7 +52,7 @@ export async function shareScanPayReceipt(
 ): Promise<"shared" | "copied" | "cancelled"> {
   const text = buildScanPayReceiptText(transaction);
   const blob = await createScanPayReceiptImage(transaction);
-  const file = new File([blob], `pluspay-${transaction.transactionId}.png`, {
+  const file = new File([blob], receiptFilename(transaction), {
     type: "image/png",
   });
 
@@ -50,7 +60,7 @@ export async function shareScanPayReceipt(
     if (navigator.share) {
       const canShareFile = navigator.canShare?.({ files: [file] }) ?? false;
       await navigator.share({
-        title: "PlusPay payment receipt",
+        title: receiptTitle(transaction),
         text,
         ...(canShareFile ? { files: [file] } : {}),
       });
@@ -88,11 +98,19 @@ export async function createScanPayReceiptImage(
   context.textAlign = "center";
   context.fillStyle = colors.white;
   context.font = "700 50px 'PP Telegraf', 'Lato', sans-serif";
-  context.fillText("PlusPay", canvas.width / 2, 105);
+  context.fillText(
+    transaction.payee.kind === "bank-transfer"
+      ? "EB+ Bank Transfer"
+      : transaction.mode === "benefits"
+        ? "EB+"
+        : "PlusPay",
+    canvas.width / 2,
+    105,
+  );
   context.font = "700 76px 'PP Telegraf', 'Lato', sans-serif";
   context.fillText(formatScanPayINR(transaction.amount), canvas.width / 2, 215);
   context.font = "600 30px 'Lato', sans-serif";
-  context.fillText(`Paid to ${transaction.merchant}`, canvas.width / 2, 275);
+  context.fillText(`Paid to ${transaction.payee.name}`, canvas.width / 2, 275);
 
   const rows = receiptRows(transaction);
   context.textAlign = "left";
@@ -117,7 +135,13 @@ export async function createScanPayReceiptImage(
   context.textAlign = "center";
   context.fillStyle = colors.pinePrimary;
   context.font = "700 28px 'Lato', sans-serif";
-  context.fillText("Payments powered by UPI", canvas.width / 2, 1370);
+  context.fillText(
+    transaction.payee.kind === "bank-transfer"
+      ? "Paid securely with EB+"
+      : "Payments powered by UPI",
+    canvas.width / 2,
+    1370,
+  );
 
   return new Promise((resolve) => {
     canvas.toBlob(
@@ -144,10 +168,25 @@ export function receiptRows(
           formatScanPayINR(allocation.amount),
         ])
       : [["Paid From", transaction.walletLabel]];
+  const identityRows: [string, string][] =
+    transaction.payee.kind === "bank-transfer"
+      ? [
+          ["Account", maskAccountNumber(transaction.payee.accountNumber)],
+          ["IFSC", transaction.payee.ifsc],
+          ["Reference ID", transaction.transactionId],
+        ]
+      : transaction.payee.kind === "upi"
+        ? [
+            ["UPI ID", compactValue(transaction.payee.upiId)],
+            ["UPI Transaction ID", transaction.transactionId],
+          ]
+        : [
+          ["Merchant ID", compactValue(transaction.payee.merchantId)],
+          ["UPI Transaction ID", transaction.transactionId],
+        ];
   return [
     ["Status", statusLabel(transaction.outcome)],
-    ["Merchant ID", compactValue(transaction.merchantId)],
-    ["UPI Transaction ID", transaction.transactionId],
+    ...identityRows,
     ["Payment Method", transaction.paymentMethod],
     ...fundingRows,
     ["Date & Time", transaction.dateTime],
@@ -158,6 +197,14 @@ export function receiptRows(
         : "Not specified",
     ],
   ];
+}
+
+export function paymentPayeeIdentifier(
+  transaction: ScanPayTransaction,
+): string {
+  return transaction.payee.kind === "bank-transfer"
+    ? `A/C ${maskAccountNumber(transaction.payee.accountNumber)} · IFSC ${transaction.payee.ifsc}`
+    : transaction.payee.upiId;
 }
 
 function fundingTextLines(transaction: ScanPayTransaction): string[] {
@@ -178,4 +225,23 @@ export function statusLabel(outcome: ScanPayTransaction["outcome"]): string {
 
 function compactValue(value: string): string {
   return value.length > 24 ? `${value.slice(0, 21)}…` : value;
+}
+
+function receiptFilename(transaction: ScanPayTransaction): string {
+  const prefix =
+    transaction.payee.kind === "bank-transfer"
+      ? "bank-transfer"
+      : transaction.mode === "benefits"
+        ? "eb-plus-upi"
+        : "pluspay";
+  return `${prefix}-${transaction.transactionId}.png`;
+}
+
+function receiptTitle(transaction: ScanPayTransaction): string {
+  if (transaction.payee.kind === "bank-transfer") {
+    return "EB+ bank transfer receipt";
+  }
+  return transaction.mode === "benefits"
+    ? "EB+ UPI payment receipt"
+    : "PlusPay payment receipt";
 }

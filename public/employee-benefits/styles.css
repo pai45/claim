@@ -5290,10 +5290,10 @@ body.is-pluspay .bottom-nav .pluspay-scan-button .pluspay-scan-icon {
 }
 
 body.is-pluspay .bottom-nav .pluspay-scan-button .pluspay-scan-gif {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  filter: url("#scan-gif-knockout");
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  image-rendering: auto;
 }
 
 body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
@@ -9573,8 +9573,43 @@ body.is-pluspay .product-segment-pluspay img {
 body.is-product-locked [data-pluspay-toggle] {
   display: grid !important;
   grid-template-columns: minmax(0, 1fr);
-  max-width: 166px;
+  width: auto;
+  max-width: none;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
   pointer-events: none;
+}
+
+body.is-product-locked .product-segment {
+  min-height: 44px;
+  padding: 0 8px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.is-product-locked .product-segment-lens {
+  color: var(--brand-900);
+  font-size: 30px;
+  line-height: 1;
+}
+
+body.is-product-locked.is-pluspay .product-segment-pluspay {
+  background: transparent;
+  box-shadow: none;
+}
+
+body.is-product-locked.is-pluspay .product-segment-pluspay img {
+  width: auto;
+  height: 32px;
+  max-width: 104px;
+  opacity: 1;
+  filter: brightness(0) invert(1);
 }
 
 body.is-product-locked.is-pluspay-disabled .product-segment-pluspay,
@@ -9637,6 +9672,12 @@ body.is-upi-created .payment-shortcuts {
   width: 21px;
   height: 21px;
   stroke-width: 2;
+}
+
+.payment-shortcut-icon img {
+  display: block;
+  width: 20px;
+  height: 20px;
 }
 
 .payment-shortcut strong {
@@ -9762,13 +9803,25 @@ body.is-pluspay .phone-shell::before {
 
 body.is-pluspay .hero-panel {
   margin-bottom: 0;
-  padding-bottom: 4px;
+  padding-bottom: 0;
   background: transparent;
 }
 
+body.is-pluspay .topbar-row {
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  min-height: 80px;
+}
+
 body.is-pluspay .avatar-button {
+  width: 40px;
+  height: 40px;
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
+}
+
+body.is-pluspay .topbar-spacer {
+  width: 40px;
+  height: 40px;
 }
 
 .pluspay-corporate-message {
@@ -9779,9 +9832,9 @@ body.is-pluspay .pluspay-corporate-message {
   display: grid;
   grid-template-columns: minmax(0, 1.65fr) minmax(112px, 0.72fr);
   align-items: center;
-  min-height: 205px;
-  margin-top: 8px;
-  padding: 18px 4px 12px 10px;
+  min-height: 112px;
+  margin-top: 0;
+  padding: 12px 4px 8px 10px;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -9803,7 +9856,7 @@ body.is-pluspay .pluspay-corporate-message {
   max-width: none;
   color: #ffffff;
   font-family: "PP Telegraf", "Lato", sans-serif;
-  font-size: clamp(18px, 4.7vw, 20px);
+  font-size: 18px;
   font-weight: var(--fw-bold);
   line-height: 1.18;
 }
@@ -9823,15 +9876,20 @@ body.is-pluspay .pluspay-corporate-message {
   position: relative;
   z-index: 1;
   display: block;
-  width: min(100%, 126px);
+  width: min(100%, 104px);
   height: auto;
   justify-self: end;
   filter: drop-shadow(4px 8px 12px rgba(0, 42, 25, 0.12));
-  transform: translateX(4px);
+  transform: none;
 }
 
 body.is-pluspay .upi-panel {
-  margin-top: 8px;
+  margin-top: var(--space-20);
+}
+
+body.is-pluspay .upi-card,
+body.is-pluspay .upi-card-create {
+  border-radius: 10px;
 }
 
 body.is-pluspay .pluspay-actions-panel {
@@ -9892,6 +9950,12 @@ body.is-pluspay .pluspay-actions-panel {
   width: 25px;
   height: 25px;
   stroke-width: 2;
+}
+
+.pluspay-action-icon img {
+  display: block;
+  width: 24px;
+  height: 24px;
 }
 
 .pluspay-action-card strong,

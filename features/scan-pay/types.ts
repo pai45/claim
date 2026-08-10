@@ -1,5 +1,6 @@
 import type { TransactionWallet } from "@/features/transactions/constants";
 import type { FundingAllocation } from "@/features/transactions/financialState";
+import type { BankRecipientDraft } from "@/features/bank-transfer/validation";
 
 export type ScanPayMode = "benefits" | "pluspay";
 export type ScanPayMerchantType =
@@ -17,6 +18,38 @@ export type ScanPayScenario =
   | "no-category";
 
 export type ScanPayOutcome = "success" | "failed" | "processing";
+
+export type UpiPayee = {
+  id: string;
+  name: string;
+  upiId: string;
+  initials: string;
+};
+
+export type PaymentContext =
+  | { origin: "scan-pay" }
+  | { origin: "upi-transfer"; recipient: UpiPayee }
+  | { origin: "bank-transfer"; recipient: BankRecipientDraft };
+
+export type PaymentPayee =
+  | {
+      kind: "merchant";
+      name: string;
+      upiId: string;
+      merchantId: string;
+    }
+  | {
+      kind: "upi";
+      name: string;
+      upiId: string;
+      payeeId: string;
+    }
+  | {
+      kind: "bank-transfer";
+      name: string;
+      accountNumber: string;
+      ifsc: string;
+    };
 
 export type ScanPayStep =
   | "scanner"
@@ -56,11 +89,10 @@ export type ScanPayReceiptState = "empty" | "captured" | "confirmed";
 export type ScanPayFaqReturnStep = "scanner" | "result" | "paymentDetails";
 
 export type ScanPayTransaction = {
+  paymentContext: PaymentContext;
+  payee: PaymentPayee;
   mode: ScanPayMode;
-  merchant: string;
-  upiId: string;
   amount: number;
-  merchantId: string;
   transactionId: string;
   paymentMethod: string;
   dateTime: string;
@@ -76,6 +108,8 @@ export type ScanPayTransaction = {
 };
 
 export type ScanPayState = {
+  paymentContext: PaymentContext;
+  upiIdDraft: string;
   step: ScanPayStep;
   mode: ScanPayMode;
   merchantType: ScanPayMerchantType;
@@ -106,11 +140,13 @@ export type ScanPayAction =
       scenario: ScanPayScenario;
       mode: ScanPayMode;
       merchantType: ScanPayMerchantType;
+      launch?: ScanPayLaunch;
     }
   | { type: "DETECT_QR" }
   | { type: "DISMISS_QR_ERROR" }
   | { type: "TOGGLE_TORCH" }
   | { type: "OPEN_UPI_ENTRY" }
+  | { type: "SET_UPI_ID"; upiId: string }
   | { type: "VERIFY_UPI" }
   | {
       type: "SELECT_MERCHANT_SCENARIO";
@@ -128,7 +164,7 @@ export type ScanPayAction =
   | { type: "OPEN_NOTE" }
   | { type: "SET_NOTE"; note: string }
   | { type: "PAY"; fundingAllocations?: FundingAllocation[] }
-  | { type: "RESOLVE_PAYMENT" }
+  | { type: "RESOLVE_PAYMENT"; transaction?: ScanPayTransaction }
   | { type: "PAYMENT_COMMIT_FAILED" }
   | { type: "RETRY_PAYMENT" }
   | { type: "REVEAL_REWARD" }
@@ -139,10 +175,16 @@ export type ScanPayAction =
   | { type: "CONFIRM_RECEIPT" }
   | { type: "BACK" };
 
+export type ScanPayLaunch =
+  | { kind: "scanner" }
+  | { kind: "upi-entry"; initialUpiId?: string }
+  | { kind: "payee"; payee: UpiPayee };
+
 export type ScanPayFlowProps = {
   open: boolean;
   scenario: ScanPayScenario;
   mode: ScanPayMode;
   merchantType: ScanPayMerchantType;
+  launch?: ScanPayLaunch;
   onClose: () => void;
 };

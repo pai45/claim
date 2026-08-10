@@ -26,6 +26,13 @@ export const UI_ICONS = {
   notification: "/assets/icons/notification-bell.svg",
 } as const;
 
+export const PAYMENT_ASSETS = {
+  /** Supplied paper-plane artwork shared by Pay to Anyone and Send Money. */
+  sendMoney: "/assets/payments/send-money.svg",
+  /** Supplied UPI mark used by the PlusPay UPI ID card. */
+  upiId: "/assets/payments/upi-id.svg",
+} as const;
+
 export const CHAT_ASSETS = {
   vehicleRegistration: "/assets/vehicle-registration-cta.png",
   driverRegistration: "/assets/driver-registration-cta.png",
@@ -97,5 +104,6 @@ export const SCAN_PAY_ASSETS = {
   financeIllustration: "/assets/scan-pay/finance-illustration.svg",
   categoryMore: "/assets/scan-pay/category-more.svg",
   confirmPaymentMark: "/assets/scan-pay/confirm-payment-mark.png",
+  paymentProcessingLogo: "/assets/scan-pay/payment-processing-logo.png",
   poweredByUpi: UPI_SETTINGS_ASSETS.poweredByUpi,
 } as const;

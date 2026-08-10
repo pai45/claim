@@ -21,6 +21,10 @@ import {
   getTransactionItems,
 } from "@/features/transactions/constants";
 import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import {
+  resolveTransactionMode,
+  type TransactionProductMode,
+} from "@/features/transactions/mode";
 import type { EmployeeBenefitsPersonaPayload } from "@/features/persona/types";
 import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
@@ -123,9 +127,15 @@ export function EmployeeBenefitsHost() {
     }
   }, []);
 
-  const openTransactions = useCallback(() => {
-    window.location.assign(withBasePath("/transactions/"));
-  }, []);
+  const openTransactions = useCallback(
+    (mode: TransactionProductMode) => {
+      const resolvedMode = resolveTransactionMode(mode, persona.access);
+      window.location.assign(
+        withBasePath(`/transactions/?mode=${resolvedMode}`),
+      );
+    },
+    [persona.access],
+  );
 
   const openWalletStatement = useCallback((wallet: WalletStatementKey) => {
     window.location.assign(
@@ -147,7 +157,7 @@ export function EmployeeBenefitsHost() {
       }
       window.location.assign(
         withBasePath(
-          `/transaction-details/?id=${encodeURIComponent(transactionId)}`,
+          `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=benefits`,
         ),
       );
     },
@@ -169,9 +179,11 @@ export function EmployeeBenefitsHost() {
     window.location.assign(withBasePath(`/upi-settings/?tab=${tab}`));
   }, [persona.access]);
 
-  const openSendMoney = useCallback(() => {
-    if (!persona.access.upiEnabled || !persona.access.products.plusPay) return;
-    window.location.assign(withBasePath("/send-money/"));
+  const openSendMoney = useCallback((mode: "benefits" | "pluspay") => {
+    if (!persona.access.upiEnabled) return;
+    if (mode === "benefits" && !persona.access.products.ebPlus) return;
+    if (mode === "pluspay" && !persona.access.products.plusPay) return;
+    window.location.assign(withBasePath(`/send-money/?mode=${mode}`));
   }, [persona.access]);
 
   const openBankTransfer = useCallback(() => {
@@ -238,6 +250,12 @@ export function EmployeeBenefitsHost() {
   const connectClaimsBridge = useCallback(() => {
     const document = frameRef.current?.contentDocument;
     if (!document) return;
+    const initialMode = resolveTransactionMode(
+      new URLSearchParams(window.location.search).get("mode"),
+      persona.access,
+    );
+    const initialPlusPayMode = initialMode === "pluspay";
+    setPlusPayMode(initialPlusPayMode);
 
     // Navigation is owned by the host so Home and the Next.js screens render
     // the exact same component. Keep the iframe's legacy nav in the document
@@ -291,7 +309,10 @@ export function EmployeeBenefitsHost() {
       id: persona.id,
       name: persona.profile.name,
       initials: persona.profile.initials,
-      access: persona.access,
+      access: {
+        ...persona.access,
+        defaultProduct: initialPlusPayMode ? "pluspay" : "ebPlus",
+      },
       hasTransactions: persona.hasTransactions,
       hasUpiId: persona.hasUpiId,
     };
@@ -348,7 +369,9 @@ export function EmployeeBenefitsHost() {
         return;
       }
       if (event.data?.type === OPEN_TRANSACTIONS_MESSAGE) {
-        openTransactions();
+        openTransactions(
+          event.data.mode === "pluspay" ? "pluspay" : "benefits",
+        );
         return;
       }
       if (
@@ -381,7 +404,9 @@ export function EmployeeBenefitsHost() {
         return;
       }
       if (event.data?.type === OPEN_SEND_MONEY_MESSAGE) {
-        openSendMoney();
+        openSendMoney(
+          event.data.mode === "pluspay" ? "pluspay" : "benefits",
+        );
         return;
       }
       if (event.data?.type === OPEN_BANK_TRANSFER_MESSAGE) {

@@ -3,11 +3,15 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { TransactionDetailsScreen } from "@/components/transactions/TransactionDetailsScreen";
+import { resolveTransactionMode } from "@/features/transactions/mode";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 
 function TransactionDetailsInner() {
   const searchParams = useSearchParams();
+  const { persona } = useActivePersona();
   const id = searchParams.get("id") || "txn-amazon";
-  return <TransactionDetailsScreen transactionId={id} />;
+  const mode = resolveTransactionMode(searchParams.get("mode"), persona.access);
+  return <TransactionDetailsScreen transactionId={id} mode={mode} />;
 }
 
 export default function TransactionDetailsPage() {

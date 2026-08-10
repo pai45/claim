@@ -1,7 +1,6 @@
 export type BankRecipientDraft = {
   accountHolder: string;
   accountNumber: string;
-  confirmAccountNumber: string;
   ifsc: string;
 };
 
@@ -31,9 +30,6 @@ export function validateBankRecipient(
   }
   if (!ACCOUNT_NUMBER_PATTERN.test(draft.accountNumber)) {
     errors.accountNumber = "Enter a valid 9 to 18 digit account number.";
-  }
-  if (draft.confirmAccountNumber !== draft.accountNumber) {
-    errors.confirmAccountNumber = "Account numbers do not match.";
   }
   if (!IFSC_PATTERN.test(draft.ifsc)) {
     errors.ifsc = "Enter a valid 11 character IFSC code.";

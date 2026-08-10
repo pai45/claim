@@ -7,6 +7,7 @@ import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import {
   formatScanPayINR,
+  paymentPayeeIdentifier,
   receiptRows,
 } from "@/features/scan-pay/receipt";
 import type { ScanPayTransaction } from "@/features/scan-pay/types";
@@ -43,7 +44,7 @@ export function ScanPayReward({
   return (
     <AppShell className="scan-pay-shell scan-pay-reward-screen relative overflow-hidden bg-white">
       <main className="min-h-0 flex-1 overflow-y-auto pb-28">
-        <section className="scan-pay-reward-hero relative flex min-h-[430px] flex-col items-center px-page pt-12 text-center text-white">
+        <section className="scan-pay-reward-hero relative flex flex-col items-center px-page pt-12 text-center text-white">
           <div className="scan-pay-reward-copy relative z-10 flex flex-col items-center">
             <AppIcon
               src={SCAN_PAY_ASSETS.financeIllustration}
@@ -53,9 +54,11 @@ export function ScanPayReward({
               className="h-20 w-20 object-contain"
             />
             <p className="mt-2 text-caption font-bold uppercase tracking-wide text-white/80">
-              Paid to <span className="ml-1 text-body font-bold normal-case text-white">{transaction.merchant}</span>
+              Paid to <span className="ml-1 text-body font-bold normal-case text-white">{transaction.payee.name}</span>
             </p>
-            <p className="mt-1 text-body-sm text-white/80">{transaction.upiId}</p>
+            <p className="mt-1 text-body-sm text-white/80">
+              {paymentPayeeIdentifier(transaction)}
+            </p>
             <p className="mt-2 font-display text-display font-bold text-white">
               {formatScanPayINR(transaction.amount)}
             </p>

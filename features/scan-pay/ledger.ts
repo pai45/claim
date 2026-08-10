@@ -3,6 +3,7 @@ import type {
   TransactionIconId,
   TransactionItem,
 } from "@/features/transactions/constants";
+import { maskAccountNumber } from "@/features/bank-transfer/validation";
 
 const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat("en-GB", {
   day: "2-digit",
@@ -16,7 +17,7 @@ const DATE_TIME_FORMATTER = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 });
 
-export function createScanPayLedgerRows(
+export function createPaymentLedgerRows(
   transaction: ScanPayTransaction,
   now = new Date(),
 ): TransactionItem[] {
@@ -27,10 +28,12 @@ export function createScanPayLedgerRows(
     hour12: true,
   }).format(now);
 
+  const bankPayee =
+    transaction.payee.kind === "bank-transfer" ? transaction.payee : null;
   return transaction.fundingAllocations.map((allocation) => ({
     id: `${transaction.paymentGroupId}-${allocation.walletId}`,
-    merchant: transaction.merchant,
-    paymentMethod: "UPI",
+    merchant: transaction.payee.name,
+    paymentMethod: transaction.paymentMethod,
     refId: transaction.transactionId,
     amount: allocation.amount,
     type: "debit",
@@ -40,11 +43,15 @@ export function createScanPayLedgerRows(
     monthKey: postedOn.slice(0, 7),
     wallet: allocation.walletId,
     icon: iconForWallet(allocation.walletId),
-    category: transaction.category ?? "Scan & Pay",
-    location: "Bengaluru, Karnataka",
-    cardMasked: "Linked UPI account",
+    category: bankPayee
+      ? "Finance / Bank"
+      : transaction.category ?? "Scan & Pay",
+    location: bankPayee ? "Online transfer" : "Bengaluru, Karnataka",
+    cardMasked: bankPayee
+      ? maskAccountNumber(bankPayee.accountNumber)
+      : "Linked UPI account",
     walletName: allocation.walletLabel,
-    paymentMode: "UPI",
+    paymentMode: transaction.paymentMethod,
     transactionId: transaction.transactionId,
     referenceNumber: transaction.transactionId,
     paymentGroupId: transaction.paymentGroupId,

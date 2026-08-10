@@ -13,27 +13,24 @@ describe("bank transfer validation", () => {
     expect(normalizeIfsc("hdfc 0001234")).toBe("HDFC0001234");
   });
 
-  it("accepts a matching account and valid IFSC", () => {
+  it("accepts a valid account and IFSC", () => {
     expect(
       validateBankRecipient({
         accountHolder: "Ananya Rao",
         accountNumber: "123456789012",
-        confirmAccountNumber: "123456789012",
         ifsc: "HDFC0001234",
       }),
     ).toEqual({});
   });
 
-  it("rejects mismatched and malformed recipient details", () => {
+  it("rejects malformed recipient details", () => {
     const errors = validateBankRecipient({
       accountHolder: "",
       accountNumber: "123",
-      confirmAccountNumber: "456",
       ifsc: "HDFC123",
     });
     expect(errors.accountHolder).toBeTruthy();
     expect(errors.accountNumber).toBeTruthy();
-    expect(errors.confirmAccountNumber).toBeTruthy();
     expect(errors.ifsc).toBeTruthy();
   });
 

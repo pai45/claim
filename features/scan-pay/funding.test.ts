@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { calculateScanPayFunding } from "@/features/scan-pay/funding";
+import {
+  calculateScanPayFunding,
+  walletIsEligibleForPayment,
+  walletOrderForPayment,
+} from "@/features/scan-pay/funding";
 
 const balances = { meal: 100, fuel: 80, misc: 200 };
 const fallback = { meal: true, fuel: true };
@@ -98,5 +102,26 @@ describe("scan pay funding", () => {
         fallback,
       }).status,
     ).toBe("insufficient");
+  });
+
+  it("orders reimbursement first and disables other bank-transfer wallets", () => {
+    const context = {
+      origin: "bank-transfer" as const,
+      recipient: {
+        accountHolder: "Ananya Rao",
+        accountNumber: "123456789012",
+        ifsc: "HDFC0001234",
+      },
+    };
+    expect(walletOrderForPayment(context)).toEqual(["misc", "meal", "fuel"]);
+    expect(
+      walletIsEligibleForPayment("misc", "benefits", "unclassified", context),
+    ).toBe(true);
+    expect(
+      walletIsEligibleForPayment("meal", "benefits", "unclassified", context),
+    ).toBe(false);
+    expect(
+      walletIsEligibleForPayment("fuel", "benefits", "unclassified", context),
+    ).toBe(false);
   });
 });

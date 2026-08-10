@@ -16,6 +16,7 @@ import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 import { NOTIFICATIONS_HIDDEN_KEY } from "@/features/notifications/storage";
 import { UPI_CREATED_STORAGE_KEY, resetDemoJourney } from "./reset";
 import { FINANCIAL_STATE_STORAGE_KEY } from "@/features/transactions/financialState";
+import { PLUSPAY_HISTORY_STORAGE_KEY } from "@/features/transactions/plusPayHistory";
 
 function memoryStorage() {
   const map = new Map<string, string>();
@@ -58,6 +59,7 @@ describe("resetDemoJourney", () => {
     session.setItem(PENDING_INTENT_KEY, "seeded");
     session.setItem(MPIN_UNLOCK_STORAGE_KEY, "seeded");
     session.setItem(FINANCIAL_STATE_STORAGE_KEY, "seeded");
+    session.setItem(PLUSPAY_HISTORY_STORAGE_KEY, "seeded");
   });
 
   it("wipes state cleanly for new_user persona", () => {
@@ -73,6 +75,7 @@ describe("resetDemoJourney", () => {
     expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
     expect(session.getItem(FINANCIAL_STATE_STORAGE_KEY)).toBeNull();
+    expect(session.getItem(PLUSPAY_HISTORY_STORAGE_KEY)).toBeNull();
   });
 
   it("seeds returning history but resets registration and notifications", () => {

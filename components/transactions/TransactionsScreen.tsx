@@ -39,8 +39,27 @@ import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { colors } from "@/lib/ui/colors";
 import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { resolveTransactionMode } from "@/features/transactions/mode";
+import {
+  filterPlusPayTransactionsByMonth,
+  getPlusPayTransactionItems,
+  groupPlusPayTransactions,
+  usePlusPayHistoryVersion,
+} from "@/features/transactions/plusPayHistory";
 
 export function TransactionsScreen() {
+  const searchParams = useSearchParams();
+  const { persona } = useActivePersona();
+  const mode = resolveTransactionMode(searchParams.get("mode"), persona.access);
+
+  return mode === "pluspay" ? (
+    <PlusPayTransactionsScreen />
+  ) : (
+    <BenefitsTransactionsScreen />
+  );
+}
+
+function BenefitsTransactionsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { personaId } = useActivePersona();
@@ -171,6 +190,134 @@ export function TransactionsScreen() {
   );
 }
 
+function PlusPayTransactionsScreen() {
+  const router = useRouter();
+  const { personaId } = useActivePersona();
+  const historyVersion = usePlusPayHistoryVersion();
+  const [selectedMonth, setSelectedMonth] = useState(TRANSACTION_MAX_MONTH);
+
+  const transactions = useMemo(() => {
+    void historyVersion;
+    return getPlusPayTransactionItems(personaId, historyVersion !== null);
+  }, [historyVersion, personaId]);
+  const visibleTransactions = useMemo(
+    () => filterPlusPayTransactionsByMonth(transactions, selectedMonth),
+    [selectedMonth, transactions],
+  );
+  const groups = useMemo(
+    () => groupPlusPayTransactions(visibleTransactions),
+    [visibleTransactions],
+  );
+  const monthLabel =
+    TRANSACTION_MONTHS.find((month) => month.key === selectedMonth)?.label ??
+    selectedMonth;
+
+  return (
+    <AppShell className="overflow-hidden">
+      <ScreenHeader
+        title="Transaction History"
+        eyebrow="PlusPay"
+        onBack={() => router.push("/?mode=pluspay")}
+      />
+
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <NativeMonthPicker
+              value={selectedMonth}
+              onChange={setSelectedMonth}
+              label={`Choose PlusPay transaction month, currently ${monthLabel}. Available from April to August 2026.`}
+              className="h-11 w-11 shrink-0"
+            >
+              <CalendarIcon />
+            </NativeMonthPicker>
+            <span className="type-body-secondary truncate font-bold">
+              {monthLabel}
+            </span>
+          </div>
+
+          {visibleTransactions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center rounded-card border border-border-line bg-white p-card py-10 text-center shadow-card">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-surface-muted text-subtle">
+                <svg
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+              </div>
+              <h2 className="type-section-title mb-1 text-ink">
+                No transactions yet
+              </h2>
+              <p className="type-body-secondary mb-5 max-w-[260px]">
+                No PlusPay activity in {monthLabel}.
+              </p>
+              <Link
+                href="/?mode=pluspay"
+                className="btn-primary inline-flex h-auto min-h-11 items-center gap-2 px-6 py-2.5 text-sm font-semibold"
+              >
+                Go to Home
+              </Link>
+            </div>
+          ) : (
+            groups.map((section) => (
+              <section key={section.group} className="flex flex-col gap-2">
+                <h2 className="type-section-title text-pine-primary">
+                  {section.label}
+                </h2>
+                <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
+                  {section.items.map((txn, index) => (
+                    <Link
+                      key={txn.id}
+                      href={`/transaction-details/?id=${encodeURIComponent(txn.id)}&mode=pluspay`}
+                      style={staggerStyle(index)}
+                      className={`animate-rise-in flex min-h-11 items-center gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
+                        index < section.items.length - 1
+                          ? "border-b border-border-line"
+                          : ""
+                      }`}
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
+                        <TransactionIcon icon={txn.icon} />
+                      </div>
+                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <h3 className="type-body truncate font-bold text-ink">
+                          {txn.merchant}
+                        </h3>
+                        <p className="truncate text-caption text-ink-secondary">
+                          ANQ | Ref ID: {txn.refId}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-0.5">
+                        <p className="text-body-sm font-bold text-ink">
+                          {formatSignedINR(txn.amount, txn.type)}
+                        </p>
+                        <p className="text-caption text-ink-secondary">
+                          {txn.dateLabel}
+                        </p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ))
+          )}
+        </div>
+      </main>
+
+      <EbBottomNav active="transactions" variant="pluspay" />
+    </AppShell>
+  );
+}
+
 function TransactionsPanel({
   selectedWallet,
   onSelectWallet,
@@ -251,7 +398,7 @@ function TransactionsPanel({
                 return (
                   <Link
                     key={txn.id}
-                    href={`/transaction-details/?id=${encodeURIComponent(txn.id)}`}
+                    href={`/transaction-details/?id=${encodeURIComponent(txn.id)}&mode=benefits`}
                     style={staggerStyle(index)}
                     className={`animate-rise-in flex min-h-11 items-center gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
                       !isLast ? "border-b border-border-line" : ""

@@ -15,7 +15,11 @@ import type {
   ScanPayState,
   ScanPayTransaction,
 } from "@/features/scan-pay/types";
-import { DEMO_DOCUMENT_ASSETS, UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
+import {
+  DEMO_DOCUMENT_ASSETS,
+  SCAN_PAY_ASSETS,
+  UPI_SETTINGS_ASSETS,
+} from "@/lib/ui/assets";
 import { withBasePath } from "@/lib/basePath";
 
 type ReceiptActionProps = {
@@ -35,8 +39,15 @@ export function ScanPaySubmitting({
     <AppShell className="scan-pay-shell overflow-hidden bg-white">
       <ScreenHeader title="Processing Payment" onBack={onBack} />
       <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-page text-center">
-        <div className="scan-pay-processing-orbit flex h-24 w-24 items-center justify-center rounded-pill bg-surface-tint text-pine-primary shadow-icon">
-          <ScanPayIcon name="upi" size={44} />
+        <div className="scan-pay-processing-orbit flex h-24 w-24 items-center justify-center rounded-pill bg-surface-tint shadow-icon">
+          <AppIcon
+            src={SCAN_PAY_ASSETS.paymentProcessingLogo}
+            alt=""
+            width={80}
+            height={80}
+            className="h-20 w-20 object-contain"
+            priority
+          />
         </div>
         <h2 className="type-section-title mt-7 text-pine">
           Processing payment
@@ -76,13 +87,15 @@ export function ScanPayResult({
             dispatch({ type: "OPEN_FAQ", returnStep: "result" })
           }
         />
-        <AppIcon
-          src={UPI_SETTINGS_ASSETS.poweredByUpi}
-          alt="Powered by UPI"
-          width={72}
-          height={30}
-          className="mx-auto mt-8 h-auto w-16"
-        />
+        {transaction.payee.kind !== "bank-transfer" ? (
+          <AppIcon
+            src={UPI_SETTINGS_ASSETS.poweredByUpi}
+            alt="Powered by UPI"
+            width={72}
+            height={30}
+            className="mx-auto mt-8 h-auto w-16"
+          />
+        ) : null}
       </main>
       <footer className="shrink-0 border-t border-border-soft bg-white px-page pb-5 pt-3">
         <button
@@ -143,13 +156,15 @@ export function ScanPayPaymentDetails({
           onDownload={onDownload}
           onShare={onShare}
         />
-        <AppIcon
-          src={UPI_SETTINGS_ASSETS.poweredByUpi}
-          alt="Powered by UPI"
-          width={72}
-          height={30}
-          className="mx-auto mt-8 h-auto w-16"
-        />
+        {transaction.payee.kind !== "bank-transfer" ? (
+          <AppIcon
+            src={UPI_SETTINGS_ASSETS.poweredByUpi}
+            alt="Powered by UPI"
+            width={72}
+            height={30}
+            className="mx-auto mt-8 h-auto w-16"
+          />
+        ) : null}
       </main>
       <footer className="shrink-0 border-t border-border-soft bg-white px-page pb-5 pt-3">
         <button
@@ -300,7 +315,7 @@ export function ReceiptTicket({
           </span>
           <p className="type-amount mt-2">{formatScanPayINR(transaction.amount)}</p>
           <p className="text-caption text-ink-secondary">
-            Paid to {transaction.merchant}
+            Paid to {transaction.payee.name}
           </p>
         </div>
         <dl className="divide-y divide-border-soft">

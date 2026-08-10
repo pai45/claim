@@ -26,5 +26,14 @@ describe("EbBottomNav", () => {
     expect(markup).toMatch(/<a[^>]+aria-label="Scan &amp; Pay"/);
     expect(markup).toContain("text-caption font-normal leading-[1.2]");
     expect(markup).not.toContain('aria-label="Benefits"');
+    expect(markup).toContain('href="/?mode=pluspay"');
+    expect(markup).toContain('href="/?mode=pluspay#scan-pay"');
+    expect(markup).toContain('href="/transactions?mode=pluspay"');
+  });
+
+  it("keeps the Benefits transaction destination explicit", () => {
+    const markup = renderToStaticMarkup(createElement(EbBottomNav));
+
+    expect(markup).toContain('href="/transactions?mode=benefits"');
   });
 });

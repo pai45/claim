@@ -12,36 +12,79 @@ import {
 } from "@/features/transactions/constants";
 import { useFinancialStateVersion } from "@/features/transactions/financialState";
 import { useActivePersona } from "@/features/persona/useActivePersona";
+import { getRecipientHistoryTransaction } from "@/features/send-money/history";
+import type { TransactionProductMode } from "@/features/transactions/mode";
+import {
+  getPlusPayTransaction,
+  type PlusPayTransactionItem,
+  usePlusPayHistoryVersion,
+} from "@/features/transactions/plusPayHistory";
 import { colors } from "@/lib/ui/colors";
 
 type TransactionDetailsScreenProps = {
   transactionId: string;
+  mode: TransactionProductMode;
 };
+
+type TransactionDetailItem = TransactionItem | PlusPayTransactionItem;
 
 export function TransactionDetailsScreen({
   transactionId,
+  mode,
 }: TransactionDetailsScreenProps) {
   const router = useRouter();
   const { personaId } = useActivePersona();
   const financialVersion = useFinancialStateVersion();
+  const plusPayHistoryVersion = usePlusPayHistoryVersion();
   void financialVersion;
+  void plusPayHistoryVersion;
   const txn =
-    getTransaction(
-      transactionId,
-      personaId,
-      financialVersion !== null,
-    ) ??
-    getTransaction(
-      "txn-amazon",
-      personaId,
-      financialVersion !== null,
-    )!;
+    mode === "pluspay"
+      ? getPlusPayTransaction(
+          transactionId,
+          personaId,
+          plusPayHistoryVersion !== null,
+        ) ?? getRecipientHistoryTransaction(transactionId)
+      : getTransaction(
+          transactionId,
+          personaId,
+          financialVersion !== null,
+        ) ?? getRecipientHistoryTransaction(transactionId);
+
+  if (!txn) {
+    return (
+      <AppShell className="overflow-hidden" variant="surface">
+        <ScreenHeader
+          title="Transaction Details"
+          onBack={() => router.push(`/transactions/?mode=${mode}`)}
+        />
+        <main className="flex min-h-0 flex-1 items-center px-page pb-8">
+          <section className="w-full rounded-card border border-border-line bg-white p-card text-center shadow-card">
+            <h2 className="type-section-title text-ink">
+              Transaction not found
+            </h2>
+            <p className="mt-1 type-body-secondary">
+              This transaction is no longer available in your history.
+            </p>
+            <button
+              type="button"
+              className="btn-primary mt-5 w-full"
+              onClick={() => router.push(`/transactions/?mode=${mode}`)}
+            >
+              Back to Transactions
+            </button>
+          </section>
+        </main>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell className="overflow-hidden" variant="surface">
       <ScreenHeader
         title="Transaction Details"
-        onBack={() => router.back()}
+        eyebrow={mode === "pluspay" ? "PlusPay" : undefined}
+        onBack={() => router.push(`/transactions/?mode=${mode}`)}
       />
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-8 pt-2">
@@ -86,33 +129,10 @@ export function TransactionDetailsScreen({
             Payment Information
           </h2>
           <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
-            <InfoRow
-              icon={<BillIcon />}
-              label="Payment Mode"
-              value={txn.paymentMode}
-            />
-            <InfoRow
-              icon={<CardIcon />}
-              label="Card Used"
-              value={txn.cardMasked}
-            />
-            {txn.fundingAllocations?.length ? (
-              txn.fundingAllocations.map((allocation, index) => (
-                <InfoRow
-                  key={allocation.walletId}
-                  icon={<WalletIcon />}
-                  label={allocation.walletLabel}
-                  value={formatINR(allocation.amount)}
-                  isLast={index === txn.fundingAllocations!.length - 1}
-                />
-              ))
+            {mode === "pluspay" ? (
+              <PlusPayPaymentRows txn={txn} />
             ) : (
-              <InfoRow
-                icon={<WalletIcon />}
-                label="Wallet Name"
-                value={txn.walletName}
-                isLast
-              />
+              <BenefitsPaymentRows txn={txn as TransactionItem} />
             )}
           </div>
         </section>
@@ -143,8 +163,10 @@ export function TransactionDetailsScreen({
   );
 }
 
-function SummaryCard({ txn }: { txn: TransactionItem }) {
+function SummaryCard({ txn }: { txn: TransactionDetailItem }) {
   const amountPrefix = txn.type === "credit" ? "+" : "";
+  const paymentTotal =
+    "paymentTotal" in txn ? txn.paymentTotal ?? txn.amount : txn.amount;
   return (
     <section className="rounded-card border border-border-line bg-white p-card shadow-card">
       <div className="flex items-center gap-3">
@@ -157,7 +179,7 @@ function SummaryCard({ txn }: { txn: TransactionItem }) {
           </p>
           <p className="type-amount text-ink">
             {amountPrefix}
-            {formatINR(txn.paymentTotal ?? txn.amount)}
+            {formatINR(paymentTotal)}
           </p>
         </div>
       </div>
@@ -175,6 +197,62 @@ function SummaryCard({ txn }: { txn: TransactionItem }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function isPlusPayTransaction(
+  txn: TransactionDetailItem,
+): txn is PlusPayTransactionItem {
+  return "accountName" in txn;
+}
+
+function PlusPayPaymentRows({ txn }: { txn: TransactionDetailItem }) {
+  return (
+    <>
+      <InfoRow
+        icon={<BillIcon />}
+        label="Payment Mode"
+        value={txn.paymentMode}
+      />
+      <InfoRow icon={<WalletIcon />} label="Paid Using" value="ANQ" />
+      <InfoRow
+        icon={<CardIcon />}
+        label="UPI ID"
+        value={isPlusPayTransaction(txn) ? txn.upiId : txn.cardMasked}
+        isLast
+      />
+    </>
+  );
+}
+
+function BenefitsPaymentRows({ txn }: { txn: TransactionItem }) {
+  return (
+    <>
+      <InfoRow
+        icon={<BillIcon />}
+        label="Payment Mode"
+        value={txn.paymentMode}
+      />
+      <InfoRow icon={<CardIcon />} label="Card Used" value={txn.cardMasked} />
+      {txn.fundingAllocations?.length ? (
+        txn.fundingAllocations.map((allocation, index) => (
+          <InfoRow
+            key={allocation.walletId}
+            icon={<WalletIcon />}
+            label={allocation.walletLabel}
+            value={formatINR(allocation.amount)}
+            isLast={index === txn.fundingAllocations!.length - 1}
+          />
+        ))
+      ) : (
+        <InfoRow
+          icon={<WalletIcon />}
+          label="Wallet Name"
+          value={txn.walletName}
+          isLast
+        />
+      )}
+    </>
   );
 }
 

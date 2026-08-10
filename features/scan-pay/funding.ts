@@ -1,5 +1,6 @@
 import type { FallbackControlState } from "@/features/fallback-control/store";
 import type {
+  PaymentContext,
   ScanPayMerchantType,
   ScanPayMode,
   ScanPayWalletId,
@@ -41,6 +42,24 @@ export function walletIsEligibleForMerchant(
   if (walletId === "gift") return false;
   if (walletId === "misc") return merchantType !== "unsupported";
   return walletId === merchantType;
+}
+
+export function walletIsEligibleForPayment(
+  walletId: ScanPayWalletId,
+  mode: ScanPayMode,
+  merchantType: ScanPayMerchantType,
+  paymentContext: PaymentContext,
+): boolean {
+  if (paymentContext.origin === "bank-transfer") return walletId === "misc";
+  return walletIsEligibleForMerchant(walletId, mode, merchantType);
+}
+
+export function walletOrderForPayment(
+  paymentContext: PaymentContext,
+): readonly ScanPayBenefitWalletId[] {
+  return paymentContext.origin === "bank-transfer"
+    ? ["misc", "meal", "fuel"]
+    : SCAN_PAY_WALLET_IDS;
 }
 
 export function calculateScanPayFunding({

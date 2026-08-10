@@ -14,22 +14,6 @@
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true" focusable="false">
-      <defs>
-        <filter
-          id="scan-gif-knockout"
-          color-interpolation-filters="sRGB"
-        >
-          <feColorMatrix
-            type="matrix"
-            values="
-              0 0 0 0 1
-              0 0 0 0 1
-              0 0 0 0 1
-              0.319 1.073 0.108 0 -0.5
-            "
-          />
-        </filter>
-      </defs>
       <symbol id="icon-bell" viewBox="0 0 24 24">
         <path
           d="M9.354 21c.705.622 1.632 1 2.646 1s1.94-.378 2.646-1M18 8A6 6 0 1 0 6 8c0 3.09-.78 5.206-1.65 6.605-.735 1.18-1.102 1.771-1.089 1.936.015.182.054.252.2.36.133.099.732.099 1.928.099H18.61c1.196 0 1.795 0 1.927-.098.147-.11.186-.179.2-.361.014-.165-.353-.755-1.088-1.936C18.78 13.206 18 11.09 18 8Z"
@@ -435,13 +419,47 @@
         <button
           class="payment-shortcut"
           type="button"
-          data-tap-pay-discovery
+          data-send-money-open
+          data-upi-created-only
         >
           <span class="payment-shortcut-icon" aria-hidden="true">
-            <svg><use href="#icon-nfc" /></svg>
+            <img src="../assets/payments/send-money.svg" alt="" />
           </span>
-          <strong>Tap<br />&amp; Pay</strong>
+          <strong>Pay to<br />Anyone</strong>
         </button>
+      </section>
+
+      <section
+        class="pluspay-actions-panel"
+        aria-label="PlusPay actions"
+        data-pluspay-show
+      >
+        <div class="pluspay-actions-grid">
+          <button
+            class="pluspay-action-card"
+            type="button"
+            data-send-money-open
+            data-upi-feature
+          >
+            <span class="pluspay-action-icon" aria-hidden="true"
+              ><img src="../assets/payments/send-money.svg" alt=""
+            ></span>
+            <strong>Send Money</strong>
+            <small>Pay to any UPI ID instantly</small>
+          </button>
+          <button
+            class="pluspay-action-card is-highlight"
+            type="button"
+            data-scan-pay-open
+            data-upi-feature
+          >
+            <span class="pluspay-action-icon" aria-hidden="true"
+              ><svg><use href="#icon-scan" /></svg
+            ></span>
+            <strong>Scan & Pay</strong>
+            <small>Scan any QR code for instant payments</small>
+          </button>
+        </div>
       </section>
 
       <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
@@ -459,7 +477,7 @@
             class="upi-brand-badge upi-brand-badge-create"
             aria-hidden="true"
           >
-            <img src="./assets/icons/upi.svg" alt="" />
+            <img src="../assets/payments/upi-id.svg" alt="" />
           </span>
           <span class="upi-copy upi-copy-create">
             <small>UPI ID</small>
@@ -474,7 +492,7 @@
           data-upi-settings-open
         >
           <span class="upi-brand-badge" aria-hidden="true">
-            <img src="./assets/icons/upi.svg" alt="" />
+            <img src="../assets/payments/upi-id.svg" alt="" />
           </span>
           <span class="upi-copy">
             <small>UPI ID</small>
@@ -494,39 +512,6 @@
             ><svg><use href="#icon-chevron-right" /></svg
           ></span>
         </button>
-      </section>
-
-      <section
-        class="pluspay-actions-panel"
-        aria-label="PlusPay actions"
-        data-pluspay-show
-      >
-        <div class="pluspay-actions-grid">
-          <button
-            class="pluspay-action-card"
-            type="button"
-            data-send-money-open
-            data-upi-feature
-          >
-            <span class="pluspay-action-icon" aria-hidden="true"
-              ><svg><use href="#icon-send" /></svg
-            ></span>
-            <strong>Send Money</strong>
-            <small>Pay to any UPI ID instantly</small>
-          </button>
-          <button
-            class="pluspay-action-card is-highlight"
-            type="button"
-            data-scan-pay-open
-            data-upi-feature
-          >
-            <span class="pluspay-action-icon" aria-hidden="true"
-              ><svg><use href="#icon-scan" /></svg
-            ></span>
-            <strong>Scan & Pay</strong>
-            <small>Scan any QR code for instant payments</small>
-          </button>
-        </div>
       </section>
 
       <section

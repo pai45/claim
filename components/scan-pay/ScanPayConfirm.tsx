@@ -10,6 +10,10 @@ import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
+  maskAccountNumber,
+  validateBankTransferAmount,
+} from "@/features/bank-transfer/validation";
+import {
   SCAN_PAY_CATEGORIES,
   SCAN_PAY_QUICK_CATEGORIES,
   categoryById,
@@ -17,9 +21,9 @@ import {
   walletLabel,
 } from "@/features/scan-pay/fixtures";
 import {
-  SCAN_PAY_WALLET_IDS,
   calculateScanPayFunding,
-  walletIsEligibleForMerchant,
+  walletIsEligibleForPayment,
+  walletOrderForPayment,
   type ScanPayBenefitWalletId,
 } from "@/features/scan-pay/funding";
 import { scanPayAmountIsValid } from "@/features/scan-pay/machine";
@@ -71,16 +75,26 @@ const categoryEmojis: Record<ScanPayCategoryId, string> = {
 export function ScanPayConfirm({
   state,
   dispatch,
+  onBack,
 }: {
   state: ScanPayState;
   dispatch: Dispatch<ScanPayAction>;
+  onBack?: () => void;
 }) {
   const amountRef = useRef<HTMLInputElement>(null);
   const { personaId } = useActivePersona();
   const fallback = useFallbackControlState();
   const financialVersion = useFinancialStateVersion();
   void financialVersion;
-  const amountValid = scanPayAmountIsValid(state.amount);
+  const bankRecipient =
+    state.paymentContext.origin === "bank-transfer"
+      ? state.paymentContext.recipient
+      : null;
+  const upiRecipient =
+    state.paymentContext.origin === "upi-transfer"
+      ? state.paymentContext.recipient
+      : null;
+  const scanAmountValid = scanPayAmountIsValid(state.amount);
   const merchant = merchantForType(state.merchantType);
   const balances = useMemo(
     () => {
@@ -105,13 +119,19 @@ export function ScanPayConfirm({
       }),
     [balances, fallback, state.amount, state.merchantType, state.mode, state.walletId],
   );
+  const bankAmountError = bankRecipient
+    ? validateBankTransferAmount(state.amount, balances.misc)
+    : null;
+  const amountValid = bankRecipient ? bankAmountError === null : scanAmountValid;
   const valid =
     amountValid &&
     (state.mode === "pluspay" ||
       fundingPlan.status === "single" ||
       fundingPlan.status === "split");
   const showError =
-    state.amountTouched && state.amount !== "" && !amountValid;
+    state.amountTouched &&
+    !amountValid &&
+    (Boolean(bankRecipient) || state.amount !== "");
   const amountFontSize = amountFontSizeFor(state.amount);
   const noCategory = state.scenario === "no-category";
   const quickCategories = useMemo(() => {
@@ -128,7 +148,7 @@ export function ScanPayConfirm({
     <AppShell className="scan-pay-shell relative overflow-hidden bg-white">
       <ScreenHeader
         title="Confirm Payment"
-        onBack={() => dispatch({ type: "BACK" })}
+        onBack={onBack ?? (() => dispatch({ type: "BACK" }))}
       />
       <main
         className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-3"
@@ -141,9 +161,12 @@ export function ScanPayConfirm({
           <div className="animate-rise-in mb-3 flex items-start gap-3 rounded-card border border-danger bg-danger-soft p-card text-danger shadow-card" role="alert">
             <ScanPayIcon name="warning" className="mt-0.5 shrink-0" />
             <div>
-              <p className="text-body-sm font-bold">Enter Value Before Payment</p>
+              <p className="text-body-sm font-bold">
+                {bankRecipient ? "Enter a valid amount" : "Enter Value Before Payment"}
+              </p>
               <p className="mt-0.5 text-caption">
-                Enter an amount of ₹1 or more to proceed with your transaction.
+                {bankAmountError ??
+                  "Enter an amount of ₹1 or more to proceed with your transaction."}
               </p>
             </div>
           </div>
@@ -159,10 +182,12 @@ export function ScanPayConfirm({
             aria-label="Payment receipt"
           >
             <h2 className="scan-pay-receipt-merchant type-section-title text-pine">
-              {merchant.name}
+              {bankRecipient?.accountHolder ?? upiRecipient?.name ?? merchant.name}
             </h2>
             <p className="scan-pay-receipt-upi mt-0.5 text-subtle">
-              UPI ID: {merchant.upiId}
+              {bankRecipient
+                ? `A/C ${maskAccountNumber(bankRecipient.accountNumber)} · IFSC ${bankRecipient.ifsc}`
+                : `UPI ID: ${upiRecipient?.upiId ?? merchant.upiId}`}
             </p>
 
             <div
@@ -197,7 +222,17 @@ export function ScanPayConfirm({
             <p className="scan-pay-receipt-prompt mt-9 type-body-secondary">
               Paying for
             </p>
-            {noCategory ? (
+            {bankRecipient ? (
+              <div className="mx-auto mt-3 flex min-h-14 w-full items-center justify-center gap-3 rounded-control border border-pine-primary bg-surface-tint px-card text-left shadow-card">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-white text-pine-primary" aria-hidden="true">
+                  <ScanPayIcon name="bank" />
+                </span>
+                <span>
+                  <span className="block text-body-sm font-bold text-pine">Bank Transfer</span>
+                  <span className="block text-caption text-ink-secondary">Finance</span>
+                </span>
+              </div>
+            ) : noCategory ? (
               <div className="mt-3">
                 {state.noteOpen ? (
                   <input
@@ -272,14 +307,20 @@ export function ScanPayConfirm({
           </section>
         </div>
 
-        <div className="scan-pay-brand-space relative flex min-h-28 flex-1 items-center justify-center py-6" aria-hidden="true">
-          <AppIcon
-            src={SCAN_PAY_ASSETS.poweredByUpi}
-            alt=""
-            width={80}
-            height={32}
-            className="relative z-10 h-6 w-auto object-contain opacity-70"
-          />
+        <div className="scan-pay-brand-space relative flex min-h-28 flex-1 items-center justify-center py-6">
+          {bankRecipient ? (
+            <p className="text-caption font-bold text-ink-secondary">
+              Secure bank transfer with EB+
+            </p>
+          ) : (
+            <AppIcon
+              src={SCAN_PAY_ASSETS.poweredByUpi}
+              alt=""
+              width={80}
+              height={32}
+              className="relative z-10 h-6 w-auto object-contain opacity-70"
+            />
+          )}
         </div>
       </main>
 
@@ -315,7 +356,9 @@ export function ScanPayConfirm({
             <span className="min-w-0">
               <span className="block text-caption text-ink-secondary">Pay Using</span>
               <span className="block truncate text-body-sm font-bold text-pine">
-                {walletLabel(state.walletId).replace(" Wallet", "")}
+                {bankRecipient
+                  ? "Reimbursement"
+                  : walletLabel(state.walletId).replace(" Wallet", "")}
               </span>
             </span>
             <ScanPayIcon name="arrow" size={16} className="rotate-90" />
@@ -481,14 +524,16 @@ function WalletDrawer({
       onClose={() => dispatch({ type: "BACK" })}
     >
       <div className="flex flex-col gap-2.5">
-        {WALLET_FILTER_OPTIONS.filter((wallet) =>
-          SCAN_PAY_WALLET_IDS.some((id) => id === wallet.id),
-        ).map((wallet) => {
+        {walletOrderForPayment(state.paymentContext).map((walletId) => {
+          const wallet = WALLET_FILTER_OPTIONS.find(
+            (option) => option.id === walletId,
+          )!;
           const selected = state.walletId === wallet.id;
-          const eligible = walletIsEligibleForMerchant(
+          const eligible = walletIsEligibleForPayment(
             wallet.id,
             state.mode,
             state.merchantType,
+            state.paymentContext,
           );
           return (
             <button
@@ -524,7 +569,9 @@ function WalletDrawer({
                   <span className="mt-0.5 block text-caption text-ink-secondary">
                     {eligible
                       ? getWalletBalance(wallet.id, personaId).display
-                      : "Not available for this merchant"}
+                      : state.paymentContext.origin === "bank-transfer"
+                        ? "Not available for bank transfers"
+                        : "Not available for this merchant"}
                   </span>
                 </span>
               </span>
