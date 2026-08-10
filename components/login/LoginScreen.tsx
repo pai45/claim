@@ -163,7 +163,7 @@ export function LoginScreen() {
           <ProductWordmark />
         ) : (
           <span className="font-display text-title font-semibold tracking-tight text-pine-dark">
-            Lens + PlusPay
+            EB+ & PlusPay
           </span>
         )}
       </header>

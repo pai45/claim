@@ -27,7 +27,7 @@ export default async function PolicyCategoryPage({
 
   return (
     <main className="min-h-dvh w-full">
-      <PersonaAccessGate requireLens>
+      <PersonaAccessGate requireEbPlus>
         <PolicyDetailScreen initialTab={categoryId} />
       </PersonaAccessGate>
     </main>

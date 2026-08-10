@@ -10,6 +10,8 @@ import {
   getTransaction,
   type TransactionItem,
 } from "@/features/transactions/constants";
+import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { colors } from "@/lib/ui/colors";
 
 type TransactionDetailsScreenProps = {
@@ -20,8 +22,20 @@ export function TransactionDetailsScreen({
   transactionId,
 }: TransactionDetailsScreenProps) {
   const router = useRouter();
+  const { personaId } = useActivePersona();
+  const financialVersion = useFinancialStateVersion();
+  void financialVersion;
   const txn =
-    getTransaction(transactionId) ?? getTransaction("txn-amazon")!;
+    getTransaction(
+      transactionId,
+      personaId,
+      financialVersion !== null,
+    ) ??
+    getTransaction(
+      "txn-amazon",
+      personaId,
+      financialVersion !== null,
+    )!;
 
   return (
     <AppShell className="overflow-hidden" variant="surface">
@@ -82,12 +96,24 @@ export function TransactionDetailsScreen({
               label="Card Used"
               value={txn.cardMasked}
             />
-            <InfoRow
-              icon={<WalletIcon />}
-              label="Wallet Name"
-              value={txn.walletName}
-              isLast
-            />
+            {txn.fundingAllocations?.length ? (
+              txn.fundingAllocations.map((allocation, index) => (
+                <InfoRow
+                  key={allocation.walletId}
+                  icon={<WalletIcon />}
+                  label={allocation.walletLabel}
+                  value={formatINR(allocation.amount)}
+                  isLast={index === txn.fundingAllocations!.length - 1}
+                />
+              ))
+            ) : (
+              <InfoRow
+                icon={<WalletIcon />}
+                label="Wallet Name"
+                value={txn.walletName}
+                isLast
+              />
+            )}
           </div>
         </section>
 
@@ -131,7 +157,7 @@ function SummaryCard({ txn }: { txn: TransactionItem }) {
           </p>
           <p className="type-amount text-ink">
             {amountPrefix}
-            {formatINR(txn.amount)}
+            {formatINR(txn.paymentTotal ?? txn.amount)}
           </p>
         </div>
       </div>

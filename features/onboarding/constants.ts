@@ -60,7 +60,7 @@ export const NEW_USER_IDENTITY: IdentityForm = {
 };
 
 const READY_PERSONA_IDENTITIES: Partial<Record<PersonaId, IdentityForm>> = {
-  lens_only: {
+  ebPlus_only: {
     email: "neha.kapoor@infosys.com",
     emailVerified: true,
     title: "Ms.",
@@ -78,7 +78,7 @@ const READY_PERSONA_IDENTITIES: Partial<Record<PersonaId, IdentityForm>> = {
     lastName: "Mehta",
     dateOfBirth: "22/11/1993",
   },
-  lens_no_upi: {
+  ebPlus_no_upi: {
     email: "kavya.iyer@infosys.com",
     emailVerified: true,
     title: "Ms.",

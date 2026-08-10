@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { ScanPayConfirm } from "@/components/scan-pay/ScanPayConfirm";
+import { ScanPayMerchantScenarioSheet } from "@/components/scan-pay/ScanPayMerchantScenarioSheet";
 import { ScanPayReward } from "@/components/scan-pay/ScanPayReward";
 import {
   ScanPayPaymentDetails,
@@ -12,6 +13,7 @@ import {
 } from "@/components/scan-pay/ScanPayResult";
 import { ScanPayFaq, ScanPayScanner } from "@/components/scan-pay/ScanPayScanner";
 import { createInitialScanPayState, scanPayReducer } from "@/features/scan-pay/machine";
+import { createScanPayLedgerRows } from "@/features/scan-pay/ledger";
 import {
   downloadScanPayReceipt,
   shareScanPayReceipt,
@@ -20,18 +22,27 @@ import type {
   ScanPayFlowProps,
   ScanPayTransaction,
 } from "@/features/scan-pay/types";
+import { useActivePersona } from "@/features/persona/useActivePersona";
+import { getBaseWalletBalances } from "@/features/transactions/constants";
+import { commitBenefitPayment } from "@/features/transactions/financialState";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
 import "./scanPay.css";
 
 const SCANNER_DURATION_MS = 3000;
 const QR_DETECTED_AT_MS = 2400;
 
-export function ScanPayFlow({ open, scenario, onClose }: ScanPayFlowProps) {
+export function ScanPayFlow({
+  open,
+  scenario,
+  mode,
+  merchantType,
+  onClose,
+}: ScanPayFlowProps) {
   const flowRef = useRef<HTMLDivElement>(null);
+  const { personaId } = useActivePersona();
   const [state, dispatch] = useReducer(
     scanPayReducer,
-    scenario,
-    createInitialScanPayState,
+    createInitialScanPayState(scenario, mode, merchantType),
   );
   const [notice, setNotice] = useState<string | null>(null);
   const [scannerDetected, setScannerDetected] = useState(false);
@@ -39,8 +50,8 @@ export function ScanPayFlow({ open, scenario, onClose }: ScanPayFlowProps) {
 
   useEffect(() => {
     if (!open) return;
-    dispatch({ type: "RESET", scenario });
-  }, [open, scenario]);
+    dispatch({ type: "RESET", scenario, mode, merchantType });
+  }, [merchantType, mode, open, scenario]);
 
   useEffect(() => {
     if (!open || state.step !== "scanner" || state.qrErrorVisible) return;
@@ -72,6 +83,33 @@ export function ScanPayFlow({ open, scenario, onClose }: ScanPayFlowProps) {
   }, [open, state.step]);
 
   useEffect(() => {
+    const transaction = state.transaction;
+    if (
+      !open ||
+      state.mode !== "benefits" ||
+      state.outcome !== "success" ||
+      state.step !== "successReward" ||
+      !transaction
+    ) {
+      return;
+    }
+    const result = commitBenefitPayment({
+      personaId,
+      paymentId: transaction.paymentGroupId,
+      allocations: transaction.fundingAllocations,
+      rows: createScanPayLedgerRows(transaction),
+      baseBalances: getBaseWalletBalances(personaId),
+    });
+    if (result.status === "insufficient") {
+      const timer = window.setTimeout(() => {
+        setNotice("Wallet balance changed. Review the payment and try again.");
+        dispatch({ type: "PAYMENT_COMMIT_FAILED" });
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+  }, [open, personaId, state.mode, state.outcome, state.step, state.transaction]);
+
+  useEffect(() => {
     if (!notice) return;
     const timer = window.setTimeout(() => setNotice(null), 2400);
     return () => window.clearTimeout(timer);
@@ -98,14 +136,21 @@ export function ScanPayFlow({ open, scenario, onClose }: ScanPayFlowProps) {
   if (!open) return null;
 
   let content;
-  if (state.step === "scanner" || state.step === "upiEntry") {
+  if (
+    state.step === "scanner" ||
+    state.step === "upiEntry" ||
+    state.step === "merchantScenarioPicker"
+  ) {
     content = (
-      <ScanPayScanner
-        state={state}
-        dispatch={dispatch}
-        onClose={onClose}
-        detected={scannerDetected && !state.qrErrorVisible}
-      />
+      <div className="relative h-full">
+        <ScanPayScanner
+          state={state}
+          dispatch={dispatch}
+          onClose={onClose}
+          detected={scannerDetected && !state.qrErrorVisible}
+        />
+        <ScanPayMerchantScenarioSheet state={state} dispatch={dispatch} />
+      </div>
     );
   } else if (state.step === "faq") {
     content = <ScanPayFaq onBack={() => dispatch({ type: "BACK" })} />;

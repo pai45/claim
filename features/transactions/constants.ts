@@ -1,6 +1,11 @@
 import { formatINR as formatClaimsINR } from "@/features/claims-history/constants";
 import { getActivePersonaId } from "@/features/persona/store";
 import type { PersonaId } from "@/features/persona/types";
+import {
+  getPersonaFinancialDelta,
+  type FundingAllocation,
+  type FundingWalletId,
+} from "@/features/transactions/financialState";
 import { colors } from "@/lib/ui/colors";
 
 export type TransactionWallet = "meal" | "fuel" | "misc" | "gift";
@@ -33,6 +38,9 @@ export type TransactionItem = {
   paymentMode: string;
   transactionId: string;
   referenceNumber: string;
+  paymentGroupId?: string;
+  paymentTotal?: number;
+  fundingAllocations?: FundingAllocation[];
 };
 
 export type AnalyticsWalletId = TransactionWallet;
@@ -103,11 +111,33 @@ const WALLET_BALANCES: Record<
 export function getWalletBalance(
   walletId: TransactionWallet,
   personaId?: PersonaId,
+  includePersisted = true,
 ): WalletBalance {
   const activePersona = personaId ?? getActivePersonaId();
-  return activePersona === "new_user"
+  const base = activePersona === "new_user"
     ? WALLET_BALANCES.new_user[walletId]
     : WALLET_BALANCES.returning[walletId];
+  if (walletId === "gift") return base;
+  const debited = includePersisted
+    ? (getPersonaFinancialDelta(activePersona).debits[walletId] ?? 0)
+    : 0;
+  const amount = Math.max(0, base.amount - debited);
+  return { amount, display: formatINR(amount) };
+}
+
+export function getBaseWalletBalances(
+  personaId?: PersonaId,
+): Record<FundingWalletId, number> {
+  const activePersona = personaId ?? getActivePersonaId();
+  const base =
+    activePersona === "new_user"
+      ? WALLET_BALANCES.new_user
+      : WALLET_BALANCES.returning;
+  return {
+    meal: base.meal.amount,
+    fuel: base.fuel.amount,
+    misc: base.misc.amount,
+  };
 }
 
 export type TransactionMonth = {
@@ -306,9 +336,28 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
   return dateOrder === 0 ? left.id.localeCompare(right.id) : dateOrder;
 });
 
-export function getTransactionItems(personaId?: PersonaId): TransactionItem[] {
+export function getTransactionItems(
+  personaId?: PersonaId,
+  includePersisted = true,
+): TransactionItem[] {
   const activePersona = personaId ?? getActivePersonaId();
-  return activePersona === "new_user" ? [] : TRANSACTION_ITEMS;
+  const seeded = activePersona === "new_user" ? [] : TRANSACTION_ITEMS;
+  const added = includePersisted
+    ? getPersonaFinancialDelta(activePersona).transactions
+    : [];
+  return [...added, ...seeded].sort((left, right) => {
+    const dateOrder = right.postedOn.localeCompare(left.postedOn);
+    return dateOrder === 0 ? left.id.localeCompare(right.id) : dateOrder;
+  });
+}
+
+export function getTransactionsByPaymentGroup(
+  paymentGroupId: string,
+  personaId?: PersonaId,
+): TransactionItem[] {
+  return getTransactionItems(personaId).filter(
+    (item) => item.paymentGroupId === paymentGroupId,
+  );
 }
 
 export function isTransactionWallet(value: unknown): value is TransactionWallet {
@@ -357,6 +406,7 @@ export function getAnalyticsData(
   personaId?: PersonaId,
   walletId: AnalyticsWalletId = "meal",
   monthKey = TRANSACTION_MAX_MONTH,
+  includePersisted = true,
 ): {
   totalSpent: number;
   monthLabel: string;
@@ -369,7 +419,10 @@ export function getAnalyticsData(
   rewardsEarned: number;
 } {
   const items = filterTransactionsByMonth(
-    filterTransactionsByWallet(getTransactionItems(personaId), walletId),
+    filterTransactionsByWallet(
+      getTransactionItems(personaId, includePersisted),
+      walletId,
+    ),
     monthKey,
   ).filter((item) => item.type === "debit");
   const totalSpent = items.reduce((sum, item) => sum + item.amount, 0);
@@ -496,8 +549,11 @@ export function formatSignedINR(
 export function getTransaction(
   id: string,
   personaId?: PersonaId,
+  includePersisted = true,
 ): TransactionItem | undefined {
-  return getTransactionItems(personaId).find((item) => item.id === id);
+  return getTransactionItems(personaId, includePersisted).find(
+    (item) => item.id === id,
+  );
 }
 
 export function groupTransactions(

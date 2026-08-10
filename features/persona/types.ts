@@ -1,15 +1,15 @@
 export type PersonaId =
   | "returning"
   | "new_user"
-  | "lens_only"
+  | "ebPlus_only"
   | "pluspay_only"
-  | "lens_no_upi";
+  | "ebPlus_no_upi";
 
-export type ProductMode = "lens" | "pluspay";
+export type ProductMode = "ebPlus" | "pluspay";
 
 export type PersonaAccess = {
   products: {
-    lens: boolean;
+    ebPlus: boolean;
     plusPay: boolean;
   };
   upiEnabled: boolean;

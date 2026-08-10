@@ -38,11 +38,13 @@ import {
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { colors } from "@/lib/ui/colors";
+import { useFinancialStateVersion } from "@/features/transactions/financialState";
 
 export function TransactionsScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { personaId } = useActivePersona();
+  const financialVersion = useFinancialStateVersion();
   const [tab, setTab] = useState<HistoryTabId>(
     searchParams.get("tab") === "analytics" ? "analytics" : "transactions",
   );
@@ -61,8 +63,11 @@ export function TransactionsScreen() {
   const [selectedMonth, setSelectedMonth] = useState(TRANSACTION_MAX_MONTH);
 
   const allTransactions = useMemo(
-    () => getTransactionItems(personaId),
-    [personaId],
+    () => {
+      void financialVersion;
+      return getTransactionItems(personaId, financialVersion !== null);
+    },
+    [financialVersion, personaId],
   );
 
   const filteredTransactions = useMemo(
@@ -80,8 +85,16 @@ export function TransactionsScreen() {
   );
 
   const analytics = useMemo(
-    () => getAnalyticsData(personaId, selectedWallet, selectedMonth),
-    [personaId, selectedMonth, selectedWallet],
+    () => {
+      void financialVersion;
+      return getAnalyticsData(
+        personaId,
+        selectedWallet,
+        selectedMonth,
+        financialVersion !== null,
+      );
+    },
+    [financialVersion, personaId, selectedMonth, selectedWallet],
   );
 
   return (

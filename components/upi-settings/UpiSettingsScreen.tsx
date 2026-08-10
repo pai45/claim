@@ -11,11 +11,11 @@ import "./upiSettings.css";
 export type UpiTab = "benefits" | "pluspay";
 
 export function getAllowedUpiTabs(
-  lensEnabled: boolean,
+  ebPlusEnabled: boolean,
   plusPayEnabled: boolean,
 ): UpiTab[] {
   return [
-    ...(lensEnabled ? (["benefits"] as const) : []),
+    ...(ebPlusEnabled ? (["benefits"] as const) : []),
     ...(plusPayEnabled ? (["pluspay"] as const) : []),
   ];
 }
@@ -69,10 +69,10 @@ export function UpiSettingsScreen() {
   const allowedTabs = useMemo(
     () =>
       getAllowedUpiTabs(
-        persona.access.products.lens,
+        persona.access.products.ebPlus,
         persona.access.products.plusPay,
       ),
-    [persona.access.products.lens, persona.access.products.plusPay],
+    [persona.access.products.ebPlus, persona.access.products.plusPay],
   );
   const requestedTab: UpiTab = queryTab === "pluspay" ? "pluspay" : "benefits";
   const [activeTab, setActiveTab] = useState<UpiTab>(
@@ -130,7 +130,7 @@ export function UpiSettingsScreen() {
         className="upi-settings-header"
       />
       <nav className="upi-account-tabs" aria-label="UPI account" role="tablist">
-        {persona.access.products.lens ? <button
+        {persona.access.products.ebPlus ? <button
           type="button"
           role="tab"
           aria-selected={resolvedActiveTab === "benefits"}

@@ -58,16 +58,16 @@ describe("persona store", () => {
   });
 
   it("maps the three restricted personas to the expected products", () => {
-    setActivePersonaId("lens_only", local);
+    setActivePersonaId("ebPlus_only", local);
     expect(getActivePersonaConfig(local).access.products).toEqual({
-      lens: true,
+      ebPlus: true,
       plusPay: false,
     });
 
     setActivePersonaId("pluspay_only", local);
     expect(getActivePersonaConfig(local).access.defaultProduct).toBe("pluspay");
 
-    setActivePersonaId("lens_no_upi", local);
+    setActivePersonaId("ebPlus_no_upi", local);
     expect(getActivePersonaConfig(local).access.upiEnabled).toBe(false);
   });
 });

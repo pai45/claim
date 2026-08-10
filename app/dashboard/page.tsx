@@ -4,7 +4,7 @@ import { PersonaAccessGate } from "@/components/shared/PersonaAccessGate";
 export default function DashboardPage() {
   return (
     <main className="min-h-dvh w-full">
-      <PersonaAccessGate requireLens>
+      <PersonaAccessGate requireEbPlus>
         <ClaimsDashboardScreen />
       </PersonaAccessGate>
     </main>

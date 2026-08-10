@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lens Prepaid Card</title>
+    <title>EB+ Prepaid Card</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -259,7 +259,7 @@
       </symbol>
     </svg>
 
-    <main class="phone-shell" aria-label="Lens prepaid card app">
+    <main class="phone-shell" aria-label="EB+ prepaid card app">
       <section class="hero-panel" aria-label="Account overview">
         <header class="topbar">
           <div class="topbar-row">
@@ -275,11 +275,11 @@
               class="product-switcher"
               type="button"
               aria-pressed="false"
-              aria-label="Switch between Lens and PlusPay"
+              aria-label="Switch between EB+ and PlusPay"
               data-pluspay-toggle
             >
               <span class="product-segment product-segment-lens">
-                Lens
+                EB+
               </span>
               <span class="product-segment product-segment-pluspay">
                 <img src="../assets/login/pluspay-logo.svg" alt="PlusPay" />
@@ -1445,22 +1445,22 @@
             <div class="fallback-info-body" id="fallback-info-body">
               <div class="fallback-info-body-inner">
                 <p>
-                  If your selected wallet does not have sufficient balance, the
-                  transaction can be completed using your Reimbursement Wallet
-                  instead.
+                  Fallback Control enables Split Pay. When an eligible wallet
+                  has a low balance, its available balance is used first and
+                  only the remaining amount is taken from your Reimbursement
+                  Wallet.
                 </p>
                 <ul>
                   <li>
-                    Fallback is available only when the selected wallet has
-                    insufficient funds.
+                    Split Pay applies only to eligible Meal or Fuel merchant
+                    payments.
                   </li>
                   <li>
-                    The entire transaction amount will be charged to the
-                    Reimbursement Wallet.
+                    You will see the wallet split before confirming payment.
                   </li>
                   <li>
-                    The transaction amount will not be split between multiple
-                    wallets.
+                    Payment is blocked when the combined available balance is
+                    insufficient.
                   </li>
                 </ul>
               </div>
@@ -1490,7 +1490,7 @@
                   <svg><use href="#icon-warning-circle" /></svg>
                 </span>
                 <p class="fallback-warning-text">
-                  If the meal wallet balance is insufficient, the transaction will be debited from the reimbursement wallet.
+                  Split Pay is on for Meal Wallet. Its available balance will be used first and only the remaining amount will be deducted from Reimbursement Wallet.
                 </p>
               </div>
             </li>
@@ -1516,7 +1516,7 @@
                   <svg><use href="#icon-warning-circle" /></svg>
                 </span>
                 <p class="fallback-warning-text">
-                  If the fuel wallet balance is insufficient, the transaction will be debited from the reimbursement wallet.
+                  Split Pay is on for Fuel Wallet. Its available balance will be used first and only the remaining amount will be deducted from Reimbursement Wallet.
                 </p>
               </div>
             </li>
@@ -1807,9 +1807,9 @@
         </div>
 
         <div data-card-success-fallback hidden>
-          <h2 data-card-success-fallback-title>Meal Wallet Fallback Enabled</h2>
+          <h2 data-card-success-fallback-title>Meal Wallet Split Pay Enabled</h2>
           <p data-card-success-fallback-desc>
-            Transactions from meal wallet will fallback to reimbursement wallet when the balance is insufficient.
+            Meal Wallet will be used first and Reimbursement Wallet will cover only the remaining amount.
           </p>
           <button class="card-success-ok" type="button" data-card-success-ok>OK</button>
         </div>
@@ -1845,10 +1845,10 @@
 
         <div class="fallback-confirm-body">
           <p data-fallback-confirm-desc-1>
-            Transactions from meal wallet will no longer fallback to reimbursement wallet when the balance is insufficient.
+            Reimbursement Wallet will no longer cover a Meal Wallet shortfall automatically.
           </p>
           <p data-fallback-confirm-desc-2>
-            Are you sure you want to disable meal wallet fallback control?
+            Low-balance payments will be blocked unless you select Reimbursement Wallet directly. Are you sure?
           </p>
         </div>
 

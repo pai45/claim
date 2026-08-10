@@ -9,20 +9,20 @@ type PersonaAccessGateProps = {
   children: ReactNode;
   requireUpi?: boolean;
   requirePlusPay?: boolean;
-  requireLens?: boolean;
+  requireEbPlus?: boolean;
 };
 
 export function hasPersonaAccess(
   persona: PersonaConfig,
   requirements: Pick<
     PersonaAccessGateProps,
-    "requireUpi" | "requirePlusPay" | "requireLens"
+    "requireUpi" | "requirePlusPay" | "requireEbPlus"
   >,
 ): boolean {
   return (
     (!requirements.requireUpi || persona.access.upiEnabled) &&
     (!requirements.requirePlusPay || persona.access.products.plusPay) &&
-    (!requirements.requireLens || persona.access.products.lens)
+    (!requirements.requireEbPlus || persona.access.products.ebPlus)
   );
 }
 
@@ -30,7 +30,7 @@ export function PersonaAccessGate({
   children,
   requireUpi = false,
   requirePlusPay = false,
-  requireLens = false,
+  requireEbPlus = false,
 }: PersonaAccessGateProps) {
   const router = useRouter();
   const { persona } = useActivePersona();
@@ -42,7 +42,7 @@ export function PersonaAccessGate({
   const allowed = hasPersonaAccess(persona, {
     requireUpi,
     requirePlusPay,
-    requireLens,
+    requireEbPlus,
   });
 
   useEffect(() => {

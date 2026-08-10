@@ -17,7 +17,7 @@ const walletButtons = document.querySelectorAll("[data-wallet-card]");
 const pluspayToggle = document.querySelector("[data-pluspay-toggle]");
 const pluspayLabel = document.querySelector("[data-pluspay-label]");
 const swapTextNodes = document.querySelectorAll(
-  "[data-lens-text][data-pluspay-text]",
+  "[data-eb-plus-text][data-pluspay-text], [data-lens-text][data-pluspay-text]",
 );
 const lensFilterButton = document.querySelector('[data-filter="all"]');
 const walletOverlay = document.querySelector("[data-wallet-overlay]");
@@ -306,16 +306,17 @@ const CARD_MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
 const CARD_MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
 const benefitsCardLockState = { locked: false, statusMode: "locked" };
 const FALLBACK_STORAGE_KEY = "employee-benefits:fallback-control:v1";
+const FALLBACK_STORAGE_VERSION = 2;
 // Only spend wallets can fall back; the Reimbursement Wallet is the source of
 // funds, so it never appears as a fallback candidate itself.
 const fallbackWalletLabels = { meal: "Meal Wallet", fuel: "Fuel Wallet" };
-const fallbackState = { meal: false, fuel: false };
+const fallbackState = { meal: true, fuel: true };
 const personaDefinitions = {
   returning: {
     name: "Vishal Sharma",
     initials: "V",
     access: {
-      products: { lens: true, plusPay: true },
+      products: { ebPlus: true, plusPay: true },
       upiEnabled: true,
       defaultProduct: "lens",
     },
@@ -326,18 +327,18 @@ const personaDefinitions = {
     name: "Aarav Patel",
     initials: "A",
     access: {
-      products: { lens: true, plusPay: true },
+      products: { ebPlus: true, plusPay: true },
       upiEnabled: true,
       defaultProduct: "lens",
     },
     hasTransactions: false,
     hasUpiId: false,
   },
-  lens_only: {
+  ebPlus_only: {
     name: "Neha Kapoor",
     initials: "N",
     access: {
-      products: { lens: true, plusPay: false },
+      products: { ebPlus: true, plusPay: false },
       upiEnabled: true,
       defaultProduct: "lens",
     },
@@ -348,18 +349,18 @@ const personaDefinitions = {
     name: "Rohan Mehta",
     initials: "R",
     access: {
-      products: { lens: false, plusPay: true },
+      products: { ebPlus: false, plusPay: true },
       upiEnabled: true,
       defaultProduct: "pluspay",
     },
     hasTransactions: true,
     hasUpiId: true,
   },
-  lens_no_upi: {
+  ebPlus_no_upi: {
     name: "Kavya Iyer",
     initials: "K",
     access: {
-      products: { lens: true, plusPay: false },
+      products: { ebPlus: true, plusPay: false },
       upiEnabled: false,
       defaultProduct: "lens",
     },
@@ -1175,7 +1176,7 @@ function applyUpiCreatedState(isCreated) {
   upiIdValues.forEach((value) => {
     if (isCreated) {
       value.textContent = CREATED_UPI_ID;
-      value.dataset.lensText = CREATED_UPI_ID;
+      value.dataset.ebPlusText = CREATED_UPI_ID;
       value.dataset.pluspayText = CREATED_UPI_ID;
     }
   });
@@ -4643,13 +4644,13 @@ function applyMode(isPluspay) {
   pluspayToggle?.setAttribute("aria-pressed", String(isPluspay));
 
   if (pluspayLabel) {
-    pluspayLabel.textContent = isPluspay ? "Lens" : "PlusPay";
+    pluspayLabel.textContent = isPluspay ? "EB+" : "PlusPay";
   }
 
   swapTextNodes.forEach((node) => {
     node.textContent = isPluspay
       ? node.dataset.pluspayText
-      : node.dataset.lensText;
+      : (node.dataset.ebPlusText ?? node.dataset.lensText ?? "");
   });
 
   if (isPluspay) {
@@ -4881,13 +4882,13 @@ function openCardSuccessSheet(mode, payload) {
       const isDisabled = payload.status === "disabled";
       if (cardSuccessFallbackTitle) {
         cardSuccessFallbackTitle.textContent = isDisabled
-          ? `${walletLabel} Fallback Disabled`
-          : `${walletLabel} Fallback Enabled`;
+          ? `${walletLabel} Split Pay Disabled`
+          : `${walletLabel} Split Pay Enabled`;
       }
       if (cardSuccessFallbackDesc) {
         cardSuccessFallbackDesc.textContent = isDisabled
-          ? `${walletLabel} fallback has been turned off.`
-          : `Transactions from ${walletKeyName} will fallback to reimbursement wallet when the balance is insufficient.`;
+          ? `${walletLabel} shortfalls will no longer use Reimbursement Wallet automatically.`
+          : `${walletLabel} will be used first and Reimbursement Wallet will cover only the remaining amount.`;
       }
     }
   }
@@ -5065,8 +5066,13 @@ function readFallbackState() {
     const stored = window.localStorage.getItem(FALLBACK_STORAGE_KEY);
     if (!stored) return;
     const parsed = JSON.parse(stored);
+    const wallets = parsed?.version === FALLBACK_STORAGE_VERSION
+      ? parsed.wallets
+      : parsed;
     Object.keys(fallbackState).forEach((key) => {
-      fallbackState[key] = parsed?.[key] === true;
+      if (typeof wallets?.[key] === "boolean") {
+        fallbackState[key] = wallets[key];
+      }
     });
   } catch {
     // Ignore unreadable/legacy values and keep the defaults.
@@ -5077,7 +5083,10 @@ function writeFallbackState() {
   try {
     window.localStorage.setItem(
       FALLBACK_STORAGE_KEY,
-      JSON.stringify(fallbackState),
+      JSON.stringify({
+        version: FALLBACK_STORAGE_VERSION,
+        wallets: fallbackState,
+      }),
     );
   } catch {
     // Storage is optional; the in-memory state still drives the screen.
@@ -5142,13 +5151,13 @@ function openFallbackConfirmSheet(key) {
   const walletKeyName = key === "fuel" ? "fuel wallet" : "meal wallet";
 
   if (fallbackConfirmTitle) {
-    fallbackConfirmTitle.textContent = `Disable ${label} Fallback Control?`;
+    fallbackConfirmTitle.textContent = `Disable ${label} Split Pay?`;
   }
   if (fallbackConfirmDesc1) {
-    fallbackConfirmDesc1.textContent = `Transactions from ${walletKeyName} will no longer fallback to reimbursement wallet when the balance is insufficient.`;
+    fallbackConfirmDesc1.textContent = `Reimbursement Wallet will no longer cover the remaining amount when ${walletKeyName} has a low balance.`;
   }
   if (fallbackConfirmDesc2) {
-    fallbackConfirmDesc2.textContent = `Are you sure you want to disable ${walletKeyName} fallback control?`;
+    fallbackConfirmDesc2.textContent = `Low-balance payments will be blocked unless you select Reimbursement Wallet directly. Are you sure you want to disable Split Pay?`;
   }
 
   fallbackConfirmOverlay.hidden = false;
@@ -5706,10 +5715,10 @@ function syncPersonaToApp(payload) {
 
   document.body.classList.toggle(
     "is-product-locked",
-    !(access.products.lens && access.products.plusPay),
+    !(access.products.ebPlus && access.products.plusPay),
   );
   document.body.classList.toggle("is-no-upi", !access.upiEnabled);
-  document.body.classList.toggle("is-lens-disabled", !access.products.lens);
+  document.body.classList.toggle("is-lens-disabled", !access.products.ebPlus);
   document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);
   applyMode(access.defaultProduct === "pluspay");
   applyUpiCreatedState(
@@ -5820,6 +5829,40 @@ function syncPersonaToApp(payload) {
   }
 }
 
+function syncWalletBalancesToApp(wallets) {
+  if (!wallets || typeof wallets !== "object") return;
+  const activePersona = window.localStorage.getItem("eb-claims:active-persona") || "returning";
+  const financialState = personaFinancialState[activePersona] || personaFinancialState.returning;
+  Object.keys(financialState.wallets).forEach((key) => {
+    const next = wallets[key];
+    if (!next || typeof next.amount !== "number" || typeof next.display !== "string") {
+      return;
+    }
+    financialState.wallets[key] = {
+      amount: Math.max(0, next.amount),
+      display: next.display,
+    };
+    if (manageWalletState[key]) {
+      manageWalletState[key].balance = next.display;
+    }
+    const chip = document.querySelector(`.wallet-chip.${key}`);
+    if (chip) {
+      chip.setAttribute("data-wallet-balance", next.display);
+      const amount = chip.querySelector("strong");
+      if (amount) amount.textContent = next.display;
+    }
+  });
+
+  const totalBalance = ["meal", "fuel", "misc"].reduce(
+    (sum, key) => sum + financialState.wallets[key].amount,
+    0,
+  );
+  const totalBalanceDisplay = formatCurrency(totalBalance);
+  if (currentWalletBalance) currentWalletBalance.textContent = totalBalanceDisplay;
+  if (manageCurrentBalance) manageCurrentBalance.textContent = totalBalanceDisplay;
+  renderManageWalletState();
+}
+
 applyMode(false);
 applyUpiCreatedState(readUpiCreatedState());
 syncPersonaToApp();
@@ -5833,6 +5876,7 @@ window.addEventListener("message", (e) => {
     syncPersonaToApp(e.data.persona);
   }
   if (e.data?.type === "employee-benefits:sync-transactions") {
+    syncWalletBalancesToApp(e.data.wallets);
     renderSyncedTransactions(
       e.data.transactions,
       e.data.walletTransactions,

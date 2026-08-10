@@ -3,6 +3,8 @@ import type {
   ScanPayCategory,
   ScanPayCategoryId,
   ScanPayOutcome,
+  ScanPayMerchantType,
+  ScanPayMode,
   ScanPayScenario,
   ScanPayTransaction,
   ScanPayWalletId,
@@ -13,6 +15,28 @@ export const SCAN_PAY_MERCHANT = {
   upiId: "9876543210-happay@pinelabs",
   merchantId: "9876543210-happay@pinelabs",
 } as const;
+
+export const SCAN_PAY_MERCHANTS: Record<
+  Exclude<ScanPayMerchantType, "unclassified">,
+  { name: string; upiId: string; merchantId: string }
+> = {
+  meal: SCAN_PAY_MERCHANT,
+  fuel: {
+    name: "IndianOil COCO",
+    upiId: "indianoil-coco@pinelabs",
+    merchantId: "indianoil-coco@pinelabs",
+  },
+  luxury: {
+    name: "Taj Boutique",
+    upiId: "taj-boutique@pinelabs",
+    merchantId: "taj-boutique@pinelabs",
+  },
+  unsupported: {
+    name: "Unsupported Merchant",
+    upiId: "unsupported@upi",
+    merchantId: "unsupported@upi",
+  },
+};
 
 export const SCAN_PAY_CATEGORIES: readonly ScanPayCategory[] = [
   { id: "food", label: "Food & Drinks", shortLabel: "Food" },
@@ -71,6 +95,18 @@ export function resolveScanPayScenario(value: string | null): ScanPayScenario {
     : "success";
 }
 
+export function resolveScanPayMerchantType(
+  value: string | null,
+): Exclude<ScanPayMerchantType, "unclassified"> {
+  return value === "fuel" || value === "luxury" || value === "unsupported"
+    ? value
+    : "meal";
+}
+
+export function merchantForType(type: ScanPayMerchantType) {
+  return type === "unclassified" ? SCAN_PAY_MERCHANT : SCAN_PAY_MERCHANTS[type];
+}
+
 export function outcomeForScenario(scenario: ScanPayScenario): ScanPayOutcome {
   if (scenario === "failed") return "failed";
   if (scenario === "processing") return "processing";
@@ -95,6 +131,9 @@ export function createScanPayTransaction({
   subcategoryId,
   note,
   outcome,
+  mode,
+  merchantType,
+  fundingAllocations,
 }: {
   amount: number;
   walletId: ScanPayWalletId;
@@ -102,25 +141,40 @@ export function createScanPayTransaction({
   subcategoryId: string | null;
   note: string;
   outcome: ScanPayOutcome;
+  mode: ScanPayMode;
+  merchantType: ScanPayMerchantType;
+  fundingAllocations: ScanPayTransaction["fundingAllocations"];
 }): ScanPayTransaction {
   const category = categoryById(categoryId);
   const subcategory = category?.subcategories?.find(
     (item) => item.id === subcategoryId,
   );
+  const merchant = merchantForType(merchantType);
+  const now = new Date();
+  const paymentGroupId = `scan-pay-${now.getTime()}`;
   return {
-    merchant: SCAN_PAY_MERCHANT.name,
-    upiId: SCAN_PAY_MERCHANT.upiId,
+    mode,
+    merchant: merchant.name,
+    upiId: merchant.upiId,
     amount,
-    merchantId: SCAN_PAY_MERCHANT.merchantId,
-    transactionId: "138089927090",
-    paymentMethod: "ANQ",
-    dateTime: "17 Jun at 03:42 PM",
+    merchantId: merchant.merchantId,
+    transactionId: paymentGroupId.replace(/\D/g, "").slice(-12),
+    paymentMethod: mode === "pluspay" ? "ANQ" : "UPI",
+    dateTime: new Intl.DateTimeFormat("en-IN", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }).format(now),
     walletId,
-    walletLabel: walletLabel(walletId),
+    walletLabel: mode === "pluspay" ? "ANQ" : walletLabel(walletId),
     category: category?.label,
     subcategory: subcategory?.label,
     note: note.trim() || undefined,
     outcome,
     cashbackAmount: 56,
+    paymentGroupId,
+    fundingAllocations,
   };
 }

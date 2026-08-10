@@ -11,11 +11,17 @@ import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   SCAN_PAY_CATEGORIES,
-  SCAN_PAY_MERCHANT,
   SCAN_PAY_QUICK_CATEGORIES,
   categoryById,
+  merchantForType,
   walletLabel,
 } from "@/features/scan-pay/fixtures";
+import {
+  SCAN_PAY_WALLET_IDS,
+  calculateScanPayFunding,
+  walletIsEligibleForMerchant,
+  type ScanPayBenefitWalletId,
+} from "@/features/scan-pay/funding";
 import { scanPayAmountIsValid } from "@/features/scan-pay/machine";
 import type {
   ScanPayAction,
@@ -24,19 +30,32 @@ import type {
   ScanPayState,
 } from "@/features/scan-pay/types";
 import { useActivePersona } from "@/features/persona/useActivePersona";
+import { useFallbackControlState } from "@/features/fallback-control/store";
 import {
   WALLET_FILTER_OPTIONS,
   getWalletBalance,
-  type TransactionWalletFilterId,
 } from "@/features/transactions/constants";
+import { useFinancialStateVersion } from "@/features/transactions/financialState";
 import { SCAN_PAY_ASSETS } from "@/lib/ui/assets";
 
-const walletIcons: Record<TransactionWalletFilterId, ScanPayIconName> = {
+const walletIcons: Record<ScanPayBenefitWalletId, ScanPayIconName> = {
   meal: "walletMeal",
   fuel: "walletFuel",
   misc: "walletReimbursement",
-  gift: "walletGift",
 };
+
+/**
+ * Amounts stay at the display size while they fit beside the ₹ symbol; longer
+ * ones step down so the whole figure keeps sitting inside the receipt.
+ */
+function amountFontSizeFor(amount: string): number {
+  const length = Math.max(1, amount.length);
+  if (length <= 6) return 48;
+  if (length === 7) return 42;
+  if (length <= 8) return 36;
+  if (length <= 10) return 28;
+  return 24;
+}
 
 const categoryEmojis: Record<ScanPayCategoryId, string> = {
   food: "🍛",
@@ -57,8 +76,43 @@ export function ScanPayConfirm({
   dispatch: Dispatch<ScanPayAction>;
 }) {
   const amountRef = useRef<HTMLInputElement>(null);
-  const valid = scanPayAmountIsValid(state.amount);
-  const showError = state.amountTouched && state.amount !== "" && !valid;
+  const { personaId } = useActivePersona();
+  const fallback = useFallbackControlState();
+  const financialVersion = useFinancialStateVersion();
+  void financialVersion;
+  const amountValid = scanPayAmountIsValid(state.amount);
+  const merchant = merchantForType(state.merchantType);
+  const balances = useMemo(
+    () => {
+      void financialVersion;
+      return {
+        meal: getWalletBalance("meal", personaId).amount,
+        fuel: getWalletBalance("fuel", personaId).amount,
+        misc: getWalletBalance("misc", personaId).amount,
+      };
+    },
+    [financialVersion, personaId],
+  );
+  const fundingPlan = useMemo(
+    () =>
+      calculateScanPayFunding({
+        amount: Number(state.amount),
+        walletId: state.walletId,
+        mode: state.mode,
+        merchantType: state.merchantType,
+        balances,
+        fallback,
+      }),
+    [balances, fallback, state.amount, state.merchantType, state.mode, state.walletId],
+  );
+  const valid =
+    amountValid &&
+    (state.mode === "pluspay" ||
+      fundingPlan.status === "single" ||
+      fundingPlan.status === "split");
+  const showError =
+    state.amountTouched && state.amount !== "" && !amountValid;
+  const amountFontSize = amountFontSizeFor(state.amount);
   const noCategory = state.scenario === "no-category";
   const quickCategories = useMemo(() => {
     if (
@@ -105,36 +159,39 @@ export function ScanPayConfirm({
             aria-label="Payment receipt"
           >
             <h2 className="scan-pay-receipt-merchant type-section-title text-pine">
-              {SCAN_PAY_MERCHANT.name}
+              {merchant.name}
             </h2>
             <p className="scan-pay-receipt-upi mt-0.5 text-subtle">
-              UPI ID: {SCAN_PAY_MERCHANT.upiId}
+              UPI ID: {merchant.upiId}
             </p>
 
-            <div className="relative mx-auto mt-4 flex min-h-16 w-fit max-w-full items-center justify-center">
-              <span className="scan-pay-amount-symbol absolute right-full top-1/2 mr-2 -mt-1 -translate-y-1/2 type-amount">
+            <div
+              className="scan-pay-amount-field relative mx-auto mt-4 flex min-h-16 w-fit items-center justify-center"
+              style={{ fontSize: `${amountFontSize}px` }}
+            >
+              <span className="scan-pay-amount-symbol absolute right-full top-1/2 mr-2 -mt-1 -translate-y-1/2">
                 ₹
               </span>
-              <input
-                ref={amountRef}
-                id="scan-pay-amount"
-                aria-label="Payment amount"
-                inputMode="decimal"
-                autoComplete="off"
-                placeholder="0"
-                value={state.amount}
-                onChange={(event) =>
-                  dispatch({ type: "SET_AMOUNT", amount: event.target.value })
-                }
-                onBlur={() => dispatch({ type: "TOUCH_AMOUNT" })}
-                style={{
-                  width: `${Math.min(
-                    140,
-                    20 + Math.max(1, state.amount.length) * 24,
-                  )}px`,
-                }}
-                className="scan-pay-amount-input type-amount min-h-16 border-b-2 border-mint bg-transparent text-center outline-none transition-colors placeholder:text-muted focus:border-pine-primary"
-              />
+              <span className="scan-pay-amount-sizer">
+                {/* Mirrors the value so the field is sized to the exact text width. */}
+                <span className="scan-pay-amount-ghost" aria-hidden="true">
+                  {state.amount || "0"}
+                </span>
+                <input
+                  ref={amountRef}
+                  id="scan-pay-amount"
+                  aria-label="Payment amount"
+                  inputMode="decimal"
+                  autoComplete="off"
+                  placeholder="0"
+                  value={state.amount}
+                  onChange={(event) =>
+                    dispatch({ type: "SET_AMOUNT", amount: event.target.value })
+                  }
+                  onBlur={() => dispatch({ type: "TOUCH_AMOUNT" })}
+                  className="scan-pay-amount-input border-b-2 border-mint bg-transparent text-center outline-none transition-colors placeholder:text-muted focus:border-pine-primary"
+                />
+              </span>
             </div>
 
             <p className="scan-pay-receipt-prompt mt-9 type-body-secondary">
@@ -227,12 +284,34 @@ export function ScanPayConfirm({
       </main>
 
       <footer className="relative z-20 shrink-0 rounded-t-bubble bg-white px-page pb-5 pt-3 shadow-drawer">
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => dispatch({ type: "OPEN_WALLET_PICKER" })}
-            className="flex min-h-14 min-w-0 items-center justify-between rounded-control px-2 text-left"
+        {amountValid && fundingPlan.message ? (
+          <div
+            className={`animate-rise-in mb-3 flex items-start gap-2 rounded-card border p-3 text-caption shadow-card ${
+              fundingPlan.status === "split"
+                ? "border-warning-border bg-warning-soft text-warning-ink"
+                : "border-danger bg-danger-soft text-danger"
+            }`}
+            role={fundingPlan.status === "split" ? "status" : "alert"}
+            aria-live="polite"
           >
+            <ScanPayIcon name="warning" className="mt-0.5 shrink-0" size={18} />
+            <span className="font-bold">{fundingPlan.message}</span>
+          </div>
+        ) : null}
+        <div className="grid grid-cols-2 gap-2">
+          {state.mode === "pluspay" ? (
+            <div className="flex min-h-14 min-w-0 items-center rounded-control px-2 text-left">
+              <span className="min-w-0">
+                <span className="block text-caption text-ink-secondary">Pay Using</span>
+                <span className="block truncate text-body-sm font-bold text-pine">ANQ</span>
+              </span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => dispatch({ type: "OPEN_WALLET_PICKER" })}
+              className="flex min-h-14 min-w-0 items-center justify-between rounded-control px-2 text-left"
+            >
             <span className="min-w-0">
               <span className="block text-caption text-ink-secondary">Pay Using</span>
               <span className="block truncate text-body-sm font-bold text-pine">
@@ -240,11 +319,18 @@ export function ScanPayConfirm({
               </span>
             </span>
             <ScanPayIcon name="arrow" size={16} className="rotate-90" />
-          </button>
+            </button>
+          )}
           <button
             type="button"
             disabled={!valid}
-            onClick={() => dispatch({ type: "PAY" })}
+            onClick={() =>
+              dispatch({
+                type: "PAY",
+                fundingAllocations:
+                  state.mode === "benefits" ? fundingPlan.allocations : [],
+              })
+            }
             className="btn-primary h-auto min-h-14"
           >
             Pay
@@ -395,33 +481,50 @@ function WalletDrawer({
       onClose={() => dispatch({ type: "BACK" })}
     >
       <div className="flex flex-col gap-2.5">
-        {WALLET_FILTER_OPTIONS.map((wallet) => {
+        {WALLET_FILTER_OPTIONS.filter((wallet) =>
+          SCAN_PAY_WALLET_IDS.some((id) => id === wallet.id),
+        ).map((wallet) => {
           const selected = state.walletId === wallet.id;
+          const eligible = walletIsEligibleForMerchant(
+            wallet.id,
+            state.mode,
+            state.merchantType,
+          );
           return (
             <button
               key={wallet.id}
               type="button"
-              onClick={() =>
-                dispatch({ type: "SELECT_WALLET", walletId: wallet.id })
-              }
+              disabled={!eligible}
+              aria-disabled={!eligible}
+              onClick={() => {
+                if (eligible) {
+                  dispatch({ type: "SELECT_WALLET", walletId: wallet.id });
+                }
+              }}
               className={`flex min-h-14 items-center justify-between rounded-card border p-card text-left ${
                 selected
                   ? "border-pine-primary bg-surface-tint shadow-card"
-                  : "border-border-line bg-white"
+                  : eligible
+                    ? "border-border-line bg-white"
+                    : "border-border-line bg-surface-muted opacity-55"
               }`}
             >
               <span className="flex min-w-0 items-center gap-3">
                 <span
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${wallet.toneClass} ${wallet.iconClass}`}
                 >
-                  <ScanPayIcon name={walletIcons[wallet.id]} />
+                  <ScanPayIcon
+                    name={walletIcons[wallet.id as ScanPayBenefitWalletId]}
+                  />
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate text-body-sm font-bold text-pine">
                     {wallet.label}
                   </span>
                   <span className="mt-0.5 block text-caption text-ink-secondary">
-                    {getWalletBalance(wallet.id, personaId).display}
+                    {eligible
+                      ? getWalletBalance(wallet.id, personaId).display
+                      : "Not available for this merchant"}
                   </span>
                 </span>
               </span>

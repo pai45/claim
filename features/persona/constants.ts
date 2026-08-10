@@ -24,9 +24,9 @@ export const RETURNING_PERSONA: PersonaConfig = {
     dateOfBirthFormatted: "15 March 1995",
   },
   access: {
-    products: { lens: true, plusPay: true },
+    products: { ebPlus: true, plusPay: true },
     upiEnabled: true,
-    defaultProduct: "lens",
+    defaultProduct: "ebPlus",
   },
   hasClaims: true,
   hasTransactions: true,
@@ -55,9 +55,9 @@ export const NEW_USER_PERSONA: PersonaConfig = {
     dateOfBirthFormatted: "15 August 1995",
   },
   access: {
-    products: { lens: true, plusPay: true },
+    products: { ebPlus: true, plusPay: true },
     upiEnabled: true,
-    defaultProduct: "lens",
+    defaultProduct: "ebPlus",
   },
   hasClaims: false,
   hasTransactions: false,
@@ -67,17 +67,17 @@ export const NEW_USER_PERSONA: PersonaConfig = {
   hasUpiId: false,
 };
 
-export const LENS_ONLY_PERSONA: PersonaConfig = {
-  id: "lens_only",
-  label: "Lens Only",
-  badge: "Lens Plan",
-  description: "Neha Kapoor • Lens benefits with UPI, without PlusPay",
+export const EBPLUS_ONLY_PERSONA: PersonaConfig = {
+  id: "ebPlus_only",
+  label: "EB+ Only",
+  badge: "EB+ Plan",
+  description: "Neha Kapoor • EB+ benefits with UPI, without PlusPay",
   profile: {
-    id: "lens_only",
+    id: "ebPlus_only",
     name: "Neha Kapoor",
     initials: "N",
     email: "neha.kapoor@infosys.com",
-    memberSince: "Lens member since April 2023",
+    memberSince: "EB+ member since April 2023",
     mobile: "9876543210",
     phone: "+91 98765 43210",
     employeeId: "EMP-31587",
@@ -86,9 +86,9 @@ export const LENS_ONLY_PERSONA: PersonaConfig = {
     dateOfBirthFormatted: "10 September 1994",
   },
   access: {
-    products: { lens: true, plusPay: false },
+    products: { ebPlus: true, plusPay: false },
     upiEnabled: true,
-    defaultProduct: "lens",
+    defaultProduct: "ebPlus",
   },
   hasClaims: true,
   hasTransactions: true,
@@ -102,7 +102,7 @@ export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
   id: "pluspay_only",
   label: "PlusPay Only",
   badge: "PlusPay Plan",
-  description: "Rohan Mehta • PlusPay payments without Lens benefits",
+  description: "Rohan Mehta • PlusPay payments without EB+ benefits",
   profile: {
     id: "pluspay_only",
     name: "Rohan Mehta",
@@ -117,7 +117,7 @@ export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
     dateOfBirthFormatted: "22 November 1993",
   },
   access: {
-    products: { lens: false, plusPay: true },
+    products: { ebPlus: false, plusPay: true },
     upiEnabled: true,
     defaultProduct: "pluspay",
   },
@@ -129,17 +129,17 @@ export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
   hasUpiId: true,
 };
 
-export const LENS_NO_UPI_PERSONA: PersonaConfig = {
-  id: "lens_no_upi",
-  label: "Lens Without UPI",
+export const EBPLUS_NO_UPI_PERSONA: PersonaConfig = {
+  id: "ebPlus_no_upi",
+  label: "EB+ Without UPI",
   badge: "Card Only",
-  description: "Kavya Iyer • Lens card benefits without UPI or PlusPay",
+  description: "Kavya Iyer • EB+ card benefits without UPI or PlusPay",
   profile: {
-    id: "lens_no_upi",
+    id: "ebPlus_no_upi",
     name: "Kavya Iyer",
     initials: "K",
     email: "kavya.iyer@infosys.com",
-    memberSince: "Lens member since September 2024",
+    memberSince: "EB+ member since September 2024",
     mobile: "9876543210",
     phone: "+91 98765 43210",
     employeeId: "EMP-73624",
@@ -148,9 +148,9 @@ export const LENS_NO_UPI_PERSONA: PersonaConfig = {
     dateOfBirthFormatted: "5 June 1996",
   },
   access: {
-    products: { lens: true, plusPay: false },
+    products: { ebPlus: true, plusPay: false },
     upiEnabled: false,
-    defaultProduct: "lens",
+    defaultProduct: "ebPlus",
   },
   hasClaims: true,
   hasTransactions: true,
@@ -163,17 +163,17 @@ export const LENS_NO_UPI_PERSONA: PersonaConfig = {
 export const PERSONAS: Record<PersonaId, PersonaConfig> = {
   returning: RETURNING_PERSONA,
   new_user: NEW_USER_PERSONA,
-  lens_only: LENS_ONLY_PERSONA,
+  ebPlus_only: EBPLUS_ONLY_PERSONA,
   pluspay_only: PLUSPAY_ONLY_PERSONA,
-  lens_no_upi: LENS_NO_UPI_PERSONA,
+  ebPlus_no_upi: EBPLUS_NO_UPI_PERSONA,
 };
 
 export const PERSONA_OPTIONS: PersonaConfig[] = [
   RETURNING_PERSONA,
   NEW_USER_PERSONA,
-  LENS_ONLY_PERSONA,
+  EBPLUS_ONLY_PERSONA,
   PLUSPAY_ONLY_PERSONA,
-  LENS_NO_UPI_PERSONA,
+  EBPLUS_NO_UPI_PERSONA,
 ];
 
 export function getPersonaConfig(id: PersonaId): PersonaConfig {
@@ -184,9 +184,9 @@ export function isPersonaId(value: unknown): value is PersonaId {
   return (
     value === "returning" ||
     value === "new_user" ||
-    value === "lens_only" ||
+    value === "ebPlus_only" ||
     value === "pluspay_only" ||
-    value === "lens_no_upi"
+    value === "ebPlus_no_upi"
   );
 }
 

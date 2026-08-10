@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function BankTransferPage() {
   return (
-    <PersonaAccessGate requireLens>
+    <PersonaAccessGate requireEbPlus>
       <BankTransferScreen />
     </PersonaAccessGate>
   );

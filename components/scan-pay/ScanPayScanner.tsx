@@ -116,16 +116,26 @@ export function ScanPayScanner({
         >
           <ScanPayIcon name="warning" className="mt-0.5 shrink-0" />
           <div className="min-w-0 flex-1">
-            <p className="text-body-sm font-bold">Invalid QR Code</p>
+            <p className="text-body-sm font-bold">
+              {state.qrErrorReason === "unsupported"
+                ? "Merchant Not Supported"
+                : "Invalid QR Code"}
+            </p>
             <p className="mt-0.5 text-caption">
-              This QR code could not be verified. Please scan a valid merchant QR.
+              {state.qrErrorReason === "unsupported"
+                ? "EB+ wallets cannot be used at this merchant. Try another eligible merchant QR."
+                : "This QR code could not be verified. Please scan a valid merchant QR."}
             </p>
           </div>
           <button
             type="button"
             onClick={() => dispatch({ type: "DISMISS_QR_ERROR" })}
             className="flex min-h-11 min-w-11 items-center justify-center rounded-control"
-            aria-label="Dismiss invalid QR message"
+            aria-label={
+              state.qrErrorReason === "unsupported"
+                ? "Dismiss unsupported merchant message"
+                : "Dismiss invalid QR message"
+            }
           >
             <ScanPayIcon name="close" size={18} />
           </button>

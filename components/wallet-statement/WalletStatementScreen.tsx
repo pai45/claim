@@ -9,6 +9,7 @@ import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
 import { formatSignedINR } from "@/features/transactions/constants";
 import { useActivePersona } from "@/features/persona/useActivePersona";
+import { useFinancialStateVersion } from "@/features/transactions/financialState";
 import {
   WALLET_STATEMENT_MAX_MONTH,
   filterWalletStatementTransactions,
@@ -28,7 +29,18 @@ export function WalletStatementScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { personaId } = useActivePersona();
-  const statement = getWalletStatement(searchParams.get("wallet"), personaId);
+  const financialVersion = useFinancialStateVersion();
+  const statement = useMemo(
+    () => {
+      void financialVersion;
+      return getWalletStatement(
+        searchParams.get("wallet"),
+        personaId,
+        financialVersion !== null,
+      );
+    },
+    [financialVersion, personaId, searchParams],
+  );
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   const visibleTransactions = useMemo(

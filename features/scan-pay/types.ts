@@ -1,4 +1,13 @@
 import type { TransactionWallet } from "@/features/transactions/constants";
+import type { FundingAllocation } from "@/features/transactions/financialState";
+
+export type ScanPayMode = "benefits" | "pluspay";
+export type ScanPayMerchantType =
+  | "meal"
+  | "fuel"
+  | "luxury"
+  | "unsupported"
+  | "unclassified";
 
 export type ScanPayScenario =
   | "success"
@@ -12,6 +21,7 @@ export type ScanPayOutcome = "success" | "failed" | "processing";
 export type ScanPayStep =
   | "scanner"
   | "upiEntry"
+  | "merchantScenarioPicker"
   | "confirmPayment"
   | "categoryPicker"
   | "walletPicker"
@@ -46,6 +56,7 @@ export type ScanPayReceiptState = "empty" | "captured" | "confirmed";
 export type ScanPayFaqReturnStep = "scanner" | "result" | "paymentDetails";
 
 export type ScanPayTransaction = {
+  mode: ScanPayMode;
   merchant: string;
   upiId: string;
   amount: number;
@@ -60,13 +71,18 @@ export type ScanPayTransaction = {
   note?: string;
   outcome: ScanPayOutcome;
   cashbackAmount: number;
+  paymentGroupId: string;
+  fundingAllocations: FundingAllocation[];
 };
 
 export type ScanPayState = {
   step: ScanPayStep;
+  mode: ScanPayMode;
+  merchantType: ScanPayMerchantType;
   scenario: ScanPayScenario;
   outcome: ScanPayOutcome;
   qrErrorVisible: boolean;
+  qrErrorReason: "invalid" | "unsupported" | null;
   torchEnabled: boolean;
   amount: string;
   amountTouched: boolean;
@@ -76,6 +92,7 @@ export type ScanPayState = {
   pendingCategoryId: ScanPayCategoryId | null;
   selectedSubcategoryId: string | null;
   walletId: ScanPayWalletId;
+  fundingAllocations: FundingAllocation[];
   transaction: ScanPayTransaction | null;
   rewardRevealed: boolean;
   receiptState: ScanPayReceiptState;
@@ -84,12 +101,21 @@ export type ScanPayState = {
 };
 
 export type ScanPayAction =
-  | { type: "RESET"; scenario: ScanPayScenario }
+  | {
+      type: "RESET";
+      scenario: ScanPayScenario;
+      mode: ScanPayMode;
+      merchantType: ScanPayMerchantType;
+    }
   | { type: "DETECT_QR" }
   | { type: "DISMISS_QR_ERROR" }
   | { type: "TOGGLE_TORCH" }
   | { type: "OPEN_UPI_ENTRY" }
   | { type: "VERIFY_UPI" }
+  | {
+      type: "SELECT_MERCHANT_SCENARIO";
+      merchantType: Exclude<ScanPayMerchantType, "unclassified">;
+    }
   | { type: "OPEN_FAQ"; returnStep?: ScanPayFaqReturnStep }
   | { type: "OPEN_CATEGORY_PICKER" }
   | { type: "SELECT_CATEGORY"; categoryId: ScanPayCategoryId }
@@ -101,8 +127,9 @@ export type ScanPayAction =
   | { type: "TOUCH_AMOUNT" }
   | { type: "OPEN_NOTE" }
   | { type: "SET_NOTE"; note: string }
-  | { type: "PAY" }
+  | { type: "PAY"; fundingAllocations?: FundingAllocation[] }
   | { type: "RESOLVE_PAYMENT" }
+  | { type: "PAYMENT_COMMIT_FAILED" }
   | { type: "RETRY_PAYMENT" }
   | { type: "REVEAL_REWARD" }
   | { type: "OPEN_PAYMENT_DETAILS" }
@@ -115,5 +142,7 @@ export type ScanPayAction =
 export type ScanPayFlowProps = {
   open: boolean;
   scenario: ScanPayScenario;
+  mode: ScanPayMode;
+  merchantType: ScanPayMerchantType;
   onClose: () => void;
 };

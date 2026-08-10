@@ -3,20 +3,31 @@ import {
   createScanPayTransaction,
   outcomeForScenario,
 } from "@/features/scan-pay/fixtures";
+import {
+  defaultWalletForMerchant,
+  walletIsEligibleForMerchant,
+} from "@/features/scan-pay/funding";
 import type {
   ScanPayAction,
+  ScanPayMerchantType,
+  ScanPayMode,
   ScanPayScenario,
   ScanPayState,
 } from "@/features/scan-pay/types";
 
 export function createInitialScanPayState(
   scenario: ScanPayScenario,
+  mode: ScanPayMode = "benefits",
+  merchantType: ScanPayMerchantType = "meal",
 ): ScanPayState {
   return {
     step: "scanner",
+    mode,
+    merchantType,
     scenario,
     outcome: outcomeForScenario(scenario),
     qrErrorVisible: false,
+    qrErrorReason: null,
     torchEnabled: false,
     amount: "",
     amountTouched: false,
@@ -25,7 +36,8 @@ export function createInitialScanPayState(
     selectedCategoryId: null,
     pendingCategoryId: null,
     selectedSubcategoryId: null,
-    walletId: "misc",
+    walletId: defaultWalletForMerchant(mode, merchantType),
+    fundingAllocations: [],
     transaction: null,
     rewardRevealed: false,
     receiptState: "empty",
@@ -52,20 +64,67 @@ export function scanPayReducer(
 ): ScanPayState {
   switch (action.type) {
     case "RESET":
-      return createInitialScanPayState(action.scenario);
+      return createInitialScanPayState(
+        action.scenario,
+        action.mode,
+        action.merchantType,
+      );
     case "DETECT_QR":
       if (state.scenario === "invalid-qr") {
-        return { ...state, qrErrorVisible: true };
+        return {
+          ...state,
+          qrErrorVisible: true,
+          qrErrorReason: "invalid",
+        };
       }
-      return { ...state, step: "confirmPayment", qrErrorVisible: false };
+      return {
+        ...state,
+        step:
+          state.mode === "benefits"
+            ? "merchantScenarioPicker"
+            : "confirmPayment",
+        qrErrorVisible: false,
+        qrErrorReason: null,
+        walletId: defaultWalletForMerchant(state.mode, state.merchantType),
+      };
     case "DISMISS_QR_ERROR":
-      return { ...state, qrErrorVisible: false };
+      return { ...state, qrErrorVisible: false, qrErrorReason: null };
     case "TOGGLE_TORCH":
       return { ...state, torchEnabled: !state.torchEnabled };
     case "OPEN_UPI_ENTRY":
       return { ...state, step: "upiEntry", qrErrorVisible: false };
     case "VERIFY_UPI":
-      return { ...state, step: "confirmPayment", qrErrorVisible: false };
+      return {
+        ...state,
+        step: "confirmPayment",
+        qrErrorVisible: false,
+        qrErrorReason: null,
+        merchantType:
+          state.mode === "benefits" ? "unclassified" : state.merchantType,
+        walletId: "misc",
+      };
+    case "SELECT_MERCHANT_SCENARIO":
+      if (
+        state.mode === "benefits" &&
+        action.merchantType === "unsupported"
+      ) {
+        return {
+          ...state,
+          step: "scanner",
+          merchantType: action.merchantType,
+          walletId: "misc",
+          qrErrorVisible: true,
+          qrErrorReason: "unsupported",
+          fundingAllocations: [],
+        };
+      }
+      return {
+        ...state,
+        step: "confirmPayment",
+        merchantType: action.merchantType,
+        walletId: defaultWalletForMerchant(state.mode, action.merchantType),
+        fundingAllocations: [],
+      };
     case "OPEN_FAQ":
       return {
         ...state,
@@ -109,6 +168,15 @@ export function scanPayReducer(
     case "OPEN_WALLET_PICKER":
       return { ...state, step: "walletPicker" };
     case "SELECT_WALLET":
+      if (
+        !walletIsEligibleForMerchant(
+          action.walletId,
+          state.mode,
+          state.merchantType,
+        )
+      ) {
+        return state;
+      }
       return {
         ...state,
         step: "confirmPayment",
@@ -130,7 +198,11 @@ export function scanPayReducer(
       if (!scanPayAmountIsValid(state.amount)) {
         return { ...state, amountTouched: true };
       }
-      return { ...state, step: "submitting" };
+      return {
+        ...state,
+        step: "submitting",
+        fundingAllocations: action.fundingAllocations ?? [],
+      };
     case "RESOLVE_PAYMENT": {
       if (!scanPayAmountIsValid(state.amount)) return state;
       const transaction = createScanPayTransaction({
@@ -140,6 +212,9 @@ export function scanPayReducer(
         subcategoryId: state.selectedSubcategoryId,
         note: state.note,
         outcome: state.outcome,
+        mode: state.mode,
+        merchantType: state.merchantType,
+        fundingAllocations: state.fundingAllocations,
       });
       return {
         ...state,
@@ -147,6 +222,13 @@ export function scanPayReducer(
         transaction,
       };
     }
+    case "PAYMENT_COMMIT_FAILED":
+      return {
+        ...state,
+        step: "confirmPayment",
+        transaction: null,
+        fundingAllocations: [],
+      };
     case "RETRY_PAYMENT":
       return { ...state, step: "confirmPayment", transaction: null };
     case "REVEAL_REWARD":
@@ -183,6 +265,8 @@ export function scanPayReducer(
 function goBack(state: ScanPayState): ScanPayState {
   switch (state.step) {
     case "upiEntry":
+      return { ...state, step: "scanner", qrErrorVisible: false };
+    case "merchantScenarioPicker":
       return { ...state, step: "scanner", qrErrorVisible: false };
     case "faq":
       return { ...state, step: state.faqReturnStep, qrErrorVisible: false };

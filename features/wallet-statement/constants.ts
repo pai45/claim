@@ -38,12 +38,16 @@ export function isWalletStatementId(
 export function getWalletStatement(
   value: string | null,
   personaId?: PersonaId,
+  includePersisted = true,
 ): WalletStatement {
   const id = isWalletStatementId(value) ? value : "meal";
   return {
     id,
     label: WALLET_LABELS[id],
-    transactions: filterTransactionsByWallet(getTransactionItems(personaId), id),
+    transactions: filterTransactionsByWallet(
+      getTransactionItems(personaId, includePersisted),
+      id,
+    ),
   };
 }
 

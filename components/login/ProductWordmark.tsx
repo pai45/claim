@@ -14,7 +14,7 @@ export function ProductWordmark({ className = "" }: { className?: string }) {
     <span
       className={`font-display text-title font-semibold tracking-tight text-pine-dark ${className}`.trim()}
     >
-      Lens
+      EB+
     </span>
   );
 }

@@ -27,6 +27,7 @@ import { setActivePersonaId } from "@/features/persona/store";
 import { getPersonaConfig } from "@/features/persona/constants";
 import type { PersonaId } from "@/features/persona/types";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
+import { FINANCIAL_STATE_STORAGE_KEY } from "@/features/transactions/financialState";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -52,7 +53,7 @@ const LOCAL_KEYS = [
   VKYC_ROUTE_KEY,
 ];
 
-const SESSION_KEYS = [PENDING_INTENT_KEY];
+const SESSION_KEYS = [PENDING_INTENT_KEY, FINANCIAL_STATE_STORAGE_KEY];
 
 function remove(storage: StorageLike, key: string): void {
   try {

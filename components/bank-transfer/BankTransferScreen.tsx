@@ -23,8 +23,8 @@ const QUICK_AMOUNTS = [500, 1_000, 2_000, 5_000];
 const BALANCE_BY_PERSONA = {
   returning: 18_650,
   new_user: 30_000,
-  lens_only: 18_650,
-  lens_no_upi: 18_650,
+  ebPlus_only: 18_650,
+  ebPlus_no_upi: 18_650,
   pluspay_only: 0,
 } as const;
 

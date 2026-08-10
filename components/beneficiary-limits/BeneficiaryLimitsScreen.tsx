@@ -27,10 +27,10 @@ export function BeneficiaryLimitsScreen() {
   const { persona } = useActivePersona();
   const allowedAccounts = useMemo<BeneficiaryAccount[]>(
     () => [
-      ...(persona.access.products.lens ? (["benefits"] as const) : []),
+      ...(persona.access.products.ebPlus ? (["benefits"] as const) : []),
       ...(persona.access.products.plusPay ? (["pluspay"] as const) : []),
     ],
-    [persona.access.products.lens, persona.access.products.plusPay],
+    [persona.access.products.ebPlus, persona.access.products.plusPay],
   );
   const account = resolveBeneficiaryAccount(
     searchParams.get("account"),

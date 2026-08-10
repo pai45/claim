@@ -17,7 +17,7 @@ export function buildScanPayReceiptText(transaction: ScanPayTransaction): string
     `Merchant ID: ${transaction.merchantId}`,
     `UPI Transaction ID: ${transaction.transactionId}`,
     `Payment method: ${transaction.paymentMethod}`,
-    `Paid from: ${transaction.walletLabel}`,
+    ...fundingTextLines(transaction),
     `Date & time: ${transaction.dateTime}`,
     `Category: ${transaction.category ?? "Not specified"}${transaction.subcategory ? ` / ${transaction.subcategory}` : ""}`,
     transaction.note ? `Note: ${transaction.note}` : "",
@@ -137,12 +137,19 @@ export async function createScanPayReceiptImage(
 export function receiptRows(
   transaction: ScanPayTransaction,
 ): [string, string][] {
+  const fundingRows: [string, string][] =
+    transaction.fundingAllocations.length > 0
+      ? transaction.fundingAllocations.map((allocation) => [
+          `Paid from ${allocation.walletLabel}`,
+          formatScanPayINR(allocation.amount),
+        ])
+      : [["Paid From", transaction.walletLabel]];
   return [
     ["Status", statusLabel(transaction.outcome)],
     ["Merchant ID", compactValue(transaction.merchantId)],
     ["UPI Transaction ID", transaction.transactionId],
     ["Payment Method", transaction.paymentMethod],
-    ["Paid From", transaction.walletLabel],
+    ...fundingRows,
     ["Date & Time", transaction.dateTime],
     [
       "Category",
@@ -151,6 +158,16 @@ export function receiptRows(
         : "Not specified",
     ],
   ];
+}
+
+function fundingTextLines(transaction: ScanPayTransaction): string[] {
+  if (transaction.fundingAllocations.length === 0) {
+    return [`Paid from: ${transaction.walletLabel}`];
+  }
+  return transaction.fundingAllocations.map(
+    (allocation) =>
+      `Paid from ${allocation.walletLabel}: ${formatScanPayINR(allocation.amount)}`,
+  );
 }
 
 export function statusLabel(outcome: ScanPayTransaction["outcome"]): string {

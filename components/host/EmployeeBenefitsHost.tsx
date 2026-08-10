@@ -6,13 +6,21 @@ import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { ScanPayFlow } from "@/components/scan-pay/ScanPayFlow";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { useActivePersona } from "@/features/persona/useActivePersona";
-import { resolveScanPayScenario } from "@/features/scan-pay/fixtures";
-import type { ScanPayScenario } from "@/features/scan-pay/types";
+import {
+  resolveScanPayMerchantType,
+  resolveScanPayScenario,
+} from "@/features/scan-pay/fixtures";
+import type {
+  ScanPayMerchantType,
+  ScanPayScenario,
+} from "@/features/scan-pay/types";
 import {
   WALLET_FILTER_OPTIONS,
+  getWalletBalance,
   getRecentTransactionsByWallet,
   getTransactionItems,
 } from "@/features/transactions/constants";
+import { useFinancialStateVersion } from "@/features/transactions/financialState";
 import type { EmployeeBenefitsPersonaPayload } from "@/features/persona/types";
 import { withBasePath } from "@/lib/basePath";
 import "./employeeBenefitsHost.css";
@@ -20,6 +28,7 @@ import "./employeeBenefitsHost.css";
 const CLAIMS_HASH = "#claims";
 const SCAN_PAY_HASH = "#scan-pay";
 const SCAN_PAY_SCENARIO_QUERY = "scanPayScenario";
+const SCAN_PAY_MERCHANT_QUERY = "scanPayMerchant";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
@@ -56,12 +65,15 @@ const SOURCE_OVERLAY_CLASSES = ["is-overlay-open", "is-merchant-directory-open"]
 
 export function EmployeeBenefitsHost() {
   const { persona } = useActivePersona();
+  const financialVersion = useFinancialStateVersion();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(false);
   const [scanPayOpen, setScanPayOpen] = useState(false);
   const [scanPayScenario, setScanPayScenario] =
     useState<ScanPayScenario>("success");
+  const [scanPayMerchantType, setScanPayMerchantType] =
+    useState<Exclude<ScanPayMerchantType, "unclassified">>("meal");
   const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
   const [plusPayMode, setPlusPayMode] = useState(
     persona.access.defaultProduct === "pluspay",
@@ -93,12 +105,12 @@ export function EmployeeBenefitsHost() {
   }, [cardMpinIntent, replyToEmployeeBenefits]);
 
   const openClaims = useCallback(() => {
-    if (!persona.access.products.lens) return;
+    if (!persona.access.products.ebPlus) return;
     setClaimsOpen(true);
     if (window.location.hash !== CLAIMS_HASH) {
       window.history.replaceState(null, "", CLAIMS_HASH);
     }
-  }, [persona.access.products.lens]);
+  }, [persona.access.products.ebPlus]);
 
   const closeClaims = useCallback(() => {
     setClaimsOpen(false);
@@ -152,7 +164,7 @@ export function EmployeeBenefitsHost() {
 
   const openUpiSettings = useCallback((tab: "benefits" | "pluspay") => {
     if (!persona.access.upiEnabled) return;
-    if (tab === "benefits" && !persona.access.products.lens) return;
+    if (tab === "benefits" && !persona.access.products.ebPlus) return;
     if (tab === "pluspay" && !persona.access.products.plusPay) return;
     window.location.assign(withBasePath(`/upi-settings/?tab=${tab}`));
   }, [persona.access]);
@@ -163,19 +175,19 @@ export function EmployeeBenefitsHost() {
   }, [persona.access]);
 
   const openBankTransfer = useCallback(() => {
-    if (!persona.access.products.lens) return;
+    if (!persona.access.products.ebPlus) return;
     window.location.assign(withBasePath("/bank-transfer/"));
-  }, [persona.access.products.lens]);
+  }, [persona.access.products.ebPlus]);
 
   const openScanPay = useCallback(() => {
     if (!persona.access.upiEnabled) return;
     setClaimsOpen(false);
+    const searchParams = new URLSearchParams(window.location.search);
     setScanPayScenario(
-      resolveScanPayScenario(
-        new URLSearchParams(window.location.search).get(
-          SCAN_PAY_SCENARIO_QUERY,
-        ),
-      ),
+      resolveScanPayScenario(searchParams.get(SCAN_PAY_SCENARIO_QUERY)),
+    );
+    setScanPayMerchantType(
+      resolveScanPayMerchantType(searchParams.get(SCAN_PAY_MERCHANT_QUERY)),
     );
     setScanPayOpen(true);
     if (window.location.hash.toLowerCase() !== SCAN_PAY_HASH) {
@@ -186,6 +198,31 @@ export function EmployeeBenefitsHost() {
       );
     }
   }, [persona.access.upiEnabled]);
+
+  const syncFinancialStateToEmployeeBenefits = useCallback(() => {
+    const syncedTransactions = getTransactionItems(persona.id);
+    const walletTransactions = Object.fromEntries(
+      WALLET_FILTER_OPTIONS.map((wallet) => [
+        wallet.id,
+        getRecentTransactionsByWallet(syncedTransactions, wallet.id),
+      ]),
+    );
+    const wallets = Object.fromEntries(
+      WALLET_FILTER_OPTIONS.map((wallet) => [
+        wallet.id,
+        getWalletBalance(wallet.id, persona.id),
+      ]),
+    );
+    frameRef.current?.contentWindow?.postMessage(
+      {
+        type: "employee-benefits:sync-transactions",
+        transactions: syncedTransactions,
+        walletTransactions,
+        wallets,
+      },
+      window.location.origin,
+    );
+  }, [persona.id]);
 
   const closeScanPay = useCallback(() => {
     setScanPayOpen(false);
@@ -258,28 +295,19 @@ export function EmployeeBenefitsHost() {
       hasTransactions: persona.hasTransactions,
       hasUpiId: persona.hasUpiId,
     };
-    const syncedTransactions = getTransactionItems(persona.id);
-    const walletTransactions = Object.fromEntries(
-      WALLET_FILTER_OPTIONS.map((wallet) => [
-        wallet.id,
-        getRecentTransactionsByWallet(syncedTransactions, wallet.id),
-      ]),
-    );
     frameRef.current?.contentWindow?.postMessage(
       { type: "employee-benefits:sync-persona", persona: payload },
       window.location.origin,
     );
-    frameRef.current?.contentWindow?.postMessage(
-      {
-        type: "employee-benefits:sync-transactions",
-        transactions: syncedTransactions,
-        walletTransactions,
-      },
-      window.location.origin,
-    );
-  }, [persona]);
+    syncFinancialStateToEmployeeBenefits();
+  }, [persona, syncFinancialStateToEmployeeBenefits]);
 
   useEffect(() => () => bodyObserverRef.current?.disconnect(), []);
+
+  useEffect(() => {
+    void financialVersion;
+    syncFinancialStateToEmployeeBenefits();
+  }, [financialVersion, syncFinancialStateToEmployeeBenefits]);
 
   useEffect(() => {
     // Only picks up hashes the browser navigates to. The App Router changes the
@@ -288,19 +316,19 @@ export function EmployeeBenefitsHost() {
     const syncHash = () => {
       const hash = window.location.hash.toLowerCase();
       setClaimsOpen(
-        persona.access.products.lens &&
+        persona.access.products.ebPlus &&
           hash === CLAIMS_HASH,
       );
       const shouldOpenScanPay =
         persona.access.upiEnabled && hash === SCAN_PAY_HASH;
       setScanPayOpen(shouldOpenScanPay);
       if (shouldOpenScanPay) {
+        const searchParams = new URLSearchParams(window.location.search);
         setScanPayScenario(
-          resolveScanPayScenario(
-            new URLSearchParams(window.location.search).get(
-              SCAN_PAY_SCENARIO_QUERY,
-            ),
-          ),
+          resolveScanPayScenario(searchParams.get(SCAN_PAY_SCENARIO_QUERY)),
+        );
+        setScanPayMerchantType(
+          resolveScanPayMerchantType(searchParams.get(SCAN_PAY_MERCHANT_QUERY)),
         );
       }
     };
@@ -400,7 +428,7 @@ export function EmployeeBenefitsHost() {
     openTransactions,
     openWalletStatement,
     openUpiSettings,
-    persona.access.products.lens,
+    persona.access.products.ebPlus,
     persona.access.upiEnabled,
   ]);
 
@@ -422,7 +450,7 @@ export function EmployeeBenefitsHost() {
         hidden={claimsOpen || scanPayOpen || sourceOverlayOpen}
         variant={
           persona.access.products.plusPay &&
-          (!persona.access.products.lens || plusPayMode)
+          (!persona.access.products.ebPlus || plusPayMode)
             ? "pluspay"
             : "benefits"
         }
@@ -444,6 +472,8 @@ export function EmployeeBenefitsHost() {
       <ScanPayFlow
         open={scanPayOpen}
         scenario={scanPayScenario}
+        mode={plusPayMode ? "pluspay" : "benefits"}
+        merchantType={scanPayMerchantType}
         onClose={closeScanPay}
       />
 

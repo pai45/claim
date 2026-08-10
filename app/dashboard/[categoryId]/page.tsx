@@ -25,7 +25,7 @@ export default async function BenefitDashboardPage({
 
   return (
     <main className="min-h-dvh w-full">
-      <PersonaAccessGate requireLens>
+      <PersonaAccessGate requireEbPlus>
         <BenefitClaimsScreen categoryId={categoryId} />
       </PersonaAccessGate>
     </main>

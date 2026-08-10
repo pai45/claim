@@ -9,10 +9,10 @@ type PersonaSelectionStepProps = {
 };
 
 function accessLabel(id: PersonaId): string {
-  if (id === "lens_only") return "Lens + UPI";
+  if (id === "ebPlus_only") return "EB+ & UPI";
   if (id === "pluspay_only") return "PlusPay + UPI";
-  if (id === "lens_no_upi") return "Lens card only";
-  return "Lens + PlusPay";
+  if (id === "ebPlus_no_upi") return "EB+ card only";
+  return "EB+ & PlusPay";
 }
 
 export function PersonaSelectionStep({ onSelect }: PersonaSelectionStepProps) {

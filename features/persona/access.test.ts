@@ -17,7 +17,7 @@ describe("persona product access", () => {
     },
   );
 
-  it.each(["lens_only", "lens_no_upi"] as const)(
+  it.each(["ebPlus_only", "ebPlus_no_upi"] as const)(
     "removes PlusPay profile actions for %s",
     (id) => {
       const persona = getPersonaConfig(id);
@@ -26,11 +26,11 @@ describe("persona product access", () => {
     },
   );
 
-  it("blocks UPI and PlusPay routes for Lens without UPI", () => {
-    const persona = getPersonaConfig("lens_no_upi");
+  it("blocks UPI and PlusPay routes for EB+ without UPI", () => {
+    const persona = getPersonaConfig("ebPlus_no_upi");
     expect(hasPersonaAccess(persona, { requireUpi: true })).toBe(false);
     expect(hasPersonaAccess(persona, { requirePlusPay: true })).toBe(false);
-    expect(hasPersonaAccess(persona, { requireLens: true })).toBe(true);
+    expect(hasPersonaAccess(persona, { requireEbPlus: true })).toBe(true);
   });
 
   it("exposes only product-owned UPI tabs", () => {

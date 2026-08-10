@@ -15,6 +15,7 @@ import { PRODUCT_INTRO_STORAGE_KEY } from "@/features/product-intro/storage";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 import { NOTIFICATIONS_HIDDEN_KEY } from "@/features/notifications/storage";
 import { UPI_CREATED_STORAGE_KEY, resetDemoJourney } from "./reset";
+import { FINANCIAL_STATE_STORAGE_KEY } from "@/features/transactions/financialState";
 
 function memoryStorage() {
   const map = new Map<string, string>();
@@ -56,6 +57,7 @@ describe("resetDemoJourney", () => {
     local.setItem(PRODUCT_INTRO_STORAGE_KEY, "completed-intro");
     session.setItem(PENDING_INTENT_KEY, "seeded");
     session.setItem(MPIN_UNLOCK_STORAGE_KEY, "seeded");
+    session.setItem(FINANCIAL_STATE_STORAGE_KEY, "seeded");
   });
 
   it("wipes state cleanly for new_user persona", () => {
@@ -70,6 +72,7 @@ describe("resetDemoJourney", () => {
     expect(local.getItem(MPIN_STORAGE_KEY)).toBeNull();
     expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
+    expect(session.getItem(FINANCIAL_STATE_STORAGE_KEY)).toBeNull();
   });
 
   it("seeds returning history but resets registration and notifications", () => {
@@ -99,9 +102,9 @@ describe("resetDemoJourney", () => {
   });
 
   it.each([
-    ["lens_only", true],
+    ["ebPlus_only", true],
     ["pluspay_only", true],
-    ["lens_no_upi", false],
+    ["ebPlus_no_upi", false],
   ] as const)("seeds ready persona %s with the correct UPI state", (id, hasUpi) => {
     resetDemoJourney(id, local, session);
 

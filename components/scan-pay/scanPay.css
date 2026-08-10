@@ -162,20 +162,48 @@
   font-weight: 400;
 }
 
+/* Font size is set per amount length; the ₹ and the digits scale with it. */
+.scan-pay-amount-field {
+  font-size: 48px;
+  max-width: calc(100% - 72px);
+}
+
 .scan-pay-amount-symbol {
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: 0.833em;
   line-height: 1;
+  font-weight: 400;
+  color: var(--color-pine-dark);
+}
+
+.scan-pay-amount-sizer {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  min-width: 44px;
+  max-width: 100%;
+  min-height: 64px;
+}
+
+.scan-pay-amount-input,
+.scan-pay-amount-ghost {
+  padding: 0 4px;
+  font-family: var(--font-display);
+  font-size: 1em;
+  line-height: 1.1;
   font-weight: 400;
 }
 
+.scan-pay-amount-ghost {
+  display: block;
+  white-space: pre;
+  visibility: hidden;
+}
+
 .scan-pay-amount-input {
-  max-width: 140px;
-  padding: 0 4px;
-  font-family: var(--font-display);
-  font-size: 48px;
-  line-height: 1.1;
-  font-weight: 400;
+  position: absolute;
+  inset: 0;
+  width: 100%;
   color: var(--color-pine-dark);
   caret-color: var(--color-pine-dark);
 }
