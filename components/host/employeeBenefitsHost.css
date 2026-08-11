@@ -54,3 +54,15 @@
   overflow: hidden;
   background: #f8faf8;
 }
+
+@media (min-width: 541px) {
+  .employee-benefits-host {
+    min-height: 100%;
+  }
+
+  .employee-benefits-source,
+  .employee-benefits-claims,
+  .employee-benefits-mpin-verification {
+    height: 100%;
+  }
+}

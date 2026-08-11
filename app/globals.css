@@ -151,6 +151,65 @@ body {
     "Lato", ui-sans-serif, system-ui, sans-serif;
 }
 
+/*
+ * The live app remains a normal full-viewport mobile experience through
+ * 540px. Wider browsers present that same app inside an exact 402 x 874px
+ * review frame. The transform is intentional: it makes fixed descendants
+ * (drawers, scan/pay, chat, and install prompts) position against the phone
+ * rather than the desktop viewport.
+ */
+.desktop-mobile-frame {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+}
+
+@media (min-width: 541px) {
+  body {
+    display: flex;
+    min-height: max(100dvh, 922px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .desktop-mobile-frame {
+    isolation: isolate;
+    width: 402px;
+    height: 874px;
+    min-height: 0;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-phone);
+    transform: translateZ(0);
+  }
+
+  .desktop-mobile-frame::after {
+    position: absolute;
+    z-index: 1000;
+    inset: 0;
+    border: 1px solid var(--color-border-muted);
+    border-radius: inherit;
+    content: "";
+    pointer-events: none;
+  }
+
+  .desktop-mobile-frame .h-dvh {
+    height: 100%;
+  }
+
+  .desktop-mobile-frame .min-h-dvh {
+    min-height: 100%;
+  }
+
+  .desktop-mobile-frame .login-viewport {
+    top: 0;
+    height: 100%;
+  }
+}
+
 /* Headings: PP Telegraf */
 h1,
 h2,
