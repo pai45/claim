@@ -30,6 +30,7 @@ import { MessageList, type MessageListHandle } from "./MessageList";
 import { NewChatWidget } from "./NewChatWidget";
 import { QuickActions } from "./QuickActions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { AssistantWalkthrough } from "@/components/walkthrough/AssistantWalkthrough";
 import {
   DocumentScenarioDrawer,
   type DocumentScenarioSelection,
@@ -330,13 +331,14 @@ export function ChatShell({ onClose }: ChatShellProps) {
             </div>
           ) : null}
           {showEmptyState ? (
-            <div className="pb-1 pt-2">
+            <div className="pb-1 pt-2" data-walkthrough="quick-chats">
               <QuickActions onSelect={handleQuickAction} disabled={busy} />
             </div>
           ) : null}
           <div
             className="animate-rise-in"
             style={{ animationDelay: hasMessages ? "0ms" : "380ms" }}
+            data-walkthrough="composer"
           >
             <ChatComposer
               onSend={(message) => void sendMessage(message)}
@@ -372,6 +374,15 @@ export function ChatShell({ onClose }: ChatShellProps) {
 
         <span className="sr-only">Signed in as {USER_DISPLAY_NAME}</span>
       </div>
+
+      <AssistantWalkthrough
+        enabled={
+          personaId === "new_user" &&
+          showEmptyState &&
+          !scenarioPicker &&
+          !confirmClearOpen
+        }
+      />
     </div>
   );
 }

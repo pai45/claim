@@ -71,6 +71,7 @@ export function HomeActionCards({
   return (
     <section
       aria-label="Recommended actions"
+      data-walkthrough="recommended"
       className={`grid gap-3 px-page ${isSplit ? "grid-cols-2" : "grid-cols-1"}`}
     >
       {showNotifications ? (

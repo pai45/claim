@@ -128,13 +128,8 @@ export function WalletFilterDropdown({
         aria-label={`Filter by wallet, currently ${selectedOption.label}`}
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleTriggerKeyDown}
-        className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-pill bg-pine-primary py-1 pl-2 pr-4 text-body-sm font-bold text-white transition-colors hover:bg-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-primary"
+        className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-pill bg-pine-primary px-4 py-1 text-body-sm font-bold text-white transition-colors hover:bg-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-primary"
       >
-        <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${selectedOption.toneClass} ${selectedOption.iconClass}`}
-        >
-          <BenefitWalletIcon wallet={selectedOption.id} size={17} />
-        </span>
         <span>{selectedOption.label}</span>
         <svg
           width="16"

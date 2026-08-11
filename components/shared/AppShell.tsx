@@ -21,7 +21,7 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div
-      className={`mx-auto flex h-dvh w-full max-w-phone flex-col shadow-phone ${variantClass[variant]} ${className}`.trim()}
+      className={`app-shell mx-auto flex h-dvh w-full max-w-phone flex-col shadow-phone ${variantClass[variant]} ${className}`.trim()}
     >
       {children}
     </div>

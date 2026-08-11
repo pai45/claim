@@ -22,4 +22,5 @@ export const colors = {
   mintWash: "#E7F4EE",
   /** Login screen canvas — matches the login Lottie's own backdrop layer. */
   loginCanvas: "#DBF5E7",
+  surfaceMuted: "#E8EBE9",
 } as const;

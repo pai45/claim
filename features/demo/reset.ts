@@ -24,6 +24,7 @@ import {
 import { clearRegisteredVehicle } from "@/features/vehicle/registration";
 import { clearRegisteredDriver } from "@/features/driver/registration";
 import { clearNotificationsHidden } from "@/features/notifications/storage";
+import { clearWalkthroughState } from "@/features/walkthrough/storage";
 import { setActivePersonaId } from "@/features/persona/store";
 import { getPersonaConfig } from "@/features/persona/constants";
 import type { PersonaId } from "@/features/persona/types";
@@ -92,6 +93,9 @@ export function resetDemoJourney(
   clearRegisteredDriver(local);
   clearNotificationsHidden(local);
   clearEbPlusActivation(local);
+  // Picking a persona on the login screen is the presenter's reset, so it is
+  // also what makes the walkthroughs auto-play again.
+  clearWalkthroughState(local, session);
 
   const persona = getPersonaConfig(targetPersona);
   setActivePersonaId(targetPersona, local);

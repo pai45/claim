@@ -16,6 +16,10 @@ import { PRODUCT_INTRO_STORAGE_KEY } from "@/features/product-intro/storage";
 import { NUDGE_SNOOZE_KEY } from "@/lib/pwa/installNudge";
 import { NOTIFICATIONS_HIDDEN_KEY } from "@/features/notifications/storage";
 import { UPI_CREATED_STORAGE_KEY, resetDemoJourney } from "./reset";
+import {
+  WALKTHROUGH_PAUSED_KEYS,
+  WALKTHROUGH_SEEN_KEYS,
+} from "@/features/walkthrough/storage";
 import { FINANCIAL_STATE_STORAGE_KEY } from "@/features/transactions/financialState";
 import { PLUSPAY_HISTORY_STORAGE_KEY } from "@/features/transactions/plusPayHistory";
 import { BANK_TRANSFER_HISTORY_STORAGE_KEY } from "@/features/bank-transfer/history";
@@ -48,6 +52,7 @@ const LOCAL_KEYS = [
   NUDGE_SNOOZE_KEY,
   NOTIFICATIONS_HIDDEN_KEY,
   UPI_CREATED_STORAGE_KEY,
+  ...WALKTHROUGH_SEEN_KEYS,
 ];
 
 describe("resetDemoJourney", () => {
@@ -64,6 +69,18 @@ describe("resetDemoJourney", () => {
     session.setItem(FINANCIAL_STATE_STORAGE_KEY, "seeded");
     session.setItem(PLUSPAY_HISTORY_STORAGE_KEY, "seeded");
     session.setItem(BANK_TRANSFER_HISTORY_STORAGE_KEY, "seeded");
+    WALKTHROUGH_PAUSED_KEYS.forEach((key) => session.setItem(key, "2"));
+  });
+
+  it("re-arms both walkthroughs so a presenter sees them play again", () => {
+    resetDemoJourney("new_user", local, session);
+
+    WALKTHROUGH_SEEN_KEYS.forEach((key) => {
+      expect(local.getItem(key)).toBeNull();
+    });
+    WALKTHROUGH_PAUSED_KEYS.forEach((key) => {
+      expect(session.getItem(key)).toBeNull();
+    });
   });
 
   it("wipes state cleanly for new_user persona", () => {

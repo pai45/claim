@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, useRef, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { useModalFocus } from "@/lib/ui/useModalFocus";
 import {
   LIMIT_CHANNELS,
   createDefaultLimitState,
@@ -23,12 +24,15 @@ export function ManageLimitScreen() {
   const [channels, setChannels] = useState<ManageLimitState>(
     createDefaultLimitState,
   );
+  const [initialChannels, setInitialChannels] = useState<ManageLimitState | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const [savedFlash, setSavedFlash] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      setChannels(loadLimitState());
+      const state = loadLimitState();
+      setInitialChannels(state);
+      setChannels(state);
       setHydrated(true);
     });
     return () => window.cancelAnimationFrame(frame);
@@ -42,13 +46,26 @@ export function ManageLimitScreen() {
       ...prev,
       [id]: { ...prev[id], ...patch },
     }));
-    setSavedFlash(false);
   }
 
   function handleSave() {
     saveLimitState(channels);
-    setSavedFlash(true);
+    setInitialChannels(channels);
+    setShowSuccessModal(true);
   }
+
+  const hasChanges =
+    hydrated &&
+    initialChannels !== null &&
+    LIMIT_CHANNELS.some(({ id }) => {
+      const current = channels[id];
+      const initial = initialChannels[id];
+      return (
+        current.enabled !== initial.enabled ||
+        current.dailyLimit !== initial.dailyLimit ||
+        current.perTxnLimit !== initial.perTxnLimit
+      );
+    });
 
   return (
     <AppShell className="overflow-hidden">
@@ -82,17 +99,92 @@ export function ManageLimitScreen() {
         </div>
       </main>
 
-      <div className="shrink-0 border-t border-border-soft bg-white px-page pb-6 pt-3">
-        {savedFlash ? (
-          <p className="mb-2 text-center text-caption font-bold text-success">
-            Limits saved
-          </p>
-        ) : null}
-        <button type="button" className="btn-primary" onClick={handleSave}>
-          Save Changes
-        </button>
-      </div>
+      {hasChanges ? (
+        <div className="animate-rise-in shrink-0 border-t border-border-soft bg-white px-page pb-6 pt-3">
+          <button type="button" className="btn-primary" onClick={handleSave}>
+            Save Changes
+          </button>
+        </div>
+      ) : null}
+
+      <SuccessModal
+        open={showSuccessModal}
+        title="Limits Updated Successfully"
+        onClose={() => setShowSuccessModal(false)}
+      />
     </AppShell>
+  );
+}
+
+function SuccessModal({
+  open,
+  title,
+  onClose,
+}: {
+  open: boolean;
+  title: string;
+  onClose: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useModalFocus(containerRef, open, onClose);
+
+  return (
+    <div
+      ref={containerRef}
+      className={`fixed inset-0 z-[70] mx-auto max-w-phone ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+      aria-hidden={!open}
+    >
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label="Cancel"
+        onClick={onClose}
+        className={`absolute inset-0 bg-pine/40 transition-opacity duration-200 ${open ? "opacity-100" : "opacity-0"}`}
+      />
+      <section
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="manage-limit-success-title"
+        className={`absolute inset-x-4 top-1/2 -translate-y-1/2 rounded-card bg-white p-6 pt-10 text-center shadow-menu transition-all duration-200 ${open ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-3 top-3 flex min-h-11 min-w-11 items-center justify-center rounded-control text-ink-secondary hover:text-ink"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div className="absolute -top-[53px] left-1/2 -translate-x-1/2">
+          <svg viewBox="0 0 106 106" width="106" height="106" aria-hidden="true">
+            <circle cx="53" cy="53" r="53" fill={colors.white} />
+            <g transform="translate(18 18)">
+              <path
+                d="M64.4008 28.5367L62.0164 25.6492C61.2836 24.7523 60.8352 23.6695 60.7258 22.5211L60.3648 18.7914C59.9055 13.957 56.0555 10.107 51.2211 9.64766L47.4914 9.28672C46.343 9.17734 45.2602 8.72891 44.3633 7.98516L41.4758 5.60078C37.7242 2.50547 32.2883 2.50547 28.5367 5.60078L25.6492 7.98516C24.7523 8.71797 23.6695 9.17734 22.5211 9.28672L18.7914 9.64766C13.957 10.107 10.107 13.957 9.64766 18.7914L9.28672 22.5211C9.17734 23.6805 8.72891 24.7633 7.98516 25.6492L5.60078 28.5367C2.50547 32.2883 2.50547 37.7242 5.60078 41.4758L7.98516 44.3633C8.71797 45.2602 9.16641 46.343 9.27578 47.4914L9.63672 51.2211C10.0961 56.0555 13.9461 59.9055 18.7805 60.3648L22.5102 60.7258C23.6586 60.8352 24.7414 61.2836 25.6383 62.0273L28.5258 64.4117C30.3961 65.9539 32.693 66.7305 34.9898 66.7305C37.2867 66.7305 39.5836 65.9539 41.4539 64.4117L44.3414 62.0273C45.2383 61.2945 46.3211 60.8352 47.4695 60.7258L51.1992 60.3648C56.0336 59.9055 59.8836 56.0555 60.343 51.2211L60.7039 47.4914C60.8133 46.332 61.2617 45.2492 62.0055 44.3633L64.3898 41.4758C67.4852 37.7242 67.4852 32.2883 64.3898 28.5367H64.4008Z"
+                fill={colors.success}
+              />
+              <path
+                d="M30.9162 44.4236L22.0254 35.5327L23.8071 33.7507L30.9162 40.8598L46.1921 25.584L47.9737 27.3661L30.9162 44.4236Z"
+                fill={colors.white}
+              />
+            </g>
+          </svg>
+        </div>
+
+        <h2
+          id="manage-limit-success-title"
+          className="type-section-title px-4 pb-2"
+        >
+          {title}
+        </h2>
+        <div className="mt-5">
+          <button type="button" onClick={onClose} className="btn-primary min-h-11 h-auto py-3 w-full">OK</button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -195,7 +287,7 @@ function LimitSlider({
         onChange={(event) => onChange(Number(event.target.value))}
         className="limit-slider h-2 w-full cursor-pointer appearance-none rounded-pill bg-surface-muted"
         style={{
-          background: `linear-gradient(90deg, ${colors.success} 0%, ${colors.success} ${percent}%, #E8EBE9 ${percent}%, #E8EBE9 100%)`,
+          background: `linear-gradient(90deg, ${colors.success} 0%, ${colors.success} ${percent}%, ${colors.surfaceMuted} ${percent}%, ${colors.surfaceMuted} 100%)`,
         }}
       />
       <div className="flex items-center justify-between text-caption text-ink-secondary">

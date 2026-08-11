@@ -164,6 +164,12 @@ body {
   min-height: 100dvh;
 }
 
+/* A screen's terminal navigation or action bar belongs at the lower edge of
+   its AppShell, even when the screen body has very little content. */
+.app-shell > :is(nav, footer):last-child {
+  margin-top: auto;
+}
+
 @media (min-width: 541px) {
   body {
     display: flex;
@@ -201,13 +207,15 @@ body {
   }
 
   .desktop-mobile-frame .min-h-dvh {
-    min-height: 100%;
+    height: 100%;
+    min-height: 0;
   }
 
   .desktop-mobile-frame .login-viewport {
     top: 0;
     height: 100%;
   }
+
 }
 
 /* Headings: PP Telegraf */

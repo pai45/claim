@@ -6,10 +6,15 @@ import type { TransactionIconId } from "@/features/transactions/constants";
 type TransactionIconProps = {
   icon: TransactionIconId;
   size?: number;
+  tone?: "default" | "success";
 };
 
-export function TransactionIcon({ icon, size = 22 }: TransactionIconProps) {
-  const stroke = colors.pinePrimary;
+export function TransactionIcon({
+  icon,
+  size = 22,
+  tone = "default",
+}: TransactionIconProps) {
+  const stroke = tone === "success" ? colors.success : colors.pinePrimary;
   const common = {
     width: size,
     height: size,

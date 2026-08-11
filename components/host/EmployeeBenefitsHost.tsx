@@ -6,6 +6,7 @@ import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { OnboardingShell } from "@/components/onboarding/OnboardingShell";
 import { ScanPayFlow } from "@/components/scan-pay/ScanPayFlow";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
+import { EbHomeWalkthrough } from "@/components/walkthrough/EbHomeWalkthrough";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import {
   resolveScanPayMerchantSelection,
@@ -88,6 +89,7 @@ export function EmployeeBenefitsHost() {
     useState<Exclude<ScanPayMerchantType, "unclassified">>("meal");
   const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
   const [ebPlusSetupOpen, setEbPlusSetupOpen] = useState(false);
+  const [frameReady, setFrameReady] = useState(false);
   const [plusPayMode, setPlusPayMode] = useState(
     persona.access.defaultProduct === "pluspay",
   );
@@ -365,6 +367,7 @@ export function EmployeeBenefitsHost() {
       window.location.origin,
     );
     syncFinancialStateToEmployeeBenefits();
+    setFrameReady(true);
   }, [persona, syncFinancialStateToEmployeeBenefits]);
 
   const syncPersonaToEmployeeBenefits = useCallback(() => {
@@ -563,6 +566,21 @@ export function EmployeeBenefitsHost() {
         }
         onBenefits={openClaims}
         onScanPay={openScanPay}
+      />
+
+      <EbHomeWalkthrough
+        frameRef={frameRef}
+        ready={frameReady}
+        enabled={
+          persona.id === "new_user" &&
+          !plusPayMode &&
+          !claimsOpen &&
+          !scanPayOpen &&
+          !sourceOverlayOpen &&
+          !ebPlusSetupOpen &&
+          !cardMpinIntent
+        }
+        hasBenefitsUpiId={persona.hasBenefitsUpiId}
       />
 
       {claimsOpen ? (

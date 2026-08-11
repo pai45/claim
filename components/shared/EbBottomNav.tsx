@@ -86,7 +86,7 @@ export function EbBottomNav({
 
   return (
     <nav
-      className={`relative z-20 mx-auto grid h-[calc(139px+env(safe-area-inset-bottom,0px))] w-full max-w-phone shrink-0 grid-cols-3 items-start overflow-visible pb-[env(safe-area-inset-bottom,0px)] ${className}`.trim()}
+      className={`eb-bottom-nav relative z-20 mx-auto grid h-[calc(139px+env(safe-area-inset-bottom,0px))] w-full max-w-phone shrink-0 grid-cols-3 items-start overflow-visible pb-[env(safe-area-inset-bottom,0px)] ${className}`.trim()}
       aria-label="Primary navigation"
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}

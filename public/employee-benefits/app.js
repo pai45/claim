@@ -5885,6 +5885,57 @@ window.addEventListener("storage", (e) => {
     syncPersonaToApp();
   }
 });
+/**
+ * Walkthrough support. The overlay itself is drawn by the host in React; this
+ * side only reports where a section is and reports taps on it, since neither
+ * geometry nor pointer events cross the iframe boundary on their own.
+ *
+ * Scroll is locked while a step is active so the reported rect stays valid —
+ * streaming rects on every scroll event lags the content by a frame. The class
+ * is deliberately not `is-overlay-open`, which the host watches to hide the
+ * shared bottom nav.
+ */
+let walkthroughKey = null;
+
+function walkthroughTarget(key) {
+  return document.querySelector(`[data-walkthrough="${key}"]`);
+}
+
+function measureWalkthroughTarget(key) {
+  const target = walkthroughTarget(key);
+  if (!target || target.hidden || target.offsetParent === null) {
+    return { type: "employee-benefits:walkthrough-rect", key, found: false };
+  }
+  const { top, left, width, height } = target.getBoundingClientRect();
+  return {
+    type: "employee-benefits:walkthrough-rect",
+    key,
+    found: true,
+    rect: { top, left, width, height },
+  };
+}
+
+function replyToWalkthrough(payload) {
+  window.parent.postMessage(payload, window.location.origin);
+}
+
+// Capture phase so the tap is recorded before the section's own handler runs
+// and, in some cases, navigates the host away entirely. `click` rather than
+// `pointerdown`, so scrolling with a finger on the target is not a tap.
+document.addEventListener(
+  "click",
+  (event) => {
+    if (!walkthroughKey) return;
+    const target = walkthroughTarget(walkthroughKey);
+    if (!target || !target.contains(event.target)) return;
+    replyToWalkthrough({
+      type: "employee-benefits:walkthrough-tapped",
+      key: walkthroughKey,
+    });
+  },
+  true,
+);
+
 window.addEventListener("message", (e) => {
   if (e.data?.type === "employee-benefits:sync-persona") {
     syncPersonaToApp(e.data.persona);
@@ -5895,6 +5946,33 @@ window.addEventListener("message", (e) => {
       e.data.transactions,
       e.data.walletTransactions,
     );
+  }
+  if (e.data?.type === "employee-benefits:walkthrough-measure") {
+    const key = e.data.key;
+    const target = walkthroughTarget(key);
+    if (!target || target.hidden || target.offsetParent === null) {
+      walkthroughKey = null;
+      document.body.classList.remove("is-walkthrough-open");
+      replyToWalkthrough({
+        type: "employee-benefits:walkthrough-rect",
+        key,
+        found: false,
+      });
+      return;
+    }
+    walkthroughKey = key;
+    // Unlock first so the scroll can actually happen, then re-lock once it has
+    // settled and the rect is final.
+    document.body.classList.remove("is-walkthrough-open");
+    target.scrollIntoView({ block: "center", behavior: "auto" });
+    window.requestAnimationFrame(() => {
+      document.body.classList.add("is-walkthrough-open");
+      replyToWalkthrough(measureWalkthroughTarget(key));
+    });
+  }
+  if (e.data?.type === "employee-benefits:walkthrough-end") {
+    walkthroughKey = null;
+    document.body.classList.remove("is-walkthrough-open");
   }
 });
 if (window.location.hash === "#claims") openClaimsAssistant();

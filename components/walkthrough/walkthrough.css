@@ -1,0 +1,99 @@
+.walkthrough-root {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  /* Transparent or not, an element with pointer events intercepts taps. The
+     root must stay inert so the spotlight hole reaches what is underneath;
+     only the scrim panels and the caption card opt back in. */
+  pointer-events: none;
+}
+
+/*
+ * Dimming and hit-testing are split across two layers, because neither
+ * technique can do both jobs.
+ *
+ * These four panels frame the spotlight and exist purely to swallow taps — a
+ * `box-shadow` spread is paint only and would leave the whole screen tappable.
+ * They are transparent: being rectangles, painting them would leave a bright
+ * wedge at each rounded corner of the cutout.
+ */
+.walkthrough-scrim {
+  position: absolute;
+  pointer-events: auto;
+}
+
+@keyframes walkthrough-fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+ * The paint layer. Its outermost shadow is the scrim: an enormous spread from a
+ * rounded element cuts the hole with the same 12px radius as the ring, which is
+ * what four rectangular panels cannot do. Shadows paint first-on-top, so the
+ * focus ring stays above the dim.
+ */
+.walkthrough-spotlight {
+  position: absolute;
+  /* Tighter than the 16px card radius so the cutout reads as a crisp frame
+     around the section rather than echoing the rounding of the cards inside it. */
+  border-radius: var(--radius-control, 12px);
+  pointer-events: none;
+  opacity: 0;
+  animation: walkthrough-fade-in 260ms ease forwards;
+  /* Ring is the app's canonical focus treatment, from the :focus-visible rules.
+     Scrim is --color-pine-dark, heavier than the app's 40% modal scrim: it sits
+     over a pale green screen and has to make the spotlight read as the only lit
+     thing, not merely tint what is behind it. */
+  box-shadow:
+    0 0 0 1px #005656,
+    0 0 0 7px rgba(0, 86, 86, 0.12),
+    0 0 0 9999px rgba(0, 52, 52, 0.62);
+  transition:
+    top 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    left 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Lime halo — the brand accent (--brand-300 in the source app), so the
+   walkthrough reads as its own layer without leaving the palette. */
+.walkthrough-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: walkthrough-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes walkthrough-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(208, 242, 85, 0.32);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(208, 242, 85, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(208, 242, 85, 0);
+  }
+}
+
+.walkthrough-card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .walkthrough-spotlight {
+    animation: none;
+    opacity: 1;
+    transition: none;
+  }
+
+  .walkthrough-spotlight::after {
+    animation: none;
+  }
+}

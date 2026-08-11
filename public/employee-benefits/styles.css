@@ -102,6 +102,14 @@ body.is-overlay-open {
   overscroll-behavior: none;
 }
 
+/* Freezes the page while a walkthrough step is spotlit, so the rect reported to
+   the host stays accurate. Kept separate from `is-overlay-open`, which the host
+   treats as a signal to hide the shared bottom nav. */
+body.is-walkthrough-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -9852,6 +9860,14 @@ body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy-icon {
   font-size: 13px;
   line-height: 20px;
   font-weight: var(--fw-regular);
+}
+
+.upi-copy-create .upi-create-message {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
 }
 
 .upi-id-row {

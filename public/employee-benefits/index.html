@@ -291,6 +291,7 @@
           class="balance-card"
           aria-labelledby="balance-title"
           data-pluspay-hide
+          data-walkthrough="wallet-card"
         >
           <div class="card-strip">
             <span class="hero-card-id">
@@ -436,6 +437,7 @@
           data-scan-pay-open
           data-upi-created-only
           data-pluspay-hide
+          data-walkthrough="upi-scan"
           hidden
         >
           <span class="home-scan-icon" aria-hidden="true">
@@ -451,7 +453,8 @@
           class="upi-card upi-card-create"
           type="button"
           data-upi-setup-open
-          aria-label="Create UPI ID to link credit line to UPI for seamless payments"
+          data-walkthrough="upi-create"
+          aria-label="Link EB+ to UPI for seamless payments"
         >
           <span
             class="upi-brand-badge upi-brand-badge-create"
@@ -460,8 +463,7 @@
             <img src="../assets/payments/upi-id.svg" alt="" />
           </span>
           <span class="upi-copy upi-copy-create">
-            <small>UPI ID</small>
-            <strong>Create your UPI ID</strong>
+            <strong class="upi-create-message">Link EB+ to UPI for seamless payments</strong>
           </span>
           <span class="upi-card-cta" aria-hidden="true">Create UPI ID</span>
         </button>
@@ -470,6 +472,7 @@
           type="button"
           data-upi-id-card
           data-upi-settings-open
+          data-walkthrough="upi-id"
           aria-label="Open UPI settings"
         >
           <span class="upi-brand-badge" aria-hidden="true">
@@ -526,6 +529,7 @@
         class="wallet-experience-panel"
         aria-label="Wallets"
         data-pluspay-hide
+        data-walkthrough="wallets"
       >
         <div class="section-heading compact-heading">
           <div>
@@ -625,6 +629,7 @@
         class="utility-panel"
         aria-label="Wallet tools"
         data-pluspay-hide
+        data-walkthrough="quick-actions"
       >
         <div class="section-heading compact-heading">
           <h2>Quick Actions</h2>

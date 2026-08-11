@@ -223,7 +223,7 @@ function PlusPayTransactionsScreen() {
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
         <div className="flex flex-col gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <NativeMonthPicker
               value={selectedMonth}
               onChange={setSelectedMonth}
@@ -232,7 +232,7 @@ function PlusPayTransactionsScreen() {
             >
               <CalendarIcon />
             </NativeMonthPicker>
-            <span className="type-body-secondary truncate font-bold">
+            <span className="type-body-secondary min-w-0 flex-1 truncate font-bold">
               {monthLabel}
             </span>
           </div>
@@ -287,7 +287,7 @@ function PlusPayTransactionsScreen() {
                       }`}
                     >
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
-                        <TransactionIcon icon={txn.icon} />
+                        <TransactionIcon icon={txn.icon} tone="success" />
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                         <h3 className="type-body truncate font-bold text-ink">
@@ -340,22 +340,24 @@ function TransactionsPanel({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2 overflow-visible">
+      <div className="flex flex-wrap items-center gap-2 overflow-visible">
         <WalletFilterDropdown
           selectedWallet={selectedWallet}
           onSelectWallet={onSelectWallet}
         />
-        <NativeMonthPicker
-          value={monthKey}
-          onChange={onSelectMonth}
-          label={`Choose transaction month, currently ${TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}. Available from April to August 2026.`}
-          className="h-11 w-11 shrink-0"
-        >
-          <CalendarIcon />
-        </NativeMonthPicker>
-        <span className="type-body-secondary truncate font-bold">
-          {TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}
-        </span>
+        <div className="flex min-w-[132px] flex-1 items-center gap-2">
+          <NativeMonthPicker
+            value={monthKey}
+            onChange={onSelectMonth}
+            label={`Choose transaction month, currently ${TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}. Available from April to August 2026.`}
+            className="h-11 w-11 shrink-0"
+          >
+            <CalendarIcon />
+          </NativeMonthPicker>
+          <span className="type-body-secondary min-w-0 truncate font-bold">
+            {TRANSACTION_MONTHS.find((month) => month.key === monthKey)?.label}
+          </span>
+        </div>
       </div>
 
       {totalTransactions === 0 ? (
@@ -396,9 +398,6 @@ function TransactionsPanel({
             <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
               {section.items.map((txn, index) => {
                 const isLast = index === section.items.length - 1;
-                const walletOption = WALLET_FILTER_OPTIONS.find(
-                  (option) => option.id === txn.wallet,
-                ) ?? WALLET_FILTER_OPTIONS[0];
                 return (
                   <Link
                     key={txn.id}
@@ -408,9 +407,7 @@ function TransactionsPanel({
                       !isLast ? "border-b border-border-line" : ""
                     }`}
                   >
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${walletOption.toneClass} ${walletOption.iconClass}`}
-                    >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint text-success">
                       <BenefitWalletIcon wallet={txn.wallet} />
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
