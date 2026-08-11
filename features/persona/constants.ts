@@ -33,7 +33,8 @@ export const RETURNING_PERSONA: PersonaConfig = {
   hasCompletedOnboarding: true,
   hasRegisteredVehicle: false,
   isCardActivated: true,
-  hasUpiId: true,
+  hasBenefitsUpiId: true,
+  hasPlusPayUpiId: true,
 };
 
 export const RAHUL_ONBOARDING_PERSONA: PersonaConfig = {
@@ -58,7 +59,8 @@ export const NEW_USER_PERSONA: PersonaConfig = {
   id: "new_user",
   label: "Brand New User",
   badge: "Fresh Start",
-  description: "Aarav Patel • 0 claims, 0 txns, 100% full funds, no setup done",
+  description:
+    "Aarav Patel • 0 claims, initial wallet top-ups, 100% full funds, no setup done",
   profile: {
     id: "new_user",
     name: "Aarav Patel",
@@ -78,11 +80,12 @@ export const NEW_USER_PERSONA: PersonaConfig = {
     defaultProduct: "ebPlus",
   },
   hasClaims: false,
-  hasTransactions: false,
+  hasTransactions: true,
   hasCompletedOnboarding: false,
   hasRegisteredVehicle: false,
   isCardActivated: false,
-  hasUpiId: false,
+  hasBenefitsUpiId: false,
+  hasPlusPayUpiId: false,
 };
 
 export const EBPLUS_ONLY_PERSONA: PersonaConfig = {
@@ -113,7 +116,8 @@ export const EBPLUS_ONLY_PERSONA: PersonaConfig = {
   hasCompletedOnboarding: true,
   hasRegisteredVehicle: false,
   isCardActivated: true,
-  hasUpiId: true,
+  hasBenefitsUpiId: true,
+  hasPlusPayUpiId: false,
 };
 
 export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
@@ -144,7 +148,8 @@ export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
   hasCompletedOnboarding: true,
   hasRegisteredVehicle: false,
   isCardActivated: true,
-  hasUpiId: true,
+  hasBenefitsUpiId: false,
+  hasPlusPayUpiId: true,
 };
 
 export const EBPLUS_NO_UPI_PERSONA: PersonaConfig = {
@@ -175,7 +180,8 @@ export const EBPLUS_NO_UPI_PERSONA: PersonaConfig = {
   hasCompletedOnboarding: true,
   hasRegisteredVehicle: false,
   isCardActivated: true,
-  hasUpiId: false,
+  hasBenefitsUpiId: false,
+  hasPlusPayUpiId: false,
 };
 
 export const PERSONAS: Record<PersonaId, PersonaConfig> = {
@@ -188,9 +194,9 @@ export const PERSONAS: Record<PersonaId, PersonaConfig> = {
 };
 
 export const PERSONA_OPTIONS: PersonaConfig[] = [
-  RETURNING_PERSONA,
   NEW_USER_PERSONA,
   PLUSPAY_ONLY_PERSONA,
+  RETURNING_PERSONA,
 ];
 
 export function getPersonaConfig(id: PersonaId): PersonaConfig {

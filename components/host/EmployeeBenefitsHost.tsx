@@ -352,7 +352,8 @@ export function EmployeeBenefitsHost() {
         defaultProduct: initialPlusPayMode ? "pluspay" : "ebPlus",
       },
       hasTransactions: persona.hasTransactions,
-      hasUpiId: persona.hasUpiId,
+      hasBenefitsUpiId: persona.hasBenefitsUpiId,
+      hasPlusPayUpiId: persona.hasPlusPayUpiId,
     };
     frameRef.current?.contentWindow?.postMessage(
       { type: "employee-benefits:sync-persona", persona: payload },
@@ -371,7 +372,8 @@ export function EmployeeBenefitsHost() {
         defaultProduct: plusPayMode ? "pluspay" : "ebPlus",
       },
       hasTransactions: persona.hasTransactions,
-      hasUpiId: persona.hasUpiId,
+      hasBenefitsUpiId: persona.hasBenefitsUpiId,
+      hasPlusPayUpiId: persona.hasPlusPayUpiId,
     };
     frameRef.current?.contentWindow?.postMessage(
       { type: "employee-benefits:sync-persona", persona: payload },

@@ -15,6 +15,8 @@ describe("effective persona access", () => {
     });
     expect(persona.access.defaultProduct).toBe("ebPlus");
     expect(persona.isCardActivated).toBe(true);
+    expect(persona.hasBenefitsUpiId).toBe(false);
+    expect(persona.hasPlusPayUpiId).toBe(true);
   });
 
   it("does not upgrade Rohan before completion or alter other personas", () => {

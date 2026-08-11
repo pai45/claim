@@ -121,9 +121,9 @@ describe("resetDemoJourney", () => {
 
   it.each([
     ["ebPlus_only", true],
-    ["pluspay_only", true],
+    ["pluspay_only", false],
     ["ebPlus_no_upi", false],
-  ] as const)("seeds ready persona %s with the correct UPI state", (id, hasUpi) => {
+  ] as const)("seeds ready persona %s with the correct EB+ UPI state", (id, hasUpi) => {
     resetDemoJourney(id, local, session);
 
     expect(local.getItem(PERSONA_STORAGE_KEY)).toBe(id);
@@ -138,5 +138,6 @@ describe("resetDemoJourney", () => {
     resetDemoJourney("pluspay_only", local, session);
 
     expect(local.getItem(EB_PLUS_ACTIVATION_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
   });
 });

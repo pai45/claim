@@ -43,7 +43,8 @@ export type PersonaConfig = {
   hasCompletedOnboarding: boolean;
   hasRegisteredVehicle: boolean;
   isCardActivated: boolean;
-  hasUpiId: boolean;
+  hasBenefitsUpiId: boolean;
+  hasPlusPayUpiId: boolean;
 };
 
 export type EmployeeBenefitsPersonaPayload = {
@@ -52,5 +53,6 @@ export type EmployeeBenefitsPersonaPayload = {
   initials: string;
   access: PersonaAccess;
   hasTransactions: boolean;
-  hasUpiId: boolean;
+  hasBenefitsUpiId: boolean;
+  hasPlusPayUpiId: boolean;
 };

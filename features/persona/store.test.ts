@@ -45,7 +45,7 @@ describe("persona store", () => {
       plusPay: false,
     });
     expect(getActivePersonaConfig(local).hasClaims).toBe(false);
-    expect(getActivePersonaConfig(local).hasTransactions).toBe(false);
+    expect(getActivePersonaConfig(local).hasTransactions).toBe(true);
   });
 
   it("keeps Rahul on Vishal's account state with fresh onboarding", () => {
@@ -66,7 +66,8 @@ describe("persona store", () => {
     expect(rahul.hasTransactions).toBe(true);
     expect(rahul.hasCompletedOnboarding).toBe(false);
     expect(rahul.isCardActivated).toBe(true);
-    expect(rahul.hasUpiId).toBe(true);
+    expect(rahul.hasBenefitsUpiId).toBe(true);
+    expect(rahul.hasPlusPayUpiId).toBe(true);
   });
 
   it("handles corrupted/invalid persona key by falling back to returning", () => {

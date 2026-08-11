@@ -9,14 +9,23 @@ describe("PersonaSelectionStep", () => {
       createElement(PersonaSelectionStep, { onSelect: vi.fn() }),
     );
 
-    for (const name of [
-      "Vishal Sharma",
+    const profileNames = [
       "Aarav Patel",
       "Rohan Mehta",
-    ]) {
+      "Vishal Sharma",
+    ];
+
+    for (const name of profileNames) {
       expect(markup).toContain(name);
     }
-    expect(markup).toContain("Brand New User · EB+ only");
+    expect(profileNames.map((name) => markup.indexOf(name))).toEqual(
+      [...profileNames]
+        .map((name) => markup.indexOf(name))
+        .sort((left, right) => left - right),
+    );
+    expect(markup).toContain("New user · EB+ only");
+    expect(markup).toContain("Existing user of Expense · New user EB+");
+    expect(markup).toContain("Returning user · EB+ &amp; Expense");
     expect(markup).not.toContain("Rahul Verma");
     expect(markup).not.toContain("Neha Kapoor");
     expect(markup).not.toContain("Kavya Iyer");

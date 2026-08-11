@@ -278,8 +278,9 @@ function transaction(seed: TransactionSeed): TransactionItem {
 /**
  * One canonical ledger powers Recent Transactions, wallet statements,
  * Transaction History, Transaction Details, and every analytics calculation.
- * Funding/opening-balance rows are intentionally not part of the visible
- * history; the only credit below is a real employee top-up.
+ * Returning-user funding/opening-balance rows are intentionally not part of
+ * the visible history. Brand-new users receive one visible initial top-up per
+ * wallet so their funded balances have a matching first ledger entry.
  */
 export const TRANSACTION_ITEMS: TransactionItem[] = [
   transaction({ id: "meal-08", merchant: "Zomato Payment", amount: 650, postedOn: "2026-08-28", wallet: "meal", icon: "food", category: "Dining", refId: "1277834728", paymentMethod: "UPI" }),
@@ -336,12 +337,37 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
   return dateOrder === 0 ? left.id.localeCompare(right.id) : dateOrder;
 });
 
+const NEW_USER_TOP_UP_TRANSACTIONS: TransactionItem[] = (
+  [
+    { wallet: "meal", icon: "food", refId: "NU10000001" },
+    { wallet: "fuel", icon: "fuel", refId: "NU10000002" },
+    { wallet: "misc", icon: "money", refId: "NU10000003" },
+    { wallet: "gift", icon: "gift", refId: "NU10000004" },
+  ] as const
+).map(({ wallet, icon, refId }) =>
+  transaction({
+    id: `new-user-${wallet}-top-up`,
+    merchant: "Top Up",
+    amount: 10000,
+    postedOn: "2026-08-01",
+    wallet,
+    icon,
+    category: "Wallet Top Up",
+    refId,
+    type: "credit",
+    paymentMethod: "Employer Allocation",
+  }),
+);
+
 export function getTransactionItems(
   personaId?: PersonaId,
   includePersisted = true,
 ): TransactionItem[] {
   const activePersona = personaId ?? getActivePersonaId();
-  const seeded = activePersona === "new_user" ? [] : TRANSACTION_ITEMS;
+  const seeded =
+    activePersona === "new_user"
+      ? NEW_USER_TOP_UP_TRANSACTIONS
+      : TRANSACTION_ITEMS;
   const added = includePersisted
     ? getPersonaFinancialDelta(activePersona).transactions
     : [];

@@ -11,8 +11,25 @@ import {
 } from "./constants";
 
 describe("persona transaction data", () => {
-  it("keeps a brand-new user transaction history empty", () => {
-    expect(getTransactionItems("new_user")).toEqual([]);
+  it("starts every brand-new user wallet with a 10,000 top-up", () => {
+    const items = getTransactionItems("new_user");
+
+    expect(items).toHaveLength(4);
+    expect(items.map((item) => item.wallet).sort()).toEqual([
+      "fuel",
+      "gift",
+      "meal",
+      "misc",
+    ]);
+    expect(
+      items.every(
+        (item) =>
+          item.merchant === "Top Up" &&
+          item.category === "Wallet Top Up" &&
+          item.amount === 10000 &&
+          item.type === "credit",
+      ),
+    ).toBe(true);
     expect(getTransaction("txn-amazon", "new_user")).toBeUndefined();
     expect(getAnalyticsData("new_user")).toMatchObject({
       totalSpent: 0,

@@ -8,12 +8,11 @@ type PersonaSelectionStepProps = {
   onSelect: (id: PersonaId) => void;
 };
 
-function accessLabel(id: PersonaId): string {
-  if (id === "new_user") return "EB+ only";
-  if (id === "ebPlus_only") return "EB+ & UPI";
-  if (id === "pluspay_only") return "PlusPay + UPI";
-  if (id === "ebPlus_no_upi") return "EB+ card only";
-  return "EB+ & PlusPay";
+function personaSubtitle(id: PersonaId): string {
+  if (id === "new_user") return "New user · EB+ only";
+  if (id === "pluspay_only") return "Existing user of Expense · New user EB+";
+  if (id === "returning") return "Returning user · EB+ & Expense";
+  return "";
 }
 
 export function PersonaSelectionStep({ onSelect }: PersonaSelectionStepProps) {
@@ -45,7 +44,7 @@ export function PersonaSelectionStep({ onSelect }: PersonaSelectionStepProps) {
                 {persona.profile.name}
               </span>
               <span className="type-body-secondary mt-0.5 block">
-                {persona.label} · {accessLabel(persona.id)}
+                {personaSubtitle(persona.id)}
               </span>
             </span>
             <span className="rounded-pill border border-border-line bg-surface px-2.5 py-1 text-caption font-bold text-pine">

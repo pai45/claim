@@ -36,4 +36,16 @@ describe("Rohan EB+ setup bridge", () => {
     expect(host).toContain("onExit={closeEbPlusSetup}");
     expect(host).toContain("onComplete={completeEbPlusSetup}");
   });
+
+  it("keeps Rohan's PlusPay UPI ID while requiring a new EB+ UPI ID", () => {
+    expect(host).toContain("hasBenefitsUpiId: persona.hasBenefitsUpiId");
+    expect(host).toContain("hasPlusPayUpiId: persona.hasPlusPayUpiId");
+    expect(sourceApp).toContain("function hasUpiIdForMode(isPluspay)");
+    expect(sourceApp).toMatch(
+      /if \(isPluspay\) return syncedPersona\.hasPlusPayUpiId;[\s\S]*syncedPersona\.hasBenefitsUpiId \|\| readUpiCreatedState\(\)/,
+    );
+    expect(sourceApp).toContain(
+      "applyUpiCreatedState(hasUpiIdForMode(isPluspay), isPluspay)",
+    );
+  });
 });

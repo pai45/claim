@@ -331,7 +331,8 @@ const personaDefinitions = {
       defaultProduct: "lens",
     },
     hasTransactions: true,
-    hasUpiId: true,
+    hasBenefitsUpiId: true,
+    hasPlusPayUpiId: true,
   },
   rahul_onboarding: {
     name: "Rahul Verma",
@@ -342,7 +343,8 @@ const personaDefinitions = {
       defaultProduct: "lens",
     },
     hasTransactions: true,
-    hasUpiId: true,
+    hasBenefitsUpiId: true,
+    hasPlusPayUpiId: true,
   },
   new_user: {
     name: "Aarav Patel",
@@ -352,8 +354,9 @@ const personaDefinitions = {
       upiEnabled: true,
       defaultProduct: "lens",
     },
-    hasTransactions: false,
-    hasUpiId: false,
+    hasTransactions: true,
+    hasBenefitsUpiId: false,
+    hasPlusPayUpiId: false,
   },
   ebPlus_only: {
     name: "Neha Kapoor",
@@ -364,7 +367,8 @@ const personaDefinitions = {
       defaultProduct: "lens",
     },
     hasTransactions: true,
-    hasUpiId: true,
+    hasBenefitsUpiId: true,
+    hasPlusPayUpiId: false,
   },
   pluspay_only: {
     name: "Rohan Mehta",
@@ -375,7 +379,8 @@ const personaDefinitions = {
       defaultProduct: "pluspay",
     },
     hasTransactions: true,
-    hasUpiId: true,
+    hasBenefitsUpiId: false,
+    hasPlusPayUpiId: true,
   },
   ebPlus_no_upi: {
     name: "Kavya Iyer",
@@ -386,7 +391,8 @@ const personaDefinitions = {
       defaultProduct: "lens",
     },
     hasTransactions: true,
-    hasUpiId: false,
+    hasBenefitsUpiId: false,
+    hasPlusPayUpiId: false,
   },
 };
 const personaFinancialState = {
@@ -1188,6 +1194,8 @@ const UPI_SETUP_STEPS = [
   },
 ];
 
+let syncedPersona = personaDefinitions.returning;
+
 function prefersReducedMotion() {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
@@ -1200,21 +1208,36 @@ function readUpiCreatedState() {
   }
 }
 
-function applyUpiCreatedState(isCreated) {
+function hasUpiIdForMode(isPluspay) {
+  if (!syncedPersona.access.upiEnabled) return false;
+  if (isPluspay) return syncedPersona.hasPlusPayUpiId;
+  return syncedPersona.hasBenefitsUpiId || readUpiCreatedState();
+}
+
+function applyUpiCreatedState(
+  isCreated,
+  isPluspay = document.body.classList.contains("is-pluspay"),
+) {
   document.body.classList.toggle("is-upi-created", isCreated);
 
   upiIdValues.forEach((value) => {
     if (isCreated) {
-      value.textContent = CREATED_UPI_ID;
+      const upiId = isPluspay
+        ? (value.dataset.pluspayText || CREATED_UPI_ID)
+        : CREATED_UPI_ID;
+      value.textContent = upiId;
       value.dataset.ebPlusText = CREATED_UPI_ID;
-      value.dataset.pluspayText = CREATED_UPI_ID;
     }
   });
 
   upiIdCards.forEach((card) => {
+    const upiId = isPluspay
+      ? (card.querySelector("[data-upi-id-value]")?.dataset.pluspayText ||
+        CREATED_UPI_ID)
+      : CREATED_UPI_ID;
     card.setAttribute(
       "aria-label",
-      isCreated ? `UPI ID ${CREATED_UPI_ID}` : "UPI settings",
+      isCreated ? `UPI ID ${upiId}` : "Create UPI ID",
     );
   });
 }
@@ -1346,7 +1369,7 @@ function completeUpiSetupFlow() {
   } catch {
     // Keep the current session usable if browser storage is unavailable.
   }
-  applyUpiCreatedState(true);
+  applyUpiCreatedState(true, false);
   closeUpiSetupFlow();
   showToast("UPI ID created");
 }
@@ -4222,10 +4245,6 @@ function createHistoryItem(item) {
   return article;
 }
 
-function isBrandNewPersona() {
-  return window.localStorage.getItem("eb-claims:active-persona") === "new_user";
-}
-
 function createEmptyTransactionState(message) {
   const notice = document.createElement("p");
   notice.className = "transaction-empty-state";
@@ -4237,14 +4256,6 @@ function renderWalletHistory() {
   if (!walletOverlayHistory) return;
 
   walletOverlayHistory.replaceChildren();
-  if (isBrandNewPersona()) {
-    walletOverlayHistory.append(
-      createEmptyTransactionState("No transactions yet for this wallet."),
-    );
-    if (walletOverlayViewAllHistory) walletOverlayViewAllHistory.hidden = true;
-    return;
-  }
-
   const history = Array.isArray(syncedWalletTransactions[activeWalletTone])
     ? syncedWalletTransactions[activeWalletTone]
     : syncedTransactionItems
@@ -4699,6 +4710,8 @@ function applyMode(isPluspay) {
       ? node.dataset.pluspayText
       : (node.dataset.ebPlusText ?? node.dataset.lensText ?? "");
   });
+
+  applyUpiCreatedState(hasUpiIdForMode(isPluspay), isPluspay);
 
   if (isPluspay) {
     closeCardOverlay();
@@ -5756,6 +5769,7 @@ window.addEventListener("keydown", (event) => {
 function syncPersonaToApp(payload) {
   const activePersona = window.localStorage.getItem("eb-claims:active-persona") || "returning";
   const persona = payload || personaDefinitions[activePersona] || personaDefinitions.returning;
+  syncedPersona = persona;
   const isNewUser = !persona.hasTransactions;
   const financialState = personaFinancialState[activePersona] || personaFinancialState.returning;
   const name = persona.name;
@@ -5790,10 +5804,6 @@ function syncPersonaToApp(payload) {
         : "Switch between EB+ and PlusPay",
     );
   }
-
-  applyUpiCreatedState(
-    access.upiEnabled && (persona.hasUpiId || readUpiCreatedState()),
-  );
 
   document.querySelectorAll("[data-no-upi-detail]").forEach((node) => {
     node.dataset.upiDetail ||= node.dataset.walletDetail || "";
@@ -5938,7 +5948,6 @@ function syncWalletBalancesToApp(wallets) {
 }
 
 applyMode(false);
-applyUpiCreatedState(readUpiCreatedState());
 syncPersonaToApp();
 window.addEventListener("storage", (e) => {
   if (e.key === "eb-claims:active-persona" || e.key === null) {

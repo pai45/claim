@@ -113,7 +113,7 @@ export function resetDemoJourney(
       local,
     );
     clearMpinLock(local);
-    if (persona.access.upiEnabled && persona.hasUpiId) {
+    if (persona.access.upiEnabled && persona.hasBenefitsUpiId) {
       try {
         local.setItem(UPI_CREATED_STORAGE_KEY, "true");
       } catch {
