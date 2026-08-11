@@ -54,10 +54,8 @@ export type PaymentPayee =
 export type ScanPayStep =
   | "scanner"
   | "upiEntry"
-  | "merchantScenarioPicker"
   | "confirmPayment"
   | "categoryPicker"
-  | "walletPicker"
   | "submitting"
   | "result"
   | "successReward"
@@ -148,17 +146,11 @@ export type ScanPayAction =
   | { type: "OPEN_UPI_ENTRY" }
   | { type: "SET_UPI_ID"; upiId: string }
   | { type: "VERIFY_UPI" }
-  | {
-      type: "SELECT_MERCHANT_SCENARIO";
-      merchantType: Exclude<ScanPayMerchantType, "unclassified">;
-    }
   | { type: "OPEN_FAQ"; returnStep?: ScanPayFaqReturnStep }
   | { type: "OPEN_CATEGORY_PICKER" }
   | { type: "SELECT_CATEGORY"; categoryId: ScanPayCategoryId }
   | { type: "SELECT_SUBCATEGORY"; subcategoryId: string }
   | { type: "CONFIRM_CATEGORY" }
-  | { type: "OPEN_WALLET_PICKER" }
-  | { type: "SELECT_WALLET"; walletId: ScanPayWalletId }
   | { type: "SET_AMOUNT"; amount: string }
   | { type: "TOUCH_AMOUNT" }
   | { type: "OPEN_NOTE" }

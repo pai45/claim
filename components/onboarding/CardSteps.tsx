@@ -414,10 +414,9 @@ export function ReadyStep({
   return (
     <>
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-6">
-        <div className="flex flex-col items-center text-center">
+        <div className="flex shrink-0 flex-col items-center text-center">
           <span
-            className="flex h-16 w-16 items-center justify-center rounded-full"
-            style={{ background: colors.success }}
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-success"
             aria-hidden="true"
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -436,46 +435,53 @@ export function ReadyStep({
         </div>
 
         <section
-          className="mt-5 overflow-hidden rounded-card p-card text-white shadow-card"
+          className="mt-4 shrink-0 overflow-hidden rounded-card p-card text-white shadow-card"
           style={{
             background: `linear-gradient(145deg, ${colors.pinePrimary} 0%, ${colors.pine} 60%, ${colors.pineDark} 100%)`,
           }}
         >
           <p className="text-caption font-bold tracking-wide">RuPay</p>
-          <p className="mt-5 type-field-label text-white/70">Card Number</p>
-          <p className="mt-1 font-display text-title-sm tracking-wider">
+          <p className="mt-4 type-field-label text-white/70">Card Number</p>
+          <p className="mt-1 whitespace-nowrap font-display text-title-sm tracking-wider">
             XXXX XXXX XXXX XXXX
           </p>
-          <div className="mt-5 flex justify-between gap-3">
-            <div>
+          <div className="mt-4 flex justify-between gap-3">
+            <div className="min-w-0">
               <p className="type-field-label text-white/70">Card Holder</p>
-              <p className="mt-1 text-body-sm font-bold">{name || "VISHAL SHARMA"}</p>
+              <p className="mt-1 truncate text-body-sm font-bold">
+                {name || "VISHAL SHARMA"}
+              </p>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <p className="type-field-label text-white/70">Expires</p>
               <p className="mt-1 text-body-sm font-bold">xx/xx</p>
             </div>
           </div>
         </section>
 
-        <h2 className="type-body mt-5 font-bold text-ink">Linked Wallets</h2>
-        <div className="mt-2 grid grid-cols-2 gap-2 rounded-card border border-border-line bg-white p-3 shadow-card">
+        <h2 className="type-body mt-4 shrink-0 font-bold text-ink">Linked Wallets</h2>
+        <div className="mt-2 grid shrink-0 grid-cols-2 gap-2 rounded-card border border-border-line bg-white p-3 shadow-card">
           {FEATURE_WALLETS.map((wallet) => (
             <div
               key={wallet.id}
-              className="flex items-center gap-2 rounded-control px-2 py-2"
+              className="flex min-w-0 items-center gap-2 rounded-control px-2 py-2"
               style={{ background: wallet.bg }}
             >
               <WalletGlyph id={wallet.id} color={wallet.ink} />
-              <span className="text-caption font-bold" style={{ color: wallet.ink }}>
+              <span
+                className="min-w-0 text-caption font-bold"
+                style={{ color: wallet.ink }}
+              >
                 {wallet.title.replace(" Wallet", "")}
               </span>
             </div>
           ))}
         </div>
 
-        <h2 className="type-body mt-5 font-bold text-ink">Enable Transactions</h2>
-        <div className="mt-2 overflow-hidden rounded-card border border-border-line bg-white shadow-card">
+        <h2 className="type-body mt-4 shrink-0 font-bold text-ink">
+          Enable Transactions
+        </h2>
+        <div className="mt-2 shrink-0 overflow-hidden rounded-card border border-border-line bg-white shadow-card">
           <ToggleRow
             label="Online Transactions"
             checked={state.onlineTransactions}

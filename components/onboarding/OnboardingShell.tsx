@@ -11,6 +11,11 @@ import {
   onboardingReducer,
 } from "@/features/onboarding/machine";
 import {
+  createEbPlusActivationState,
+  loadEbPlusActivationState,
+  saveEbPlusActivationState,
+} from "@/features/onboarding/ebPlusActivation";
+import {
   loadOnboardingState,
   saveOnboardingState,
 } from "@/features/onboarding/storage";
@@ -36,11 +41,26 @@ import {
   KycProgressOverlay,
 } from "./KycSteps";
 
-export function OnboardingShell() {
+export type OnboardingJourney = "initial" | "eb-plus-activation";
+
+type OnboardingShellProps = {
+  journey?: OnboardingJourney;
+  onExit?: () => void;
+  onComplete?: () => void;
+};
+
+export function OnboardingShell({
+  journey = "initial",
+  onExit,
+  onComplete,
+}: OnboardingShellProps = {}) {
   const [state, dispatch] = useReducer(
     onboardingReducer,
-    undefined,
-    () => createInitialOnboardingState(),
+    journey,
+    (activeJourney) =>
+      activeJourney === "eb-plus-activation"
+        ? createEbPlusActivationState()
+        : createInitialOnboardingState(),
   );
   const [hydrated, setHydrated] = useState(false);
   const [kycProgressOpen, setKycProgressOpen] = useState(false);
@@ -49,27 +69,43 @@ export function OnboardingShell() {
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      dispatch({ type: "hydrate", state: loadOnboardingState() });
+      dispatch({
+        type: "hydrate",
+        state:
+          journey === "eb-plus-activation"
+            ? loadEbPlusActivationState()
+            : loadOnboardingState(),
+      });
       setHydrated(true);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, []);
+  }, [journey]);
 
   useEffect(() => {
     if (!hydrated) return;
-    saveOnboardingState(state);
-  }, [state, hydrated]);
+    if (journey === "eb-plus-activation") {
+      saveEbPlusActivationState(state);
+    } else {
+      saveOnboardingState(state);
+    }
+  }, [state, hydrated, journey]);
 
   // Complete KYC from status, not from the modal staying open — dismissing
   // "OK" must not cancel the demo auto-approve timer.
   useEffect(() => {
-    if (!hydrated || state.kycStatus !== "in_progress") return;
+    if (
+      journey === "eb-plus-activation" ||
+      !hydrated ||
+      state.kycStatus !== "in_progress"
+    ) {
+      return;
+    }
     const timer = window.setTimeout(() => {
       setKycProgressOpen(false);
       dispatch({ type: "kyc-complete" });
     }, KYC_AUTO_COMPLETE_MS);
     return () => window.clearTimeout(timer);
-  }, [hydrated, state.kycStatus]);
+  }, [hydrated, journey, state.kycStatus]);
 
   // The VKYC page runs in another browsing context, so coming back here is the
   // only signal that it is over. When it ran in a tab of this same browser it
@@ -78,7 +114,13 @@ export function OnboardingShell() {
   // shell's browser, or Chrome from an iOS home-screen app — the flag is
   // written to storage this app cannot read, so returning has to be enough.
   useEffect(() => {
-    if (!hydrated || state.kycStatus !== "awaiting_return") return;
+    if (
+      journey === "eb-plus-activation" ||
+      !hydrated ||
+      state.kycStatus !== "awaiting_return"
+    ) {
+      return;
+    }
     const flagCanCross = handoffFlagCanCross();
     const startedHere = handoffStartedHereRef.current;
     const handoffAt = Date.now();
@@ -118,7 +160,7 @@ export function OnboardingShell() {
       window.removeEventListener("focus", onEvent);
       window.removeEventListener("pageshow", onEvent);
     };
-  }, [hydrated, state.kycStatus]);
+  }, [hydrated, journey, state.kycStatus]);
 
   if (!hydrated) {
     return <div className="h-dvh w-full bg-surface" aria-hidden="true" />;
@@ -133,7 +175,14 @@ export function OnboardingShell() {
       {state.step === "hub" ? (
         <HubStep
           state={state}
-          onBack={() => dispatch({ type: "go", step: "intro" })}
+          journey={journey}
+          onBack={() => {
+            if (journey === "eb-plus-activation") {
+              onExit?.();
+              return;
+            }
+            dispatch({ type: "go", step: "intro" });
+          }}
           onOpenIdentity={() =>
             dispatch({ type: "go", step: "identity-email" })
           }
@@ -168,7 +217,7 @@ export function OnboardingShell() {
         />
       ) : null}
 
-      {state.step === "kyc-intro" ? (
+      {journey === "initial" && state.step === "kyc-intro" ? (
         <KycIntroStep
           awaitingReturn={state.kycStatus === "awaiting_return"}
           onStart={() => {
@@ -185,7 +234,7 @@ export function OnboardingShell() {
         />
       ) : null}
 
-      {state.step === "kyc-completed" ? (
+      {journey === "initial" && state.step === "kyc-completed" ? (
         <KycCompletedStep
           onContinue={() => dispatch({ type: "go", step: "hub" })}
         />
@@ -237,14 +286,27 @@ export function OnboardingShell() {
             dispatch({ type: "set-online-tx", value })
           }
           onToggleTap={(value) => dispatch({ type: "set-tap-to-pay", value })}
-          onFinish={() => dispatch({ type: "finish" })}
+          onFinish={() => {
+            if (journey === "eb-plus-activation") {
+              const completedState = onboardingReducer(state, {
+                type: "finish",
+              });
+              saveEbPlusActivationState(completedState);
+              dispatch({ type: "hydrate", state: completedState });
+              onComplete?.();
+              return;
+            }
+            dispatch({ type: "finish" });
+          }}
         />
       ) : null}
 
-      <KycProgressOverlay
-        open={kycProgressOpen}
-        onDismiss={() => setKycProgressOpen(false)}
-      />
+      {journey === "initial" ? (
+        <KycProgressOverlay
+          open={kycProgressOpen}
+          onDismiss={() => setKycProgressOpen(false)}
+        />
+      ) : null}
     </AppShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { FEATURE_WALLETS } from "@/features/onboarding/constants";
 import { withBasePath } from "@/lib/basePath";
 import { PrimaryFooter } from "./PrimaryFooter";
@@ -12,6 +13,8 @@ type IntroStepProps = {
 };
 
 export function IntroStep({ onContinue }: IntroStepProps) {
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(true);
+
   return (
     <>
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
@@ -68,7 +71,50 @@ export function IntroStep({ onContinue }: IntroStepProps) {
           ))}
         </ul>
       </main>
-      <PrimaryFooter label="Activate Benefits Program" onClick={onContinue} />
+      <PrimaryFooter
+        label="Activate Benefits Program"
+        onClick={onContinue}
+        disabled={!hasAcceptedTerms}
+        secondary={
+          <label className="mb-3 flex min-h-11 cursor-pointer items-start gap-3 text-body-sm leading-5 text-ink">
+            <input
+              type="checkbox"
+              checked={hasAcceptedTerms}
+              onChange={(event) => setHasAcceptedTerms(event.target.checked)}
+              className="peer sr-only"
+            />
+            <span
+              aria-hidden="true"
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-control border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-pine-primary ${
+                hasAcceptedTerms
+                  ? "border-pine-primary bg-pine-primary text-white"
+                  : "border-input-border bg-white text-transparent"
+              }`}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-3 w-3"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m5 12 4 4L19 6" />
+              </svg>
+            </span>
+            <span>
+              I agree to the{" "}
+              <span className="font-bold text-pine-primary">
+                Infosys Terms and Conditions
+              </span>{" "}
+              and{" "}
+              <span className="font-bold text-pine-primary">Privacy Policy</span>{" "}
+              for my Employee Benefits Card.
+            </span>
+          </label>
+        }
+      />
     </>
   );
 }

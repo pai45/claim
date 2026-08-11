@@ -9,6 +9,7 @@ type PersonaSelectionStepProps = {
 };
 
 function accessLabel(id: PersonaId): string {
+  if (id === "new_user") return "EB+ only";
   if (id === "ebPlus_only") return "EB+ & UPI";
   if (id === "pluspay_only") return "PlusPay + UPI";
   if (id === "ebPlus_no_upi") return "EB+ card only";

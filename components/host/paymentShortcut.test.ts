@@ -10,20 +10,52 @@ const sourceApp = readFileSync(
   join(process.cwd(), "public/employee-benefits/app.js"),
   "utf8",
 );
+const styles = readFileSync(
+  join(process.cwd(), "public/employee-benefits/styles.css"),
+  "utf8",
+);
 const host = readFileSync(
   join(process.cwd(), "components/host/EmployeeBenefitsHost.tsx"),
   "utf8",
 );
 
-describe("Pay to Anyone bridge", () => {
-  it("replaces the EB+ Tap & Pay shortcut with a UPI-aware send action", () => {
+describe("EB+ home payment actions", () => {
+  it("groups Scan QR code and the created UPI ID card in one home row", () => {
+    expect(html).not.toContain('class="payment-shortcuts"');
     expect(html).toMatch(
-      /data-send-money-open[\s\S]*data-upi-created-only[\s\S]*send-money\.svg[\s\S]*Pay to<br \/>Anyone/,
+      /class="upi-panel"[\s\S]*class="home-scan-card"[\s\S]*data-scan-pay-open[\s\S]*Scan<br \/>QR code[\s\S]*class="upi-card upi-card-id"/,
     );
-    expect(html.match(/assets\/payments\/send-money\.svg/g)).toHaveLength(2);
+    expect(styles).toMatch(
+      /body:not\(\.is-pluspay\)\.is-upi-created \.upi-panel[\s\S]*grid-template-columns: minmax\(0, 0\.8fr\) minmax\(0, 1\.2fr\)/,
+    );
+    expect(html).toContain("UPI ID:");
+    expect(sourceApp).toContain('const CREATED_UPI_ID = "8646721579@pinelabs"');
+    expect(styles).toMatch(
+      /\.home-scan-card strong[\s\S]*font-size: 14px[\s\S]*white-space: nowrap/,
+    );
+    expect(styles).toMatch(
+      /@media \(max-width: 370px\)[\s\S]*body:not\(\.is-pluspay\)\.is-upi-created \.upi-panel[\s\S]*gap: 8px/,
+    );
   });
 
-  it("sends and preserves the active benefits or PlusPay mode", () => {
+  it("moves Bank Transfer and the renamed UPI payment action into Reimbursement Wallet", () => {
+    expect(html).not.toContain("Pay to<br />Anyone");
+    expect(html).toMatch(
+      /data-reimbursement-actions[\s\S]*data-bank-transfer-open[\s\S]*Bank<br \/>Transfer[\s\S]*data-send-money-open[\s\S]*data-upi-created-only[\s\S]*Pay<br \/>UPI ID/,
+    );
+    expect(html.match(/assets\/payments\/send-money\.svg/g)).toHaveLength(2);
+    expect(sourceApp).toContain(
+      'reimbursementActions.hidden = walletTone !== "misc"',
+    );
+    expect(styles).toMatch(
+      /\.reimbursement-actions \{[\s\S]*grid-template-columns: minmax\(0, 1fr\)/,
+    );
+    expect(styles).toMatch(
+      /body\.is-upi-created \.reimbursement-actions[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+  });
+
+  it("preserves the active benefits or PlusPay mode when sending", () => {
     expect(sourceApp).toContain('type: "employee-benefits:open-send-money"');
     expect(sourceApp).toMatch(/is-pluspay[\s\S]*\? "pluspay"[\s\S]*: "benefits"/);
     expect(host).toContain("/send-money/?mode=${mode}");

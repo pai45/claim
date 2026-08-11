@@ -7,6 +7,11 @@ import {
   subscribeToPersona,
 } from "./store";
 import { DEFAULT_PERSONA_ID, getPersonaConfig } from "./constants";
+import {
+  isEbPlusActivationComplete,
+  subscribeToEbPlusActivation,
+} from "@/features/onboarding/ebPlusActivation";
+import { resolveEffectivePersona } from "./effective";
 import type { PersonaConfig, PersonaId } from "./types";
 
 export function useActivePersona(): {
@@ -19,6 +24,11 @@ export function useActivePersona(): {
     getActivePersonaId,
     () => DEFAULT_PERSONA_ID,
   );
+  const ebPlusActivated = useSyncExternalStore(
+    subscribeToEbPlusActivation,
+    isEbPlusActivationComplete,
+    () => false,
+  );
 
   function setPersonaId(id: PersonaId) {
     setActivePersonaId(id);
@@ -26,7 +36,10 @@ export function useActivePersona(): {
 
   return {
     personaId,
-    persona: getPersonaConfig(personaId),
+    persona: resolveEffectivePersona(
+      getPersonaConfig(personaId),
+      ebPlusActivated,
+    ),
     setPersonaId,
   };
 }

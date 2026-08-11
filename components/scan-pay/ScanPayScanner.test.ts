@@ -50,6 +50,28 @@ describe("ScanPayScanner", () => {
     expect(markup).toContain("is-torch-enabled");
     expect(markup).toContain("scan-pay-focus-window is-detected");
     expect(markup).toMatch(/scan-pay-beam[^\"]*is-detected/);
-    expect(markup).toContain("QR code detected");
+    expect(markup).toContain("Meal merchant detected");
+  });
+
+  it.each([
+    ["meal", "Meal merchant detected"],
+    ["fuel", "Fuel merchant detected"],
+    ["luxury", "Luxury merchant detected"],
+    ["unsupported", "Unsupported merchant detected"],
+  ] as const)("announces the %s merchant type", (merchantType, message) => {
+    const markup = renderToStaticMarkup(
+      createElement(ScanPayScanner, {
+        state: createInitialScanPayState(
+          "success",
+          "benefits",
+          merchantType,
+        ),
+        dispatch: vi.fn(),
+        onClose: vi.fn(),
+        detected: true,
+      }),
+    );
+
+    expect(markup).toContain(message);
   });
 });

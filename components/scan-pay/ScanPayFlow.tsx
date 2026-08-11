@@ -2,7 +2,6 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { PaymentCheckoutFlow } from "@/components/scan-pay/PaymentCheckoutFlow";
-import { ScanPayMerchantScenarioSheet } from "@/components/scan-pay/ScanPayMerchantScenarioSheet";
 import { ScanPayScanner } from "@/components/scan-pay/ScanPayScanner";
 import { createInitialScanPayState, scanPayReducer } from "@/features/scan-pay/machine";
 import type { ScanPayFlowProps } from "@/features/scan-pay/types";
@@ -56,11 +55,7 @@ export function ScanPayFlow({
   if (!open) return null;
 
   let content;
-  if (
-    state.step === "scanner" ||
-    state.step === "upiEntry" ||
-    state.step === "merchantScenarioPicker"
-  ) {
+  if (state.step === "scanner" || state.step === "upiEntry") {
     content = (
       <div className="relative h-full">
         <ScanPayScanner
@@ -70,7 +65,6 @@ export function ScanPayFlow({
           onUpiEntryClose={launch.kind === "upi-entry" ? onClose : undefined}
           detected={scannerDetected && !state.qrErrorVisible}
         />
-        <ScanPayMerchantScenarioSheet state={state} dispatch={dispatch} />
       </div>
     );
   } else {

@@ -39,6 +39,49 @@ export const SCAN_PAY_MERCHANTS: Record<
   },
 };
 
+export const SCAN_PAY_MERCHANT_ROTATION = [
+  "meal",
+  "fuel",
+  "luxury",
+  "unsupported",
+] as const satisfies readonly Exclude<
+  ScanPayMerchantType,
+  "unclassified"
+>[];
+
+export function resolveScanPayMerchantSelection(
+  value: string | null,
+  rotationIndex: number,
+): {
+  merchantType: Exclude<ScanPayMerchantType, "unclassified">;
+  nextRotationIndex: number;
+} {
+  if (value !== null) {
+    return {
+      merchantType: resolveScanPayMerchantType(value),
+      nextRotationIndex: rotationIndex,
+    };
+  }
+
+  const normalizedIndex =
+    ((rotationIndex % SCAN_PAY_MERCHANT_ROTATION.length) +
+      SCAN_PAY_MERCHANT_ROTATION.length) %
+    SCAN_PAY_MERCHANT_ROTATION.length;
+
+  return {
+    merchantType: SCAN_PAY_MERCHANT_ROTATION[normalizedIndex],
+    nextRotationIndex: rotationIndex + 1,
+  };
+}
+
+export function merchantDetectedLabel(type: ScanPayMerchantType): string {
+  if (type === "meal") return "Meal merchant detected";
+  if (type === "fuel") return "Fuel merchant detected";
+  if (type === "luxury") return "Luxury merchant detected";
+  if (type === "unsupported") return "Unsupported merchant detected";
+  return "Merchant detected";
+}
+
 export const SCAN_PAY_CATEGORIES: readonly ScanPayCategory[] = [
   { id: "food", label: "Food & Drinks", shortLabel: "Food" },
   { id: "flights", label: "Flights", shortLabel: "Flights" },

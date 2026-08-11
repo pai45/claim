@@ -40,6 +40,10 @@ describe("persona store", () => {
     expect(getActivePersonaId(local)).toBe("new_user");
     expect(getActivePersonaConfig(local).id).toBe("new_user");
     expect(getActivePersonaConfig(local).profile.name).toBe("Aarav Patel");
+    expect(getActivePersonaConfig(local).access.products).toEqual({
+      ebPlus: true,
+      plusPay: false,
+    });
     expect(getActivePersonaConfig(local).hasClaims).toBe(false);
     expect(getActivePersonaConfig(local).hasTransactions).toBe(false);
   });

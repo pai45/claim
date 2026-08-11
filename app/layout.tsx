@@ -79,8 +79,10 @@ export default function RootLayout({
       <body
         className={`${lato.variable} ${ppTelegraf.variable} ${lato.className} antialiased`}
       >
-        {children}
-        <AddToHomeScreenPrompt />
+        <div className="desktop-mobile-frame">
+          {children}
+          <AddToHomeScreenPrompt />
+        </div>
         <ServiceWorkerRegistrar />
       </body>
     </html>

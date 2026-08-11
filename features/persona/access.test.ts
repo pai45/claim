@@ -8,7 +8,7 @@ import { hasPersonaAccess } from "@/components/shared/PersonaAccessGate";
 import { getAllowedUpiTabs } from "@/components/upi-settings/UpiSettingsScreen";
 
 describe("persona product access", () => {
-  it.each(["returning", "new_user", "pluspay_only"] as const)(
+  it.each(["returning", "pluspay_only"] as const)(
     "enables PlusPay profile actions for %s",
     (id) => {
       const persona = getPersonaConfig(id);
@@ -17,7 +17,7 @@ describe("persona product access", () => {
     },
   );
 
-  it.each(["ebPlus_only", "ebPlus_no_upi"] as const)(
+  it.each(["new_user", "ebPlus_only", "ebPlus_no_upi"] as const)(
     "removes PlusPay profile actions for %s",
     (id) => {
       const persona = getPersonaConfig(id);

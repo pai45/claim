@@ -98,8 +98,7 @@ export function PaymentCheckoutFlow({
   let content = null;
   if (
     state.step === "confirmPayment" ||
-    state.step === "categoryPicker" ||
-    state.step === "walletPicker"
+    state.step === "categoryPicker"
   ) {
     content = (
       <div className="h-full">

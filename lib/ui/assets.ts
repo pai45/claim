@@ -9,6 +9,8 @@ export const BRAND_ASSETS = {
   plusPay: "/assets/login/pluspay-logo.svg",
   /** Supplied transparent artwork used in the PlusPay home hero. */
   plusPayHero: "/assets/pluspay/hero-wallet.png",
+  /** Supplied grid illustration used by Rohan's EB+ setup invitation. */
+  ebPlusSetup: "/assets/pluspay/eb-setup-illustration.svg",
   /** Animated scanner used by the PlusPay center navigation action. */
   scanPay: "/assets/scan.gif",
   /** Hero art for the MPIN intro screen; falls back to a padlock glyph. */
@@ -20,6 +22,7 @@ export const UI_ICONS = {
   send: "/assets/icons/send.svg",
   menu: "/assets/icons/menu.svg",
   card: "/assets/icons/card.svg",
+  rupay: "/employee-benefits/assets/icons/rupay-logo.svg",
   claimsDashboard: "/assets/icons/claims-dashboard.svg",
   policyDetails: "/assets/icons/policy-details.svg",
   claimHistory: "/assets/icons/claim-history.svg",

@@ -294,13 +294,18 @@
         >
           <div class="card-strip">
             <span class="hero-card-id">
-              <span
-                class="category-title"
-                data-lens-text="Rupay Card"
-                data-pluspay-text="Pluspay"
-                >Rupay Card</span
+              <strong class="hero-card-name" data-hero-card-persona
+                >VISHAL SHARMA</strong
               >
-              <small>xxxx xxxx xxxx 1234</small>
+              <span class="hero-card-number">
+                <img
+                  class="hero-card-rupay"
+                  src="./assets/icons/rupay-logo.svg"
+                  alt="RuPay"
+                />
+                <span class="hero-card-divider" aria-hidden="true"></span>
+                <small>**** **** **** 1234</small>
+              </span>
             </span>
             <span
               class="status-pill"
@@ -391,45 +396,6 @@
       </section>
 
       <section
-        class="payment-shortcuts"
-        aria-label="Payment shortcuts"
-        data-pluspay-hide
-      >
-        <button
-          class="payment-shortcut"
-          type="button"
-          data-scan-pay-open
-          data-upi-created-only
-        >
-          <span class="payment-shortcut-icon" aria-hidden="true">
-            <svg><use href="#icon-scan" /></svg>
-          </span>
-          <strong>Scan<br />QR</strong>
-        </button>
-        <button
-          class="payment-shortcut"
-          type="button"
-          data-bank-transfer-open
-        >
-          <span class="payment-shortcut-icon" aria-hidden="true">
-            <svg><use href="#icon-bank" /></svg>
-          </span>
-          <strong><span>Bank</span> <span>Transfer</span></strong>
-        </button>
-        <button
-          class="payment-shortcut"
-          type="button"
-          data-send-money-open
-          data-upi-created-only
-        >
-          <span class="payment-shortcut-icon" aria-hidden="true">
-            <img src="../assets/payments/send-money.svg" alt="" />
-          </span>
-          <strong>Pay to<br />Anyone</strong>
-        </button>
-      </section>
-
-      <section
         class="pluspay-actions-panel"
         aria-label="PlusPay actions"
         data-pluspay-show
@@ -463,6 +429,19 @@
       </section>
 
       <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
+        <button
+          class="home-scan-card"
+          type="button"
+          aria-label="Scan QR code"
+          data-scan-pay-open
+          data-upi-created-only
+          data-pluspay-hide
+        >
+          <span class="home-scan-icon" aria-hidden="true">
+            <svg><use href="#icon-scan" /></svg>
+          </span>
+          <strong>Scan<br />QR code</strong>
+        </button>
         <!-- <div class="section-heading compact-heading">
           <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
           <a href="#" data-lens-text="Manage" data-pluspay-text="View QR">Manage</a>
@@ -490,12 +469,13 @@
           type="button"
           data-upi-id-card
           data-upi-settings-open
+          aria-label="Open UPI settings"
         >
           <span class="upi-brand-badge" aria-hidden="true">
             <img src="../assets/payments/upi-id.svg" alt="" />
           </span>
           <span class="upi-copy">
-            <small>UPI ID</small>
+            <small>UPI ID:</small>
             <span class="upi-id-row">
               <strong
                 data-lens-text="8646721579@pinelabs"
@@ -512,6 +492,33 @@
             ><svg><use href="#icon-chevron-right" /></svg
           ></span>
         </button>
+      </section>
+
+      <section
+        class="eb-plus-setup-card"
+        aria-labelledby="eb-plus-setup-title"
+        data-pluspay-show
+        data-eb-plus-setup
+      >
+        <div class="eb-plus-setup-copy">
+          <h2 id="eb-plus-setup-title">Complete Your EB+ Setup</h2>
+          <p>Finish in minutes to activate your EB+</p>
+          <button
+            class="eb-plus-setup-cta"
+            type="button"
+            data-eb-plus-setup-open
+          >
+            <span>Start your EB+ journey</span>
+            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+          </button>
+        </div>
+        <img
+          class="eb-plus-setup-art"
+          src="../assets/pluspay/eb-setup-illustration.svg"
+          alt=""
+          width="100"
+          height="100"
+        />
       </section>
 
       <section
@@ -1073,6 +1080,37 @@
               class="wallet-overlay-pill-row"
               data-wallet-overlay-pills
             ></div>
+          </section>
+          <section
+            class="reimbursement-actions"
+            aria-label="Reimbursement Wallet payment options"
+            data-reimbursement-actions
+            hidden
+          >
+            <button
+              class="reimbursement-action-card"
+              type="button"
+              aria-label="Bank Transfer"
+              data-bank-transfer-open
+            >
+              <span class="reimbursement-action-icon" aria-hidden="true">
+                <svg><use href="#icon-bank" /></svg>
+              </span>
+              <strong>Bank<br />Transfer</strong>
+            </button>
+            <button
+              class="reimbursement-action-card"
+              type="button"
+              aria-label="Pay UPI ID"
+              data-send-money-open
+              data-upi-created-only
+              data-upi-feature
+            >
+              <span class="reimbursement-action-icon" aria-hidden="true">
+                <img src="../assets/payments/send-money.svg" alt="" />
+              </span>
+              <strong>Pay<br />UPI ID</strong>
+            </button>
           </section>
           <section
             class="wallet-overlay-section"

@@ -16,6 +16,7 @@ import {
   createCompletedOnboardingState,
   saveOnboardingState,
 } from "@/features/onboarding/storage";
+import { clearEbPlusActivation } from "@/features/onboarding/ebPlusActivation";
 import {
   VKYC_DONE_KEY,
   VKYC_ROUTE_KEY,
@@ -88,6 +89,7 @@ export function resetDemoJourney(
   clearRegisteredVehicle(local);
   clearRegisteredDriver(local);
   clearNotificationsHidden(local);
+  clearEbPlusActivation(local);
 
   const persona = getPersonaConfig(targetPersona);
   setActivePersonaId(targetPersona, local);

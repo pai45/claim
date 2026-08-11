@@ -73,7 +73,7 @@ export const NEW_USER_PERSONA: PersonaConfig = {
     dateOfBirthFormatted: "15 August 1995",
   },
   access: {
-    products: { ebPlus: true, plusPay: true },
+    products: { ebPlus: true, plusPay: false },
     upiEnabled: true,
     defaultProduct: "ebPlus",
   },
@@ -189,11 +189,8 @@ export const PERSONAS: Record<PersonaId, PersonaConfig> = {
 
 export const PERSONA_OPTIONS: PersonaConfig[] = [
   RETURNING_PERSONA,
-  RAHUL_ONBOARDING_PERSONA,
   NEW_USER_PERSONA,
-  EBPLUS_ONLY_PERSONA,
   PLUSPAY_ONLY_PERSONA,
-  EBPLUS_NO_UPI_PERSONA,
 ];
 
 export function getPersonaConfig(id: PersonaId): PersonaConfig {

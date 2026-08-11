@@ -151,6 +151,65 @@ body {
     "Lato", ui-sans-serif, system-ui, sans-serif;
 }
 
+/*
+ * Keep the live desktop preview inside a phone-sized canvas with the 874px
+ * design height as its baseline. Taller viewports expand the canvas, while
+ * shorter desktop viewports scroll the page instead of clipping the screen.
+ * The explicit height also gives fixed descendants (navigation, drawers, and
+ * chat) the same containing block as the app.
+ */
+.desktop-mobile-frame {
+  position: relative;
+  width: 100%;
+  min-height: 100dvh;
+}
+
+@media (min-width: 541px) {
+  body {
+    display: flex;
+    min-height: max(100dvh, 922px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .desktop-mobile-frame {
+    isolation: isolate;
+    width: min(402px, calc(100vw - 48px));
+    height: max(874px, calc(100dvh - 48px));
+    min-height: 0;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border-radius: var(--radius-pill);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-phone);
+    transform: translateZ(0);
+  }
+
+  .desktop-mobile-frame::after {
+    position: absolute;
+    z-index: 1000;
+    inset: 0;
+    border: 1px solid var(--color-border-muted);
+    border-radius: inherit;
+    content: "";
+    pointer-events: none;
+  }
+
+  .desktop-mobile-frame .h-dvh {
+    height: 100%;
+  }
+
+  .desktop-mobile-frame .min-h-dvh {
+    min-height: 100%;
+  }
+
+  .desktop-mobile-frame .login-viewport {
+    top: 0;
+    height: 100%;
+  }
+}
+
 /* Headings: PP Telegraf */
 h1,
 h2,

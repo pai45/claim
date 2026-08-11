@@ -44,6 +44,9 @@ const walletOverlayDirectoryCopy = document.querySelector(
 const walletOverlayMerchantTools = document.querySelector(
   "[data-wallet-overlay-merchant-tools]",
 );
+const reimbursementActions = document.querySelector(
+  "[data-reimbursement-actions]",
+);
 const walletOverlaySelectCopy = document.querySelector(
   "[data-wallet-overlay-select-copy]",
 );
@@ -264,6 +267,9 @@ const fallbackConfirmDisableButton = document.querySelector(
 );
 let pendingDisableFallbackKey = null;
 const claimsOpenButton = document.querySelector("[data-claims-open]");
+const ebPlusSetupOpenButton = document.querySelector(
+  "[data-eb-plus-setup-open]",
+);
 const claimsAssistant = document.querySelector("[data-claims-assistant]");
 const claimsCloseButtons = document.querySelectorAll("[data-claims-close]");
 const claimsStatus = document.querySelector("[data-claims-status]");
@@ -296,7 +302,7 @@ let activeManageWalletKey = "meal";
 let syncedTransactionItems = [];
 let syncedWalletTransactions = {};
 const UPI_CREATED_STORAGE_KEY = "employee-benefits:upi-created:v1";
-const CREATED_UPI_ID = "xxxxxxxx79@infosys";
+const CREATED_UPI_ID = "8646721579@pinelabs";
 const UPI_SETUP_STEP_DURATION = 1500;
 const upiSetupState = { stage: 0, view: "setup" };
 let upiSetupTimer;
@@ -4546,6 +4552,13 @@ document.querySelectorAll("[data-transactions-open]").forEach((button) => {
   });
 });
 
+ebPlusSetupOpenButton?.addEventListener("click", () => {
+  window.parent.postMessage(
+    { type: "employee-benefits:start-eb-plus-setup" },
+    window.location.origin,
+  );
+});
+
 document.querySelectorAll("[data-manage-limits-open]").forEach((button) => {
   button.addEventListener("click", (event) => {
     event.preventDefault();
@@ -5340,6 +5353,8 @@ function openWalletOverlay(button) {
   if (walletOverlayBalance) walletOverlayBalance.textContent = walletBalance;
   if (walletOverlayMerchantTools)
     walletOverlayMerchantTools.hidden = walletTone === "misc";
+  if (reimbursementActions)
+    reimbursementActions.hidden = walletTone !== "misc";
   if (walletOverlayDirectoryCopy)
     walletOverlayDirectoryCopy.textContent = overlayContent.directoryCopy;
   if (walletOverlaySelectCopy)
@@ -5746,6 +5761,8 @@ function syncPersonaToApp(payload) {
   const upiHandle = `${name.toLowerCase().replace(/\s+/g, ".")}@pluspay`;
   const access = persona.access;
   const isProductLocked = !(access.products.ebPlus && access.products.plusPay);
+  const isEbPlusSetupEligible =
+    activePersona === "pluspay_only" && !access.products.ebPlus;
 
   document.body.classList.toggle(
     "is-product-locked",
@@ -5755,6 +5772,10 @@ function syncPersonaToApp(payload) {
   document.body.classList.toggle("is-no-upi", !access.upiEnabled);
   document.body.classList.toggle("is-lens-disabled", !access.products.ebPlus);
   document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);
+  document.body.classList.toggle(
+    "is-eb-plus-setup-eligible",
+    isEbPlusSetupEligible,
+  );
   applyMode(access.defaultProduct === "pluspay");
 
   if (pluspayToggle) {
@@ -5791,9 +5812,13 @@ function syncPersonaToApp(payload) {
   if (avatarBtn) avatarBtn.textContent = initials;
 
   // 2. Physical / virtual card details and overlay names
-  document.querySelectorAll(".overlay-card-name, [data-manage-preview-holder]").forEach((el) => {
-    el.textContent = upperName;
-  });
+  document
+    .querySelectorAll(
+      ".overlay-card-name, [data-manage-preview-holder], [data-hero-card-persona]",
+    )
+    .forEach((el) => {
+      el.textContent = upperName;
+    });
   document.querySelectorAll(".card-details-meta strong, .card-details-row strong, .virtual-card-front strong, .virtual-card-back strong, .manage-cards-card strong").forEach((el) => {
     if (el.textContent === "Vishal Sharma" || el.textContent === "Aarav Patel" || el.textContent === "VISHAL SHARMA" || el.textContent === "AARAV PATEL") {
       el.textContent = el.textContent === el.textContent.toUpperCase() ? upperName : name;

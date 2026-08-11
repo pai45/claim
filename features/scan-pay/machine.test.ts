@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { resolveScanPayScenario } from "@/features/scan-pay/fixtures";
+import {
+  resolveScanPayMerchantSelection,
+  resolveScanPayScenario,
+} from "@/features/scan-pay/fixtures";
 import {
   cleanScanPayAmount,
   createInitialBankTransferState,
@@ -19,6 +22,29 @@ describe("scan pay machine", () => {
     expect(resolveScanPayScenario(null)).toBe("success");
   });
 
+  it("rotates scan merchants in-session and preserves the cursor for QA overrides", () => {
+    let rotationIndex = 0;
+    const merchants = Array.from({ length: 5 }, () => {
+      const selection = resolveScanPayMerchantSelection(null, rotationIndex);
+      rotationIndex = selection.nextRotationIndex;
+      return selection.merchantType;
+    });
+
+    expect(merchants).toEqual([
+      "meal",
+      "fuel",
+      "luxury",
+      "unsupported",
+      "meal",
+    ]);
+
+    const override = resolveScanPayMerchantSelection("fuel", rotationIndex);
+    expect(override).toEqual({
+      merchantType: "fuel",
+      nextRotationIndex: rotationIndex,
+    });
+  });
+
   it("keeps invalid QR scans on the scanner with an error", () => {
     const state = scanPayReducer(
       createInitialScanPayState("invalid-qr"),
@@ -28,16 +54,12 @@ describe("scan pay machine", () => {
     expect(state.qrErrorVisible).toBe(true);
   });
 
-  it("opens merchant scenario selection after a valid EB+ scan", () => {
-    let state = scanPayReducer(createInitialScanPayState("success"), {
+  it("routes a valid EB+ scan directly to confirmation", () => {
+    const state = scanPayReducer(createInitialScanPayState("success"), {
       type: "DETECT_QR",
     });
-    expect(state.step).toBe("merchantScenarioPicker");
-    state = scanPayReducer(state, {
-      type: "SELECT_MERCHANT_SCENARIO",
-      merchantType: "meal",
-    });
     expect(state.step).toBe("confirmPayment");
+    expect(state.walletId).toBe("meal");
   });
 
   it("cleans and validates currency input", () => {
@@ -67,42 +89,20 @@ describe("scan pay machine", () => {
     expect(state.selectedSubcategoryId).toBe("trading");
   });
 
-  it("switches to an eligible reimbursement wallet", () => {
-    let state = createInitialScanPayState("success");
-    state = scanPayReducer(state, { type: "OPEN_WALLET_PICKER" });
-    state = scanPayReducer(state, {
-      type: "SELECT_WALLET",
-      walletId: "misc",
-    });
-    expect(state.step).toBe("confirmPayment");
-    expect(state.walletId).toBe("misc");
-  });
-
-  it("routes supported merchants and rejects ineligible wallet changes", () => {
+  it("assigns the automatic wallet for each supported merchant", () => {
     const meal = createInitialScanPayState("success", "benefits", "meal");
     const fuel = createInitialScanPayState("success", "benefits", "fuel");
     const luxury = createInitialScanPayState("success", "benefits", "luxury");
     expect(meal.walletId).toBe("meal");
     expect(fuel.walletId).toBe("fuel");
     expect(luxury.walletId).toBe("misc");
-
-    const unchanged = scanPayReducer(meal, {
-      type: "SELECT_WALLET",
-      walletId: "fuel",
-    });
-    expect(unchanged).toEqual(meal);
   });
 
   it("blocks unsupported EB+ merchants on the scanner but allows PlusPay", () => {
-    let benefits = scanPayReducer(
+    const benefits = scanPayReducer(
       createInitialScanPayState("success", "benefits", "unsupported"),
       { type: "DETECT_QR" },
     );
-    expect(benefits.step).toBe("merchantScenarioPicker");
-    benefits = scanPayReducer(benefits, {
-      type: "SELECT_MERCHANT_SCENARIO",
-      merchantType: "unsupported",
-    });
     expect(benefits.step).toBe("scanner");
     expect(benefits.qrErrorReason).toBe("unsupported");
 
@@ -175,12 +175,6 @@ describe("scan pay machine", () => {
     expect(state.walletId).toBe("misc");
     expect(state.paymentContext.origin).toBe("bank-transfer");
     expect(state.selectedCategoryId).toBe("finance");
-
-    const unchanged = scanPayReducer(state, {
-      type: "SELECT_WALLET",
-      walletId: "meal",
-    });
-    expect(unchanged).toEqual(state);
   });
 
   it("creates bank-specific transaction details", () => {
@@ -209,25 +203,6 @@ describe("scan pay machine", () => {
     expect(transaction.transactionId).toMatch(/^EB\d{10}$/);
     expect(transaction.category).toBe("Finance");
     expect(transaction.subcategory).toBe("Bank");
-  });
-
-  it("changes the post-scan merchant scenario and resets wallet eligibility", () => {
-    let state = createInitialScanPayState("success", "benefits", "meal");
-    state = scanPayReducer(state, { type: "DETECT_QR" });
-    state = scanPayReducer(state, {
-      type: "SELECT_MERCHANT_SCENARIO",
-      merchantType: "fuel",
-    });
-    expect(state.merchantType).toBe("fuel");
-    expect(state.walletId).toBe("fuel");
-    expect(state.step).toBe("confirmPayment");
-
-    state = scanPayReducer(state, {
-      type: "SELECT_MERCHANT_SCENARIO",
-      merchantType: "unsupported",
-    });
-    expect(state.step).toBe("scanner");
-    expect(state.qrErrorReason).toBe("unsupported");
   });
 
   it("preserves payment input when retrying a failed transaction", () => {

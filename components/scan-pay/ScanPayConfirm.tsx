@@ -2,12 +2,10 @@
 
 import { useMemo, useRef, type Dispatch } from "react";
 import { ScanPayDrawer } from "@/components/scan-pay/ScanPayDrawer";
-import {
-  ScanPayIcon,
-  type ScanPayIconName,
-} from "@/components/scan-pay/ScanPayIcons";
+import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
+import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   maskAccountNumber,
@@ -18,14 +16,8 @@ import {
   SCAN_PAY_QUICK_CATEGORIES,
   categoryById,
   merchantForType,
-  walletLabel,
 } from "@/features/scan-pay/fixtures";
-import {
-  calculateScanPayFunding,
-  walletIsEligibleForPayment,
-  walletOrderForPayment,
-  type ScanPayBenefitWalletId,
-} from "@/features/scan-pay/funding";
+import { calculateScanPayFunding } from "@/features/scan-pay/funding";
 import { scanPayAmountIsValid } from "@/features/scan-pay/machine";
 import type {
   ScanPayAction,
@@ -40,13 +32,7 @@ import {
   getWalletBalance,
 } from "@/features/transactions/constants";
 import { useFinancialStateVersion } from "@/features/transactions/financialState";
-import { SCAN_PAY_ASSETS } from "@/lib/ui/assets";
-
-const walletIcons: Record<ScanPayBenefitWalletId, ScanPayIconName> = {
-  meal: "walletMeal",
-  fuel: "walletFuel",
-  misc: "walletReimbursement",
-};
+import { SCAN_PAY_ASSETS, UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
 
 /**
  * Amounts stay at the display size while they fit beside the ₹ symbol; longer
@@ -107,6 +93,13 @@ export function ScanPayConfirm({
     },
     [financialVersion, personaId],
   );
+  const selectedWallet =
+    WALLET_FILTER_OPTIONS.find((wallet) => wallet.id === state.walletId) ??
+    WALLET_FILTER_OPTIONS.find((wallet) => wallet.id === "misc")!;
+  const selectedWalletBalance = getWalletBalance(
+    selectedWallet.id,
+    personaId,
+  ).display;
   const fundingPlan = useMemo(
     () =>
       calculateScanPayFunding({
@@ -339,50 +332,61 @@ export function ScanPayConfirm({
             <span className="font-bold">{fundingPlan.message}</span>
           </div>
         ) : null}
-        <div className="grid grid-cols-2 gap-2">
-          {state.mode === "pluspay" ? (
-            <div className="flex min-h-14 min-w-0 items-center rounded-control px-2 text-left">
-              <span className="min-w-0">
-                <span className="block text-caption text-ink-secondary">Pay Using</span>
-                <span className="block truncate text-body-sm font-bold text-pine">ANQ</span>
-              </span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => dispatch({ type: "OPEN_WALLET_PICKER" })}
-              className="flex min-h-14 min-w-0 items-center justify-between rounded-control px-2 text-left"
-            >
-            <span className="min-w-0">
-              <span className="block text-caption text-ink-secondary">Pay Using</span>
-              <span className="block truncate text-body-sm font-bold text-pine">
-                {bankRecipient
-                  ? "Reimbursement"
-                  : walletLabel(state.walletId).replace(" Wallet", "")}
-              </span>
-            </span>
-            <ScanPayIcon name="arrow" size={16} className="rotate-90" />
-            </button>
-          )}
-          <button
-            type="button"
-            disabled={!valid}
-            onClick={() =>
-              dispatch({
-                type: "PAY",
-                fundingAllocations:
-                  state.mode === "benefits" ? fundingPlan.allocations : [],
-              })
-            }
-            className="btn-primary h-auto min-h-14"
-          >
-            Pay
-          </button>
-        </div>
+        <section aria-label="Payment source">
+          <p className="type-field-label">Pay Using</p>
+          <div className="mt-2 flex min-h-16 items-center gap-3 rounded-card border border-border-line bg-input-soft p-card">
+            {state.mode === "pluspay" ? (
+              <>
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-white shadow-soft">
+                  <AppIcon
+                    src={UPI_SETTINGS_ASSETS.anq}
+                    alt=""
+                    width={24}
+                    height={24}
+                    className="h-6 w-6"
+                  />
+                </span>
+                <span className="min-w-0">
+                  <span className="type-body block font-bold text-pine">ANQ</span>
+                  <span className="type-body-secondary mt-0.5 block">PlusPay</span>
+                </span>
+              </>
+            ) : (
+              <>
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-control ${selectedWallet.toneClass} ${selectedWallet.iconClass}`}
+                >
+                  <BenefitWalletIcon wallet={selectedWallet.id} size={20} />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="type-body block font-bold text-pine">
+                    {selectedWallet.label}
+                  </span>
+                  <span className="type-body-secondary mt-0.5 block">
+                    Available balance {selectedWalletBalance}
+                  </span>
+                </span>
+              </>
+            )}
+          </div>
+        </section>
+        <button
+          type="button"
+          disabled={!valid}
+          onClick={() =>
+            dispatch({
+              type: "PAY",
+              fundingAllocations:
+                state.mode === "benefits" ? fundingPlan.allocations : [],
+            })
+          }
+          className="btn-primary mt-3 min-h-14"
+        >
+          Pay
+        </button>
       </footer>
 
       <CategoryDrawer state={state} dispatch={dispatch} />
-      <WalletDrawer state={state} dispatch={dispatch} />
     </AppShell>
   );
 }
@@ -504,90 +508,6 @@ function CategoryDrawer({
           </button>
         </section>
       ) : null}
-    </ScanPayDrawer>
-  );
-}
-
-function WalletDrawer({
-  state,
-  dispatch,
-}: {
-  state: ScanPayState;
-  dispatch: Dispatch<ScanPayAction>;
-}) {
-  const { personaId } = useActivePersona();
-  return (
-    <ScanPayDrawer
-      open={state.step === "walletPicker"}
-      title="Choose your wallet"
-      description="Please select"
-      onClose={() => dispatch({ type: "BACK" })}
-    >
-      <div className="flex flex-col gap-2.5">
-        {walletOrderForPayment(state.paymentContext).map((walletId) => {
-          const wallet = WALLET_FILTER_OPTIONS.find(
-            (option) => option.id === walletId,
-          )!;
-          const selected = state.walletId === wallet.id;
-          const eligible = walletIsEligibleForPayment(
-            wallet.id,
-            state.mode,
-            state.merchantType,
-            state.paymentContext,
-          );
-          return (
-            <button
-              key={wallet.id}
-              type="button"
-              disabled={!eligible}
-              aria-disabled={!eligible}
-              onClick={() => {
-                if (eligible) {
-                  dispatch({ type: "SELECT_WALLET", walletId: wallet.id });
-                }
-              }}
-              className={`flex min-h-14 items-center justify-between rounded-card border p-card text-left ${
-                selected
-                  ? "border-pine-primary bg-surface-tint shadow-card"
-                  : eligible
-                    ? "border-border-line bg-white"
-                    : "border-border-line bg-surface-muted opacity-55"
-              }`}
-            >
-              <span className="flex min-w-0 items-center gap-3">
-                <span
-                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${wallet.toneClass} ${wallet.iconClass}`}
-                >
-                  <ScanPayIcon
-                    name={walletIcons[wallet.id as ScanPayBenefitWalletId]}
-                  />
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-body-sm font-bold text-pine">
-                    {wallet.label}
-                  </span>
-                  <span className="mt-0.5 block text-caption text-ink-secondary">
-                    {eligible
-                      ? getWalletBalance(wallet.id, personaId).display
-                      : state.paymentContext.origin === "bank-transfer"
-                        ? "Not available for bank transfers"
-                        : "Not available for this merchant"}
-                  </span>
-                </span>
-              </span>
-              <span
-                className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-pill border ${
-                  selected
-                    ? "border-pine-primary bg-pine-primary text-white"
-                    : "border-input-border bg-white"
-                }`}
-              >
-                {selected ? <ScanPayIcon name="check" size={14} /> : null}
-              </span>
-            </button>
-          );
-        })}
-      </div>
     </ScanPayDrawer>
   );
 }

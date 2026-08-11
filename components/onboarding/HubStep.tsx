@@ -10,6 +10,7 @@ import { PrimaryFooter } from "./PrimaryFooter";
 
 type HubStepProps = {
   state: OnboardingState;
+  journey?: "initial" | "eb-plus-activation";
   onBack: () => void;
   onOpenIdentity: () => void;
   onOpenKyc: () => void;
@@ -19,6 +20,7 @@ type HubStepProps = {
 
 export function HubStep({
   state,
+  journey = "initial",
   onBack,
   onOpenIdentity,
   onOpenKyc,
@@ -47,17 +49,31 @@ export function HubStep({
     return canOpenHubStep(state, "card") ? "available" : "locked";
   }
 
-  const done = allStepsDone(state);
+  const upgradeJourney = journey === "eb-plus-activation";
+  const steps = upgradeJourney
+    ? HUB_STEPS.filter((step) => step.id !== "kyc")
+    : HUB_STEPS;
+  const done = upgradeJourney
+    ? state.identityDone && state.cardSetupDone
+    : allStepsDone(state);
 
   return (
     <>
       <OnboardingHeader
-        title="Apply for Infosys Employee Benefits"
-        subtitle="Complete these steps to activate your account."
+        title={
+          upgradeJourney
+            ? "Complete your EB+ setup"
+            : "Apply for Infosys Employee Benefits"
+        }
+        subtitle={
+          upgradeJourney
+            ? "Complete these two steps to activate your EB+."
+            : "Complete these steps to activate your account."
+        }
         onBack={onBack}
       />
       <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4">
-        {HUB_STEPS.map((step, index) => {
+        {steps.map((step, index) => {
           const status = statusFor(step.id);
           return (
             <HubStepCard

@@ -9,6 +9,7 @@ import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   BANK_TRANSFER_FAQS,
   SCAN_PAY_FAQS,
+  merchantDetectedLabel,
 } from "@/features/scan-pay/fixtures";
 import type {
   PaymentContext,
@@ -171,7 +172,7 @@ export function ScanPayScanner({
           <span className="flex h-7 w-7 items-center justify-center rounded-pill bg-mint text-pine-dark">
             <ScanPayIcon name="check" size={16} />
           </span>
-          QR code detected
+          {merchantDetectedLabel(state.merchantType)}
         </div>
       ) : null}
 

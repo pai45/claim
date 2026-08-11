@@ -8,6 +8,7 @@ import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
 import { BENEFICIARY_LIMITS_STORAGE_KEY } from "@/features/beneficiary-limits/store";
 import { PAYMENT_LIMITS_STORAGE_KEY } from "@/features/payment-limits/store";
 import { ONBOARDING_STORAGE_KEY } from "@/features/onboarding/constants";
+import { EB_PLUS_ACTIVATION_STORAGE_KEY } from "@/features/onboarding/ebPlusActivation";
 import { VEHICLE_STORAGE_KEY } from "@/features/vehicle/registration";
 import { DRIVER_STORAGE_KEY } from "@/features/driver/registration";
 import { PERSONA_STORAGE_KEY } from "@/features/persona/constants";
@@ -36,6 +37,7 @@ const LOCAL_KEYS = [
   AUTH_STORAGE_KEY,
   CHAT_STORAGE_KEY,
   ONBOARDING_STORAGE_KEY,
+  EB_PLUS_ACTIVATION_STORAGE_KEY,
   VEHICLE_STORAGE_KEY,
   DRIVER_STORAGE_KEY,
   BENEFICIARY_LIMITS_STORAGE_KEY,
@@ -127,5 +129,11 @@ describe("resetDemoJourney", () => {
     expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBe(
       hasUpi ? "true" : null,
     );
+  });
+
+  it("clears Rohan's EB+ activation so the demo can be replayed", () => {
+    resetDemoJourney("pluspay_only", local, session);
+
+    expect(local.getItem(EB_PLUS_ACTIVATION_STORAGE_KEY)).toBeNull();
   });
 });
