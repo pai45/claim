@@ -26,6 +26,12 @@ describe("persona transaction data", () => {
     expect(getTransaction("txn-amazon", "returning")?.merchant).toBe("Amazon");
     expect(items.every((item) => getTransaction(item.id, "returning") === item)).toBe(true);
   });
+
+  it("gives Rahul the returning transaction history", () => {
+    expect(getTransactionItems("rahul_onboarding")).toEqual(
+      getTransactionItems("returning"),
+    );
+  });
 });
 
 describe("wallet transaction filters", () => {

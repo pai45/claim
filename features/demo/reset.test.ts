@@ -93,6 +93,16 @@ describe("resetDemoJourney", () => {
     expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
   });
 
+  it("starts Rahul before MPIN and onboarding without making him a new account", () => {
+    resetDemoJourney("rahul_onboarding", local, session);
+
+    expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("rahul_onboarding");
+    expect(local.getItem(ONBOARDING_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(MPIN_STORAGE_KEY)).toBeNull();
+    expect(local.getItem(UPI_CREATED_STORAGE_KEY)).toBeNull();
+    expect(session.getItem(MPIN_UNLOCK_STORAGE_KEY)).toBeNull();
+  });
+
   it("is safe when nothing was stored", () => {
     const empty = memoryStorage();
     expect(() => resetDemoJourney("new_user", empty, empty)).not.toThrow();

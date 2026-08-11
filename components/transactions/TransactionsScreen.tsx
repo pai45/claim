@@ -8,6 +8,7 @@ import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { NativeMonthPicker } from "@/components/shared/NativeMonthPicker";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
+import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
 import { WalletFilterDropdown } from "@/components/transactions/WalletFilterDropdown";
 import {
   CategoryGlyph,
@@ -395,6 +396,9 @@ function TransactionsPanel({
             <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
               {section.items.map((txn, index) => {
                 const isLast = index === section.items.length - 1;
+                const walletOption = WALLET_FILTER_OPTIONS.find(
+                  (option) => option.id === txn.wallet,
+                ) ?? WALLET_FILTER_OPTIONS[0];
                 return (
                   <Link
                     key={txn.id}
@@ -404,8 +408,10 @@ function TransactionsPanel({
                       !isLast ? "border-b border-border-line" : ""
                     }`}
                   >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
-                      <TransactionIcon icon={txn.icon} />
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-control ${walletOption.toneClass} ${walletOption.iconClass}`}
+                    >
+                      <BenefitWalletIcon wallet={txn.wallet} />
                     </div>
                     <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                       <h3 className="type-body truncate font-bold text-ink">
@@ -473,7 +479,7 @@ function AnalyticsPanel({
               <span
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-white/70 ${item.iconClass}`}
               >
-                <WalletGlyph id={item.id} />
+                <BenefitWalletIcon wallet={item.id} size={18} />
               </span>
               <span className={`text-caption font-bold leading-4 ${item.iconClass}`}>
                 {item.label}
@@ -829,51 +835,6 @@ function CalendarIcon() {
         stroke={colors.ink}
         strokeWidth="1.7"
         strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function WalletGlyph({ id }: { id: AnalyticsWalletId }) {
-  if (id === "meal") {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path
-          d="M8 4v16M8 8h3M16 4v7c0 2-1 3-2.5 3H16v6"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-  if (id === "fuel") {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path
-          d="M6 19V7.5A1.5 1.5 0 0 1 7.5 6h5A1.5 1.5 0 0 1 14 7.5V19M5 19h11M14 10h2.5a2 2 0 0 1 2 2v4.5a1.5 1.5 0 0 0 3 0V10.5L19 8"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M4 12a8 8 0 1 0 2.3-5.6"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <path
-        d="M4 4v4h4"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   );

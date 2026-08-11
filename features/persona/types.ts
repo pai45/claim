@@ -1,5 +1,6 @@
 export type PersonaId =
   | "returning"
+  | "rahul_onboarding"
   | "new_user"
   | "ebPlus_only"
   | "pluspay_only"

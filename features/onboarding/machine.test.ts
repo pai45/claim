@@ -15,6 +15,19 @@ describe("onboardingReducer", () => {
     expect(allStepsDone(state)).toBe(false);
   });
 
+  it("starts Rahul's journey with his identity prefilled", () => {
+    const state = createInitialOnboardingState("rahul_onboarding");
+
+    expect(state.step).toBe("intro");
+    expect(state.completed).toBe(false);
+    expect(state.identity).toMatchObject({
+      email: "rahul.verma@infosys.com",
+      firstName: "Rahul",
+      lastName: "Verma",
+      dateOfBirth: "15/03/1995",
+    });
+  });
+
   it("locks KYC and card until prior steps complete", () => {
     let state = createInitialOnboardingState();
     expect(canOpenHubStep(state, "identity")).toBe(true);

@@ -1,4 +1,5 @@
 import type { PersonaId } from "@/features/persona/types";
+import { hasReturningAccountState } from "@/features/persona/constants";
 
 export type NotificationAction =
   | {
@@ -72,6 +73,6 @@ export const RETURNING_NOTIFICATION_COUNT = RETURNING_NOTIFICATIONS.length;
 export function getNotificationsForPersona(
   personaId: PersonaId,
 ): BenefitsNotification[] {
-  if (personaId !== "returning") return [];
+  if (!hasReturningAccountState(personaId)) return [];
   return RETURNING_NOTIFICATIONS;
 }

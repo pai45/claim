@@ -27,10 +27,12 @@ describe("product intro navigation", () => {
     expect(resolveProductIntroSwipe(1, -72, 96)).toBe(1);
   });
 
-  it("replays for Vishal while other profiles remain first-time only", () => {
+  it("replays for both returning-account personas", () => {
     expect(shouldShowProductIntro("returning", true, false)).toBe(true);
+    expect(shouldShowProductIntro("rahul_onboarding", true, false)).toBe(true);
     expect(shouldShowProductIntro("new_user", true, false)).toBe(false);
     expect(shouldShowProductIntro("new_user", false, false)).toBe(true);
     expect(shouldShowProductIntro("returning", true, true)).toBe(false);
+    expect(shouldShowProductIntro("rahul_onboarding", true, true)).toBe(false);
   });
 });

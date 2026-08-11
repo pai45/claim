@@ -4458,6 +4458,10 @@ body.is-merchant-directory-open .bottom-nav {
   margin-top: var(--space-20);
 }
 
+.wallet-overlay-section[hidden] {
+  display: none;
+}
+
 .wallet-overlay-mode-switch {
   display: inline-grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -8918,17 +8922,10 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 }
 
 .upi-safety-mark {
-  display: grid;
-  place-items: center;
-  width: 102px;
-  height: 112px;
+  width: 180px;
+  height: 180px;
   margin-bottom: 14px;
-  color: #62d1bd;
-}
-
-.upi-safety-mark svg {
-  width: 100%;
-  height: 100%;
+  object-fit: contain;
 }
 
 .upi-safety-hero h1 {
@@ -9623,11 +9620,15 @@ body.is-product-locked.is-lens-disabled .product-segment-lens {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
-  margin-top: 16px;
+  margin-top: 0;
 }
 
 body.is-upi-created .payment-shortcuts {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.is-upi-created [data-bank-transfer-open] strong span {
+  display: block;
 }
 
 .payment-shortcut {
@@ -9687,6 +9688,35 @@ body.is-upi-created .payment-shortcuts {
   line-height: 17px;
 }
 
+body.is-brand-new-user:not(.is-upi-created) .payment-shortcuts {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+body.is-brand-new-user:not(.is-upi-created) .payment-shortcut {
+  min-height: 72px;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 12px 20px;
+  border-radius: 16px;
+  text-align: left;
+}
+
+body.is-brand-new-user:not(.is-upi-created) .payment-shortcut-icon {
+  width: 48px;
+  height: 48px;
+}
+
+body.is-brand-new-user:not(.is-upi-created) .payment-shortcut-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+body.is-brand-new-user:not(.is-upi-created) .payment-shortcut strong {
+  font-size: 15px;
+  line-height: 20px;
+}
+
 .upi-panel {
   gap: 0;
   margin-top: 16px;
@@ -9699,7 +9729,7 @@ body.is-upi-created .payment-shortcuts {
   height: 52px;
   padding: 8px 14px;
   border: 0;
-  border-radius: 32px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: 2px 2px 10px rgba(0, 42, 25, 0.05);
   color: var(--ink);
@@ -9712,6 +9742,48 @@ body.is-upi-created .payment-shortcuts {
 .upi-card::before,
 .upi-card-create::before {
   content: none;
+}
+
+@property --upi-card-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes upi-card-border-spin {
+  to {
+    --upi-card-border-angle: 360deg;
+  }
+}
+
+.upi-card-create::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--upi-card-border-angle) at 50% 48.57%,
+    #99e0c7 0deg,
+    #73bf99 90deg,
+    #b8fff7 180deg,
+    #73bf99 270deg,
+    #99e0c7 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: upi-card-border-spin 2.4s linear infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upi-card-create::before {
+    animation: none;
+  }
 }
 
 .upi-brand-badge,
@@ -9889,7 +9961,7 @@ body.is-pluspay .upi-panel {
 
 body.is-pluspay .upi-card,
 body.is-pluspay .upi-card-create {
-  border-radius: 10px;
+  border-radius: 16px;
 }
 
 body.is-pluspay .pluspay-actions-panel {

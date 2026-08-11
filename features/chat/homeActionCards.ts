@@ -1,4 +1,5 @@
 import type { PersonaId } from "@/features/persona/types";
+import { hasReturningAccountState } from "@/features/persona/constants";
 import type { RegistrationStatus } from "./useRegistrationStatus";
 
 export type RegistrationActionKind = "vehicle" | "driver" | null;
@@ -20,7 +21,8 @@ export function getHomeActionCardState(
       : null;
 
   return {
-    showNotifications: personaId === "returning" && notificationCount > 0,
+    showNotifications:
+      hasReturningAccountState(personaId) && notificationCount > 0,
     registration,
   };
 }

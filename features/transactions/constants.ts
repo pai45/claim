@@ -57,26 +57,26 @@ export const WALLET_FILTER_OPTIONS: readonly WalletFilterOption[] = [
   {
     id: "meal",
     label: "Meal Wallet",
-    toneClass: "bg-warning-soft",
-    iconClass: "text-warning",
+    toneClass: "wallet-bg-meal",
+    iconClass: "text-wallet-meal",
   },
   {
     id: "fuel",
     label: "Fuel Wallet",
-    toneClass: "bg-surface-tint",
-    iconClass: "text-pine-primary",
+    toneClass: "wallet-bg-fuel",
+    iconClass: "text-wallet-fuel",
   },
   {
     id: "misc",
     label: "Reimbursement Wallet",
-    toneClass: "bg-surface-tint-strong",
-    iconClass: "text-pine-dark",
+    toneClass: "wallet-bg-reimbursement",
+    iconClass: "text-wallet-reimbursement",
   },
   {
     id: "gift",
     label: "Gift Wallet",
-    toneClass: "bg-success-soft",
-    iconClass: "text-success",
+    toneClass: "wallet-bg-gift",
+    iconClass: "text-wallet-gift",
   },
 ] as const;
 

@@ -57,6 +57,12 @@
   --color-danger-soft: #f4e8e6;
   --color-cta-ink: #1e4e45;
 
+  /* —— EB+ benefit wallet identities —— */
+  --color-wallet-meal: #aa5a08;
+  --color-wallet-fuel: #1163a6;
+  --color-wallet-reimbursement: #5d50c6;
+  --color-wallet-gift: #1c8d59;
+
   /* —— Typography scale (4pt-friendly) —— */
   --text-caption: 12px;
   --text-caption--line-height: 1.33;
@@ -101,6 +107,24 @@
   --shadow-drawer: 0 -8px 32px rgba(0, 42, 25, 0.12);
   --shadow-menu: -8px 0 24px rgba(0, 42, 25, 0.12);
   --shadow-cta: 0 6px 16px rgba(0, 86, 86, 0.18);
+}
+
+/* Canonical wallet backgrounds from the EB+ Wallets list. Keep these
+   gradients paired with the matching `text-wallet-*` identity token. */
+.wallet-bg-meal {
+  background: linear-gradient(180deg, #fff2da, #ffe7bf);
+}
+
+.wallet-bg-fuel {
+  background: linear-gradient(180deg, #e5f4ff, #cfeaff);
+}
+
+.wallet-bg-reimbursement {
+  background: linear-gradient(180deg, #ececff, #dddafe);
+}
+
+.wallet-bg-gift {
+  background: linear-gradient(180deg, #e3f7ea, #caefd9);
 }
 
 * {

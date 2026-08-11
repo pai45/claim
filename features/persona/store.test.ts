@@ -44,6 +44,27 @@ describe("persona store", () => {
     expect(getActivePersonaConfig(local).hasTransactions).toBe(false);
   });
 
+  it("keeps Rahul on Vishal's account state with fresh onboarding", () => {
+    setActivePersonaId("rahul_onboarding", local);
+
+    const rahul = getActivePersonaConfig(local);
+    const vishal = PERSONA_OPTIONS.find((persona) => persona.id === "returning");
+
+    expect(local.getItem(PERSONA_STORAGE_KEY)).toBe("rahul_onboarding");
+    expect(rahul.profile).toMatchObject({
+      name: "Rahul Verma",
+      initials: "R",
+      email: "rahul.verma@infosys.com",
+      employeeId: "EMP-20493",
+    });
+    expect(rahul.access).toEqual(vishal?.access);
+    expect(rahul.hasClaims).toBe(true);
+    expect(rahul.hasTransactions).toBe(true);
+    expect(rahul.hasCompletedOnboarding).toBe(false);
+    expect(rahul.isCardActivated).toBe(true);
+    expect(rahul.hasUpiId).toBe(true);
+  });
+
   it("handles corrupted/invalid persona key by falling back to returning", () => {
     local.setItem(PERSONA_STORAGE_KEY, "invalid_id_123");
     expect(getActivePersonaId(local)).toBe("returning");

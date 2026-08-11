@@ -36,6 +36,24 @@ export const RETURNING_PERSONA: PersonaConfig = {
   hasUpiId: true,
 };
 
+export const RAHUL_ONBOARDING_PERSONA: PersonaConfig = {
+  ...RETURNING_PERSONA,
+  id: "rahul_onboarding",
+  label: "Fresh Onboarding",
+  badge: "Setup Journey",
+  description:
+    "Rahul Verma • Vishal-style account with fresh MPIN and onboarding",
+  profile: {
+    ...RETURNING_PERSONA.profile,
+    id: "rahul_onboarding",
+    name: "Rahul Verma",
+    initials: "R",
+    email: "rahul.verma@infosys.com",
+    employeeId: "EMP-20493",
+  },
+  hasCompletedOnboarding: false,
+};
+
 export const NEW_USER_PERSONA: PersonaConfig = {
   id: "new_user",
   label: "Brand New User",
@@ -162,6 +180,7 @@ export const EBPLUS_NO_UPI_PERSONA: PersonaConfig = {
 
 export const PERSONAS: Record<PersonaId, PersonaConfig> = {
   returning: RETURNING_PERSONA,
+  rahul_onboarding: RAHUL_ONBOARDING_PERSONA,
   new_user: NEW_USER_PERSONA,
   ebPlus_only: EBPLUS_ONLY_PERSONA,
   pluspay_only: PLUSPAY_ONLY_PERSONA,
@@ -170,6 +189,7 @@ export const PERSONAS: Record<PersonaId, PersonaConfig> = {
 
 export const PERSONA_OPTIONS: PersonaConfig[] = [
   RETURNING_PERSONA,
+  RAHUL_ONBOARDING_PERSONA,
   NEW_USER_PERSONA,
   EBPLUS_ONLY_PERSONA,
   PLUSPAY_ONLY_PERSONA,
@@ -183,11 +203,16 @@ export function getPersonaConfig(id: PersonaId): PersonaConfig {
 export function isPersonaId(value: unknown): value is PersonaId {
   return (
     value === "returning" ||
+    value === "rahul_onboarding" ||
     value === "new_user" ||
     value === "ebPlus_only" ||
     value === "pluspay_only" ||
     value === "ebPlus_no_upi"
   );
+}
+
+export function hasReturningAccountState(personaId: PersonaId): boolean {
+  return personaId === "returning" || personaId === "rahul_onboarding";
 }
 
 export function canUseAutoPay(persona: PersonaConfig): boolean {

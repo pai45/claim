@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
 import {
   WALLET_FILTER_OPTIONS,
   type TransactionWalletFilterId,
@@ -127,8 +128,13 @@ export function WalletFilterDropdown({
         aria-label={`Filter by wallet, currently ${selectedOption.label}`}
         onClick={() => setIsOpen((prev) => !prev)}
         onKeyDown={handleTriggerKeyDown}
-        className="flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-pill bg-pine-primary px-4 text-body-sm font-bold text-white transition-colors hover:bg-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-primary"
+        className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-pill bg-pine-primary py-1 pl-2 pr-4 text-body-sm font-bold text-white transition-colors hover:bg-pine focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-primary"
       >
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${selectedOption.toneClass} ${selectedOption.iconClass}`}
+        >
+          <BenefitWalletIcon wallet={selectedOption.id} size={17} />
+        </span>
         <span>{selectedOption.label}</span>
         <svg
           width="16"
@@ -177,7 +183,14 @@ export function WalletFilterDropdown({
                       : "font-normal text-ink-secondary hover:bg-surface-tint hover:text-ink"
                   }`}
                 >
-                  <span className="truncate">{option.label}</span>
+                  <span className="flex min-w-0 items-center gap-3">
+                    <span
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control ${option.toneClass} ${option.iconClass}`}
+                    >
+                      <BenefitWalletIcon wallet={option.id} size={18} />
+                    </span>
+                    <span className="truncate">{option.label}</span>
+                  </span>
                   {isSelected && (
                     <svg
                       width="18"

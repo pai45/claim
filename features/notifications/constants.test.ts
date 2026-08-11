@@ -25,6 +25,9 @@ describe("notification catalog", () => {
   it("keeps the catalog persona-based instead of deleting hidden items", () => {
     expect(getNotificationsForPersona("new_user")).toEqual([]);
     expect(getNotificationsForPersona("returning")).toHaveLength(5);
+    expect(getNotificationsForPersona("rahul_onboarding")).toBe(
+      RETURNING_NOTIFICATIONS,
+    );
   });
 
   it("links claim updates to real demo claims", () => {

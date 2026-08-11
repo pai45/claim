@@ -45,7 +45,7 @@ export function NotificationsScreen() {
   return (
     <AppShell className="overflow-hidden">
       <ScreenHeader title="Notifications" onBack={() => router.back()}>
-        {personaId === "returning" && totalCount > 0 ? (
+        {totalCount > 0 ? (
           <button
             type="button"
             onClick={() => {

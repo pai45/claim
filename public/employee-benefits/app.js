@@ -41,6 +41,9 @@ const walletOverlayPrimaryAction = document.querySelector(
 const walletOverlayDirectoryCopy = document.querySelector(
   "[data-wallet-overlay-directory-copy]",
 );
+const walletOverlayMerchantTools = document.querySelector(
+  "[data-wallet-overlay-merchant-tools]",
+);
 const walletOverlaySelectCopy = document.querySelector(
   "[data-wallet-overlay-select-copy]",
 );
@@ -323,6 +326,17 @@ const personaDefinitions = {
     hasTransactions: true,
     hasUpiId: true,
   },
+  rahul_onboarding: {
+    name: "Rahul Verma",
+    initials: "R",
+    access: {
+      products: { ebPlus: true, plusPay: true },
+      upiEnabled: true,
+      defaultProduct: "lens",
+    },
+    hasTransactions: true,
+    hasUpiId: true,
+  },
   new_user: {
     name: "Aarav Patel",
     initials: "A",
@@ -370,6 +384,15 @@ const personaDefinitions = {
 };
 const personaFinancialState = {
   returning: {
+    wallets: {
+      meal: { amount: 6400, display: "₹6,400" },
+      fuel: { amount: 3150, display: "₹3,150" },
+      misc: { amount: 9100, display: "₹9,100" },
+      gift: { amount: 6200, display: "6,200 pts" },
+    },
+    limitUsed: 4200,
+  },
+  rahul_onboarding: {
     wallets: {
       meal: { amount: 6400, display: "₹6,400" },
       fuel: { amount: 3150, display: "₹3,150" },
@@ -1201,9 +1224,7 @@ function renderUpiSetupFlow() {
       <button class="upi-setup-backdrop" type="button" aria-label="Close UPI setup" data-upi-setup-action="close"></button>
       <section class="upi-setup-screen upi-setup-safety" role="dialog" aria-modal="true" aria-labelledby="upi-safety-title" tabindex="-1" data-upi-setup-dialog>
         <main class="upi-safety-hero">
-          <span class="upi-safety-mark" aria-hidden="true">
-            <svg viewBox="0 0 96 104"><path d="M48 5 81 17v27c0 24-14 43-33 53C29 87 15 68 15 44V17L48 5Z" fill="currentColor"/><path d="m32 50 10 10 23-25" fill="none" stroke="#0f5d4c" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"/></svg>
-          </span>
+          <img class="upi-safety-mark" src="./assets/upi-setup/security.svg" alt="" />
           <h1 id="upi-safety-title">Important</h1>
           <p>Safety Guidelines</p>
         </main>
@@ -5317,6 +5338,8 @@ function openWalletOverlay(button) {
 
   if (walletOverlayName) walletOverlayName.textContent = walletName;
   if (walletOverlayBalance) walletOverlayBalance.textContent = walletBalance;
+  if (walletOverlayMerchantTools)
+    walletOverlayMerchantTools.hidden = walletTone === "misc";
   if (walletOverlayDirectoryCopy)
     walletOverlayDirectoryCopy.textContent = overlayContent.directoryCopy;
   if (walletOverlaySelectCopy)
@@ -5728,6 +5751,7 @@ function syncPersonaToApp(payload) {
     "is-product-locked",
     isProductLocked,
   );
+  document.body.classList.toggle("is-brand-new-user", isNewUser);
   document.body.classList.toggle("is-no-upi", !access.upiEnabled);
   document.body.classList.toggle("is-lens-disabled", !access.products.ebPlus);
   document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);

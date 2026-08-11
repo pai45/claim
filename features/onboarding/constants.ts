@@ -59,6 +59,16 @@ export const NEW_USER_IDENTITY: IdentityForm = {
   dateOfBirth: "15/08/1995",
 };
 
+export const RAHUL_ONBOARDING_IDENTITY: IdentityForm = {
+  email: "rahul.verma@infosys.com",
+  emailVerified: false,
+  title: "Mr.",
+  firstName: "Rahul",
+  middleName: "",
+  lastName: "Verma",
+  dateOfBirth: "15/03/1995",
+};
+
 const READY_PERSONA_IDENTITIES: Partial<Record<PersonaId, IdentityForm>> = {
   ebPlus_only: {
     email: "neha.kapoor@infosys.com",
@@ -91,6 +101,7 @@ const READY_PERSONA_IDENTITIES: Partial<Record<PersonaId, IdentityForm>> = {
 
 export function getIdentityForPersona(personaId: PersonaId = "returning"): IdentityForm {
   if (personaId === "new_user") return { ...NEW_USER_IDENTITY };
+  if (personaId === "rahul_onboarding") return { ...RAHUL_ONBOARDING_IDENTITY };
   return { ...(READY_PERSONA_IDENTITIES[personaId] ?? DEFAULT_IDENTITY) };
 }
 

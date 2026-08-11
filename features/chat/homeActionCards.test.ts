@@ -63,4 +63,13 @@ describe("Benefits Assistant home action cards", () => {
       }),
     ).toEqual({ showNotifications: false, registration: null });
   });
+
+  it("shows returning notifications for Rahul", () => {
+    expect(
+      getHomeActionCardState("rahul_onboarding", 5, {
+        isVehicleRegistered: true,
+        isDriverRegistered: true,
+      }),
+    ).toEqual({ showNotifications: true, registration: null });
+  });
 });
