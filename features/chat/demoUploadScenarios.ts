@@ -162,26 +162,6 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
     },
   },
   {
-    id: "gift",
-    label: "Gift Bill",
-    description: "Festival gift purchase",
-    group: "common",
-    asset: DEMO_DOCUMENT_ASSETS.billGift,
-    assistantMessage:
-      "I found a Festival Gift House invoice. It is ready as a Gift Wallet claim.",
-    referenceNow: DEMO_REFERENCE_NOW,
-    extract: {
-      fileName: "festival-gift.jpg",
-      category: "Gift Wallet",
-      vendor: "Festival Gift House",
-      amount: "3500",
-      billDate: "2026-08-02",
-      billingMonth: "2026-08",
-      invoiceNo: "GIFT-0802",
-      confidence: 100,
-    },
-  },
-  {
     id: "books",
     label: "Books & Periodicals",
     description: "Professional book invoice",

@@ -18,6 +18,32 @@ function renderConfirm(state: ScanPayState): string {
 }
 
 describe("ScanPayConfirm payment source", () => {
+  it("hides the payment-category prompt and selection in the EB+ journey", () => {
+    const state = createInitialScanPayState("success", "benefits", "meal");
+    const markup = renderConfirm(state);
+    const categoryPickerMarkup = renderConfirm({
+      ...state,
+      step: "categoryPicker",
+    });
+
+    expect(markup).not.toContain("Paying for");
+    expect(markup).not.toContain("Food &amp; Drinks");
+    expect(categoryPickerMarkup).not.toContain("Select category for the payment");
+  });
+
+  it("keeps the payment-category prompt and selection in the PlusPay journey", () => {
+    const state = createInitialScanPayState("success", "pluspay", "meal");
+    const markup = renderConfirm(state);
+    const categoryPickerMarkup = renderConfirm({
+      ...state,
+      step: "categoryPicker",
+    });
+
+    expect(markup).toContain("Paying for");
+    expect(markup).toContain("Food &amp; Drinks");
+    expect(categoryPickerMarkup).toContain("Select category for the payment");
+  });
+
   it("shows the assigned EB+ wallet icon, full name, and live balance", () => {
     const markup = renderConfirm(
       createInitialScanPayState("success", "benefits", "meal"),

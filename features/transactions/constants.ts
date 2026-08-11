@@ -1,5 +1,6 @@
 import { formatINR as formatClaimsINR } from "@/features/claims-history/constants";
 import { getActivePersonaId } from "@/features/persona/store";
+import { getBenefitsStatePersonaId } from "@/features/persona/benefitsState";
 import type { PersonaId } from "@/features/persona/types";
 import {
   getPersonaFinancialDelta,
@@ -8,7 +9,7 @@ import {
 } from "@/features/transactions/financialState";
 import { colors } from "@/lib/ui/colors";
 
-export type TransactionWallet = "meal" | "fuel" | "misc" | "gift";
+export type TransactionWallet = "meal" | "fuel" | "misc" | "mobile";
 
 export type TransactionIconId =
   | "bag"
@@ -16,7 +17,7 @@ export type TransactionIconId =
   | "car"
   | "money"
   | "fuel"
-  | "gift";
+  | "mobile";
 
 export type TransactionItem = {
   id: string;
@@ -73,16 +74,16 @@ export const WALLET_FILTER_OPTIONS: readonly WalletFilterOption[] = [
     iconClass: "text-wallet-reimbursement",
   },
   {
-    id: "gift",
-    label: "Gift Wallet",
-    toneClass: "wallet-bg-gift",
-    iconClass: "text-wallet-gift",
+    id: "mobile",
+    label: "Mobile & Internet",
+    toneClass: "wallet-bg-mobile",
+    iconClass: "text-wallet-mobile",
   },
 ] as const;
 
 export type WalletBalance = {
   amount: number;
-  /** Pre-formatted for display; the gift wallet is denominated in points. */
+  /** Pre-formatted balance shown on hosted and React wallet surfaces. */
   display: string;
 };
 
@@ -98,13 +99,13 @@ const WALLET_BALANCES: Record<
     meal: { amount: 6400, display: "₹6,400" },
     fuel: { amount: 3150, display: "₹3,150" },
     misc: { amount: 9100, display: "₹9,100" },
-    gift: { amount: 6200, display: "6,200 pts" },
+    mobile: { amount: 2000, display: "₹2,000" },
   },
   new_user: {
     meal: { amount: 10000, display: "₹10,000" },
     fuel: { amount: 10000, display: "₹10,000" },
     misc: { amount: 10000, display: "₹10,000" },
-    gift: { amount: 10000, display: "10,000 pts" },
+    mobile: { amount: 2000, display: "₹2,000" },
   },
 };
 
@@ -114,10 +115,17 @@ export function getWalletBalance(
   includePersisted = true,
 ): WalletBalance {
   const activePersona = personaId ?? getActivePersonaId();
-  const base = activePersona === "new_user"
+  const base = getBenefitsStatePersonaId(activePersona) === "new_user"
     ? WALLET_BALANCES.new_user[walletId]
     : WALLET_BALANCES.returning[walletId];
-  if (walletId === "gift") return base;
+  if (walletId === "mobile") {
+    const debited = includePersisted
+      ? getPersonaFinancialDelta(activePersona).mobileClaimDebits
+      : {};
+    const reserved = Object.values(debited).reduce((sum, amount) => sum + amount, 0);
+    const amount = Math.max(0, base.amount - reserved);
+    return { amount, display: formatINR(amount) };
+  }
   const debited = includePersisted
     ? (getPersonaFinancialDelta(activePersona).debits[walletId] ?? 0)
     : 0;
@@ -130,7 +138,7 @@ export function getBaseWalletBalances(
 ): Record<FundingWalletId, number> {
   const activePersona = personaId ?? getActivePersonaId();
   const base =
-    activePersona === "new_user"
+    getBenefitsStatePersonaId(activePersona) === "new_user"
       ? WALLET_BALANCES.new_user
       : WALLET_BALANCES.returning;
   return {
@@ -210,14 +218,14 @@ const WALLET_NAMES: Record<TransactionWallet, string> = {
   meal: "Meal Wallet",
   fuel: "Fuel Wallet",
   misc: "Reimbursement Wallet",
-  gift: "Gift Wallet",
+  mobile: "Mobile & Internet",
 };
 
 const CATEGORY_ICONS: Record<TransactionWallet, AnalyticsCategory["icon"]> = {
   meal: "dining",
   fuel: "travel",
   misc: "bills",
-  gift: "shopping",
+  mobile: "bills",
 };
 
 const DATE_LABEL_FORMATTER = new Intl.DateTimeFormat("en-GB", {
@@ -321,17 +329,6 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
   transaction({ id: "misc-may-01", merchant: "Airtel Broadband", amount: 1299, postedOn: "2026-05-12", wallet: "misc", icon: "money", category: "Bills", refId: "3277834112" }),
   transaction({ id: "misc-apr-01", merchant: "Urban Company", amount: 1450, postedOn: "2026-04-08", wallet: "misc", icon: "money", category: "Services", refId: "3277834008" }),
 
-  transaction({ id: "gift-08", merchant: "Lifestyle Store", amount: 2400, postedOn: "2026-08-27", wallet: "gift", icon: "gift", category: "Fashion", refId: "4277834727" }),
-  transaction({ id: "txn-amazon", merchant: "Amazon", amount: 1500, postedOn: "2026-08-22", wallet: "gift", icon: "bag", category: "Shopping", refId: "4277834722" }),
-  transaction({ id: "gift-01", merchant: "Amazon Pay", amount: 1000, postedOn: "2026-08-15", wallet: "gift", icon: "gift", category: "Gift Cards", refId: "4277834682" }),
-  transaction({ id: "gift-02", merchant: "Lifestyle Store", amount: 2000, postedOn: "2026-08-12", wallet: "gift", icon: "gift", category: "Fashion", refId: "4277834639" }),
-  transaction({ id: "gift-03", merchant: "Shoppers Stop", amount: 1200, postedOn: "2026-08-09", wallet: "gift", icon: "gift", category: "Shopping", refId: "4277834606" }),
-  transaction({ id: "gift-04", merchant: "Myntra", amount: 850, postedOn: "2026-08-06", wallet: "gift", icon: "gift", category: "Fashion", refId: "4277834581" }),
-  transaction({ id: "gift-05", merchant: "BookMyShow", amount: 480, postedOn: "2026-08-02", wallet: "gift", icon: "gift", category: "Entertainment", refId: "4277834555", paymentMethod: "UPI" }),
-  transaction({ id: "gift-06", merchant: "Croma", amount: 2400, postedOn: "2026-07-21", wallet: "gift", icon: "gift", category: "Shopping", refId: "4277834420" }),
-  transaction({ id: "gift-07", merchant: "Amazon Pay", amount: 750, postedOn: "2026-06-14", wallet: "gift", icon: "gift", category: "Gift Cards", refId: "4277834316" }),
-  transaction({ id: "gift-may-01", merchant: "Myntra", amount: 900, postedOn: "2026-05-11", wallet: "gift", icon: "gift", category: "Fashion", refId: "4277834111" }),
-  transaction({ id: "gift-apr-01", merchant: "BookMyShow", amount: 600, postedOn: "2026-04-06", wallet: "gift", icon: "gift", category: "Entertainment", refId: "4277834006", paymentMethod: "UPI" }),
 ].sort((left, right) => {
   const dateOrder = right.postedOn.localeCompare(left.postedOn);
   return dateOrder === 0 ? left.id.localeCompare(right.id) : dateOrder;
@@ -339,16 +336,16 @@ export const TRANSACTION_ITEMS: TransactionItem[] = [
 
 const NEW_USER_TOP_UP_TRANSACTIONS: TransactionItem[] = (
   [
-    { wallet: "meal", icon: "food", refId: "NU10000001" },
-    { wallet: "fuel", icon: "fuel", refId: "NU10000002" },
-    { wallet: "misc", icon: "money", refId: "NU10000003" },
-    { wallet: "gift", icon: "gift", refId: "NU10000004" },
+    { wallet: "meal", icon: "food", refId: "NU10000001", amount: 10000 },
+    { wallet: "fuel", icon: "fuel", refId: "NU10000002", amount: 10000 },
+    { wallet: "misc", icon: "money", refId: "NU10000003", amount: 10000 },
+    { wallet: "mobile", icon: "mobile", refId: "NU10000004", amount: 2000 },
   ] as const
-).map(({ wallet, icon, refId }) =>
+).map(({ wallet, icon, refId, amount = 10000 }) =>
   transaction({
     id: `new-user-${wallet}-top-up`,
     merchant: "Top Up",
-    amount: 10000,
+    amount,
     postedOn: "2026-08-01",
     wallet,
     icon,
@@ -365,7 +362,7 @@ export function getTransactionItems(
 ): TransactionItem[] {
   const activePersona = personaId ?? getActivePersonaId();
   const seeded =
-    activePersona === "new_user"
+    getBenefitsStatePersonaId(activePersona) === "new_user"
       ? NEW_USER_TOP_UP_TRANSACTIONS
       : TRANSACTION_ITEMS;
   const added = includePersisted

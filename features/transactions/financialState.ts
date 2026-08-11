@@ -1,4 +1,3 @@
-import { useSyncExternalStore } from "react";
 import type { PersonaId } from "@/features/persona/types";
 import type {
   TransactionItem,
@@ -10,7 +9,8 @@ export const FINANCIAL_STATE_STORAGE_KEY =
 export const FINANCIAL_STATE_VERSION = 1;
 export const FINANCIAL_STATE_EVENT = "eb-claims:financial-state-updated";
 
-export type FundingWalletId = Exclude<TransactionWallet, "gift">;
+/** Wallets eligible for the existing Scan & Pay/transfer funding flows. */
+export type FundingWalletId = Exclude<TransactionWallet, "mobile">;
 
 export type FundingAllocation = {
   walletId: FundingWalletId;
@@ -20,6 +20,8 @@ export type FundingAllocation = {
 
 export type PersonaFinancialDelta = {
   debits: Partial<Record<FundingWalletId, number>>;
+  /** Claim amounts reserved against the Mobile & Internet wallet by claim ID. */
+  mobileClaimDebits: Record<string, number>;
   transactions: TransactionItem[];
   committedPaymentIds: string[];
 };
@@ -46,6 +48,7 @@ export type CommitBenefitPaymentResult =
 
 const EMPTY_PERSONA_DELTA: PersonaFinancialDelta = {
   debits: {},
+  mobileClaimDebits: {},
   transactions: [],
   committedPaymentIds: [],
 };
@@ -91,11 +94,13 @@ export function getPersonaFinancialDelta(
   return state
     ? {
         debits: { ...state.debits },
+        mobileClaimDebits: { ...(state.mobileClaimDebits ?? {}) },
         transactions: [...state.transactions],
         committedPaymentIds: [...state.committedPaymentIds],
       }
     : {
         debits: {},
+        mobileClaimDebits: {},
         transactions: [],
         committedPaymentIds: [],
       };
@@ -129,6 +134,7 @@ export function commitBenefitPayment(
   }
   const next: PersonaFinancialDelta = {
     debits: nextDebits,
+    mobileClaimDebits: { ...current.mobileClaimDebits },
     transactions: [...input.rows, ...current.transactions],
     committedPaymentIds: [
       input.paymentId,
@@ -153,12 +159,109 @@ export function commitBenefitPayment(
   return { status: "committed" };
 }
 
-export function useFinancialStateVersion(): string | null {
-  return useSyncExternalStore(
-    subscribeToFinancialState,
-    getFinancialSnapshot,
-    () => null,
-  );
+export type CommitMobileClaimResult =
+  | { status: "committed" }
+  | { status: "duplicate" }
+  | { status: "insufficient" };
+
+function writePersonaFinancialDelta(
+  personaId: PersonaId,
+  next: PersonaFinancialDelta,
+  storage: StorageLike | null,
+): void {
+  const state = readFinancialState(storage);
+  const persisted: PersistedFinancialState = {
+    ...state,
+    personas: { ...state.personas, [personaId]: next },
+  };
+  if (storage) {
+    try {
+      storage.setItem(FINANCIAL_STATE_STORAGE_KEY, JSON.stringify(persisted));
+    } catch {
+      // Keep the local demo usable when browser storage is unavailable.
+    }
+  }
+  if (typeof window !== "undefined" && storage === window.sessionStorage) {
+    window.dispatchEvent(new Event(FINANCIAL_STATE_EVENT));
+  }
+}
+
+export function getMobileClaimDebit(
+  personaId: PersonaId,
+  storage: StorageLike | null = defaultStorage(),
+): number {
+  return Object.values(getPersonaFinancialDelta(personaId, storage).mobileClaimDebits)
+    .reduce((sum, amount) => sum + amount, 0);
+}
+
+/** Reserve Mobile & Internet funds once for a submitted claim. */
+export function commitMobileClaim(
+  {
+    personaId,
+    claimId,
+    amount,
+    baseBalance,
+  }: {
+    personaId: PersonaId;
+    claimId: string;
+    amount: number;
+    baseBalance: number;
+  },
+  storage: StorageLike | null = defaultStorage(),
+): CommitMobileClaimResult {
+  const normalizedClaimId = claimId.trim().toUpperCase();
+  if (!Number.isFinite(amount) || amount <= 0) return { status: "insufficient" };
+  const current = getPersonaFinancialDelta(personaId, storage);
+  if (current.mobileClaimDebits[normalizedClaimId] !== undefined) {
+    return { status: "duplicate" };
+  }
+  if (amount > Math.max(0, baseBalance - getMobileClaimDebit(personaId, storage))) {
+    return { status: "insufficient" };
+  }
+  writePersonaFinancialDelta(personaId, {
+    ...current,
+    mobileClaimDebits: {
+      ...current.mobileClaimDebits,
+      [normalizedClaimId]: amount,
+    },
+  }, storage);
+  return { status: "committed" };
+}
+
+/** Reprice a previously submitted Mobile & Internet claim without double-debiting. */
+export function updateMobileClaim(
+  input: { personaId: PersonaId; claimId: string; amount: number; baseBalance: number },
+  storage: StorageLike | null = defaultStorage(),
+): CommitMobileClaimResult {
+  const normalizedClaimId = input.claimId.trim().toUpperCase();
+  const current = getPersonaFinancialDelta(input.personaId, storage);
+  const previous = current.mobileClaimDebits[normalizedClaimId];
+  if (previous === undefined) return commitMobileClaim(input, storage);
+  const usedExcludingCurrent = getMobileClaimDebit(input.personaId, storage) - previous;
+  if (!Number.isFinite(input.amount) || input.amount <= 0 || input.amount > input.baseBalance - usedExcludingCurrent) {
+    return { status: "insufficient" };
+  }
+  writePersonaFinancialDelta(input.personaId, {
+    ...current,
+    mobileClaimDebits: {
+      ...current.mobileClaimDebits,
+      [normalizedClaimId]: input.amount,
+    },
+  }, storage);
+  return { status: "committed" };
+}
+
+export function releaseMobileClaim(
+  personaId: PersonaId,
+  claimId: string,
+  storage: StorageLike | null = defaultStorage(),
+): void {
+  const normalizedClaimId = claimId.trim().toUpperCase();
+  const current = getPersonaFinancialDelta(personaId, storage);
+  if (current.mobileClaimDebits[normalizedClaimId] === undefined) return;
+  const mobileClaimDebits = { ...current.mobileClaimDebits };
+  delete mobileClaimDebits[normalizedClaimId];
+  writePersonaFinancialDelta(personaId, { ...current, mobileClaimDebits }, storage);
 }
 
 export function subscribeToFinancialState(listener: () => void): () => void {
@@ -176,7 +279,7 @@ export function subscribeToFinancialState(listener: () => void): () => void {
   };
 }
 
-function getFinancialSnapshot(): string {
+export function getFinancialSnapshot(): string {
   if (typeof window === "undefined") return "";
   try {
     return window.sessionStorage.getItem(FINANCIAL_STATE_STORAGE_KEY) ?? "";
@@ -188,6 +291,7 @@ function getFinancialSnapshot(): string {
 export function emptyPersonaFinancialDelta(): PersonaFinancialDelta {
   return {
     debits: { ...EMPTY_PERSONA_DELTA.debits },
+    mobileClaimDebits: { ...EMPTY_PERSONA_DELTA.mobileClaimDebits },
     transactions: [],
     committedPaymentIds: [],
   };

@@ -18,9 +18,9 @@ function precheck(id: BillUploadScenarioId) {
 }
 
 describe("demo document upload scenarios", () => {
-  it("registers 12 unique bill scenarios and two unique DL scenarios", () => {
-    expect(BILL_UPLOAD_SCENARIOS).toHaveLength(12);
-    expect(new Set(BILL_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(12);
+  it("registers 11 unique bill scenarios and two unique DL scenarios", () => {
+    expect(BILL_UPLOAD_SCENARIOS).toHaveLength(11);
+    expect(new Set(BILL_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(11);
     expect(DL_UPLOAD_SCENARIOS).toHaveLength(2);
     expect(new Set(DL_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(2);
   });
@@ -30,7 +30,7 @@ describe("demo document upload scenarios", () => {
       ...BILL_UPLOAD_SCENARIOS.map(({ asset }) => asset),
       ...DL_UPLOAD_SCENARIOS.map(({ asset }) => asset),
     ];
-    expect(new Set(assets).size).toBe(14);
+    expect(new Set(assets).size).toBe(13);
     for (const asset of assets) {
       expect(existsSync(join(process.cwd(), "public", asset))).toBe(true);
     }
@@ -41,7 +41,6 @@ describe("demo document upload scenarios", () => {
     "fuel",
     "internet",
     "mobile",
-    "gift",
     "books",
     "professional",
   ] as const)("makes %s a passing claim", (id) => {

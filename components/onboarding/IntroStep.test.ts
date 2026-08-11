@@ -16,4 +16,12 @@ describe("IntroStep", () => {
     expect(markup).toContain(">Activate Benefits Program</button>");
     expect(markup).not.toContain("disabled=\"\"");
   });
+
+  it("renders a back navigation control when an exit handler is supplied", () => {
+    const markup = renderToStaticMarkup(
+      createElement(IntroStep, { onContinue: vi.fn(), onBack: vi.fn() }),
+    );
+
+    expect(markup).toContain('aria-label="Back to Employee Benefits"');
+  });
 });

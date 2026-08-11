@@ -1,4 +1,6 @@
 import type { TransactionWallet } from "@/features/transactions/constants";
+import { AppIcon } from "@/components/shared/AppIcon";
+import { CATEGORY_ICONS } from "@/lib/ui/assets";
 
 type BenefitWalletIconProps = {
   wallet: TransactionWallet;
@@ -57,7 +59,11 @@ export function BenefitWalletIcon({
     );
   }
 
-  if (wallet === "gift") {
+  if (wallet === "mobile") {
+    return <AppIcon src={CATEGORY_ICONS.mobile} size={size} />;
+  }
+
+  if (false) {
     return (
       <svg {...common}>
         <path

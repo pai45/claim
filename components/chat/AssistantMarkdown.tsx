@@ -8,7 +8,8 @@ type AssistantMarkdownProps = {
 
 /**
  * ChatGPT/Grok-style prose rendering for assistant replies.
- * Supports headings, lists, emphasis, code, and simple tables.
+ * Supports headings, lists, emphasis, and code. Markdown tables become lists
+ * so that only the dashboard reply presents a table.
  */
 export function AssistantMarkdown({
   content,
@@ -91,25 +92,13 @@ export function AssistantMarkdown({
           ),
           hr: () => <hr className="my-3 border-border-soft" />,
           table: ({ children }) => (
-            <div className="mb-2.5 overflow-x-auto rounded-control ring-1 ring-border-soft last:mb-0">
-              <table className="w-full border-collapse text-left text-body-sm">
-                {children}
-              </table>
-            </div>
+            <div className="mb-2.5 flex flex-col gap-1.5 last:mb-0">{children}</div>
           ),
-          thead: ({ children }) => (
-            <thead className="bg-surface-tint text-pine">{children}</thead>
-          ),
-          th: ({ children }) => (
-            <th className="border-b border-border-line px-2.5 py-1.5 font-bold">
-              {children}
-            </th>
-          ),
-          td: ({ children }) => (
-            <td className="border-t border-border-soft px-2.5 py-1.5 align-top">
-              {children}
-            </td>
-          ),
+          thead: ({ children }) => <div className="font-bold text-pine">{children}</div>,
+          tbody: ({ children }) => <div className="flex flex-col gap-1.5">{children}</div>,
+          tr: ({ children }) => <div className="flex flex-wrap gap-x-2 gap-y-1">{children}</div>,
+          th: ({ children }) => <span className="font-bold text-pine">{children}</span>,
+          td: ({ children }) => <span>{children}</span>,
         }}
       >
         {content}

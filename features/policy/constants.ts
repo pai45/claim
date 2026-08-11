@@ -1,9 +1,10 @@
 import { getActivePersonaId } from "@/features/persona/store";
+import { getBenefitsStatePersonaId } from "@/features/persona/benefitsState";
 import type { PersonaId } from "@/features/persona/types";
+import { getMobileClaimDebit } from "@/features/transactions/financialState";
 
 export type PolicyTabId =
   | "meal"
-  | "gift"
   | "fuel"
   | "mobile"
   | "driver"
@@ -157,78 +158,6 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
       {
         title: "Payroll Review",
         detail: "Approved meal reimbursements are processed according to employer payroll policy.",
-      },
-    ],
-  },
-  {
-    id: "gift",
-    aliases: [
-      "gift",
-      "gifts",
-      "voucher",
-      "festival gift",
-      "gift wallet",
-      "gift card",
-      "reward",
-      "festival",
-    ],
-    tabLabel: "Gift Wallet",
-    title: "Gift Wallet Benefit",
-    whatIsHeading: "What is Gift Wallet Benefit?",
-    description:
-      "Employers commonly provide festival or occasion gift benefits through vouchers or reimbursements. This wallet helps you claim eligible gift spends under your company's gift policy.",
-    notes: [
-      "Eligible mainly for festival / employer-approved gift occasions",
-      "Cash gifts and personal lifestyle purchases are not covered",
-      "Gift vouchers or invoices must clearly show merchant and amount",
-      "Unused gift balance usually lapses as per company policy",
-    ],
-    benefits: [
-      {
-        title: "Tax Treatment",
-        detail: "As per company gift policy / Form 12BA practices",
-        icon: "tax",
-      },
-      {
-        title: "Annual Limit",
-        detail: "₹5,000",
-        icon: "limit",
-      },
-      {
-        title: "Proof Required",
-        detail: "Gift voucher / purchase invoices",
-        icon: "proof",
-      },
-      {
-        title: "Claim Frequency",
-        detail: "As incurred (festival window)",
-        icon: "frequency",
-      },
-    ],
-    covered: [
-      "Festival gift vouchers",
-      "Employer gift cards",
-      "Approved retail gift invoices",
-      "Diwali / Holi gift packs",
-      "Team celebration gifts",
-      "Company-listed merchants",
-    ],
-    steps: [
-      {
-        title: "Check Gift Window",
-        detail: "Confirm the festival or occasion window announced by HR.",
-      },
-      {
-        title: "Buy Eligible Gift",
-        detail: "Purchase from approved categories or voucher partners.",
-      },
-      {
-        title: "Upload Proof",
-        detail: "Submit voucher or invoice details in the claims assistant.",
-      },
-      {
-        title: "Receive Benefit",
-        detail: "Approved gift claims are reimbursed as per policy.",
       },
     ],
   },
@@ -610,20 +539,6 @@ const BENEFIT_CONFIGURATION: Record<
       requiredFields: ["category", "vendor", "amount", "billDate"],
     },
   },
-  gift: {
-    display: {
-      id: "gift",
-      label: "Gift Wallet",
-      iconBg: "#DAF7E7",
-      iconTone: "#039258",
-      dashboardEnabled: false,
-    },
-    balance: { allocation: 5000, utilized: 0, available: 5000 },
-    claimRules: {
-      proofRequired: "Gift voucher or purchase invoice",
-      requiredFields: ["category", "vendor", "amount", "billDate"],
-    },
-  },
   fuel: {
     display: {
       id: "fuel",
@@ -649,7 +564,7 @@ const BENEFIT_CONFIGURATION: Record<
       dashboardEnabled: true,
       dashboardIcon: "mobile",
     },
-    balance: { allocation: 30000, utilized: 8000, available: 22000 },
+    balance: { allocation: 2000, utilized: 0, available: 2000 },
     claimRules: {
       proofRequired: "Postpaid mobile or broadband GST invoice",
       submissionDeadlineDay: 5,
@@ -743,18 +658,32 @@ export function getEmployerBenefit(
     EMPLOYER_BENEFITS_CATALOG.benefits.find((b) => b.id === id) ??
     EMPLOYER_BENEFITS_CATALOG.benefits[0];
 
-  if (activePersona === "new_user") {
+  const benefitsPersona = getBenefitsStatePersonaId(activePersona);
+  const baseBalance = benefitsPersona === "new_user"
+    ? {
+      allocation: benefit.balance.allocation,
+      utilized: 0,
+      available: benefit.balance.allocation,
+    }
+    : benefit.balance;
+
+  if (benefit.id === "mobile") {
     return {
       ...benefit,
       balance: {
-        allocation: benefit.balance.allocation,
-        utilized: 0,
-        available: benefit.balance.allocation,
+        allocation: baseBalance.allocation,
+        utilized: getMobileClaimDebit(activePersona),
+        available: Math.max(
+          0,
+          baseBalance.allocation - getMobileClaimDebit(activePersona),
+        ),
       },
     };
   }
 
-  return benefit;
+  return benefitsPersona === "new_user"
+    ? { ...benefit, balance: baseBalance }
+    : benefit;
 }
 
 export function isPolicyTabId(value: string): value is PolicyTabId {

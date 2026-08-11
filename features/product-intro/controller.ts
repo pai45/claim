@@ -1,5 +1,4 @@
 import type { PersonaId } from "@/features/persona/types";
-import { hasReturningAccountState } from "@/features/persona/constants";
 
 export const PRODUCT_INTRO_SLIDES = [
   {
@@ -24,7 +23,7 @@ export const PRODUCT_INTRO_LAST_INDEX = PRODUCT_INTRO_SLIDES.length - 1;
 export const PRODUCT_INTRO_SWIPE_THRESHOLD_PX = 48;
 
 /**
- * Returning-account demos replay the product intro whenever selected. Other
+ * Aarav Patel (new_user) replays the product intro whenever selected. Other
  * profiles retain first-time-only behavior through the persisted completion
  * flag.
  */
@@ -34,7 +33,7 @@ export function shouldShowProductIntro(
   dismissedForSelection: boolean,
 ): boolean {
   if (!personaId || dismissedForSelection) return false;
-  return hasReturningAccountState(personaId) || !completed;
+  return personaId === "new_user" || !completed;
 }
 
 export function nextProductIntroIndex(index: number): number {

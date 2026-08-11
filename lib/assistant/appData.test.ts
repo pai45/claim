@@ -135,7 +135,7 @@ describe("grounded sources beyond the dashboard", () => {
     };
 
     expect(source.wallets.map((wallet) => wallet.categoryId)).toEqual(
-      expect.arrayContaining(["meal", "gift", "professional"]),
+      expect.arrayContaining(["meal", "mobile", "professional"]),
     );
   });
 
@@ -179,9 +179,9 @@ describe("grounded app-data answers", () => {
     const resolution = { kind: "dashboard" as const };
     const answer = createAppDataFallbackSummary("Show my dashboard", resolution);
 
-    expect(answer).toContain("1,95,000");
-    expect(answer).toContain("90,000");
-    expect(answer).toContain("2,85,000");
+    expect(answer).toContain("1,75,000");
+    expect(answer).toContain("82,000");
+    expect(answer).toContain("2,57,000");
   });
 
   it("summarizes a specific claim", () => {

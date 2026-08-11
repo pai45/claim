@@ -223,70 +223,15 @@ function mobileDashboard(): BenefitClaimsDashboard {
   return {
     categoryId: "mobile",
     title: "Mobile & Internet",
-    availableLimit: 22000,
-    utilized: 8000,
-    accrued: 30000,
+    availableLimit: 2000,
+    utilized: 0,
+    accrued: 2000,
     frequencyLabel: "Monthly",
     monthLabel: "July 2026",
-    monthTotal: 3200,
-    monthApproved: 2700,
-    monthPending: 500,
-    claims: [
-      {
-        id: "CLM-44201",
-        title: "Airtel Postpaid - July 2026",
-        category: "Mobile & Internet",
-        amount: 999,
-        date: "05 July 2026",
-        submittedOn: "2026-07-05",
-        status: "Approved",
-      },
-      {
-        id: "CLM-44185",
-        title: "Jio Fiber - July 2026",
-        category: "Mobile & Internet",
-        amount: 1299,
-        date: "03 July 2026",
-        submittedOn: "2026-07-03",
-        status: "Approved",
-      },
-      {
-        id: "CLM-44140",
-        title: "Airtel Broadband - June 2026",
-        category: "Mobile & Internet",
-        amount: 500,
-        date: "28 June 2026",
-        submittedOn: "2026-06-28",
-        status: "Pending",
-      },
-      {
-        id: "CLM-44090",
-        title: "Airtel Postpaid - June 2026",
-        category: "Mobile & Internet",
-        amount: 999,
-        date: "05 June 2026",
-        submittedOn: "2026-06-05",
-        status: "Approved",
-      },
-      {
-        id: "CLM-43955",
-        title: "Jio Fiber - May 2026",
-        category: "Mobile & Internet",
-        amount: 1304,
-        date: "06 May 2026",
-        submittedOn: "2026-05-06",
-        status: "Approved",
-      },
-      {
-        id: "CLM-43840",
-        title: "Airtel Annual Data Plan - April 2026",
-        category: "Mobile & Internet",
-        amount: 3399,
-        date: "09 Apr 2026",
-        submittedOn: "2026-04-09",
-        status: "Approved",
-      },
-    ],
+    monthTotal: 0,
+    monthApproved: 0,
+    monthPending: 0,
+    claims: [],
   };
 }
 
@@ -403,22 +348,6 @@ function mealDashboard(): BenefitClaimsDashboard {
   };
 }
 
-function giftDashboard(): BenefitClaimsDashboard {
-  return {
-    categoryId: "gift",
-    title: "Gift Wallet",
-    availableLimit: 5000,
-    utilized: 0,
-    accrued: 5000,
-    frequencyLabel: "As incurred",
-    monthLabel: "July 2026",
-    monthTotal: 0,
-    monthApproved: 0,
-    monthPending: 0,
-    claims: [],
-  };
-}
-
 const DASHBOARDS: Record<string, BenefitClaimsDashboard> = {
   books: booksDashboard(),
   fuel: fuelDashboard(),
@@ -426,7 +355,6 @@ const DASHBOARDS: Record<string, BenefitClaimsDashboard> = {
   driver: driverDashboard(),
   professional: professionalDashboard(),
   meal: mealDashboard(),
-  gift: giftDashboard(),
 };
 
 /** Flat list of all sample benefit claims (for claim-details lookup). */

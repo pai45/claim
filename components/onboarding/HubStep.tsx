@@ -72,7 +72,7 @@ export function HubStep({
         }
         onBack={onBack}
       />
-      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4">
+      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4 pt-5">
         {steps.map((step, index) => {
           const status = statusFor(step.id);
           return (

@@ -180,9 +180,9 @@ export const FEATURE_WALLETS = [
     ink: "#5D50C6",
   },
   {
-    id: "gift",
-    title: "Gift Wallet",
-    description: "Rewards, vouchers, and gifting.",
+    id: "mobile",
+    title: "Mobile & Internet",
+    description: "Postpaid mobile and broadband expenses.",
     bg: "linear-gradient(180deg, #E3F7EA, #CAEFD9)",
     ink: "#1C8D59",
   },

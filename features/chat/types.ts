@@ -21,7 +21,6 @@ export type BillUploadScenarioId =
   | "fuel_exceeding"
   | "internet"
   | "mobile"
-  | "gift"
   | "books"
   | "professional"
   | "duplicate"

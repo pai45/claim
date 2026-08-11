@@ -2,7 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { DEMO_KIT_NUMBER, FEATURE_WALLETS } from "@/features/onboarding/constants";
+import {
+  DEMO_KIT_NUMBER,
+  FEATURE_WALLETS,
+} from "@/features/onboarding/constants";
 import type {
   AddressForm,
   CardEmbossmentForm,
@@ -36,10 +39,10 @@ export function CardChoiceStep({
         subtitle="Do you already have a card welcome kit, or would you like us to send you a new one?"
         onBack={onBack}
       />
-      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4">
+      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4 pt-5">
         <ChoiceCard
           title="Order a New Card"
-          description="We'll deliver your card to your address."
+          description="We'll deliver your card to your address"
           onClick={onOrderNew}
           icon="box"
         />
@@ -106,10 +109,11 @@ export function CardAddressStep({
     <>
       <OnboardingHeader
         title="Order a New Card"
-        subtitle="We'll deliver your card to your address."
+        subtitle="We'll deliver your card to your address"
         onBack={onBack}
       />
-      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4">
+      <CardOrderProgress label="Delivery Address" step={1} />
+      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4 pt-5">
         <p className="type-body font-bold text-ink">
           Your card will be delivered to this address.
         </p>
@@ -161,33 +165,51 @@ export function CardEmbossmentStep({
   onComplete,
 }: CardEmbossmentStepProps) {
   const [successOpen, setSuccessOpen] = useState(false);
-  const cardholder = `${embossment.firstName.trim()} ${embossment.lastName.trim()}`
-    .trim()
-    .toUpperCase();
+  const [warning, setWarning] = useState<string | null>(null);
+
+  const cardholder =
+    `${embossment.firstName.trim()} ${embossment.lastName.trim()}`
+      .trim()
+      .toUpperCase();
   const canProceed = Boolean(
     embossment.firstName.trim() && embossment.lastName.trim(),
   );
 
+  const handleNameChange = (field: "firstName" | "lastName", value: string) => {
+    const otherField =
+      field === "firstName" ? embossment.lastName : embossment.firstName;
+    const spaceLength = value.length > 0 && otherField.length > 0 ? 1 : 0;
+    const totalLength = value.length + otherField.length + spaceLength;
+
+    if (totalLength > 23) {
+      setWarning("Maximum 23 characters allowed");
+      return;
+    }
+    setWarning(null);
+    onChange(field, value);
+  };
+
   return (
     <>
       <CardOrderHeader onBack={onBack} />
-      <CardOrderProgress />
+      <CardOrderProgress label="Name Embossment" step={2} />
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#f4f4f4] px-5 py-5">
         <section className="rounded-card bg-white p-3 shadow-card">
           <div className="flex flex-col gap-4">
             <TextField
               label="First Name"
               value={embossment.firstName}
-              onChange={(value) => onChange("firstName", value)}
+              onChange={(value) => handleNameChange("firstName", value)}
               placeholder="e.g. Vishal"
             />
             <TextField
               label="Last Name"
               value={embossment.lastName}
-              onChange={(value) => onChange("lastName", value)}
+              onChange={(value) => handleNameChange("lastName", value)}
               placeholder="e.g. Sharma"
             />
           </div>
+          {warning && <p className="mt-3 text-sm text-[#e04545]">{warning}</p>}
           <CardEmbossmentPreview cardholder={cardholder || "YOUR NAME"} />
         </section>
       </main>
@@ -216,7 +238,10 @@ export function CardEmbossmentStep({
 function CardOrderHeader({ onBack }: { onBack: () => void }) {
   return (
     <header className="shrink-0 bg-white px-5 pb-4 pt-1">
-      <BackNavigationButton onClick={onBack} ariaLabel="Back to delivery address" />
+      <BackNavigationButton
+        onClick={onBack}
+        ariaLabel="Back to delivery address"
+      />
       <h1 className="type-screen-title mt-2 text-[26px] leading-tight text-[#20252b]">
         Order a New Card
       </h1>
@@ -227,14 +252,17 @@ function CardOrderHeader({ onBack }: { onBack: () => void }) {
   );
 }
 
-function CardOrderProgress() {
+function CardOrderProgress({ label, step }: { label: string; step: 1 | 2 }) {
+  const totalSteps = 2;
   return (
     <section
-      className="relative shrink-0 bg-[#ddf0dc] px-5 py-2"
-      aria-label="Card order, step 2 of 2"
+      className="relative mt-5 shrink-0 bg-[#ddf0dc] px-5 py-2"
+      aria-label={`Card order, step ${step} of ${totalSteps}`}
     >
-      <p className="type-body-sm font-bold text-ink">Name Embossment</p>
-      <p className="text-caption text-ink-secondary">Step 2 of 2</p>
+      <p className="text-body-sm font-bold text-ink">{label}</p>
+      <p className="text-caption text-ink-secondary">
+        Step {step} of {totalSteps}
+      </p>
       <span
         className="absolute bottom-0 left-0 h-0.5 w-1/2 bg-mint"
         aria-hidden="true"
@@ -250,7 +278,9 @@ function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
       aria-label={`Card preview for ${cardholder}`}
     >
       <Image
-        src={withBasePath("/employee-benefits/assets/icons/icici-card-front.png")}
+        src={withBasePath(
+          "/employee-benefits/assets/icons/icici-card-front.png",
+        )}
         alt=""
         fill
         sizes="(max-width: 434px) 100vw, 340px"
@@ -265,17 +295,15 @@ function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
       />
       <div className="absolute inset-x-[5%] top-[31%]">
         <p className="text-[10px] font-normal text-[#bdd2d0]">CARD NUMBER</p>
-        <div className="mt-1 flex items-center justify-between gap-2">
+        <div className="mt-1">
           <p className="whitespace-nowrap text-[15px] tracking-[0.22em]">
-            •••• •••• ••••
+            •••• •••• •••• ••••
           </p>
-          <p className="text-[15px] tracking-[0.22em]">7845</p>
         </div>
       </div>
       <div className="absolute inset-x-[5%] bottom-[11%] flex items-end justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-[14px] leading-none">{cardholder}</p>
-          <p className="mt-1 text-[9px] text-[#bdd2d0]">CARD HOLDER</p>
         </div>
         <div className="shrink-0 text-right">
           <p className="text-[14px] font-bold leading-none">12/28</p>
@@ -324,7 +352,7 @@ export function CardKitStep({
         subtitle="Please check the welcome envelope that accompanied your card for this information"
         onBack={onBack}
       />
-      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4">
+      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4 pt-5">
         <TextField
           label="Card Kit Number"
           value={kitNumber}
@@ -336,7 +364,13 @@ export function CardKitStep({
                 className="flex h-5 w-5 items-center justify-center rounded-full"
                 style={{ background: colors.success }}
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
                   <path
                     d="m6 12.5 4 4 8-9"
                     stroke="white"
@@ -354,7 +388,8 @@ export function CardKitStep({
           </p>
         ) : (
           <p className="text-caption text-ink-secondary">
-            Enter the kit number mentioned on the card kit. Demo: {DEMO_KIT_NUMBER}
+            Enter the kit number mentioned on the card kit. Demo:{" "}
+            {DEMO_KIT_NUMBER}
           </p>
         )}
         <button
@@ -409,7 +444,8 @@ export function ReadyStep({
   onToggleTap,
   onFinish,
 }: ReadyStepProps) {
-  const name = `${state.identity.firstName} ${state.identity.lastName}`.toUpperCase();
+  const name =
+    `${state.identity.firstName} ${state.identity.lastName}`.toUpperCase();
 
   return (
     <>
@@ -459,7 +495,9 @@ export function ReadyStep({
           </div>
         </section>
 
-        <h2 className="type-body mt-4 shrink-0 font-bold text-ink">Linked Wallets</h2>
+        <h2 className="type-body mt-4 shrink-0 font-bold text-ink">
+          Linked Wallets
+        </h2>
         <div className="mt-2 grid shrink-0 grid-cols-2 gap-2 rounded-card border border-border-line bg-white p-3 shadow-card">
           {FEATURE_WALLETS.map((wallet) => (
             <div
@@ -537,21 +575,37 @@ function ToggleRow({
 
 function BoxIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M3 8.5 12 4l9 4.5v7L12 20l-9-4.5v-7Z"
         stroke={colors.pinePrimary}
         strokeWidth="1.7"
         strokeLinejoin="round"
       />
-      <path d="M12 20V11M3 8.5 12 13l9-4.5" stroke={colors.pinePrimary} strokeWidth="1.7" />
+      <path
+        d="M12 20V11M3 8.5 12 13l9-4.5"
+        stroke={colors.pinePrimary}
+        strokeWidth="1.7"
+      />
     </svg>
   );
 }
 
 function CardIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <rect
         x="2.5"
         y="5"
@@ -568,7 +622,13 @@ function CardIcon() {
 
 function QrIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 3h3v3h-3v-3Zm3-3h3v3h-3v-3Zm-3 0h3v3h-3v-3Z"
         stroke={colors.pinePrimary}

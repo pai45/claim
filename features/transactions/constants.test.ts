@@ -8,6 +8,7 @@ import {
   getRecentTransactionsByWallet,
   getTransaction,
   getTransactionItems,
+  getWalletBalance,
 } from "./constants";
 
 describe("persona transaction data", () => {
@@ -17,16 +18,16 @@ describe("persona transaction data", () => {
     expect(items).toHaveLength(4);
     expect(items.map((item) => item.wallet).sort()).toEqual([
       "fuel",
-      "gift",
       "meal",
       "misc",
+      "mobile",
     ]);
     expect(
       items.every(
         (item) =>
           item.merchant === "Top Up" &&
           item.category === "Wallet Top Up" &&
-          item.amount === 10000 &&
+          item.amount === (item.wallet === "mobile" ? 2000 : 10000) &&
           item.type === "credit",
       ),
     ).toBe(true);
@@ -40,7 +41,7 @@ describe("persona transaction data", () => {
   it("preserves the canonical history for a returning user", () => {
     const items = getTransactionItems("returning");
     expect(items.length).toBeGreaterThan(0);
-    expect(getTransaction("txn-amazon", "returning")?.merchant).toBe("Amazon");
+    expect(getTransaction("txn-amazon", "returning")).toBeUndefined();
     expect(items.every((item) => getTransaction(item.id, "returning") === item)).toBe(true);
   });
 
@@ -57,8 +58,19 @@ describe("wallet transaction filters", () => {
       "meal",
       "fuel",
       "misc",
-      "gift",
+      "mobile",
     ]);
+  });
+
+  it("starts Mobile & Internet at ₹2,000 for every persona", () => {
+    expect(getWalletBalance("mobile", "returning", false)).toMatchObject({
+      amount: 2000,
+      display: "₹2,000",
+    });
+    expect(getWalletBalance("mobile", "new_user", false)).toMatchObject({
+      amount: 2000,
+      display: "₹2,000",
+    });
   });
 
   it("shows the selected wallet's current-month transactions", () => {

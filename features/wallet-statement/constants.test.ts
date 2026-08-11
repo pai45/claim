@@ -8,7 +8,7 @@ import {
 
 describe("wallet statements", () => {
   it("resolves every wallet opened from the home overlay", () => {
-    expect(["meal", "fuel", "misc", "gift"].every(isWalletStatementId)).toBe(true);
+    expect(["meal", "fuel", "misc", "mobile"].every(isWalletStatementId)).toBe(true);
     expect(getWalletStatement("misc").label).toBe("Reimbursement Wallet");
   });
 

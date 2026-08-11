@@ -211,7 +211,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
   const showEmptyState = isHydrated && !hasMessages;
 
   return (
-    <div className="relative min-h-dvh w-full overflow-hidden bg-[#F3F3F0]">
+    <div className="relative h-dvh w-full overflow-hidden bg-[#F3F3F0]">
       <div className="pointer-events-none fixed inset-0" aria-hidden>
         <ColorBends
           className="opacity-40"
@@ -240,7 +240,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex h-dvh w-full max-w-phone flex-col overflow-hidden bg-[#f4fcc7]/10 shadow-phone">
+      <div className="relative z-10 mx-auto flex h-full w-full max-w-phone flex-col overflow-hidden bg-[#f4fcc7]/10 shadow-phone">
         <ChatHeader onNewChat={requestClear} onBack={onClose} />
 
         <main

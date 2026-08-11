@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useRef, type Dispatch } from "react";
+import { useCallback, useEffect, useMemo, useRef, type Dispatch } from "react";
+import { NumericKeypad } from "@/components/mpin/NumericKeypad";
 import { ScanPayDrawer } from "@/components/scan-pay/ScanPayDrawer";
 import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { AppIcon } from "@/components/shared/AppIcon";
@@ -31,7 +32,7 @@ import {
   WALLET_FILTER_OPTIONS,
   getWalletBalance,
 } from "@/features/transactions/constants";
-import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
 import { SCAN_PAY_ASSETS, UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
 
 /**
@@ -127,6 +128,7 @@ export function ScanPayConfirm({
     (Boolean(bankRecipient) || state.amount !== "");
   const amountFontSize = amountFontSizeFor(state.amount);
   const noCategory = state.scenario === "no-category";
+  const showCategorySelection = state.mode === "pluspay";
   const quickCategories = useMemo(() => {
     if (
       state.selectedCategoryId &&
@@ -136,6 +138,40 @@ export function ScanPayConfirm({
     }
     return SCAN_PAY_QUICK_CATEGORIES;
   }, [state.selectedCategoryId]);
+
+  const appendAmount = useCallback((value: string) => {
+    dispatch({ type: "SET_AMOUNT", amount: `${state.amount}${value}` });
+  }, [dispatch, state.amount]);
+
+  const removeAmountDigit = useCallback(() => {
+    dispatch({ type: "SET_AMOUNT", amount: state.amount.slice(0, -1) });
+  }, [dispatch, state.amount]);
+
+  // Keep the on-screen keypad from becoming a touch-only control. Ignore note
+  // fields and any other text controls so their normal typing is unaffected.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+
+      const target = event.target;
+      const isOtherTextControl =
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLInputElement && target !== amountRef.current) ||
+        (target instanceof HTMLElement && target.isContentEditable);
+      if (isOtherTextControl) return;
+
+      if (/^\d$/.test(event.key) || event.key === ".") {
+        event.preventDefault();
+        appendAmount(event.key);
+      } else if (event.key === "Backspace") {
+        event.preventDefault();
+        removeAmountDigit();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [appendAmount, removeAmountDigit]);
 
   return (
     <AppShell className="scan-pay-shell relative overflow-hidden bg-white">
@@ -203,6 +239,7 @@ export function ScanPayConfirm({
                   autoComplete="off"
                   placeholder="0"
                   value={state.amount}
+                  readOnly
                   onChange={(event) =>
                     dispatch({ type: "SET_AMOUNT", amount: event.target.value })
                   }
@@ -212,91 +249,95 @@ export function ScanPayConfirm({
               </span>
             </div>
 
-            <p className="scan-pay-receipt-prompt mt-9 type-body-secondary">
-              Paying for
-            </p>
-            {bankRecipient ? (
-              <div className="mx-auto mt-3 flex min-h-14 w-full items-center justify-center gap-3 rounded-control border border-pine-primary bg-surface-tint px-card text-left shadow-card">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-white text-pine-primary" aria-hidden="true">
-                  <ScanPayIcon name="bank" />
-                </span>
-                <span>
-                  <span className="block text-body-sm font-bold text-pine">Bank Transfer</span>
-                  <span className="block text-caption text-ink-secondary">Finance</span>
-                </span>
-              </div>
-            ) : noCategory ? (
-              <div className="mt-3">
-                {state.noteOpen ? (
-                  <input
-                    value={state.note}
-                    onChange={(event) =>
-                      dispatch({ type: "SET_NOTE", note: event.target.value })
-                    }
-                    placeholder="Add a payment note"
-                    className="min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 text-body-sm text-ink outline-none placeholder:text-placeholder"
-                  />
+            {showCategorySelection ? (
+              <>
+                <p className="scan-pay-receipt-prompt mt-9 type-body-secondary">
+                  Paying for
+                </p>
+                {bankRecipient ? (
+                  <div className="mx-auto mt-3 flex min-h-14 w-full items-center justify-center gap-3 rounded-control border border-pine-primary bg-surface-tint px-card text-left shadow-card">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-white text-pine-primary" aria-hidden="true">
+                      <ScanPayIcon name="bank" />
+                    </span>
+                    <span>
+                      <span className="block text-body-sm font-bold text-pine">Bank Transfer</span>
+                      <span className="block text-caption text-ink-secondary">Finance</span>
+                    </span>
+                  </div>
+                ) : noCategory ? (
+                  <div className="mt-3">
+                    {state.noteOpen ? (
+                      <input
+                        value={state.note}
+                        onChange={(event) =>
+                          dispatch({ type: "SET_NOTE", note: event.target.value })
+                        }
+                        placeholder="Add a payment note"
+                        className="min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 text-body-sm text-ink outline-none placeholder:text-placeholder"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => dispatch({ type: "OPEN_NOTE" })}
+                        className="min-h-11 rounded-control border border-border-muted bg-white px-5 text-body-sm font-bold text-ink-secondary"
+                      >
+                        Add note
+                      </button>
+                    )}
+                  </div>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => dispatch({ type: "OPEN_NOTE" })}
-                    className="min-h-11 rounded-control border border-border-muted bg-white px-5 text-body-sm font-bold text-ink-secondary"
-                  >
-                    Add note
-                  </button>
+                  <div className="scan-pay-quick-categories mt-2">
+                    {quickCategories.map((id) => {
+                      const category = categoryById(id)!;
+                      const selectedSubcategory =
+                        state.selectedCategoryId === id
+                          ? category.subcategories?.find(
+                              (item) => item.id === state.selectedSubcategoryId,
+                            )
+                          : undefined;
+                      return (
+                        <CategoryButton
+                          key={id}
+                          category={category}
+                          displayLabel={selectedSubcategory?.label}
+                          subcategoryIcon={
+                            selectedSubcategory?.id === "bank" ||
+                            selectedSubcategory?.id === "trading"
+                              ? selectedSubcategory.id
+                              : undefined
+                          }
+                          selected={state.selectedCategoryId === id}
+                          onClick={() =>
+                            dispatch({ type: "SELECT_CATEGORY", categoryId: id })
+                          }
+                        />
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => dispatch({ type: "OPEN_CATEGORY_PICKER" })}
+                      className="scan-pay-category-option flex min-h-11 flex-col items-center justify-start"
+                    >
+                      <span
+                        className="scan-pay-category-icon-well flex h-14 w-14 items-center justify-center rounded-control border border-border-line bg-white"
+                        aria-hidden="true"
+                      >
+                        <AppIcon
+                          src={SCAN_PAY_ASSETS.categoryMore}
+                          alt=""
+                          width={24}
+                          height={24}
+                          className="h-6 w-6 opacity-70"
+                        />
+                      </span>
+                      <span className="scan-pay-category-label text-ink-tertiary">
+                        More
+                      </span>
+                    </button>
+                  </div>
                 )}
-              </div>
-            ) : (
-              <div className="scan-pay-quick-categories mt-2">
-                {quickCategories.map((id) => {
-                  const category = categoryById(id)!;
-                  const selectedSubcategory =
-                    state.selectedCategoryId === id
-                      ? category.subcategories?.find(
-                          (item) => item.id === state.selectedSubcategoryId,
-                        )
-                      : undefined;
-                  return (
-                    <CategoryButton
-                      key={id}
-                      category={category}
-                      displayLabel={selectedSubcategory?.label}
-                      subcategoryIcon={
-                        selectedSubcategory?.id === "bank" ||
-                        selectedSubcategory?.id === "trading"
-                          ? selectedSubcategory.id
-                          : undefined
-                      }
-                      selected={state.selectedCategoryId === id}
-                      onClick={() =>
-                        dispatch({ type: "SELECT_CATEGORY", categoryId: id })
-                      }
-                    />
-                  );
-                })}
-                <button
-                  type="button"
-                  onClick={() => dispatch({ type: "OPEN_CATEGORY_PICKER" })}
-                  className="scan-pay-category-option flex min-h-11 flex-col items-center justify-start"
-                >
-                  <span
-                    className="scan-pay-category-icon-well flex h-14 w-14 items-center justify-center rounded-control border border-border-line bg-white"
-                    aria-hidden="true"
-                  >
-                    <AppIcon
-                      src={SCAN_PAY_ASSETS.categoryMore}
-                      alt=""
-                      width={24}
-                      height={24}
-                      className="h-6 w-6 opacity-70"
-                    />
-                  </span>
-                  <span className="scan-pay-category-label text-ink-tertiary">
-                    More
-                  </span>
-                </button>
-              </div>
-            )}
+              </>
+            ) : null}
           </section>
         </div>
 
@@ -386,7 +427,15 @@ export function ScanPayConfirm({
         </button>
       </footer>
 
-      <CategoryDrawer state={state} dispatch={dispatch} />
+      <NumericKeypad
+        onDigit={appendAmount}
+        onBackspace={removeAmountDigit}
+        allowDecimal
+      />
+
+      {showCategorySelection ? (
+        <CategoryDrawer state={state} dispatch={dispatch} />
+      ) : null}
     </AppShell>
   );
 }

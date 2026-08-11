@@ -215,7 +215,11 @@ export function isPersonaId(value: unknown): value is PersonaId {
 }
 
 export function hasReturningAccountState(personaId: PersonaId): boolean {
-  return personaId === "returning" || personaId === "rahul_onboarding";
+  return (
+    personaId === "returning" ||
+    personaId === "rahul_onboarding" ||
+    personaId === "pluspay_only"
+  );
 }
 
 export function canUseAutoPay(persona: PersonaConfig): boolean {

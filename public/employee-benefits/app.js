@@ -401,7 +401,7 @@ const personaFinancialState = {
       meal: { amount: 6400, display: "₹6,400" },
       fuel: { amount: 3150, display: "₹3,150" },
       misc: { amount: 9100, display: "₹9,100" },
-      gift: { amount: 6200, display: "6,200 pts" },
+      mobile: { amount: 2000, display: "₹2,000" },
     },
     limitUsed: 4200,
   },
@@ -410,7 +410,7 @@ const personaFinancialState = {
       meal: { amount: 6400, display: "₹6,400" },
       fuel: { amount: 3150, display: "₹3,150" },
       misc: { amount: 9100, display: "₹9,100" },
-      gift: { amount: 6200, display: "6,200 pts" },
+      mobile: { amount: 2000, display: "₹2,000" },
     },
     limitUsed: 4200,
   },
@@ -419,7 +419,7 @@ const personaFinancialState = {
       meal: { amount: 10000, display: "₹10,000" },
       fuel: { amount: 10000, display: "₹10,000" },
       misc: { amount: 10000, display: "₹10,000" },
-      gift: { amount: 10000, display: "10,000 pts" },
+      mobile: { amount: 2000, display: "₹2,000" },
     },
     limitUsed: 0,
   },
@@ -482,11 +482,11 @@ const manageWalletState = {
     },
     reveal: { number: false, cvv: false },
   },
-  gift: {
-    label: "Gift Wallet",
-    balance: "6,200 pts",
-    summary: "Available balance for gifting spends",
-    accessCopy: "Gift Cards, Online Stores, Brand Partners",
+  mobile: {
+    label: "Mobile & Internet",
+    balance: "₹2,000",
+    summary: "Available balance for mobile and broadband bills",
+    accessCopy: "Card payments and eligible claims",
     accessValue: "Allowed",
     limitUsed: 4200,
     limitTotal: 10000,
@@ -537,7 +537,7 @@ const walletActionCatalog = {
   },
   card: {
     label: "Card Access",
-    detail: "Use for gifting and card-led redemption.",
+    detail: "Use for eligible card payments.",
     icon: '<svg aria-hidden="true"><use href="#icon-card" /></svg>',
     toast: "Card access opened",
   },
@@ -816,94 +816,15 @@ const walletOverlayContent = {
       },
     ],
   },
-  gift: {
-    directoryCopy: "Gift redemption brands",
-    selectCopy: "Suggest gift partner",
-    searchCopy: "Search gift redemption partners",
-    summaryCopy: "Brand partners and redemption destinations for Gift Wallet",
-    viewAllToast: "Gift Wallet statement opened",
-    categories: ["Nearby", "Fashion", "Lifestyle", "Gift Cards"],
-    merchants: [
-      {
-        name: "Amazon Pay",
-        subtitle: "Gift cards · Online",
-        meta: "Redeem now",
-        reward: "Gift",
-        icon: "icon-gift",
-      },
-      {
-        name: "Lifestyle Store",
-        subtitle: "Fashion · 2.4 km",
-        meta: "Redeem now",
-        reward: "Gift",
-        icon: "icon-bag",
-      },
-      {
-        name: "Shoppers Stop",
-        subtitle: "Lifestyle · 1.9 km",
-        meta: "Redeem now",
-        reward: "Gift",
-        icon: "icon-grid",
-      },
-      {
-        name: "Myntra",
-        subtitle: "Fashion · Online",
-        meta: "Redeem now",
-        reward: "Gift",
-        icon: "icon-bag",
-      },
-      {
-        name: "BookMyShow",
-        subtitle: "Entertainment · Online",
-        meta: "Redeem now",
-        reward: "Gift",
-        icon: "icon-gift",
-      },
-      {
-        name: "Croma",
-        subtitle: "Electronics · 3.1 km",
-        meta: "Redeem now",
-        reward: "Gift",
-        icon: "icon-grid",
-      },
-    ],
-    history: [
-      {
-        merchant: "Amazon Pay",
-        reference: "Ref ID: 4277834561",
-        date: "13 Mar 2026",
-        amount: "- ₹1,500",
-        icon: "icon-bag",
-      },
-      {
-        merchant: "Lifestyle Store",
-        reference: "Ref ID: 4277834518",
-        date: "08 Mar 2026",
-        amount: "- ₹2,400",
-        icon: "icon-card",
-      },
-      {
-        merchant: "Myntra",
-        reference: "Ref ID: 4277834492",
-        date: "05 Mar 2026",
-        amount: "- ₹1,100",
-        icon: "icon-bag",
-      },
-      {
-        merchant: "BookMyShow",
-        reference: "Ref ID: 4277834468",
-        date: "02 Mar 2026",
-        amount: "- ₹800",
-        icon: "icon-gift",
-      },
-      {
-        merchant: "Croma",
-        reference: "Ref ID: 4277834437",
-        date: "28 Feb 2026",
-        amount: "- ₹2,000",
-        icon: "icon-grid",
-      },
-    ],
+  mobile: {
+    directoryCopy: "",
+    selectCopy: "",
+    searchCopy: "",
+    summaryCopy: "",
+    viewAllToast: "Mobile & Internet statement opened",
+    categories: [],
+    merchants: [],
+    history: [],
   },
 };
 
@@ -1967,7 +1888,7 @@ function renderExtractedDetailsScreen() {
 function renderExtractedDetailsCard() {
   const details = claimsMockData.canonicalClaim.extractedDetails;
   return `
-    <section class="extracted-details-card claims-draft-card wallet-overlay-summary gift">
+    <section class="extracted-details-card claims-draft-card wallet-overlay-summary mobile">
       <div class="claims-card-head wallet-overlay-section-head">
         <div>
           <span>Extracted details</span>
@@ -2177,7 +2098,7 @@ function renderSubmitReadyScreen() {
   return `
     <section class="claims-screen">
       ${renderClaimStepper(4)}
-      <section class="claims-review-card wallet-overlay-summary gift">
+      <section class="claims-review-card wallet-overlay-summary mobile">
         <span>Ready to submit</span>
         <h3>${claim.title}</h3>
         <div class="claims-review-amount"><span>Claim amount</span><strong>${claim.amount}</strong></div>
@@ -4256,7 +4177,9 @@ function renderWalletHistory() {
   if (!walletOverlayHistory) return;
 
   walletOverlayHistory.replaceChildren();
-  const history = Array.isArray(syncedWalletTransactions[activeWalletTone])
+  const history = activeWalletTone === "mobile"
+    ? []
+    : Array.isArray(syncedWalletTransactions[activeWalletTone])
     ? syncedWalletTransactions[activeWalletTone]
     : syncedTransactionItems
         .filter((item) => item.wallet === activeWalletTone)
@@ -5348,8 +5271,8 @@ function openWalletOverlay(button) {
     ? "fuel"
     : button.classList.contains("misc")
       ? "misc"
-      : button.classList.contains("gift")
-        ? "gift"
+      : button.classList.contains("mobile")
+        ? "mobile"
         : "meal";
   const overlayContent =
     walletOverlayContent[walletTone] || walletOverlayContent.meal;
@@ -5368,7 +5291,8 @@ function openWalletOverlay(button) {
   if (walletOverlayName) walletOverlayName.textContent = walletName;
   if (walletOverlayBalance) walletOverlayBalance.textContent = walletBalance;
   if (walletOverlayMerchantTools)
-    walletOverlayMerchantTools.hidden = walletTone === "misc";
+    walletOverlayMerchantTools.hidden =
+      walletTone === "misc" || walletTone === "fuel" || walletTone === "mobile";
   if (reimbursementActions)
     reimbursementActions.hidden = walletTone !== "misc";
   if (walletOverlayDirectoryCopy)
@@ -5378,7 +5302,7 @@ function openWalletOverlay(button) {
   if (walletOverlayViewAllHistory)
     walletOverlayViewAllHistory.dataset.toast = overlayContent.viewAllToast;
 
-  walletOverlaySummary.classList.remove("meal", "fuel", "misc", "gift");
+  walletOverlaySummary.classList.remove("meal", "fuel", "misc", "mobile");
   walletOverlaySummary.classList.add(walletTone);
 
   if (walletOverlayIcon) {
@@ -5386,7 +5310,7 @@ function openWalletOverlay(button) {
       "meal-icon",
       "fuel-icon",
       "misc-icon",
-      "gift-icon",
+      "mobile-icon",
     );
     walletOverlayIcon.classList.add(`${walletTone}-icon`);
     const sourceIcon = button.querySelector(".wallet-icon");
@@ -5771,12 +5695,20 @@ function syncPersonaToApp(payload) {
   const persona = payload || personaDefinitions[activePersona] || personaDefinitions.returning;
   syncedPersona = persona;
   const isNewUser = !persona.hasTransactions;
-  const financialState = personaFinancialState[activePersona] || personaFinancialState.returning;
+  const access = persona.access;
+  // Rohan's PlusPay account remains established, but the EB+ account he adds
+  // through activation starts with Aarav's fresh benefit balances.
+  const benefitsStatePersona =
+    activePersona === "new_user" ||
+    (activePersona === "pluspay_only" && access.products.ebPlus)
+      ? "new_user"
+      : activePersona;
+  const financialState =
+    personaFinancialState[benefitsStatePersona] || personaFinancialState.returning;
   const name = persona.name;
   const upperName = name.toUpperCase();
   const initials = persona.initials;
   const upiHandle = `${name.toLowerCase().replace(/\s+/g, ".")}@pluspay`;
-  const access = persona.access;
   const isProductLocked = !(access.products.ebPlus && access.products.plusPay);
   const isEbPlusSetupEligible =
     activePersona === "pluspay_only" && !access.products.ebPlus;
@@ -5871,8 +5803,7 @@ function syncPersonaToApp(payload) {
     if (amount) amount.textContent = wallet.display;
   });
 
-  // 6. Gift points are excluded from the rupee balance shown on both cards.
-  const totalBalance = ["meal", "fuel", "misc"].reduce(
+  const totalBalance = ["meal", "fuel", "misc", "mobile"].reduce(
     (sum, key) => sum + financialState.wallets[key].amount,
     0,
   );
@@ -5937,7 +5868,7 @@ function syncWalletBalancesToApp(wallets) {
     }
   });
 
-  const totalBalance = ["meal", "fuel", "misc"].reduce(
+  const totalBalance = ["meal", "fuel", "misc", "mobile"].reduce(
     (sum, key) => sum + financialState.wallets[key].amount,
     0,
   );
@@ -5967,3 +5898,13 @@ window.addEventListener("message", (e) => {
   }
 });
 if (window.location.hash === "#claims") openClaimsAssistant();
+
+document.querySelectorAll("[data-manage-tokens-open]").forEach((button) => {
+  button.addEventListener("click", (event) => {
+    event.preventDefault();
+    window.parent.postMessage(
+      { type: "employee-benefits:open-manage-tokens" },
+      window.location.origin,
+    );
+  });
+});

@@ -41,7 +41,8 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function DataTable({ label, rows }: { label: string; rows: DataRow[] }) {
+/** Tables are reserved for the top-level claims dashboard. */
+function DashboardDataTable({ label, rows }: { label: string; rows: DataRow[] }) {
   return (
     <div className="overflow-hidden rounded-card border border-border-line">
       <table className="w-full border-collapse" aria-label={label}>
@@ -65,6 +66,29 @@ function DataTable({ label, rows }: { label: string; rows: DataRow[] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+function DataList({ label, rows }: { label: string; rows: DataRow[] }) {
+  return (
+    <dl
+      className="overflow-hidden rounded-card border border-border-line"
+      aria-label={label}
+    >
+      {rows.map((row, index) => (
+        <div
+          key={row.label}
+          className={`flex items-start justify-between gap-3 px-3 py-3 ${
+            index < rows.length - 1 ? "border-b border-border-soft" : ""
+          }`}
+        >
+          <dt className="text-caption text-ink-secondary">{row.label}</dt>
+          <dd className="text-right text-body-sm font-bold text-pine">
+            {row.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -108,7 +132,7 @@ function ClaimsDashboardBody({ data }: { data: Extract<GroundedAppData, { kind: 
         value={data.overview.utilizedPercent}
         label={`Utilized · ${data.overview.financialYear}`}
       />
-      <DataTable
+      <DashboardDataTable
         label="Claims dashboard totals"
         rows={[
           { label: "Utilized", value: formatINR(data.overview.utilizedAmount) },
@@ -129,7 +153,7 @@ function CategoryDashboardBody({ data }: { data: Extract<GroundedAppData, { kind
         <p className="type-amount">{formatINR(dashboard.availableLimit)}</p>
       </div>
       <ProgressBar value={data.utilizedPercent} label={`Utilized · ${data.financialYear}`} />
-      <DataTable
+      <DataList
         label={`${dashboard.title} balance`}
         rows={[
           { label: "Utilized", value: formatINR(dashboard.utilized) },
@@ -147,7 +171,7 @@ function ClaimsBody({ data }: { data: Extract<GroundedAppData, { kind: "claims_h
   const claim = data.filters.claimId ? data.claims[0] : undefined;
   if (claim) {
     return (
-      <DataTable
+      <DataList
         label={`Claim ${claim.id} details`}
         rows={[
           { label: "Claim ID", value: claim.id },
@@ -172,7 +196,7 @@ function ClaimsBody({ data }: { data: Extract<GroundedAppData, { kind: "claims_h
   const summary = data.summary;
   return (
     <div className="flex flex-col gap-4">
-      <DataTable
+      <DataList
         label="Claim status summary"
         rows={[
           { label: "Count", value: summary.totalCount },
@@ -185,30 +209,28 @@ function ClaimsBody({ data }: { data: Extract<GroundedAppData, { kind: "claims_h
         ]}
       />
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2" aria-label="Latest claims">
         <h3 className="type-field-label text-pine-primary">Latest</h3>
         <div className="overflow-hidden rounded-card border border-border-line">
-          <table className="w-full border-collapse" aria-label="Latest claims">
-            <tbody>
-              {data.claims.slice(0, 3).map((item, index) => (
-                <tr
-                  key={item.id}
-                  className={index < Math.min(3, data.claims.length) - 1 ? "border-b border-border-soft" : ""}
-                >
-                  <th scope="row" className="px-3 py-3 text-left align-top">
-                    <span className="block text-body-sm font-bold text-pine">{item.id}</span>
-                    <span className="mt-0.5 block text-caption font-normal text-ink-secondary">
-                      {item.title}
-                    </span>
-                  </th>
-                  <td className="px-3 py-3 text-right align-top">
-                    <span className="block text-body-sm font-bold text-pine">{formatINR(item.amount)}</span>
-                    <span className="mt-1 inline-block"><StatusBadge status={item.status} /></span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {data.claims.slice(0, 3).map((item, index) => (
+            <div
+              key={item.id}
+              className={`flex items-start justify-between gap-3 px-3 py-3 ${
+                index < Math.min(3, data.claims.length) - 1
+                  ? "border-b border-border-soft"
+                  : ""
+              }`}
+            >
+              <div>
+                <p className="text-body-sm font-bold text-pine">{item.id}</p>
+                <p className="mt-0.5 text-caption text-ink-secondary">{item.title}</p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <span className="text-body-sm font-bold text-pine">{formatINR(item.amount)}</span>
+                <StatusBadge status={item.status} />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>
@@ -249,25 +271,19 @@ function RulesBody({ data }: { data: Extract<GroundedAppData, { kind: "claim_rul
     <div className="flex flex-col gap-4">
       <section className="flex flex-col gap-2">
         <h3 className="type-field-label text-pine-primary">Submission checks</h3>
-        <div className="overflow-hidden rounded-card border border-border-line">
-          <table className="w-full border-collapse" aria-label="Submission checks">
-            <tbody>
-              {data.checksAppliedAtSubmission.map((check, index) => (
-                <tr key={check.id} className={index < data.checksAppliedAtSubmission.length - 1 ? "border-b border-border-soft" : ""}>
-                  <td className="px-3 py-3 text-body-sm text-ink">{check.rule}</td>
-                  <td className="px-3 py-3 text-right align-top">
-                    <span className={`rounded-pill border px-2 py-0.5 text-caption font-bold ${
-                      check.blocking
-                        ? "border-warning-border bg-warning-soft text-warning"
-                        : "border-success-border bg-success-soft text-success"
-                    }`}>
-                      {check.blocking ? "Required" : "Review"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="overflow-hidden rounded-card border border-border-line" aria-label="Submission checks">
+          {data.checksAppliedAtSubmission.map((check, index) => (
+            <div key={check.id} className={`flex items-start justify-between gap-3 px-3 py-3 ${index < data.checksAppliedAtSubmission.length - 1 ? "border-b border-border-soft" : ""}`}>
+              <p className="text-body-sm text-ink">{check.rule}</p>
+              <span className={`shrink-0 rounded-pill border px-2 py-0.5 text-caption font-bold ${
+                check.blocking
+                  ? "border-warning-border bg-warning-soft text-warning"
+                  : "border-success-border bg-success-soft text-success"
+              }`}>
+                {check.blocking ? "Required" : "Review"}
+              </span>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -301,22 +317,18 @@ function RulesBody({ data }: { data: Extract<GroundedAppData, { kind: "claim_rul
 function MerchantsBody({ data }: { data: Extract<GroundedAppData, { kind: "merchant_allowlist" }> }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-card border border-border-line">
-        <table className="w-full border-collapse" aria-label="Allowed merchant networks">
-          <tbody>
-            {data.networks.map((network, index) => {
-              const brands = network.matches.length > 0 ? network.matches : network.brands.slice(0, 8);
-              return (
-                <tr key={network.benefitType} className={index < data.networks.length - 1 ? "border-b border-border-soft" : ""}>
-                  <th scope="row" className="w-1/4 bg-surface px-3 py-3 text-left align-top text-caption font-bold text-pine-primary">
-                    {network.benefitType === "meal" ? "Meal" : "Fuel"}
-                  </th>
-                  <td className="px-3 py-3 text-body-sm font-bold text-pine">{brands.join(", ")}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-card border border-border-line" aria-label="Allowed merchant networks">
+        {data.networks.map((network, index) => {
+          const brands = network.matches.length > 0 ? network.matches : network.brands.slice(0, 8);
+          return (
+            <div key={network.benefitType} className={`px-3 py-3 ${index < data.networks.length - 1 ? "border-b border-border-soft" : ""}`}>
+              <p className="text-caption font-bold text-pine-primary">
+                {network.benefitType === "meal" ? "Meal" : "Fuel"}
+              </p>
+              <p className="mt-1 text-body-sm font-bold text-pine">{brands.join(", ")}</p>
+            </div>
+          );
+        })}
       </div>
       <p className="rounded-control bg-surface-tint px-3 py-2.5 text-caption text-pine">{data.note}</p>
     </div>
@@ -374,7 +386,7 @@ function actionsFor(payload: AppDataAnswerPayload) {
     return [{ href: `/policy-details/${policy.id}/`, label: `View all ${policy.tabLabel} details` }];
   }
   if (payload.target === "category_dashboard" && payload.categoryId) {
-    const isDashboardEnabled = policy ? policy.id !== "meal" && policy.id !== "gift" : true;
+    const isDashboardEnabled = policy ? policy.id !== "meal" : true;
     if (!isDashboardEnabled) {
       return [{ href: `/policy-details/${payload.categoryId}/`, label: `View ${policy?.tabLabel ?? "benefit"} policy` }];
     }

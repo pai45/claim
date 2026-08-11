@@ -28,7 +28,7 @@ describe("deterministic routing table", () => {
     ["What is my available balance?", "dashboard"],
     ["How much is available on my fuel dashboard?", "dashboard"],
     ["how much my meal wallet balance remains?", "dashboard"],
-    ["How much balance is left in my gift wallet?", "dashboard"],
+    ["How much balance is left in my mobile and internet benefit?", "dashboard"],
     ["What is my meal wallet balance?", "dashboard"],
     ["Which wallet has the most left?", "wallets"],
     ["What is my total available?", "wallets"],

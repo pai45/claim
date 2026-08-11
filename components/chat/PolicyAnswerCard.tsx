@@ -13,7 +13,7 @@ type PolicyAnswerCardProps = {
   reveal?: boolean;
 };
 
-function FactTable({
+function FactList({
   label,
   facts,
 }: {
@@ -23,55 +23,41 @@ function FactTable({
   if (facts.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-card border border-border-line">
-      <table className="w-full border-collapse" aria-label={`${label} details`}>
-        <tbody>
-          {facts.map((fact, index) => (
-            <tr
-              key={`${fact.label}-${fact.value}`}
-              className={index < facts.length - 1 ? "border-b border-border-soft" : ""}
-            >
-              <th
-                scope="row"
-                className="w-2/5 bg-surface px-3 py-3 text-left align-top text-caption font-normal text-ink-secondary"
-              >
-                {fact.label}
-              </th>
-              <td className="px-3 py-3 text-right align-top text-body-sm font-bold text-pine">
-                {fact.value}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <dl className="overflow-hidden rounded-card border border-border-line" aria-label={`${label} details`}>
+      {facts.map((fact, index) => (
+        <div
+          key={`${fact.label}-${fact.value}`}
+          className={`flex items-start justify-between gap-3 px-3 py-3 ${
+            index < facts.length - 1 ? "border-b border-border-soft" : ""
+          }`}
+        >
+          <dt className="text-caption text-ink-secondary">{fact.label}</dt>
+          <dd className="text-right text-body-sm font-bold text-pine">{fact.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
-function CoverageTable({ category }: { category: StructuredPolicyCategory }) {
+function CoverageList({ category }: { category: StructuredPolicyCategory }) {
   if (category.items.length === 0) return null;
 
   return (
-    <div className="overflow-hidden rounded-card border border-border-line">
-      <table className="w-full border-collapse" aria-label={`${category.label} covered expenses`}>
-        <tbody>
-          {category.items.map((item, index) => (
-            <tr
-              key={item}
-              className={index < category.items.length - 1 ? "border-b border-border-soft" : ""}
-            >
-              <td className="w-10 bg-success-soft px-3 py-3 text-center text-success" aria-hidden="true">
-                ✓
-              </td>
-              <th scope="row" className="px-3 py-3 text-left text-body-sm font-bold text-pine">
-                {item}
-              </th>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <ul className="overflow-hidden rounded-card border border-border-line" aria-label={`${category.label} covered expenses`}>
+      {category.items.map((item, index) => (
+        <li
+          key={item}
+          className={`flex items-center gap-3 px-3 py-3 text-body-sm font-bold text-pine ${
+            index < category.items.length - 1 ? "border-b border-border-soft" : ""
+          }`}
+        >
+          <span className="text-success" aria-hidden="true">✓</span>
+          {item}
+        </li>
+      ))}
+    </ul>
   );
+
 }
 
 function ProcessTable({ category }: { category: StructuredPolicyCategory }) {
@@ -128,8 +114,8 @@ export function PolicyAnswerCard({
             {category.description ? (
               <p className="type-body-secondary text-ink">{category.description}</p>
             ) : null}
-            <FactTable label={category.label} facts={category.facts} />
-            <CoverageTable category={category} />
+            <FactList label={category.label} facts={category.facts} />
+            <CoverageList category={category} />
             <ProcessTable category={category} />
             {category.note ? (
               <p className="rounded-control bg-surface-tint px-3 py-2.5 text-caption text-pine">

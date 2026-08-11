@@ -21,7 +21,7 @@ import {
   getRecentTransactionsByWallet,
   getTransactionItems,
 } from "@/features/transactions/constants";
-import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
 import {
   resolveTransactionMode,
   type TransactionProductMode,
@@ -38,6 +38,7 @@ const SCAN_PAY_MERCHANT_QUERY = "scanPayMerchant";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
+const OPEN_MANAGE_TOKENS_MESSAGE = "employee-benefits:open-manage-tokens";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
 const OPEN_TRANSACTION_DETAILS_MESSAGE = "employee-benefits:open-transaction-details";
@@ -54,14 +55,14 @@ const MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
 const MANAGE_CARDS_RETURN_QUERY = "returnTo";
 const MANAGE_CARDS_RETURN_VALUE = "manage-cards";
 type CardMpinIntent = "activate-card" | "set-card-pin";
-type WalletStatementKey = "meal" | "fuel" | "misc" | "gift";
+type WalletStatementKey = "meal" | "fuel" | "misc" | "mobile";
 
 function isCardMpinIntent(value: unknown): value is CardMpinIntent {
   return value === "activate-card" || value === "set-card-pin";
 }
 
 function isWalletStatementKey(value: unknown): value is WalletStatementKey {
-  return value === "meal" || value === "fuel" || value === "misc" || value === "gift";
+  return value === "meal" || value === "fuel" || value === "misc" || value === "mobile";
 }
 
 /**
@@ -186,6 +187,10 @@ export function EmployeeBenefitsHost() {
 
   const openManageLimits = useCallback(() => {
     window.location.assign(withBasePath("/manage-limit/"));
+  }, []);
+
+  const openManageTokens = useCallback(() => {
+    window.location.assign(withBasePath("/manage-tokens/"));
   }, []);
 
   const openProfile = useCallback(() => {
@@ -458,6 +463,10 @@ export function EmployeeBenefitsHost() {
       }
       if (event.data?.type === OPEN_MANAGE_LIMITS_MESSAGE) {
         openManageLimits();
+        return;
+      }
+      if (event.data?.type === OPEN_MANAGE_TOKENS_MESSAGE) {
+        openManageTokens();
         return;
       }
       if (event.data?.type === OPEN_PROFILE_MESSAGE) {

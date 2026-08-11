@@ -26,10 +26,11 @@ describe("structured assistant answer cards", () => {
     expect(html).toContain('aria-valuenow="32"');
     expect(html).toContain('aria-label="Claims dashboard totals"');
     expect(html).toContain('href="/dashboard"');
+    expect(html).toContain("<table");
     expect(html).not.toContain("btn-secondary");
   });
 
-  it("renders claim summaries and only the latest three claim rows", () => {
+  it("renders claim summaries as lists and only the latest three claims", () => {
     const resolution = { kind: "claims" as const };
     const source = buildGroundedAppData(resolution);
     const html = renderToStaticMarkup(
@@ -43,6 +44,7 @@ describe("structured assistant answer cards", () => {
     expect(html).toContain('aria-label="Latest claims"');
     expect((html.match(/CLM-/g) ?? []).length).toBe(3);
     expect(html).toContain('href="/claims-history"');
+    expect(html).not.toContain("<table");
   });
 
   it("renders a structured empty state for filters with no claims", () => {
@@ -60,7 +62,7 @@ describe("structured assistant answer cards", () => {
     expect(html).toContain("Try a different category or status.");
   });
 
-  it("renders policy comparisons as separate tables with one action per benefit", () => {
+  it("renders policy comparisons as lists with one action per benefit", () => {
     const categories = [getPolicyCategory("meal"), getPolicyCategory("fuel")];
     const payload = policyPayloadForAnswer(
       "Compare meal and fuel benefits",
@@ -78,5 +80,6 @@ describe("structured assistant answer cards", () => {
     expect(html).toContain('aria-label="Fuel &amp; Maintenance details"');
     expect(html).toContain('href="/policy-details/meal"');
     expect(html).toContain('href="/policy-details/fuel"');
+    expect(html).not.toContain("<table");
   });
 });

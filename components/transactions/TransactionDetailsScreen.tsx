@@ -10,7 +10,7 @@ import {
   getTransaction,
   type TransactionItem,
 } from "@/features/transactions/constants";
-import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { getRecipientHistoryTransaction } from "@/features/send-money/history";
 import { getBankTransferHistoryTransaction } from "@/features/bank-transfer/history";

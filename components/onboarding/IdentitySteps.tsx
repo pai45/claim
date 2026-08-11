@@ -2,13 +2,38 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { OtpInput, type OtpInputHandle } from "@/components/login/OtpInput";
-import { DEMO_OTP, distributeOtpPaste, isOtpComplete, verifyOtp } from "@/features/auth/otp";
+import { distributeOtpPaste, isOtpComplete, verifyOtp } from "@/features/auth/otp";
 import type { IdentityForm } from "@/features/onboarding/types";
 import { colors } from "@/lib/ui/colors";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { BottomSheet, CenterModal } from "./OnboardingModals";
 import { CheckRow, TextField } from "./OnboardingPrimitives";
 import { PrimaryFooter } from "./PrimaryFooter";
+
+function IdentityStepProgress({
+  label,
+  step,
+}: {
+  label: string;
+  step: 1 | 2;
+}) {
+  const totalSteps = 2;
+  return (
+    <section
+      className="relative mt-5 shrink-0 bg-[#ddf0dc] px-page py-2"
+      aria-label={`Identity verification, step ${step} of ${totalSteps}`}
+    >
+      <p className="text-body-sm font-bold text-ink">{label}</p>
+      <p className="text-caption text-ink-secondary">
+        Step {step} of {totalSteps}
+      </p>
+      <span
+        className={`absolute bottom-0 left-0 h-0.5 ${step === 1 ? "w-1/2" : "w-full"} bg-mint`}
+        aria-hidden="true"
+      />
+    </section>
+  );
+}
 
 type IdentityEmailStepProps = {
   email: string;
@@ -73,13 +98,8 @@ export function IdentityEmailStep({
         subtitle="Complete these steps to activate your account."
         onBack={onBack}
       />
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
-        <div className="mb-4 rounded-control bg-success-tint px-3 py-3">
-          <p className="text-body-sm font-bold text-pine-primary">
-            Email Verification
-          </p>
-          <p className="text-caption text-ink-secondary">Step 1 of 2</p>
-        </div>
+      <IdentityStepProgress label="Email Verification" step={1} />
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-5">
         <TextField
           label="Email"
           value={email}
@@ -87,9 +107,6 @@ export function IdentityEmailStep({
           placeholder="name@company.com"
           readOnly
         />
-        <p className="mt-3 text-caption text-ink-tertiary">
-          Demo OTP: {DEMO_OTP}
-        </p>
       </main>
       <PrimaryFooter
         label="Verify Email"
@@ -203,13 +220,8 @@ export function IdentityDetailsStep({
         subtitle="Complete these steps to activate your account."
         onBack={onBack}
       />
-      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4">
-        <div className="rounded-control bg-success-tint px-3 py-3">
-          <p className="text-body-sm font-bold text-pine-primary">
-            Personal Details
-          </p>
-          <p className="text-caption text-ink-secondary">Step 2 of 2</p>
-        </div>
+      <IdentityStepProgress label="Personal Details" step={2} />
+      <main className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-page pb-4 pt-5">
         <TextField
           label="Title"
           value={identity.title}

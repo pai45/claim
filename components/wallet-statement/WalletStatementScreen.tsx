@@ -9,7 +9,7 @@ import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
 import { formatSignedINR } from "@/features/transactions/constants";
 import { useActivePersona } from "@/features/persona/useActivePersona";
-import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
 import {
   WALLET_STATEMENT_MAX_MONTH,
   filterWalletStatementTransactions,

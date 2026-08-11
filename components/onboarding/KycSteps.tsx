@@ -115,7 +115,7 @@ export function KycCompletedStep({ onContinue }: KycCompletedStepProps) {
   return (
     <>
       <OnboardingHeader title="KYC Verification" />
-      <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-page pb-4 text-center">
+      <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-page pb-4 pt-5 text-center">
         <span
           className="flex h-20 w-20 items-center justify-center rounded-full"
           style={{ background: colors.success }}

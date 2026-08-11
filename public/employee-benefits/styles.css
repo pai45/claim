@@ -63,7 +63,7 @@
   --meal: #fff4db;
   --fuel: #e5f3ff;
   --misc: #ece9ff;
-  --gift: #e8f8ee;
+  --mobile: #e8f8ee;
   --success: #1d8f63;
   --shadow-soft: 0 18px 42px rgba(0, 86, 86, 0.08);
   --shadow-card: 0 20px 48px rgba(0, 52, 52, 0.12);
@@ -1644,7 +1644,7 @@ body.is-upi-created:not(.is-pluspay) .scan-pay-card {
   border-color: #e1e9e6;
 }
 
-.wallet-chip.gift {
+.wallet-chip.mobile {
   background: #ffffff;
   border-color: #e1e9e6;
 }
@@ -1764,7 +1764,7 @@ body.is-upi-created:not(.is-pluspay) .scan-pay-card {
   color: #5d50c6;
 }
 
-.wallet-experience-panel .gift-icon {
+.wallet-experience-panel .mobile-icon {
   background: linear-gradient(180deg, #e3f7ea, #caefd9);
   color: #1c8d59;
 }
@@ -2643,8 +2643,8 @@ body.is-merchant-directory-open .bottom-nav {
   background: linear-gradient(180deg, #fdfcff, var(--misc));
 }
 
-.manage-cards-wallet-card.gift {
-  background: linear-gradient(180deg, #fcfffd, var(--gift));
+.manage-cards-wallet-card.mobile {
+  background: linear-gradient(180deg, #fcfffd, var(--mobile));
 }
 
 .manage-cards-wallet-card .wallet-icon {
@@ -3254,7 +3254,7 @@ body.is-merchant-directory-open .bottom-nav {
     linear-gradient(180deg, #fcfaff 0%, #faf7ff 100%);
 }
 
-.manage-cards-wallet-card.gift {
+.manage-cards-wallet-card.mobile {
   border-color: #cfe9d8;
   background:
     radial-gradient(
@@ -4446,8 +4446,8 @@ body.is-merchant-directory-open .bottom-nav {
   border-color: #d9d1ff;
 }
 
-.wallet-overlay-summary.gift {
-  background: linear-gradient(180deg, #fcfffd, var(--gift));
+.wallet-overlay-summary.mobile {
+  background: linear-gradient(180deg, #fcfffd, var(--mobile));
   border-color: #bee4cd;
 }
 
@@ -6587,20 +6587,20 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   padding: var(--space-10) var(--space-12);
 }
 
-.claims-success-card.wallet-overlay-summary.gift {
-  background: linear-gradient(180deg, #fcfffd, var(--gift));
+.claims-success-card.wallet-overlay-summary.mobile {
+  background: linear-gradient(180deg, #fcfffd, var(--mobile));
   color: var(--ink);
   overflow: hidden;
   animation: claim-success-pop 260ms ease both;
 }
 
-.claims-success-card.wallet-overlay-summary.gift h3,
-.claims-success-card.wallet-overlay-summary.gift p,
-.claims-success-card.wallet-overlay-summary.gift strong {
+.claims-success-card.wallet-overlay-summary.mobile h3,
+.claims-success-card.wallet-overlay-summary.mobile p,
+.claims-success-card.wallet-overlay-summary.mobile strong {
   color: var(--brand-900);
 }
 
-.claims-success-card.wallet-overlay-summary.gift > strong,
+.claims-success-card.wallet-overlay-summary.mobile > strong,
 .claims-success-meta p,
 .claims-tracking-card {
   background: rgba(255, 255, 255, 0.72);
@@ -6681,7 +6681,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   background: #f59f2f;
 }
 
-.claims-success-card.wallet-overlay-summary.gift .wallet-overlay-cta strong {
+.claims-success-card.wallet-overlay-summary.mobile .wallet-overlay-cta strong {
   color: white;
 }
 

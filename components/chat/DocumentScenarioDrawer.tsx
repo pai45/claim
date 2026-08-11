@@ -73,7 +73,7 @@ export function DocumentScenarioDrawer({
         role="dialog"
         aria-modal="true"
         aria-labelledby="document-scenario-title"
-        className={`absolute inset-x-0 bottom-0 flex max-h-[88dvh] flex-col rounded-t-bubble bg-white shadow-drawer transition-transform duration-300 ease-out ${
+        className={`absolute inset-x-0 bottom-0 flex max-h-[88%] flex-col rounded-t-bubble bg-white shadow-drawer transition-transform duration-300 ease-out ${
           open ? "translate-y-0" : "translate-y-full"
         }`}
       >

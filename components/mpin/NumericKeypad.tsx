@@ -6,12 +6,14 @@ type NumericKeypadProps = {
   onDigit: (digit: string) => void;
   onBackspace: () => void;
   disabled?: boolean;
+  /** Payment amounts may include cents; MPINs intentionally cannot. */
+  allowDecimal?: boolean;
 };
 
 /**
  * The `.` key carries no meaning for a numeric PIN, but it is in the design and
- * removing it would leave a visible hole in the grid. Rendered inert instead:
- * disabled and hidden from assistive tech, so it reads as a spacer.
+ * removing it would leave a visible hole in the grid. It is inert for PINs and
+ * becomes available for decimal payment amounts.
  */
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0"] as const;
 
@@ -19,11 +21,12 @@ export function NumericKeypad({
   onDigit,
   onBackspace,
   disabled = false,
+  allowDecimal = false,
 }: NumericKeypadProps) {
   return (
     <div className="grid shrink-0 grid-cols-3 gap-px bg-border-soft pb-[max(8px,env(safe-area-inset-bottom))] pt-px">
       {KEYS.map((key) => {
-        const inert = key === ".";
+        const inert = key === "." && !allowDecimal;
         return (
           <button
             key={key}

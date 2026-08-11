@@ -34,7 +34,6 @@ import type {
   ScanPayAction,
   ScanPayState,
 } from "@/features/scan-pay/types";
-import { withBasePath } from "@/lib/basePath";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 const EMPTY_RECIPIENT: BankRecipientDraft = {
@@ -87,14 +86,12 @@ export function BankTransferScreen() {
 
   function navigateToBeneficiary(beneficiary: BankBeneficiary) {
     router.push(
-      withBasePath(
-        `/bank-transfer/?beneficiary=${encodeURIComponent(beneficiary.id)}`,
-      ),
+      `/bank-transfer/?beneficiary=${encodeURIComponent(beneficiary.id)}`,
     );
   }
 
   function closeBeneficiary() {
-    router.push(withBasePath("/bank-transfer/"));
+    router.push("/bank-transfer/");
   }
 
   if (paymentState) {
@@ -103,7 +100,7 @@ export function BankTransferScreen() {
         state={paymentState}
         dispatch={dispatch}
         onConfirmBack={() => setPaymentState(null)}
-        onClose={() => router.push(withBasePath("/"))}
+        onClose={() => router.push("/")}
       />
     );
   }
@@ -120,9 +117,7 @@ export function BankTransferScreen() {
         onPayAgain={() => startPayment(selectedBeneficiary)}
         onTransaction={(transactionId) =>
           router.push(
-            withBasePath(
-              `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=benefits`,
-            ),
+            `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=benefits`,
           )
         }
       />
@@ -133,7 +128,7 @@ export function BankTransferScreen() {
     <AppShell className="overflow-hidden bg-surface">
       <ScreenHeader
         title="Bank Transfer"
-        onBack={() => router.push(withBasePath("/"))}
+        onBack={() => router.push("/")}
       />
       <main className="min-h-0 flex-1 overflow-y-auto px-page pb-8 pt-5">
         <BankTransferRecipientForm

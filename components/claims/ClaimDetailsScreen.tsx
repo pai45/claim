@@ -10,6 +10,8 @@ import {
 } from "@/features/claims/constants";
 import { downloadClaimReceipt } from "@/features/claims/receipt";
 import { isClaimMutable, revokeClaim } from "@/features/claims/store";
+import { getActivePersonaId } from "@/features/persona/store";
+import { releaseMobileClaim } from "@/features/transactions/financialState";
 import { useClaimDetails } from "@/features/claims/useClaimStore";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
 import { colors } from "@/lib/ui/colors";
@@ -160,6 +162,9 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
 
   function handleRevoke() {
     revokeClaim(claim.id);
+    if (claim.category === "Mobile & Internet") {
+      releaseMobileClaim(getActivePersonaId(), claim.id);
+    }
     setConfirmRevokeOpen(false);
     setFeedback(`Claim ${claim.id} has been revoked.`);
   }

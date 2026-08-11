@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { FEATURE_WALLETS } from "@/features/onboarding/constants";
 import { withBasePath } from "@/lib/basePath";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { PrimaryFooter } from "./PrimaryFooter";
 import { WalletGlyph } from "./WalletGlyphs";
 
@@ -12,17 +13,40 @@ type IntroStepProps = {
   onBack?: () => void;
 };
 
-export function IntroStep({ onContinue }: IntroStepProps) {
+export function IntroStep({ onContinue, onBack }: IntroStepProps) {
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(true);
 
   return (
     <>
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
-        <section className="benefits-activation-hero" aria-labelledby="activation-title">
-          <span className="benefits-activation-glow benefits-activation-glow-top" aria-hidden="true" />
-          <span className="benefits-activation-glow benefits-activation-glow-side" aria-hidden="true" />
-          <span className="benefits-activation-dot benefits-activation-dot-large" aria-hidden="true" />
-          <span className="benefits-activation-dot benefits-activation-dot-small" aria-hidden="true" />
+        {onBack ? (
+          <div className="mb-5 shrink-0">
+            <BackNavigationButton
+              onClick={onBack}
+              ariaLabel="Back to Employee Benefits"
+            />
+          </div>
+        ) : null}
+        <section
+          className="benefits-activation-hero"
+          aria-labelledby="activation-title"
+        >
+          <span
+            className="benefits-activation-glow benefits-activation-glow-top"
+            aria-hidden="true"
+          />
+          <span
+            className="benefits-activation-glow benefits-activation-glow-side"
+            aria-hidden="true"
+          />
+          <span
+            className="benefits-activation-dot benefits-activation-dot-large"
+            aria-hidden="true"
+          />
+          <span
+            className="benefits-activation-dot benefits-activation-dot-small"
+            aria-hidden="true"
+          />
 
           <Image
             className="benefits-activation-logo"
@@ -62,7 +86,9 @@ export function IntroStep({ onContinue }: IntroStepProps) {
                 <WalletGlyph id={wallet.id} color={wallet.ink} />
               </span>
               <span className="min-w-0">
-                <span className="type-body block font-bold">{wallet.title}</span>
+                <span className="type-body block font-bold">
+                  {wallet.title}
+                </span>
                 <span className="type-body-secondary mt-0.5 block">
                   {wallet.description}
                 </span>
@@ -109,8 +135,10 @@ export function IntroStep({ onContinue }: IntroStepProps) {
                 Infosys Terms and Conditions
               </span>{" "}
               and{" "}
-              <span className="font-bold text-pine-primary">Privacy Policy</span>{" "}
-              for my Employee Benefits Card.
+              <span className="font-bold text-pine-primary">
+                Privacy Policy
+              </span>{" "}
+              for EB+ Card.
             </span>
           </label>
         }

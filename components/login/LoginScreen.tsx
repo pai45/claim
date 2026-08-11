@@ -6,6 +6,10 @@ import { ProductIntroScreen } from "@/components/product-intro/ProductIntroScree
 import { AppShell } from "@/components/shared/AppShell";
 import { saveAuthSession } from "@/features/auth/session";
 import { resetDemoJourney } from "@/features/demo/reset";
+import {
+  getPersonaConfig,
+  hasReturningAccountState,
+} from "@/features/persona/constants";
 import type { PersonaId } from "@/features/persona/types";
 import { shouldShowProductIntro } from "@/features/product-intro/controller";
 import { useProductIntroProgress } from "@/features/product-intro/useProductIntroProgress";
@@ -21,6 +25,7 @@ import { useViewportHeight } from "@/features/auth/useViewportHeight";
 import { OtpStep } from "./OtpStep";
 import { PhoneStep } from "./PhoneStep";
 import { ProductWordmark } from "./ProductWordmark";
+import { PlusPayWordmark } from "./PlusPayWordmark";
 import { PersonaSelectionStep } from "./PersonaSelectionStep";
 import type { OtpInputHandle } from "./OtpInput";
 
@@ -122,8 +127,19 @@ export function LoginScreen() {
   function handleSelectPersona(personaId: PersonaId) {
     resetDemoJourney(personaId);
     dispatch({ type: "change-number" });
+
+    if (hasReturningAccountState(personaId)) {
+      continueWithMpin(personaId);
+      return;
+    }
+
     setProductIntroDismissed(false);
     setSelectedPersonaId(personaId);
+  }
+
+  function continueWithMpin(personaId: PersonaId | null) {
+    if (!personaId || !hasReturningAccountState(personaId)) return;
+    saveAuthSession(getPersonaConfig(personaId).profile.mobile);
   }
 
   const personaSelected = selectedPersonaId !== null;
@@ -151,6 +167,7 @@ export function LoginScreen() {
         onComplete={() => {
           completeProductIntro();
           setProductIntroDismissed(true);
+          continueWithMpin(selectedPersonaId);
         }}
       />
     );
@@ -160,7 +177,11 @@ export function LoginScreen() {
     <AppShell variant="login" className="login-viewport overflow-hidden">
       <header className="flex flex-col shrink-0 items-center justify-center px-page pb-2 pt-6 gap-2">
         {personaSelected ? (
-          <ProductWordmark />
+          selectedPersonaId === "new_user" ? (
+            <PlusPayWordmark />
+          ) : (
+            <ProductWordmark />
+          )
         ) : (
           <span className="font-display text-title font-semibold tracking-tight text-pine-dark">
             EB+ & PlusPay

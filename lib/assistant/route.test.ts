@@ -133,7 +133,7 @@ describe("route prompt", () => {
   it("lists every catalog category so the model can only pick real ids", () => {
     const [system] = createRoutePrompt("What is my fuel limit?");
     expect(system.content).toContain('"professional"');
-    expect(system.content).toContain('"gift"');
+    expect(system.content).toContain('"mobile"');
   });
 
   it("places prior turns between the instructions and the question", () => {

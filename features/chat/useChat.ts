@@ -8,10 +8,16 @@ import {
   updateClaimOverride,
 } from "@/features/claims/store";
 import {
+  getEmployerBenefit,
   getPolicyCategory,
   type PolicyCategory,
   type PolicyTabId,
 } from "@/features/policy/constants";
+import { getActivePersonaId } from "@/features/persona/store";
+import {
+  commitMobileClaim,
+  updateMobileClaim,
+} from "@/features/transactions/financialState";
 import { resolveAssistantReply } from "@/lib/assistant/engine";
 import {
   appDataContextForResolution,
@@ -1172,6 +1178,20 @@ export function useChat() {
         return;
       }
       const claimId = createClaimId();
+      if (precheck.benefitId === "mobile") {
+        const amount = parseStoredAmount(extract.amount);
+        if (!amount) return;
+        const result = commitMobileClaim({
+          personaId: getActivePersonaId(),
+          claimId,
+          amount,
+          baseBalance: getEmployerBenefit("mobile").balance.allocation,
+        });
+        if (result.status === "insufficient") {
+          setError("Mobile & Internet does not have enough balance for this claim.");
+          return;
+        }
+      }
       const submittedExtract = { ...extract, submitted: true };
       updateBillExtract(messageId, submittedExtract);
       setMessages((prev) => [
@@ -1193,6 +1213,18 @@ export function useChat() {
   const saveClaimEdit = useCallback(
     (messageId: string, claimId: string, extract: BillExtract) => {
       const amount = parseStoredAmount(extract.amount);
+      if (extract.category === "Mobile & Internet" && amount) {
+        const result = updateMobileClaim({
+          personaId: getActivePersonaId(),
+          claimId,
+          amount,
+          baseBalance: getEmployerBenefit("mobile").balance.allocation,
+        });
+        if (result.status === "insufficient") {
+          setError("Mobile & Internet does not have enough balance for this claim.");
+          return;
+        }
+      }
       updateClaimOverride(claimId, {
         vendor: extract.vendor || extract.merchant || "",
         category: extract.category || "",

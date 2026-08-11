@@ -169,7 +169,10 @@ export function OnboardingShell({
   return (
     <AppShell className="overflow-hidden">
       {state.step === "intro" ? (
-        <IntroStep onContinue={() => dispatch({ type: "go", step: "hub" })} />
+        <IntroStep
+          onContinue={() => dispatch({ type: "go", step: "hub" })}
+          onBack={journey === "eb-plus-activation" ? onExit : undefined}
+        />
       ) : null}
 
       {state.step === "hub" ? (

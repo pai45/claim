@@ -1,6 +1,7 @@
 import { CLAIM_HISTORY_ITEMS } from "@/features/claims-history/constants";
 import {
   EMPLOYER_BENEFITS_CATALOG,
+  getEmployerBenefit,
   type EmployerBenefit,
 } from "@/features/policy/constants";
 import type {
@@ -119,15 +120,16 @@ export function evaluateClaimPrecheck(
     },
   ];
 
-  if (benefit && amount) {
+  const currentBenefit = benefit ? getEmployerBenefit(benefit.id) : undefined;
+  if (currentBenefit && amount) {
     checks.push({
       id: "allowance",
       label: "Available demo allowance",
       detail:
-        amount <= benefit.balance.available
-          ? `${formatINR(benefit.balance.available)} is available in this category.`
-          : `This exceeds the available ${formatINR(benefit.balance.available)} demo allowance.`,
-      status: amount <= benefit.balance.available ? "pass" : "blocked",
+        amount <= currentBenefit.balance.available
+          ? `${formatINR(currentBenefit.balance.available)} is available in this category.`
+          : `This exceeds the available ${formatINR(currentBenefit.balance.available)} demo allowance.`,
+      status: amount <= currentBenefit.balance.available ? "pass" : "blocked",
     });
   }
 

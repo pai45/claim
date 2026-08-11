@@ -23,7 +23,7 @@ const WALLET_LABELS: Record<WalletStatementId, string> = {
   meal: "Meal Wallet",
   fuel: "Fuel Wallet",
   misc: "Reimbursement Wallet",
-  gift: "Gift Wallet",
+  mobile: "Mobile & Internet",
 };
 
 export const WALLET_STATEMENT_MIN_MONTH = TRANSACTION_MIN_MONTH;

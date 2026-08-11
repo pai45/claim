@@ -69,9 +69,8 @@ export const UPI_SETTINGS_ASSETS = {
 
 export const CATEGORY_ICONS = {
   meal: "/assets/icons/meal.svg",
-  gift: "/assets/icons/gift.svg",
+  mobile: "/assets/icons/mobile-internet.svg",
   fuel: "/assets/icons/fuel.svg",
-  mobile: "/assets/icons/mobile.svg",
   driver: "/assets/icons/driver.svg",
   books: "/assets/icons/books.svg",
   professional: "/assets/icons/professional.svg",
@@ -87,7 +86,6 @@ export const DEMO_DOCUMENT_ASSETS = {
   billFuelExceeding: "/assets/demo-documents/bill-fuel-exceeding.jpg",
   billInternet: "/assets/demo-documents/bill-internet.jpg",
   billMobile: "/assets/demo-documents/bill-mobile.jpg",
-  billGift: "/assets/demo-documents/bill-gift.jpg",
   billBooks: "/assets/demo-documents/bill-books.jpg",
   billProfessional: "/assets/demo-documents/bill-professional.jpg",
   billDuplicate: "/assets/demo-documents/bill-duplicate.jpg",

@@ -39,7 +39,7 @@ import {
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { colors } from "@/lib/ui/colors";
-import { useFinancialStateVersion } from "@/features/transactions/financialState";
+import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
 import { resolveTransactionMode } from "@/features/transactions/mode";
 import {
   filterPlusPayTransactionsByMonth,

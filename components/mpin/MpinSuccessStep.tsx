@@ -14,7 +14,7 @@ export function MpinSuccessStep({ onContinue }: MpinSuccessStepProps) {
     <>
       <MpinHeader />
 
-      <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-page pb-4 text-center">
+      <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-page pb-4 pt-5 text-center">
         <SuccessSealIcon size={64} />
         <h1 className="type-section-title mt-5">MPIN Created Successfully</h1>
         <p className="type-body-secondary mt-2 max-w-[280px]">

@@ -14,6 +14,9 @@ describe("effective persona access", () => {
       plusPay: true,
     });
     expect(persona.access.defaultProduct).toBe("ebPlus");
+    expect(persona.hasClaims).toBe(false);
+    expect(persona.hasTransactions).toBe(true);
+    expect(persona.hasRegisteredVehicle).toBe(false);
     expect(persona.isCardActivated).toBe(true);
     expect(persona.hasBenefitsUpiId).toBe(false);
     expect(persona.hasPlusPayUpiId).toBe(true);

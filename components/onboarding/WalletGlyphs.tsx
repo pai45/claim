@@ -1,4 +1,6 @@
 import { colors } from "@/lib/ui/colors";
+import { AppIcon } from "@/components/shared/AppIcon";
+import { CATEGORY_ICONS } from "@/lib/ui/assets";
 
 export function WalletGlyph({
   id,
@@ -48,7 +50,10 @@ export function WalletGlyph({
       </svg>
     );
   }
-  if (id === "gift") {
+  if (id === "mobile") {
+    return <AppIcon src={CATEGORY_ICONS.mobile} size={20} />;
+  }
+  if (false) {
     return (
       <svg {...common}>
         <path

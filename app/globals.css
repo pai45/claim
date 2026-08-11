@@ -61,7 +61,7 @@
   --color-wallet-meal: #aa5a08;
   --color-wallet-fuel: #1163a6;
   --color-wallet-reimbursement: #5d50c6;
-  --color-wallet-gift: #1c8d59;
+  --color-wallet-mobile: #039258;
 
   /* —— Typography scale (4pt-friendly) —— */
   --text-caption: 12px;
@@ -123,7 +123,7 @@
   background: linear-gradient(180deg, #ececff, #dddafe);
 }
 
-.wallet-bg-gift {
+.wallet-bg-mobile {
   background: linear-gradient(180deg, #e3f7ea, #caefd9);
 }
 
@@ -153,8 +153,8 @@ body {
 
 /*
  * Keep the live desktop preview inside a phone-sized canvas with the 874px
- * design height as its baseline. Taller viewports expand the canvas, while
- * shorter desktop viewports scroll the page instead of clipping the screen.
+ * design height as its ceiling. Shorter viewports shrink the canvas so the
+ * complete flow remains visible instead of being clipped below the fold.
  * The explicit height also gives fixed descendants (navigation, drawers, and
  * chat) the same containing block as the app.
  */
@@ -167,7 +167,7 @@ body {
 @media (min-width: 541px) {
   body {
     display: flex;
-    min-height: max(100dvh, 922px);
+    min-height: 100dvh;
     align-items: center;
     justify-content: center;
     padding: 24px;
@@ -176,7 +176,7 @@ body {
   .desktop-mobile-frame {
     isolation: isolate;
     width: min(402px, calc(100vw - 48px));
-    height: max(874px, calc(100dvh - 48px));
+    height: min(874px, calc(100dvh - 48px));
     min-height: 0;
     flex: 0 0 auto;
     overflow: hidden;

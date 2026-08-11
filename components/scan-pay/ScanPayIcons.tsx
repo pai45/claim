@@ -10,7 +10,6 @@ export type ScanPayIconName =
   | "food"
   | "gallery"
   | "game"
-  | "gift"
   | "grid"
   | "health"
   | "help"
@@ -48,7 +47,6 @@ export function ScanPayIcon({
     food: <><path d="M4 11h16a8 8 0 0 1-16 0Z" /><path d="M8 7c0-2 2-2 2-4m4 4c0-2 2-2 2-4" /></>,
     gallery: <><rect x="3" y="4" width="18" height="16" rx="3" /><circle cx="9" cy="10" r="2" /><path d="m5 18 5-5 3 3 2-2 4 4" /></>,
     game: <><path d="M7 9h10a5 5 0 0 1 4.4 7.4l-1 1.8a2 2 0 0 1-3.1.5L15 17H9l-2.3 1.7a2 2 0 0 1-3.1-.5l-1-1.8A5 5 0 0 1 7 9Z" /><path d="M7 13v4m-2-2h4m7-1h.01m3 2h.01" /></>,
-    gift: <><rect x="3" y="9" width="18" height="12" rx="2" /><path d="M12 9v12M3 13h18M7.5 9C5 9 4 7.5 4 6.2 4 4.9 5 4 6.2 4 8.5 4 12 9 12 9m4.5 0C19 9 20 7.5 20 6.2 20 4.9 19 4 17.8 4 15.5 4 12 9 12 9" /></>,
     grid: <><rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" /><rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" /></>,
     health: <><path d="M12 21s-8-4.7-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.3-8 11-8 11Z" /><path d="M12 8v6m-3-3h6" /></>,
     help: <><circle cx="12" cy="12" r="9" /><path d="M9.8 9a2.4 2.4 0 1 1 3.4 2.2c-.8.4-1.2 1-1.2 1.8m0 3h.01" /></>,

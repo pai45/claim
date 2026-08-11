@@ -39,7 +39,7 @@ export function walletIsEligibleForMerchant(
   merchantType: ScanPayMerchantType,
 ): boolean {
   if (mode === "pluspay") return false;
-  if (walletId === "gift") return false;
+  if (walletId === "mobile") return false;
   if (walletId === "misc") return merchantType !== "unsupported";
   return walletId === merchantType;
 }
@@ -82,7 +82,7 @@ export function calculateScanPayFunding({
   }
   if (
     !walletIsEligibleForMerchant(walletId, mode, merchantType) ||
-    walletId === "gift"
+    walletId === "mobile"
   ) {
     return {
       status: "insufficient",

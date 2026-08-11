@@ -12,11 +12,10 @@ type MpinDotsProps = {
 };
 
 /**
- * Read-only boxes, deliberately not `<input>`s.
- *
- * The on-screen keypad is the only way to enter an MPIN, so real inputs would
- * summon the OS keyboard on top of it. Border states match `OtpInput` so the two
- * digit rows in the app look like one component.
+ * Read-only boxes, deliberately not `<input>`s. The visual keypad is kept for
+ * touch entry, while the enclosing screen handles physical keyboard presses.
+ * Border states match `OtpInput` so the two digit rows in the app look like one
+ * component.
  */
 export function MpinDots({
   digits,

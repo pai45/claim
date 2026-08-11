@@ -19,7 +19,6 @@ import type {
   UpiPayee,
 } from "@/features/scan-pay/types";
 import { useActivePersona } from "@/features/persona/useActivePersona";
-import { withBasePath } from "@/lib/basePath";
 import { UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
@@ -53,16 +52,14 @@ export function PayUpiScreen() {
           onPayAgain={() => setLaunch({ kind: "payee", payee: selectedPayee })}
           onTransaction={(transactionId) =>
             router.push(
-              withBasePath(
-                `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=${mode}`,
-              ),
+              `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=${mode}`,
             )
           }
         />
       ) : (
         <PayeeListScreen
           payees={payees}
-          onBack={() => router.push(withBasePath("/"))}
+          onBack={() => router.push("/")}
           onEnterUpi={() => setLaunch({ kind: "upi-entry" })}
           onPayee={navigateToPayee}
         />
@@ -332,7 +329,7 @@ function resolveMode(
 function sendMoneyUrl(mode: ScanPayMode, payeeId?: string): string {
   const params = new URLSearchParams({ mode });
   if (payeeId) params.set("payee", payeeId);
-  return withBasePath(`/send-money/?${params.toString()}`);
+  return `/send-money/?${params.toString()}`;
 }
 
 function groupHistory(

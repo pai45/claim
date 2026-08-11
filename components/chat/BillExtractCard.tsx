@@ -519,7 +519,7 @@ export function BillExtractCard({
           role="dialog"
           aria-modal="true"
           aria-label="Full bill preview"
-          className={`absolute inset-x-page top-1/2 -translate-y-1/2 rounded-card border border-border-line bg-white p-3 shadow-menu transition-all duration-200 motion-reduce:transition-none ${
+          className={`absolute inset-x-page top-1/2 flex max-h-[calc(100%-32px)] -translate-y-1/2 flex-col overflow-hidden rounded-card border border-border-line bg-white p-3 shadow-menu transition-all duration-200 motion-reduce:transition-none ${
             previewOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
           }`}
         >
@@ -540,13 +540,13 @@ export function BillExtractCard({
               alt={`Full bill image for ${fields.vendor || "claim"}`}
               width={720}
               height={720}
-              className="max-h-[72dvh] w-full rounded-control object-contain bg-surface-tint"
+              className="min-h-0 w-full flex-1 rounded-control bg-surface-tint object-contain"
             />
           ) : legacyPreviewUrl ? (
             <img
               src={legacyPreviewUrl}
               alt={`Full bill image for ${fields.vendor || "claim"}`}
-              className="max-h-[72dvh] w-full rounded-control object-contain bg-surface-tint"
+              className="min-h-0 w-full flex-1 rounded-control bg-surface-tint object-contain"
             />
           ) : null}
         </section>

@@ -27,9 +27,9 @@ describe("documented answers", () => {
       [
         "**Claims dashboard (FY 26/27)**",
         "",
-        "- **Available:** ₹1,95,000",
-        "- **Utilized:** ₹90,000",
-        "- **FY limit:** ₹2,85,000",
+        "- **Available:** ₹1,75,000",
+        "- **Utilized:** ₹82,000",
+        "- **FY limit:** ₹2,57,000",
         "- **Categories:** 5",
       ].join("\n"),
     );
@@ -40,16 +40,16 @@ describe("documented answers", () => {
 
     // Ranked by available balance, and covers the wallets with no dashboard.
     expect(reply).toContain("- **Driver Salary:** ₹45,000 available of ₹90,000");
-    expect(reply).toContain("- **Gift Wallet:** ₹5,000 available of ₹5,000");
-    expect(reply).toContain("**Total available:** ₹2,30,000");
+    expect(reply).toContain("- **Mobile & Internet:** ₹2,000 available of ₹2,000");
+    expect(reply).toContain("**Total available:** ₹2,05,000");
   });
 
   it("How many claims do I have?", () => {
     const reply = answer("How many claims do I have?");
 
-    expect(reply).toContain("- **Count:** 31");
-    expect(reply).toContain("- **Approved:** 23");
-    expect(reply).toContain("- **Pending:** 5");
+    expect(reply).toContain("- **Count:** 25");
+    expect(reply).toContain("- **Approved:** 18");
+    expect(reply).toContain("- **Pending:** 4");
     expect(reply).toContain("- **Needs info:** 1");
     expect(reply).toContain("- **Rejected:** 2");
   });
@@ -69,9 +69,8 @@ describe("documented answers", () => {
   it("Show mobile claims merges both datasets", () => {
     const reply = answer("Show mobile claims");
 
-    // 6 dashboard rows + 3 from the claims-history screen.
-    expect(reply).toContain("- **Count:** 9");
-    expect(reply).toContain("- **Total:** ₹11,597");
+    expect(reply).toContain("- **Count:** 3");
+    expect(reply).toContain("- **Total:** ₹3,097");
   });
 
   it("When must I submit books claims?", () => {
@@ -121,16 +120,16 @@ describe("documented answers", () => {
     expect(reply).toContain("- **Utilized:** ₹0 of ₹30,000 accrued");
   });
 
-  it("How much balance is left in my gift wallet?", () => {
-    const reply = answer("How much balance is left in my gift wallet?");
-    expect(reply).toContain("**Gift Wallet**");
-    expect(reply).toContain("- **Available:** ₹5,000");
+  it("How much balance is left in my mobile and internet benefit?", () => {
+    const reply = answer("How much balance is left in my mobile and internet benefit?");
+    expect(reply).toContain("**Mobile & Internet**");
+    expect(reply).toContain("- **Available:** ₹2,000");
   });
 
   it("What is my total wallet balance?", () => {
     const reply = answer("What is my total wallet balance?");
     expect(reply).toContain("**Your wallets (FY 26/27)**");
-    expect(reply).toContain("**Total available:** ₹2,30,000");
+    expect(reply).toContain("**Total available:** ₹2,05,000");
   });
 
   it("Is Swiggy allowed?", () => {

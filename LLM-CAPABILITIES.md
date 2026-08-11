@@ -51,7 +51,6 @@ question word (`limit`, `proof`, `covered`, `eligible`, `deadline`, `how`, …).
 | Benefit | Also recognized as |
 |---------|-------------------|
 | Meal Wallet | meal, meals, food, restaurant, cafeteria |
-| Gift Wallet | gift, gifts, voucher, festival gift |
 | Fuel & Maintenance | fuel, petrol, diesel, vehicle maintenance |
 | Mobile & Internet | mobile, phone, internet, broadband, wifi, data plan |
 | Driver Salary | driver, chauffeur, driver salary |
@@ -96,7 +95,7 @@ Also works: *What documents do I need for driver salary?* · *Do I need a GST in
 > - Claims must be submitted before the 5th of next month
 > - **Claim Frequency:** Monthly
 
-Also works: *When do I need to submit meal claims?* · *How often can I claim mobile benefits?* · *When is the gift claim window?*
+Also works: *When do I need to submit meal claims?* · *How often can I claim mobile benefits?*
 
 ### Coverage and eligibility
 
@@ -113,18 +112,16 @@ Also works: *When do I need to submit meal claims?* · *How often can I claim mo
 >
 > Learning must be relevant to your current or future role
 
-> **Q — "What is covered under gift wallet?"**
+> **Q — "What is covered under Mobile & Internet?"**
 >
-> **Gift Wallet coverage**
+> **Mobile & Internet coverage**
 >
-> - Festival gift vouchers
-> - Employer gift cards
-> - Approved retail gift invoices
-> - Diwali / Holi gift packs
-> - Team celebration gifts
-> - Company-listed merchants
+> - Mobile postpaid bills
+> - Home broadband
+> - Dongle / data cards
+> - Work-from-home internet
 >
-> Eligible mainly for festival / employer-approved gift occasions
+> Eligible claims reserve the shared ₹2,000 Mobile & Internet balance.
 
 ### How the claim process works
 
@@ -171,9 +168,9 @@ After discussing one benefit you can drop the category: *What proof is required?
 >
 > **Claims dashboard (FY 26/27)**
 >
-> - **Available:** ₹1,95,000
-> - **Utilized:** ₹90,000
-> - **FY limit:** ₹2,85,000
+> - **Available:** ₹1,75,000
+> - **Utilized:** ₹82,000
+> - **FY limit:** ₹2,57,000
 > - **Categories:** 5
 
 > **Q — "How much is available on my fuel dashboard?"**
@@ -192,17 +189,17 @@ After discussing one benefit you can drop the category: *What proof is required?
 > - **Utilized:** ₹0 of ₹30,000 accrued (FY 26/27)
 > - **May 2026 claims:** ₹0
 
-> **Q — "How much balance is left in my gift wallet?"**
+> **Q — "How much balance is left in my mobile and internet benefit?"**
 >
-> **Gift Wallet**
+> **Mobile & Internet**
 >
-> - **Available:** ₹5,000
-> - **Utilized:** ₹0 of ₹5,000 accrued (FY 26/27)
+> - **Available:** ₹2,000
+> - **Utilized:** ₹0 of ₹2,000 accrued (FY 26/27)
 > - **May 2026 claims:** ₹0
 
-All 7 categories (Meal, Gift, Fuel, Mobile, Driver, Books, and Professional Development) resolve their exact allocated and available balances accurately.
+All 6 categories (Meal, Fuel, Mobile & Internet, Driver, Books, and Professional Development) resolve their exact allocated and available balances accurately.
 
-Also works: *How much have I utilized?* · *What is my FY limit?* · *What is pending on my fuel wallet this month?* · *Show books dashboard totals* · *How much balance is left in my gift wallet?*
+Also works: *How much have I utilized?* · *What is my FY limit?* · *What is pending on my fuel wallet this month?* · *Show books dashboard totals*
 
 ---
 
@@ -315,9 +312,9 @@ After a claims answer: *Which ones are approved?* · *Which are pending?* ·
 
 ### All wallets at once
 
-Covers all seven benefits, including Meal and Gift, which have no dashboard
-screen. This is why the total here (₹2,30,000) is higher than the dashboard's
-₹1,95,000 — the dashboard only sums the five categories that have screens.
+Covers all six benefits, including Meal, which has no dashboard screen. This is
+why the total here (₹2,05,000) is higher than the dashboard's ₹1,75,000 — the
+dashboard only sums the five categories that have screens.
 
 > **Q — "Which wallet has the most left?"** / **"What is my total available?"**
 >
@@ -328,12 +325,11 @@ screen. This is why the total here (₹2,30,000) is higher than the dashboard's
 > - **Fuel & Maintenance:** ₹42,000 available of ₹60,000
 > - **Professional Development:** ₹38,000 available of ₹50,000
 > - **Meal Wallet:** ₹30,000 available of ₹30,000
-> - **Mobile & Internet:** ₹22,000 available of ₹30,000
-> - **Gift Wallet:** ₹5,000 available of ₹5,000
+> - **Mobile & Internet:** ₹2,000 available of ₹2,000
 >
-> **Total available:** ₹2,30,000
+> **Total available:** ₹2,05,000
 
-Also works: *Where do I still have budget?* · *Compare meal and gift* · *Which benefit should I use?*
+Also works: *Where do I still have budget?* · *Compare meal and mobile benefits* · *Which benefit should I use?*
 
 ### What makes a claim pass or fail
 
@@ -347,7 +343,6 @@ upload anything.
 > Every claim is checked for required fields, a valid amount and bill date, available balance, attached proof, duplicates, and the submission deadline.
 >
 > - **Meal Wallet:** GST food or restaurant invoice, submit by the 5th of the next month
-> - **Gift Wallet:** Gift voucher or purchase invoice
 > - **Fuel & Maintenance:** Original GST fuel or maintenance invoice, submit by the 5th of the next month
 > - **Mobile & Internet:** Postpaid mobile or broadband GST invoice, submit by the 5th of the next month
 > - **Driver Salary:** Monthly salary receipt and driver licence, submit by the 5th of the next month
@@ -486,7 +481,7 @@ Copy-paste prompts that are known to route correctly.
 9. What is the monthly limit for mobile?
 10. How does driver salary work?
 11. Are certifications covered under professional development?
-12. What is covered under gift wallet?
+12. What is covered under Mobile & Internet?
 13. When must I submit books claims?
 14. Compare the meal and fuel benefits
 

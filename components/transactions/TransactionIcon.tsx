@@ -1,4 +1,6 @@
 import { colors } from "@/lib/ui/colors";
+import { AppIcon } from "@/components/shared/AppIcon";
+import { CATEGORY_ICONS } from "@/lib/ui/assets";
 import type { TransactionIconId } from "@/features/transactions/constants";
 
 type TransactionIconProps = {
@@ -109,26 +111,7 @@ export function TransactionIcon({ icon, size = 22 }: TransactionIconProps) {
           />
         </svg>
       );
-    case "gift":
-      return (
-        <svg {...common}>
-          <rect
-            x="4"
-            y="10"
-            width="16"
-            height="10"
-            rx="1.5"
-            stroke={stroke}
-            strokeWidth="1.7"
-          />
-          <path
-            d="M4 13h16M12 10v10M12 10c-2.2-3.2-5.5-2.2-5.5 0C6.5 11.5 9 12 12 10ZM12 10c2.2-3.2 5.5-2.2 5.5 0C17.5 11.5 15 12 12 10Z"
-            stroke={stroke}
-            strokeWidth="1.7"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
+    case "mobile":
+      return <AppIcon src={CATEGORY_ICONS.mobile} size={size} />;
   }
 }

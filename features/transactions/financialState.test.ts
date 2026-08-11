@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   commitBenefitPayment,
+  commitMobileClaim,
   getPersonaFinancialDelta,
+  releaseMobileClaim,
+  updateMobileClaim,
 } from "@/features/transactions/financialState";
 import type { TransactionItem } from "@/features/transactions/constants";
 
@@ -80,5 +83,35 @@ describe("financial state", () => {
     );
     expect(result).toEqual({ status: "insufficient", walletId: "meal" });
     expect(getPersonaFinancialDelta("returning", storage).transactions).toEqual([]);
+  });
+
+  it("reserves, reprices, and releases Mobile & Internet claims idempotently", () => {
+    const storage = memoryStorage();
+    expect(commitMobileClaim({
+      personaId: "returning",
+      claimId: "CLM-90001",
+      amount: 800,
+      baseBalance: 2000,
+    }, storage)).toEqual({ status: "committed" });
+    expect(commitMobileClaim({
+      personaId: "returning",
+      claimId: "CLM-90001",
+      amount: 800,
+      baseBalance: 2000,
+    }, storage)).toEqual({ status: "duplicate" });
+    expect(updateMobileClaim({
+      personaId: "returning",
+      claimId: "CLM-90001",
+      amount: 1200,
+      baseBalance: 2000,
+    }, storage)).toEqual({ status: "committed" });
+    expect(commitMobileClaim({
+      personaId: "returning",
+      claimId: "CLM-90002",
+      amount: 801,
+      baseBalance: 2000,
+    }, storage)).toEqual({ status: "insufficient" });
+    releaseMobileClaim("returning", "CLM-90001", storage);
+    expect(getPersonaFinancialDelta("returning", storage).mobileClaimDebits).toEqual({});
   });
 });

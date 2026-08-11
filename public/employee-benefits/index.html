@@ -600,24 +600,23 @@
             <strong>₹9,100</strong>
           </button>
           <button
-            class="wallet-chip gift"
+            class="wallet-chip mobile"
             type="button"
             data-wallet-card
-            data-wallet-name="Gift Wallet"
-            data-wallet-balance="6200 pts"
-            data-wallet-description="Rewards and gifting"
-            data-wallet-detail="Gift balance for card-linked spends and brand redemption journeys when gifting is the primary intent."
-            data-wallet-actions="card"
-            data-wallet-cta="Gift Wallet details opened"
+            data-wallet-name="Mobile &amp; Internet"
+            data-wallet-balance="₹2,000"
+            data-wallet-description="Mobile and broadband bills"
+            data-wallet-detail="A shared balance for eligible mobile and internet claims."
+            data-wallet-actions=""
+            data-wallet-cta="Mobile &amp; Internet details opened"
             aria-pressed="false"
           >
             <div class="wallet-topline">
-              <span class="wallet-icon gift-icon" aria-hidden="true"
-                ><svg><use href="#icon-gift" /></svg
-              ></span>
+              <span class="wallet-icon mobile-icon" aria-hidden="true"
+                ><img src="../assets/icons/mobile-internet.svg" alt="" /></span>
             </div>
-            <span class="wallet-name">Gift</span>
-            <strong>6200 pts</strong>
+            <span class="wallet-name">Mobile &amp; Internet</span>
+            <strong>₹2,000</strong>
           </button>
         </div>
       </section>
@@ -729,31 +728,14 @@
           </button>
           <button
             type="button"
-            data-filter="gift"
+            data-filter="mobile"
             role="tab"
             aria-selected="false"
           >
-            Gift
+            Mobile &amp; Internet
           </button>
         </div>
         <div class="transaction-list" data-transaction-list>
-          <article class="transaction-item" data-wallet="gift">
-            <span class="transaction-icon"
-              ><svg><use href="#icon-bag" /></svg
-            ></span>
-            <div class="transaction-meta">
-              <strong>Amazon</strong>
-              <span
-                data-lens-text="Rupay Card | Ref ID: 12345678"
-                data-pluspay-text="UPI | Ref ID: 12345678"
-                >Rupay Card | Ref ID: 12345678</span
-              >
-            </div>
-            <div class="transaction-amount">
-              <strong>- ₹4,250</strong>
-              <span>20 Dec</span>
-            </div>
-          </article>
           <article class="transaction-item" data-wallet="meal">
             <span class="transaction-icon"
               ><svg><use href="#icon-food" /></svg
@@ -839,23 +821,6 @@
               <span>06 Dec</span>
             </div>
           </article>
-          <article class="transaction-item" data-wallet="gift">
-            <span class="transaction-icon"
-              ><svg><use href="#icon-gift" /></svg
-            ></span>
-            <div class="transaction-meta">
-              <strong>Lifestyle Store</strong>
-              <span
-                data-lens-text="Rupay Card | Ref ID: 123456793"
-                data-pluspay-text="UPI | Ref ID: 123456793"
-                >Rupay Card | Ref ID: 123456793</span
-              >
-            </div>
-            <div class="transaction-amount">
-              <strong>- ₹2,400</strong>
-              <span>04 Dec</span>
-            </div>
-          </article>
           <article class="transaction-item" data-wallet="meal">
             <span class="transaction-icon"
               ><svg><use href="#icon-food" /></svg
@@ -871,23 +836,6 @@
             <div class="transaction-amount">
               <strong>- ₹420</strong>
               <span>28 Nov</span>
-            </div>
-          </article>
-          <article class="transaction-item" data-wallet="gift">
-            <span class="transaction-icon"
-              ><svg><use href="#icon-bag" /></svg
-            ></span>
-            <div class="transaction-meta">
-              <strong>Amazon</strong>
-              <span
-                data-lens-text="Rupay Card | Ref ID: 123456701"
-                data-pluspay-text="UPI | Ref ID: 123456701"
-                >Rupay Card | Ref ID: 123456701</span
-              >
-            </div>
-            <div class="transaction-amount">
-              <strong>- ₹1,899</strong>
-              <span>18 Nov</span>
             </div>
           </article>
           <article class="transaction-item" data-wallet="misc">
@@ -1405,7 +1353,7 @@
               <button
                 class="manage-cards-control-tile"
                 type="button"
-                data-toast="Manage Tokens is coming soon"
+                data-manage-tokens-open
               >
                 <span class="manage-cards-control-icon" aria-hidden="true">
                   <img src="./assets/icons/manage-tokens.svg" alt="" />
@@ -1421,16 +1369,6 @@
                   <img src="./assets/icons/payment-approvals.svg" alt="" />
                 </span>
                 <span>Payment<br />Approvals</span>
-              </button>
-              <button
-                class="manage-cards-control-tile"
-                type="button"
-                data-fallback-open
-              >
-                <span class="manage-cards-control-icon" aria-hidden="true">
-                  <img src="./assets/icons/fallback-control.svg" alt="" />
-                </span>
-                <span>Fallback<br />Control</span>
               </button>
             </div>
           </section>

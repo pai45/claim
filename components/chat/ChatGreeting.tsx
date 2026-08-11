@@ -15,7 +15,7 @@ export function ChatGreeting() {
       </div>
       <MagicText
         as="h2"
-        text={`Hey ${persona.profile.name} 👋`}
+        text={`Hey ${persona.profile.name.split(' ')[0]} 👋`}
         mode="chars"
         delayMs={30}
         stepMs={14}

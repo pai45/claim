@@ -13,7 +13,13 @@ export function resolveEffectivePersona(
       products: { ebPlus: true, plusPay: true },
       defaultProduct: "ebPlus",
     },
+    // EB+ is a newly created account. Rohan's established PlusPay account,
+    // including its history and UPI ID, remains unchanged.
+    hasClaims: false,
     hasCompletedOnboarding: true,
+    hasRegisteredVehicle: false,
     isCardActivated: true,
+    hasBenefitsUpiId: false,
+    hasPlusPayUpiId: persona.hasPlusPayUpiId,
   };
 }

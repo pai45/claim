@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EyeToggle } from "./EyeToggle";
 import { MpinDots } from "./MpinDots";
 import { MpinHeader } from "./MpinHeader";
@@ -50,11 +50,30 @@ export function MpinEntryStep({
 }: MpinEntryStepProps) {
   const [revealed, setRevealed] = useState(false);
 
+  // The visual keypad remains the primary mobile control, while this keeps the
+  // same PIN flow usable from a physical desktop keyboard.
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (locked || event.ctrlKey || event.metaKey || event.altKey) return;
+
+      if (/^\d$/.test(event.key)) {
+        event.preventDefault();
+        onDigit(event.key);
+      } else if (event.key === "Backspace") {
+        event.preventDefault();
+        onBackspace();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [locked, onBackspace, onDigit]);
+
   return (
     <>
       <MpinHeader onBack={onBack} />
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4">
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-5">
         <h1 className="type-screen-title">{title}</h1>
         <p className="type-body-secondary mt-1">{subtitle}</p>
 
