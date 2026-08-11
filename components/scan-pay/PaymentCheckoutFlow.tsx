@@ -12,6 +12,7 @@ import {
 } from "@/components/scan-pay/ScanPayResult";
 import { ScanPayFaq } from "@/components/scan-pay/ScanPayScanner";
 import { createPaymentLedgerRows } from "@/features/scan-pay/ledger";
+import { recordBankTransfer } from "@/features/bank-transfer/history";
 import { createPaymentTransactionForState } from "@/features/scan-pay/machine";
 import { recordRecipientPayment } from "@/features/send-money/history";
 import {
@@ -66,6 +67,7 @@ export function PaymentCheckoutFlow({
       }
       recordPlusPayTransaction(personaId, transaction);
       recordRecipientPayment(transaction);
+      recordBankTransfer(personaId, transaction);
       dispatch({ type: "RESOLVE_PAYMENT", transaction });
     }, 1450);
     return () => window.clearTimeout(timer);

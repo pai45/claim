@@ -6,31 +6,40 @@ const sourceApp = readFileSync(
   join(process.cwd(), "public/employee-benefits/app.js"),
   "utf8",
 );
+const html = readFileSync(
+  join(process.cwd(), "public/employee-benefits/index.html"),
+  "utf8",
+);
 const styles = readFileSync(
   join(process.cwd(), "public/employee-benefits/styles.css"),
   "utf8",
 );
 
 describe("Rohan EB+ payment actions", () => {
-  it("removes Scan & Pay only while Rohan's EB+ setup is pending", () => {
+  it("keeps the standard Send Money and Scan & Pay cards while setup is pending", () => {
     expect(sourceApp).toMatch(
       /isEbPlusSetupEligible[\s\S]*activePersona === "pluspay_only" && !access\.products\.ebPlus/,
     );
-    expect(styles).toMatch(
-      /body\.is-pluspay\.is-eb-plus-setup-eligible \.pluspay-action-card\.is-highlight[\s\S]*display: none/,
+    expect(html).toMatch(
+      /class="pluspay-actions-grid"[\s\S]*data-send-money-open[\s\S]*<strong>Send Money<\/strong>[\s\S]*data-scan-pay-open[\s\S]*<strong>Scan & Pay<\/strong>/,
     );
     expect(styles).toMatch(
-      /body\.is-pluspay\.is-eb-plus-setup-eligible \.pluspay-actions-grid[\s\S]*grid-template-columns: minmax\(0, 1fr\)/,
+      /\.pluspay-actions-grid \{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
     );
     expect(styles).not.toMatch(
-      /body\.is-pluspay\.is-eb-plus-setup-eligible \.home-scan-card[\s\S]*display: none/,
+      /body\.is-pluspay\.is-eb-plus-setup-eligible \.pluspay-actions-grid/,
+    );
+    expect(styles).not.toMatch(
+      /body\.is-pluspay\.is-eb-plus-setup-eligible \.pluspay-action-card\.is-highlight/,
     );
   });
 
-  it("restores the default PlusPay actions after EB+ activation", () => {
-    expect(sourceApp).toContain(
-      'activePersona === "pluspay_only" && !access.products.ebPlus',
+  it("uses setup eligibility only to show or hide the EB+ invitation", () => {
+    expect(styles).toMatch(
+      /body\.is-pluspay \.eb-plus-setup-card[\s\S]*display: none/,
     );
-    expect(styles).not.toContain("is-rohan-persona");
+    expect(styles).toMatch(
+      /body\.is-pluspay\.is-eb-plus-setup-eligible \.eb-plus-setup-card[\s\S]*display: grid/,
+    );
   });
 });

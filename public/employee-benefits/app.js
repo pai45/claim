@@ -16,6 +16,7 @@ const overlayCloseButtons = document.querySelectorAll(
 const walletButtons = document.querySelectorAll("[data-wallet-card]");
 const pluspayToggle = document.querySelector("[data-pluspay-toggle]");
 const pluspayLabel = document.querySelector("[data-pluspay-label]");
+const homeScanCard = document.querySelector(".home-scan-card");
 const swapTextNodes = document.querySelectorAll(
   "[data-eb-plus-text][data-pluspay-text], [data-lens-text][data-pluspay-text]",
 );
@@ -4686,6 +4687,8 @@ walletOverlayViewAllHistory?.addEventListener("click", (event) => {
 function applyMode(isPluspay) {
   document.body.classList.toggle("is-pluspay", isPluspay);
   pluspayToggle?.setAttribute("aria-pressed", String(isPluspay));
+
+  if (homeScanCard) homeScanCard.hidden = isPluspay;
 
   if (pluspayLabel) {
     pluspayLabel.textContent = isPluspay ? "EB+" : "PlusPay";

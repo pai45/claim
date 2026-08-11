@@ -4,7 +4,7 @@ import {
   outcomeForScenario,
 } from "@/features/scan-pay/fixtures";
 import { defaultWalletForMerchant } from "@/features/scan-pay/funding";
-import type { BankRecipientDraft } from "@/features/bank-transfer/validation";
+import type { BankRecipient } from "@/features/bank-transfer/validation";
 import type {
   ScanPayAction,
   ScanPayMerchantType,
@@ -64,7 +64,7 @@ export function createInitialScanPayState(
 }
 
 export function createInitialBankTransferState(
-  recipient: BankRecipientDraft,
+  recipient: BankRecipient,
 ): ScanPayState {
   return {
     ...createInitialScanPayState("success", "benefits", "unclassified"),

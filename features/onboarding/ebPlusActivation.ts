@@ -51,7 +51,7 @@ export function createEbPlusActivationState(): OnboardingState {
   const state = createInitialOnboardingState("pluspay_only");
   return {
     ...state,
-    step: "hub",
+    step: "intro",
     kycStatus: "completed",
     identity: {
       ...state.identity,

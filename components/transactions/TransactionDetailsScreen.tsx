@@ -13,6 +13,7 @@ import {
 import { useFinancialStateVersion } from "@/features/transactions/financialState";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { getRecipientHistoryTransaction } from "@/features/send-money/history";
+import { getBankTransferHistoryTransaction } from "@/features/bank-transfer/history";
 import type { TransactionProductMode } from "@/features/transactions/mode";
 import {
   getPlusPayTransaction,
@@ -45,11 +46,13 @@ export function TransactionDetailsScreen({
           personaId,
           plusPayHistoryVersion !== null,
         ) ?? getRecipientHistoryTransaction(transactionId)
+          ?? getBankTransferHistoryTransaction(transactionId, personaId)
       : getTransaction(
           transactionId,
           personaId,
           financialVersion !== null,
-        ) ?? getRecipientHistoryTransaction(transactionId);
+        ) ?? getRecipientHistoryTransaction(transactionId)
+          ?? getBankTransferHistoryTransaction(transactionId, personaId);
 
   if (!txn) {
     return (

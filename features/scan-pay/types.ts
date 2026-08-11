@@ -1,6 +1,6 @@
 import type { TransactionWallet } from "@/features/transactions/constants";
 import type { FundingAllocation } from "@/features/transactions/financialState";
-import type { BankRecipientDraft } from "@/features/bank-transfer/validation";
+import type { BankRecipient } from "@/features/bank-transfer/validation";
 
 export type ScanPayMode = "benefits" | "pluspay";
 export type ScanPayMerchantType =
@@ -29,7 +29,7 @@ export type UpiPayee = {
 export type PaymentContext =
   | { origin: "scan-pay" }
   | { origin: "upi-transfer"; recipient: UpiPayee }
-  | { origin: "bank-transfer"; recipient: BankRecipientDraft };
+  | { origin: "bank-transfer"; recipient: BankRecipient };
 
 export type PaymentPayee =
   | {

@@ -118,7 +118,7 @@ export function PayeeListScreen({
                 <AtIcon />
               </span>
               <span className="min-w-0">
-                <span className="type-body block font-bold text-white">
+                <span className="type-body block font-bold text-white!">
                   Enter UPI ID
                 </span>
                 <span className="mt-0.5 block text-caption text-white/80">

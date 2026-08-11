@@ -19,11 +19,11 @@ function memoryStorage() {
 }
 
 describe("Rohan EB+ activation", () => {
-  it("starts on the two-step hub with KYC already complete", () => {
+  it("starts on the benefits activation intro with KYC already complete", () => {
     const state = createEbPlusActivationState();
 
     expect(state).toMatchObject({
-      step: "hub",
+      step: "intro",
       completed: false,
       identityDone: false,
       kycStatus: "completed",
@@ -36,6 +36,29 @@ describe("Rohan EB+ activation", () => {
       lastName: "Mehta",
     });
     expect(state.address.sameAsKyc).toBe(true);
+  });
+
+  it("continues from the intro through two setup steps to the card-ready screen", () => {
+    let state = createEbPlusActivationState();
+
+    state = onboardingReducer(state, { type: "go", step: "hub" });
+    expect(state.step).toBe("hub");
+    expect(state.kycStatus).toBe("completed");
+
+    state = onboardingReducer(state, { type: "identity-complete" });
+    state = onboardingReducer(state, { type: "card-setup-complete" });
+    expect(state).toMatchObject({
+      step: "hub",
+      identityDone: true,
+      cardSetupDone: true,
+    });
+
+    state = onboardingReducer(state, { type: "go", step: "ready" });
+    expect(state.step).toBe("ready");
+    expect(state.completed).toBe(false);
+
+    state = onboardingReducer(state, { type: "finish" });
+    expect(state).toMatchObject({ step: "ready", completed: true });
   });
 
   it("persists partial progress and completion separately", () => {
@@ -61,7 +84,7 @@ describe("Rohan EB+ activation", () => {
     storage.setItem(EB_PLUS_ACTIVATION_STORAGE_KEY, "not-json");
 
     expect(loadEbPlusActivationState(storage)).toMatchObject({
-      step: "hub",
+      step: "intro",
       kycStatus: "completed",
     });
   });

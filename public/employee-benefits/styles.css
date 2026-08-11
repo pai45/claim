@@ -9664,6 +9664,10 @@ body.is-product-locked.is-lens-disabled .product-segment-lens {
   transition: transform 150ms ease, border-color 150ms ease;
 }
 
+body.is-pluspay .home-scan-card {
+  display: none !important;
+}
+
 .home-scan-card:active {
   transform: scale(0.98);
 }
@@ -9731,9 +9735,13 @@ body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy {
   gap: 4px;
 }
 
-body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy small,
-body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy strong {
+body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy small {
   font-size: 14px;
+  line-height: 16px;
+}
+
+body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy strong {
+  font-size: 12px;
   line-height: 16px;
 }
 
@@ -9848,6 +9856,10 @@ body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy-icon {
 
 .upi-id-row {
   gap: 8px;
+}
+
+.upi-id-row strong {
+  font-size: 12px;
 }
 
 .upi-copy-icon {
@@ -10058,14 +10070,6 @@ body.is-pluspay .upi-card-create {
 body.is-pluspay .pluspay-actions-panel {
   margin-top: 20px;
   padding-bottom: 0;
-}
-
-body.is-pluspay.is-eb-plus-setup-eligible .pluspay-actions-grid {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-body.is-pluspay.is-eb-plus-setup-eligible .pluspay-action-card.is-highlight {
-  display: none;
 }
 
 .pluspay-actions-grid {

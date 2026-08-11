@@ -38,6 +38,16 @@ describe("EB+ home payment actions", () => {
     );
   });
 
+  it("removes the white Scan QR card from the PlusPay home", () => {
+    expect(html).toMatch(
+      /class="home-scan-card"[\s\S]*data-pluspay-hide[\s\S]*hidden/,
+    );
+    expect(sourceApp).toContain("homeScanCard.hidden = isPluspay");
+    expect(styles).toMatch(
+      /body\.is-pluspay \.home-scan-card \{[\s\S]*display: none !important/,
+    );
+  });
+
   it("moves Bank Transfer and the renamed UPI payment action into Reimbursement Wallet", () => {
     expect(html).not.toContain("Pay to<br />Anyone");
     expect(html).toMatch(
