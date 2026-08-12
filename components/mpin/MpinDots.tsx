@@ -9,6 +9,8 @@ type MpinDotsProps = {
   /** Bumped by the caller on each error so the shake replays. */
   shakeKey?: number;
   label: string;
+  active?: boolean;
+  onSelect?: () => void;
 };
 
 /**
@@ -23,37 +25,55 @@ export function MpinDots({
   invalid = false,
   shakeKey = 0,
   label,
+  active = false,
+  onSelect,
 }: MpinDotsProps) {
   const filled = digits.filter((digit) => digit !== "").length;
+  const boxes = digits.map((digit, index) => (
+    <span
+      key={index}
+      aria-hidden="true"
+      className={`flex h-12 w-12 items-center justify-center rounded-control border bg-input-soft text-title font-bold text-pine transition-colors ${
+        invalid
+          ? "border-danger"
+          : digit || active
+            ? "border-pine-primary"
+            : "border-input-border"
+      }`}
+    >
+      {digit === "" ? null : revealed ? (
+        digit
+      ) : (
+        <span className="h-2.5 w-2.5 rounded-full bg-pine" />
+      )}
+    </span>
+  ));
 
   return (
     <>
-      <div
-        key={shakeKey}
-        role="group"
-        aria-label={label}
-        className={`flex gap-3 ${invalid ? "animate-shake" : ""}`.trim()}
-      >
-        {digits.map((digit, index) => (
-          <span
-            key={index}
-            aria-hidden="true"
-            className={`flex h-12 w-12 items-center justify-center rounded-control border bg-input-soft text-title font-bold text-pine transition-colors ${
-              invalid
-                ? "border-danger"
-                : digit
-                  ? "border-pine-primary"
-                  : "border-input-border"
-            }`}
-          >
-            {digit === "" ? null : revealed ? (
-              digit
-            ) : (
-              <span className="h-2.5 w-2.5 rounded-full bg-pine" />
-            )}
-          </span>
-        ))}
-      </div>
+      {onSelect ? (
+        <button
+          key={shakeKey}
+          type="button"
+          onClick={onSelect}
+          aria-label={`${label}, ${filled} of ${MPIN_LENGTH} digits entered`}
+          aria-pressed={active}
+          className={`flex min-h-12 gap-3 rounded-control outline-none focus-visible:ring-2 focus-visible:ring-pine-primary focus-visible:ring-offset-2 ${
+            invalid ? "animate-shake" : ""
+          }`.trim()}
+        >
+          {boxes}
+        </button>
+      ) : (
+        <div
+          key={shakeKey}
+          role="group"
+          aria-label={label}
+          className={`flex gap-3 ${invalid ? "animate-shake" : ""}`.trim()}
+        >
+          {boxes}
+        </div>
+      )}
 
       {/* Announces progress without ever reading the digits aloud. */}
       <span className="sr-only" role="status" aria-live="polite">

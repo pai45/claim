@@ -132,7 +132,9 @@ export function TextField({
           readOnly={readOnly}
           placeholder={placeholder}
           onChange={(event) => onChange?.(event.target.value)}
-          className="min-h-11 w-full bg-transparent text-body-sm font-bold text-pine outline-none placeholder:text-placeholder"
+          className={`min-h-11 w-full bg-transparent text-body-sm font-bold outline-none placeholder:text-placeholder ${
+            readOnly ? "text-subtle" : "text-pine"
+          }`}
         />
         {trailing}
       </div>

@@ -38,9 +38,8 @@ export function BeneficiaryAddedSheet({
         onClick={onClose}
         className="absolute inset-0 bg-pine-dark/40"
       />
-      <section className="animate-sheet-rise absolute bottom-[calc(env(safe-area-inset-bottom)+16px)] left-1/2 max-h-[calc(100dvh-32px)] w-full max-w-card -translate-x-1/2 overflow-y-auto rounded-card bg-white p-card shadow-drawer">
-        <header className="flex items-start justify-between gap-3">
-          <BeneficiarySuccessIcon />
+      <section className="animate-sheet-rise absolute inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+16px)] max-h-[calc(100dvh-32px)] overflow-y-auto rounded-card bg-white p-card shadow-drawer">
+        <header className="flex justify-end">
           <button
             type="button"
             onClick={onClose}
@@ -51,7 +50,7 @@ export function BeneficiaryAddedSheet({
           </button>
         </header>
 
-        <div className="mt-2">
+        <div>
           <h2 id="beneficiary-added-title" className="type-screen-title text-ink">
             Beneficiary Added Successfully
           </h2>
@@ -123,41 +122,6 @@ function GuidanceRow({
         <p className="mt-1 type-body-secondary text-ink-secondary">{children}</p>
       </div>
     </div>
-  );
-}
-
-function BeneficiarySuccessIcon() {
-  return (
-    <svg
-      width="64"
-      height="64"
-      viewBox="0 0 64 64"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="26" cy="24" r="15" fill={colors.mint} />
-      <path
-        d="M9 55c3.8-10 11.5-16 21-16s17.2 6 21 16"
-        stroke={colors.pine}
-        strokeWidth="4"
-        strokeLinecap="round"
-      />
-      <circle
-        cx="30"
-        cy="26"
-        r="13"
-        fill={colors.white}
-        stroke={colors.pine}
-        strokeWidth="4"
-      />
-      <path
-        d="m46 41 5 5 8-10"
-        stroke={colors.pinePrimary}
-        strokeWidth="4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }
 

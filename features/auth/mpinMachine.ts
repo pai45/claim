@@ -8,7 +8,8 @@ import {
   removeLastMpinDigit,
 } from "./mpin";
 
-export type MpinStep = "intro" | "set" | "confirm" | "success";
+export type MpinStep = "intro" | "create" | "success";
+export type MpinField = "pin" | "confirm";
 export type MpinStatus = "idle" | "saving" | "error";
 
 export type MpinSetupState = {
@@ -16,6 +17,7 @@ export type MpinSetupState = {
   /** Always length 4; "" marks an empty box. */
   pin: string[];
   confirm: string[];
+  activeField: MpinField;
   status: MpinStatus;
   error: string | null;
 };
@@ -24,7 +26,7 @@ export type MpinSetupAction =
   | { type: "start" }
   | { type: "press-digit"; value: string }
   | { type: "press-backspace" }
-  | { type: "advance" }
+  | { type: "select-field"; field: MpinField }
   | { type: "saving" }
   | { type: "mismatch" }
   | { type: "saved" }
@@ -34,22 +36,26 @@ export const initialMpinSetupState: MpinSetupState = {
   step: "intro",
   pin: emptyMpin(),
   confirm: emptyMpin(),
+  activeField: "pin",
   status: "idle",
   error: null,
 };
 
-/** The box row the current step is editing. */
+/** The box row currently selected on the combined creation screen. */
 export function activeDigits(state: MpinSetupState): string[] {
-  return state.step === "confirm" ? state.confirm : state.pin;
+  return state.activeField === "confirm" ? state.confirm : state.pin;
 }
 
 /**
- * Guards live here rather than on the disabled attribute alone: `advance` and
- * `saving` are reachable from a keyboard-submitted form or a stale handler, and
- * neither may act on a half-filled row.
+ * The reducer guard backs up the disabled CTA so a stale handler cannot save
+ * while either row is incomplete.
  */
 export function canAdvance(state: MpinSetupState): boolean {
-  return isMpinComplete(activeDigits(state)) && state.status !== "saving";
+  return (
+    isMpinComplete(state.pin) &&
+    isMpinComplete(state.confirm) &&
+    state.status !== "saving"
+  );
 }
 
 export function mpinMatches(state: MpinSetupState): boolean {
@@ -62,38 +68,47 @@ export function mpinSetupReducer(
 ): MpinSetupState {
   switch (action.type) {
     case "start": {
-      return { ...state, step: "set", pin: emptyMpin(), confirm: emptyMpin() };
+      return {
+        ...state,
+        step: "create",
+        pin: emptyMpin(),
+        confirm: emptyMpin(),
+        activeField: "pin",
+      };
     }
 
     case "press-digit": {
       if (state.status === "saving") return state;
       const digits = appendMpinDigit(activeDigits(state), action.value);
       const patch =
-        state.step === "confirm" ? { confirm: digits } : { pin: digits };
-      return { ...state, ...patch, status: "idle", error: null };
+        state.activeField === "confirm" ? { confirm: digits } : { pin: digits };
+      return {
+        ...state,
+        ...patch,
+        activeField:
+          state.activeField === "pin" && isMpinComplete(digits)
+            ? "confirm"
+            : state.activeField,
+        status: "idle",
+        error: null,
+      };
     }
 
     case "press-backspace": {
       if (state.status === "saving") return state;
       const digits = removeLastMpinDigit(activeDigits(state));
       const patch =
-        state.step === "confirm" ? { confirm: digits } : { pin: digits };
+        state.activeField === "confirm" ? { confirm: digits } : { pin: digits };
       return { ...state, ...patch, status: "idle", error: null };
     }
 
-    case "advance": {
-      if (state.step !== "set" || !canAdvance(state)) return state;
-      return {
-        ...state,
-        step: "confirm",
-        confirm: emptyMpin(),
-        status: "idle",
-        error: null,
-      };
+    case "select-field": {
+      if (state.step !== "create" || state.status === "saving") return state;
+      return { ...state, activeField: action.field, error: null };
     }
 
     case "saving": {
-      if (state.step !== "confirm" || !canAdvance(state)) return state;
+      if (state.step !== "create" || !canAdvance(state)) return state;
       return { ...state, status: "saving", error: null };
     }
 
@@ -103,6 +118,7 @@ export function mpinSetupReducer(
       return {
         ...state,
         confirm: emptyMpin(),
+        activeField: "confirm",
         status: "error",
         error: MPIN_MISMATCH_MESSAGE,
       };
@@ -113,19 +129,7 @@ export function mpinSetupReducer(
     }
 
     case "go-back": {
-      if (state.step === "confirm") {
-        // Both rows clear: returning to "Set" means choosing a new PIN, so a
-        // stale first entry would silently become the thing to match.
-        return {
-          ...state,
-          step: "set",
-          pin: emptyMpin(),
-          confirm: emptyMpin(),
-          status: "idle",
-          error: null,
-        };
-      }
-      if (state.step === "set") {
+      if (state.step === "create") {
         return { ...initialMpinSetupState };
       }
       return state;

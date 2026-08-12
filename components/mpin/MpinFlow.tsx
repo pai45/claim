@@ -4,14 +4,13 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { AppShell } from "@/components/shared/AppShell";
 import { createMpinSalt, digestMpin, mpinValue } from "@/features/auth/mpin";
 import {
-  activeDigits,
   canAdvance,
   initialMpinSetupState,
   mpinMatches,
   mpinSetupReducer,
 } from "@/features/auth/mpinMachine";
 import { clearMpinLock, saveMpin } from "@/features/auth/mpinStorage";
-import { MpinEntryStep } from "./MpinEntryStep";
+import { MpinCreateStep } from "./MpinCreateStep";
 import { MpinIntroStep } from "./MpinIntroStep";
 import { MpinSuccessStep } from "./MpinSuccessStep";
 
@@ -34,7 +33,6 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
     salt: string;
     digest: string;
   } | null>(null);
-  const digits = activeDigits(state);
   const ready = canAdvance(state);
 
   // Guards the async hash against a component that unmounted mid-flight.
@@ -47,10 +45,8 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
   }, []);
 
   /**
-   * Both steps commit on Continue rather than on the fourth digit. Setting a PIN
-   * is not the same act as entering a known one: the last box is where people
-   * check what they typed, and a screen that moves on by itself takes that
-   * moment away — and, on the confirm step, spends an attempt on it.
+   * Creation commits only when both rows are complete and Continue is pressed.
+   * The fourth digit selects confirmation, but never saves by itself.
    */
   function submitConfirm() {
     if (!ready) return;
@@ -80,26 +76,12 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
         <MpinIntroStep onStart={() => dispatch({ type: "start" })} />
       ) : null}
 
-      {state.step === "set" ? (
-        <MpinEntryStep
-          title="Set MPIN"
-          subtitle="Create a 4-digit PIN for secure access"
-          fieldLabel="Type your MPIN"
-          digits={digits}
-          onDigit={(value) => dispatch({ type: "press-digit", value })}
-          onBackspace={() => dispatch({ type: "press-backspace" })}
-          onSubmit={() => dispatch({ type: "advance" })}
-          canSubmit={ready}
-          onBack={() => dispatch({ type: "go-back" })}
-        />
-      ) : null}
-
-      {state.step === "confirm" ? (
-        <MpinEntryStep
-          title="Confirm MPIN"
-          subtitle="Create a 4-digit PIN for secure access"
-          fieldLabel="Type your MPIN"
-          digits={digits}
+      {state.step === "create" ? (
+        <MpinCreateStep
+          pin={state.pin}
+          confirm={state.confirm}
+          activeField={state.activeField}
+          onSelectField={(field) => dispatch({ type: "select-field", field })}
           onDigit={(value) => dispatch({ type: "press-digit", value })}
           onBackspace={() => dispatch({ type: "press-backspace" })}
           onSubmit={submitConfirm}
@@ -107,6 +89,7 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
           error={state.error}
           shakeKey={shakeKey}
           onBack={() => dispatch({ type: "go-back" })}
+          saving={state.status === "saving"}
         />
       ) : null}
 

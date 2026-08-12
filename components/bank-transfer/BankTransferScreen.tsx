@@ -40,7 +40,6 @@ import { staggerStyle } from "@/lib/ui/staggerStyle";
 const EMPTY_RECIPIENT: BankRecipientDraft = {
   accountHolder: "",
   accountNumber: "",
-  confirmAccountNumber: "",
   ifsc: "",
 };
 
@@ -61,6 +60,7 @@ export function BankTransferScreen() {
   const [registeredRecipient, setRegisteredRecipient] =
     useState<BankRecipient | null>(null);
   const [paymentState, setPaymentState] = useState<ScanPayState | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const dispatch = useCallback<Dispatch<ScanPayAction>>((action) => {
     setPaymentState((current) =>
@@ -133,22 +133,44 @@ export function BankTransferScreen() {
     );
   }
 
+  const showRegistrationForm = isRegistering || beneficiaries.length === 0;
+
   return (
     <AppShell className="overflow-hidden bg-surface">
       <ScreenHeader
-        title="Bank Transfer"
-        onBack={() => router.push("/")}
+        title={showRegistrationForm ? "Register New Beneficiary" : "Bank Transfer"}
+        onBack={() =>
+          showRegistrationForm && beneficiaries.length
+            ? setIsRegistering(false)
+            : router.push("/")
+        }
       />
-      <main className="min-h-0 flex-1 overflow-y-auto px-page pb-8 pt-5">
-        <BankTransferRecipientForm
-          recipient={recipient}
-          errors={recipientErrors}
-          beneficiaries={beneficiaries}
-          onChange={updateRecipient}
-          onContinue={continueRecipient}
-          onBeneficiary={navigateToBeneficiary}
-        />
+      <main className="min-h-0 flex-1 overflow-y-auto px-page pb-5 pt-5">
+        {showRegistrationForm ? (
+          <BankTransferRecipientForm
+            recipient={recipient}
+            errors={recipientErrors}
+            onChange={updateRecipient}
+            onContinue={continueRecipient}
+          />
+        ) : (
+          <SavedBankBeneficiaryList
+            beneficiaries={beneficiaries}
+            onBeneficiary={navigateToBeneficiary}
+          />
+        )}
       </main>
+      {!showRegistrationForm ? (
+        <footer className="shrink-0 rounded-t-bubble bg-white px-page pb-5 pt-4 shadow-drawer">
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => setIsRegistering(true)}
+          >
+            Register new beneficiary
+          </button>
+        </footer>
+      ) : null}
       <BeneficiaryAddedSheet
         open={Boolean(registeredRecipient)}
         accountHolder={registeredRecipient?.accountHolder ?? ""}
@@ -162,17 +184,13 @@ export function BankTransferScreen() {
 export function BankTransferRecipientForm({
   recipient,
   errors,
-  beneficiaries = [],
   onChange,
   onContinue,
-  onBeneficiary = () => {},
 }: {
   recipient: BankRecipientDraft;
   errors: BankRecipientErrors;
-  beneficiaries?: BankBeneficiary[];
   onChange: (field: keyof BankRecipientDraft, value: string) => void;
   onContinue: () => void;
-  onBeneficiary?: (beneficiary: BankBeneficiary) => void;
 }) {
   return (
     <section>
@@ -199,17 +217,6 @@ export function BankTransferRecipientForm({
           onChange={(value) => onChange("accountNumber", digitsOnly(value))}
         />
         <Field
-          label="Re-enter account number"
-          id="confirm-account-number"
-          value={recipient.confirmAccountNumber}
-          error={errors.confirmAccountNumber}
-          inputMode="numeric"
-          autoComplete="off"
-          onChange={(value) =>
-            onChange("confirmAccountNumber", digitsOnly(value))
-          }
-        />
-        <Field
           label="IFSC code"
           id="ifsc"
           value={recipient.ifsc}
@@ -227,13 +234,6 @@ export function BankTransferRecipientForm({
       >
         Continue
       </button>
-
-      {beneficiaries.length ? (
-        <SavedBankBeneficiaryList
-          beneficiaries={beneficiaries}
-          onBeneficiary={onBeneficiary}
-        />
-      ) : null}
     </section>
   );
 }
@@ -246,8 +246,8 @@ export function SavedBankBeneficiaryList({
   onBeneficiary: (beneficiary: BankBeneficiary) => void;
 }) {
   return (
-    <section className="mt-6 border-t border-border-soft pt-6">
-      <h2 className="type-section-title mb-3 text-ink">
+    <section aria-labelledby="saved-beneficiaries-title">
+      <h2 id="saved-beneficiaries-title" className="type-section-title mb-3 text-ink">
         Saved Beneficiaries
       </h2>
       <div className="flex flex-col gap-3">

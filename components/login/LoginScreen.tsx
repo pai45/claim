@@ -128,6 +128,15 @@ export function LoginScreen() {
     resetDemoJourney(personaId);
     dispatch({ type: "change-number" });
 
+    // Aarav is the demo's new-user persona, so surface his registered mobile
+    // number as soon as the sign-in form opens.
+    if (personaId === "new_user") {
+      dispatch({
+        type: "set-mobile",
+        value: getPersonaConfig(personaId).profile.mobile,
+      });
+    }
+
     if (hasReturningAccountState(personaId)) {
       continueWithMpin(personaId);
       return;

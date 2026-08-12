@@ -19,7 +19,6 @@ describe("bank transfer validation", () => {
       validateBankRecipient({
         accountHolder: "Ananya Rao",
         accountNumber: "123456789012",
-        confirmAccountNumber: "123456789012",
         ifsc: "HDFC0001234",
       }),
     ).toEqual({});
@@ -29,36 +28,28 @@ describe("bank transfer validation", () => {
     const errors = validateBankRecipient({
       accountHolder: "",
       accountNumber: "123",
-      confirmAccountNumber: "321",
       ifsc: "HDFC123",
     });
     expect(errors.accountHolder).toBeTruthy();
     expect(errors.accountNumber).toBeTruthy();
-    expect(errors.confirmAccountNumber).toBe(
-      "Account numbers do not match.",
-    );
     expect(errors.ifsc).toBeTruthy();
   });
 
-  it("requires the confirmation account number to match", () => {
+  it("does not require account-number confirmation", () => {
     const errors = validateBankRecipient({
       accountHolder: "Ananya Rao",
       accountNumber: "123456789012",
-      confirmAccountNumber: "123456789013",
       ifsc: "HDFC0001234",
     });
 
-    expect(errors).toEqual({
-      confirmAccountNumber: "Account numbers do not match.",
-    });
+    expect(errors).toEqual({});
   });
 
-  it("removes confirmation data before checkout", () => {
+  it("normalizes registration data before checkout", () => {
     expect(
       bankRecipientFromDraft({
         accountHolder: "  Ananya Rao  ",
         accountNumber: "123456789012",
-        confirmAccountNumber: "123456789012",
         ifsc: "HDFC0001234",
       }),
     ).toEqual({

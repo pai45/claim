@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BankBeneficiaryHistoryScreen,
   BankTransferRecipientForm,
+  SavedBankBeneficiaryList,
 } from "@/components/bank-transfer/BankTransferScreen";
 import { BeneficiaryAddedSheet } from "@/components/bank-transfer/BeneficiaryAddedSheet";
 import { MobileOtpSheet } from "@/components/bank-transfer/MobileOtpSheet";
@@ -13,13 +14,12 @@ import {
 } from "@/features/bank-transfer/history";
 
 describe("BankTransferRecipientForm", () => {
-  it("restores account confirmation without the recipient details eyebrow", () => {
+  it("renders the simplified beneficiary registration form", () => {
     const markup = renderToStaticMarkup(
       createElement(BankTransferRecipientForm, {
         recipient: {
           accountHolder: "",
           accountNumber: "",
-          confirmAccountNumber: "",
           ifsc: "",
         },
         errors: {},
@@ -30,7 +30,7 @@ describe("BankTransferRecipientForm", () => {
 
     expect(markup).toContain("Account holder name");
     expect(markup).toContain("Account number");
-    expect(markup).toContain("Re-enter account number");
+    expect(markup).not.toContain("Re-enter account number");
     expect(markup).toContain("IFSC code");
     expect(markup).not.toContain("Recipient details");
     expect(markup).toContain("Register New Beneficiary");
@@ -75,45 +75,33 @@ describe("BankTransferRecipientForm", () => {
     expect(markup).toContain("Resend OTP");
   });
 
-  it("shows the divider and four saved rows only when beneficiaries exist", () => {
+  it("renders saved beneficiaries separately from registration", () => {
     const beneficiaries = getSavedBankBeneficiaries("returning", null);
     const markup = renderToStaticMarkup(
       createElement(BankTransferRecipientForm, {
         recipient: {
           accountHolder: "",
           accountNumber: "",
-          confirmAccountNumber: "",
           ifsc: "",
         },
         errors: {},
-        beneficiaries,
         onChange: vi.fn(),
         onContinue: vi.fn(),
-        onBeneficiary: vi.fn(),
       }),
     );
 
     expect(beneficiaries).toHaveLength(4);
-    expect(markup).toContain("border-border-soft");
-    expect(markup).toContain("Saved Beneficiaries");
-    expect(markup).toContain("Ananya Rao");
-    expect(markup).toContain("HDFC0001234");
+    expect(markup).not.toContain("Saved Beneficiaries");
 
-    const emptyMarkup = renderToStaticMarkup(
-      createElement(BankTransferRecipientForm, {
-        recipient: {
-          accountHolder: "",
-          accountNumber: "",
-          confirmAccountNumber: "",
-          ifsc: "",
-        },
-        errors: {},
-        beneficiaries: [],
-        onChange: vi.fn(),
-        onContinue: vi.fn(),
+    const listMarkup = renderToStaticMarkup(
+      createElement(SavedBankBeneficiaryList, {
+        beneficiaries,
+        onBeneficiary: vi.fn(),
       }),
     );
-    expect(emptyMarkup).not.toContain("Saved Beneficiaries");
+    expect(listMarkup).toContain("Saved Beneficiaries");
+    expect(listMarkup).toContain("Ananya Rao");
+    expect(listMarkup).toContain("HDFC0001234");
   });
 
   it("renders bank transfer history and a Pay Again action", () => {
