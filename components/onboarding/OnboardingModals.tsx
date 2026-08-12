@@ -8,7 +8,7 @@ import { SuccessSealIcon } from "./SuccessSealIcon";
 type StatusModalProps = {
   open: boolean;
   title: string;
-  description: string;
+  description?: string;
   confirmLabel?: string;
   onConfirm: () => void;
   onClose: () => void;
@@ -19,7 +19,7 @@ type StatusModalProps = {
 export function CenterModal({
   open,
   title,
-  description,
+  description = "",
   confirmLabel = "OK",
   onConfirm,
   onClose,
@@ -120,9 +120,11 @@ function SuccessBottomSheet({
         >
           {title}
         </h2>
-        <p className="type-body-secondary mt-3.5 text-[17px] leading-[1.35]">
-          {description}
-        </p>
+        {description ? (
+          <p className="type-body-secondary mt-3.5 text-[17px] leading-[1.35]">
+            {description}
+          </p>
+        ) : null}
         <button
           type="button"
           className="btn-primary mt-7 min-h-11 h-auto py-3"

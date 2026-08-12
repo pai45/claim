@@ -114,7 +114,12 @@ export function ManageTokensList() {
 
   return (
     <AppShell className="bg-surface relative">
-      <ScreenHeader title="Manage Tokens" onBack={() => router.push("/")} />
+      {/* Reached from the Manage Cards quick links, so Back returns there
+          rather than dropping the user on the home screen. */}
+      <ScreenHeader
+        title="Manage Tokens"
+        onBack={() => router.push("/?returnTo=manage-cards")}
+      />
 
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
         {/* Tabs */}

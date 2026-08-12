@@ -83,14 +83,13 @@ describe("onboardingReducer", () => {
     expect(state.address.sameAsKyc).toBe(true);
   });
 
-  it("marks journey complete on finish", () => {
+  it("opens the card-ready screen as soon as card setup is complete", () => {
     let state = createInitialOnboardingState();
     state = onboardingReducer(state, { type: "identity-complete" });
     state = onboardingReducer(state, { type: "kyc-complete" });
     state = onboardingReducer(state, { type: "card-setup-complete" });
     expect(allStepsDone(state)).toBe(true);
-    state = onboardingReducer(state, { type: "finish" });
-    expect(state.completed).toBe(true);
+    expect(state).toMatchObject({ step: "ready", completed: false });
   });
 
   it("stores kit number", () => {

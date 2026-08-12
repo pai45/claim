@@ -45,6 +45,11 @@ describe("persona transaction data", () => {
     expect(items.every((item) => getTransaction(item.id, "returning") === item)).toBe(true);
   });
 
+  it("resolves a transaction by its receipt transaction ID", () => {
+    const item = getTransactionItems("returning")[0];
+    expect(getTransaction(item.transactionId, "returning")).toBe(item);
+  });
+
   it("gives Rahul the returning transaction history", () => {
     expect(getTransactionItems("rahul_onboarding")).toEqual(
       getTransactionItems("returning"),

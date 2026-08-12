@@ -575,7 +575,7 @@ export function getTransaction(
   includePersisted = true,
 ): TransactionItem | undefined {
   return getTransactionItems(personaId, includePersisted).find(
-    (item) => item.id === id,
+    (item) => item.id === id || item.transactionId === id,
   );
 }
 

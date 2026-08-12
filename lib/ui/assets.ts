@@ -106,5 +106,8 @@ export const SCAN_PAY_ASSETS = {
   categoryMore: "/assets/scan-pay/category-more.svg",
   confirmPaymentMark: "/assets/scan-pay/confirm-payment-mark.png",
   paymentProcessingLogo: "/assets/scan-pay/payment-processing-logo.png",
+  transactionDetails: "/assets/scan-pay/maximize-square.svg",
+  downloadSquare: "/assets/scan-pay/download-square.svg",
+  shareSquare: "/assets/scan-pay/square-share-line.svg",
   poweredByUpi: UPI_SETTINGS_ASSETS.poweredByUpi,
 } as const;

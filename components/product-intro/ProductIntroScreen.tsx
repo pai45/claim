@@ -6,7 +6,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { ProductWordmark } from "@/components/login/ProductWordmark";
+import { PlusPayWordmark } from "@/components/login/PlusPayWordmark";
 import { AppShell } from "@/components/shared/AppShell";
 import {
   PRODUCT_INTRO_LAST_INDEX,
@@ -96,7 +96,7 @@ export function ProductIntroScreen({ onComplete }: ProductIntroScreenProps) {
         </div>
 
         <header className="relative z-10 flex min-h-20 shrink-0 items-center justify-center border-b border-border-line bg-login-canvas px-page pt-[env(safe-area-inset-top)]">
-          <ProductWordmark />
+          <PlusPayWordmark />
           {!isLastSlide ? (
             <button
               type="button"

@@ -55,6 +55,7 @@ const MPIN_VERIFIED_MESSAGE = "employee-benefits:mpin-verified";
 const MPIN_CANCELLED_MESSAGE = "employee-benefits:mpin-cancelled";
 const MANAGE_CARDS_RETURN_QUERY = "returnTo";
 const MANAGE_CARDS_RETURN_VALUE = "manage-cards";
+const MANAGE_CARDS_FRAME_HASH = "#manage-cards";
 type CardMpinIntent = "activate-card" | "set-card-pin";
 type WalletStatementKey = "meal" | "fuel" | "misc" | "mobile";
 
@@ -87,7 +88,24 @@ export function EmployeeBenefitsHost() {
     useState<ScanPayScenario>("success");
   const [scanPayMerchantType, setScanPayMerchantType] =
     useState<Exclude<ScanPayMerchantType, "unclassified">>("meal");
-  const [sourceOverlayOpen, setSourceOverlayOpen] = useState(false);
+  /**
+   * Read once, before the frame exists: Manage Limit and Manage Tokens are
+   * full-screen screens of their own, so their Back button comes home through a
+   * fresh page load. The source app reopens the panel from a hash on the frame
+   * URL during its own first paint — waiting for the frame's load event instead
+   * would flash the home screen first. `HomeEntry` gates this component behind
+   * hydration, so it never renders on the server and `window` is always here.
+   */
+  const [returnsToManageCards] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get(
+        MANAGE_CARDS_RETURN_QUERY,
+      ) === MANAGE_CARDS_RETURN_VALUE,
+  );
+  // Seeded so the shared nav never paints over a panel that is already open.
+  const [sourceOverlayOpen, setSourceOverlayOpen] =
+    useState(returnsToManageCards);
   const [ebPlusSetupOpen, setEbPlusSetupOpen] = useState(false);
   const [frameReady, setFrameReady] = useState(false);
   const [plusPayMode, setPlusPayMode] = useState(
@@ -332,15 +350,13 @@ export function EmployeeBenefitsHost() {
     bodyObserverRef.current = observer;
     syncSourceState();
 
-    // Manage Limit is a standalone Next.js screen opened from this overlay.
-    // Re-open the source overlay when the screen's Back button returns home,
-    // then remove the one-time instruction from the URL.
+    // The frame's own URL carries the hash that reopened the panel, so all that
+    // is left here is dropping the one-time instruction from the host's URL.
     const searchParams = new URLSearchParams(window.location.search);
     if (
       searchParams.get(MANAGE_CARDS_RETURN_QUERY) ===
       MANAGE_CARDS_RETURN_VALUE
     ) {
-      document.querySelector<HTMLElement>("[data-manage-cards-open]")?.click();
       searchParams.delete(MANAGE_CARDS_RETURN_QUERY);
       const search = searchParams.toString();
       window.history.replaceState(
@@ -543,7 +559,9 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=home-revamp-v1`}
+        src={`${withBasePath("/employee-benefits/index.html")}?v=home-revamp-v1${
+          returnsToManageCards ? MANAGE_CARDS_FRAME_HASH : ""
+        }`}
         title="Employee Benefits"
         onLoad={connectClaimsBridge}
       />

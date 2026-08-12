@@ -1527,74 +1527,6 @@ body.is-upi-created:not(.is-pluspay) .scan-pay-card {
   animation-delay: 520ms;
 }
 
-.pluspay-actions-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-12);
-}
-
-.pluspay-action-card {
-  display: grid;
-  justify-items: start;
-  align-content: start;
-  gap: var(--space-8);
-  min-height: 154px;
-  padding: var(--space-16);
-  border: 1px solid #cce9d9;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #fcfffd, #eaf8ef);
-  box-shadow: 0 16px 28px rgba(0, 86, 86, 0.08);
-  text-align: left;
-}
-
-.pluspay-action-card.is-highlight {
-  border-color: #d7ed93;
-  background: linear-gradient(180deg, #fffffb, #f1facd);
-  box-shadow: 0 16px 28px rgba(118, 146, 37, 0.1);
-}
-
-.pluspay-action-icon {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: #caefd9;
-  color: #1c8d59;
-}
-
-.pluspay-action-card.is-highlight .pluspay-action-icon {
-  background: #ecf7b7;
-  color: #718f15;
-}
-
-.pluspay-action-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.pluspay-action-card small {
-  color: var(--subtle);
-  font-size: 0.75rem;
-  font-weight: var(--fw-semibold);
-  text-transform: uppercase;
-}
-
-.pluspay-action-card strong {
-  color: var(--ink);
-  font-size: 1rem;
-  line-height: 1.28;
-  font-weight: var(--fw-bold);
-}
-
-.pluspay-action-card.is-highlight small {
-  color: #7d958d;
-}
-
-.pluspay-action-card.is-highlight strong {
-  color: var(--ink);
-}
-
 .wallet-strip,
 .wallet-grid {
   display: grid;
@@ -2422,6 +2354,13 @@ body.is-merchant-directory-open .bottom-nav {
 
 .manage-cards-overlay.is-open .manage-cards-panel {
   transform: translate(50%, 0);
+}
+
+/* Restoring the panel after a trip out to a full-screen quick link is not an
+   opening, so it lands in place instead of sliding up over the home screen. */
+.manage-cards-overlay.is-instant .manage-cards-backdrop,
+.manage-cards-overlay.is-instant .manage-cards-panel {
+  transition: none;
 }
 
 .manage-cards-header {
@@ -8969,7 +8908,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 
 .upi-safety-hero h1 {
   color: #ffffff;
-  font-size: 18px;
+  font-size: 12px;
 }
 
 .upi-safety-hero p {
@@ -9060,8 +8999,7 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
 
 @media (max-width: 360px) {
   .balance-copy,
-  .wallet-strip,
-  .pluspay-actions-grid {
+  .wallet-strip {
     grid-template-columns: 1fr;
   }
 
@@ -9778,6 +9716,7 @@ body:not(.is-pluspay).is-upi-created .upi-card-id .upi-copy-icon {
 
 .upi-card-create {
   grid-template-columns: 24px minmax(0, 1fr) auto;
+  height: 58px;
 }
 
 .upi-card::before,
@@ -9981,7 +9920,7 @@ body.is-pluspay .phone-shell::before {
   right: 0;
   left: 0;
   display: block;
-  height: 620px;
+  height: 580px;
   background: linear-gradient(
     180deg,
     var(--brand-900) 0%,
@@ -10089,82 +10028,79 @@ body.is-pluspay .pluspay-actions-panel {
 }
 
 .pluspay-actions-grid {
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .pluspay-action-card {
   display: flex;
-  min-height: 190px;
-  align-items: flex-start;
-  justify-content: flex-start;
+  min-height: 108px;
   flex-direction: column;
+  align-items: flex-start;
   gap: 10px;
-  padding: 20px 16px;
-  border: 1px solid var(--line-strong);
-  border-radius: 20px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  border-radius: 18px;
+  /* Pale mint rather than neutral white: at this opacity a white veil over the
+     teal hero reads as milky grey and drifts out of the palette. */
   background: linear-gradient(
     225deg,
-    rgba(54, 204, 139, 0.2) 0%,
-    rgba(235, 250, 241, 0.92) 44%,
-    rgba(255, 255, 255, 0.96) 100%
+    rgba(214, 248, 232, 0.44) 0%,
+    rgba(214, 248, 232, 0.17) 100%
   );
-  box-shadow: 2px 2px 10px rgba(0, 42, 25, 0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 8px 20px rgba(0, 32, 26, 0.2);
+  backdrop-filter: blur(10px);
+  text-align: left;
+  transition: transform 0.16s ease;
 }
 
 .pluspay-action-card.is-highlight {
-  border-color: rgba(54, 204, 139, 0.42);
+  border-color: rgba(54, 204, 139, 0.8);
   background: linear-gradient(
     225deg,
-    rgba(54, 204, 139, 0.34) 0%,
-    rgba(235, 250, 241, 0.96) 54%,
-    rgba(255, 255, 255, 0.98) 100%
+    rgba(54, 204, 139, 0.62) 0%,
+    rgba(54, 204, 139, 0.26) 100%
   );
-  box-shadow: 2px 2px 10px rgba(0, 42, 25, 0.05);
 }
 
-.pluspay-action-icon,
-.pluspay-action-card.is-highlight .pluspay-action-icon {
+.pluspay-action-card:active {
+  transform: scale(0.97);
+}
+
+.pluspay-action-icon {
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 12px;
-  background: var(--brand-700);
+  background: rgba(255, 255, 255, 0.32);
   color: #ffffff;
 }
 
 .pluspay-action-card.is-highlight .pluspay-action-icon {
+  border-color: transparent;
   background: var(--brand-500);
+  box-shadow: 0 0 18px rgba(54, 204, 139, 0.28);
+  color: var(--brand-900);
 }
 
 .pluspay-action-icon svg {
-  width: 25px;
-  height: 25px;
+  width: 22px;
+  height: 22px;
   stroke-width: 2;
 }
 
-.pluspay-action-icon img {
-  display: block;
-  width: 24px;
-  height: 24px;
-}
-
-.pluspay-action-card strong,
-.pluspay-action-card.is-highlight strong {
-  margin-top: 4px;
-  color: var(--brand-900);
+.pluspay-action-card strong {
+  margin-top: auto;
+  color: #ffffff;
   font-family: "PP Telegraf", "Lato", sans-serif;
-  font-size: 18px;
-  line-height: 24px;
-}
-
-.pluspay-action-card small,
-.pluspay-action-card.is-highlight small {
-  color: #535862;
-  font-size: 15px;
-  line-height: 22px;
-  font-weight: var(--fw-regular);
-  text-transform: none;
+  font-size: 16px;
+  font-weight: var(--fw-bold);
+  line-height: 20px;
 }
 
 body.is-pluspay .eb-plus-setup-card {
@@ -10337,8 +10273,8 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
   }
 
   .pluspay-action-card {
-    min-height: 178px;
-    padding: 16px 12px;
+    min-height: 100px;
+    padding: 12px;
   }
 
   .eb-plus-setup-card {
@@ -10359,9 +10295,17 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
   inset: 0;
 }
 
+/* The scrim fades with the panel. Painted flat it stayed at full strength for
+   the whole slide-out and then snapped away, which read as a flicker over
+   Manage Cards rather than a dismissal. */
 .track-card-overlay {
   z-index: 38;
-  background: rgba(11, 31, 29, 0.36);
+  background-color: transparent;
+  transition: background-color 280ms ease;
+}
+
+.track-card-overlay.is-open {
+  background-color: rgba(11, 31, 29, 0.36);
 }
 
 .track-card-panel {
@@ -11704,9 +11648,17 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
   inset: 0;
 }
 
+/* Opaque, so it has to fade out with the panel it backs. Held flat it outlived
+   the panel's own fade and left a blank grey screen between Set/Reset PIN and
+   Manage Cards. */
 .card-pin-overlay {
   z-index: 60;
-  background: #f3f3f3;
+  background-color: transparent;
+  transition: background-color 180ms ease;
+}
+
+.card-pin-overlay.is-open {
+  background-color: #f3f3f3;
 }
 
 .card-pin-panel {

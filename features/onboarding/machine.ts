@@ -108,7 +108,9 @@ export function onboardingReducer(
       return {
         ...state,
         cardSetupDone: true,
-        step: "hub",
+        // Card setup is the final onboarding task. Take the user straight to
+        // their ready-to-use card instead of returning to a fully completed hub.
+        step: "ready",
       };
 
     case "set-online-tx":

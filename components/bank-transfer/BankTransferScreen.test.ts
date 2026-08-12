@@ -5,6 +5,7 @@ import {
   BankBeneficiaryHistoryScreen,
   BankTransferRecipientForm,
 } from "@/components/bank-transfer/BankTransferScreen";
+import { BeneficiaryAddedSheet } from "@/components/bank-transfer/BeneficiaryAddedSheet";
 import {
   SEEDED_BANK_TRANSFER_RECORDS,
   getSavedBankBeneficiaries,
@@ -31,8 +32,30 @@ describe("BankTransferRecipientForm", () => {
     expect(markup).toContain("Re-enter account number");
     expect(markup).toContain("IFSC code");
     expect(markup).not.toContain("Recipient details");
-    expect(markup).toContain("Who are you paying?");
+    expect(markup).toContain("Register New Beneficiary");
     expect(markup).not.toContain("Step 1 of");
+  });
+
+  it("renders the beneficiary registration guidance without a wallet issuer footer", () => {
+    const markup = renderToStaticMarkup(
+      createElement(BeneficiaryAddedSheet, {
+        open: true,
+        accountHolder: "Priyangshu Das",
+        onClose: vi.fn(),
+        onContinue: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain("Beneficiary Added Successfully");
+    expect(markup).toContain("PRIYANGSHU DAS");
+    expect(markup).toContain("For New Beneficiary");
+    expect(markup).toContain("minimum 30 mins");
+    expect(markup).toContain("For Existing Beneficiary");
+    expect(markup).toContain("minimum 5 mins");
+    expect(markup).toContain("Transfer Limit");
+    expect(markup).toContain("₹2L");
+    expect(markup).toContain("support@pinelabs.com");
+    expect(markup).not.toContain("issued by");
   });
 
   it("shows the divider and four saved rows only when beneficiaries exist", () => {

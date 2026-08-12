@@ -18,6 +18,7 @@ import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
 import { CheckRow, TextField } from "./OnboardingPrimitives";
 import { PrimaryFooter } from "./PrimaryFooter";
+import { SuccessSealIcon } from "./SuccessSealIcon";
 import { WalletGlyph } from "./WalletGlyphs";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
 
@@ -451,20 +452,7 @@ export function ReadyStep({
     <>
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-6">
         <div className="flex shrink-0 flex-col items-center text-center">
-          <span
-            className="flex h-16 w-16 items-center justify-center rounded-full bg-success"
-            aria-hidden="true"
-          >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path
-                d="m6.5 12.5 3.5 3.5 7.5-8"
-                stroke="white"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+          <SuccessSealIcon size={64} />
           <h1 className="type-section-title mt-4 max-w-[280px]">
             Your Employee Benefit Card is Ready for Use!
           </h1>

@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { colors } from "@/lib/ui/colors";
 import { withBasePath } from "@/lib/basePath";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
 import { PrimaryFooter } from "./PrimaryFooter";
+import { SuccessSealIcon } from "./SuccessSealIcon";
 
 type KycIntroStepProps = {
   onStart: () => void;
@@ -116,21 +116,7 @@ export function KycCompletedStep({ onContinue }: KycCompletedStepProps) {
     <>
       <OnboardingHeader title="KYC Verification" />
       <main className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto px-page pb-4 pt-5 text-center">
-        <span
-          className="flex h-20 w-20 items-center justify-center rounded-full"
-          style={{ background: colors.success }}
-          aria-hidden="true"
-        >
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
-            <path
-              d="m6.5 12.5 3.5 3.5 7.5-8"
-              stroke="white"
-              strokeWidth="2.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </span>
+        <SuccessSealIcon size={64} />
         <h2 className="type-section-title mt-5">KYC Completed</h2>
         <p className="type-body-secondary mt-2 max-w-[280px]">
           Your KYC verification has been successfully completed.

@@ -48,13 +48,11 @@ describe("Rohan EB+ activation", () => {
     state = onboardingReducer(state, { type: "identity-complete" });
     state = onboardingReducer(state, { type: "card-setup-complete" });
     expect(state).toMatchObject({
-      step: "hub",
+      step: "ready",
       identityDone: true,
       cardSetupDone: true,
     });
 
-    state = onboardingReducer(state, { type: "go", step: "ready" });
-    expect(state.step).toBe("ready");
     expect(state.completed).toBe(false);
 
     state = onboardingReducer(state, { type: "finish" });

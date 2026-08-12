@@ -53,7 +53,10 @@ describe("EB+ home payment actions", () => {
     expect(html).toMatch(
       /data-reimbursement-actions[\s\S]*data-bank-transfer-open[\s\S]*Bank<br \/>Transfer[\s\S]*data-send-money-open[\s\S]*data-upi-created-only[\s\S]*Pay<br \/>UPI ID/,
     );
-    expect(html.match(/assets\/payments\/send-money\.svg/g)).toHaveLength(2);
+    // Only the Reimbursement Wallet action uses the raw asset. The PlusPay home
+    // CTA draws the same glyph from the #icon-send sprite so it can inherit
+    // currentColor against the dark hero.
+    expect(html.match(/assets\/payments\/send-money\.svg/g)).toHaveLength(1);
     expect(sourceApp).toContain(
       'reimbursementActions.hidden = walletTone !== "misc"',
     );

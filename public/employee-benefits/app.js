@@ -5248,11 +5248,27 @@ function openMerchantDirectory() {
   });
 }
 
-function openManageCardsOverlay() {
+/**
+ * `instant` puts the panel straight into its open state. Manage Limit and
+ * Manage Tokens are full-screen Next.js screens, so returning from one is a
+ * fresh page load: animating the panel in would show the home screen first and
+ * read as Manage Cards being opened again rather than returned to.
+ */
+function openManageCardsOverlay({ instant = false } = {}) {
   if (!manageCardsOverlay) return;
   manageCardsOverlay.hidden = false;
+  if (manageCardsPanel) manageCardsPanel.scrollTop = 0;
+  if (instant) {
+    manageCardsOverlay.classList.add("is-instant", "is-open");
+    syncPageScrollLock();
+    // Both properties are already at their open values, so restoring the
+    // transitions on the next frame animates nothing.
+    window.requestAnimationFrame(() => {
+      manageCardsOverlay.classList.remove("is-instant");
+    });
+    return;
+  }
   window.requestAnimationFrame(() => {
-    if (manageCardsPanel) manageCardsPanel.scrollTop = 0;
     manageCardsOverlay.classList.add("is-open");
     syncPageScrollLock();
   });
@@ -5413,7 +5429,7 @@ merchantDirectoryCloseButtons.forEach((button) => {
 });
 
 manageCardsOpenButtons.forEach((button) => {
-  button.addEventListener("click", openManageCardsOverlay);
+  button.addEventListener("click", () => openManageCardsOverlay());
 });
 
 manageCardsCloseButtons.forEach((button) => {
@@ -5976,6 +5992,10 @@ window.addEventListener("message", (e) => {
   }
 });
 if (window.location.hash === "#claims") openClaimsAssistant();
+// The host loads the frame with this hash when a quick link's Back button
+// returns home, so the panel is already in place on the first paint.
+if (window.location.hash === "#manage-cards")
+  openManageCardsOverlay({ instant: true });
 
 document.querySelectorAll("[data-manage-tokens-open]").forEach((button) => {
   button.addEventListener("click", (event) => {

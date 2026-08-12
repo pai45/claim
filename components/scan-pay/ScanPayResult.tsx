@@ -368,19 +368,23 @@ export function ReceiptActions({
 }: ReceiptActionProps & { onViewDetails?: () => void }) {
   const actions = [
     onViewDetails
-      ? { label: "View Details", icon: "receipt" as const, action: onViewDetails }
+      ? {
+          label: "View Details",
+          icon: SCAN_PAY_ASSETS.transactionDetails,
+          action: onViewDetails,
+        }
       : null,
     {
       label: "Download",
-      icon: "download" as const,
+      icon: SCAN_PAY_ASSETS.downloadSquare,
       action: () => onDownload(transaction),
     },
     {
       label: "Share",
-      icon: "share" as const,
+      icon: SCAN_PAY_ASSETS.shareSquare,
       action: () => onShare(transaction),
     },
-  ].filter(Boolean) as { label: string; icon: "receipt" | "download" | "share"; action: () => void }[];
+  ].filter(Boolean) as { label: string; icon: string; action: () => void }[];
   return (
     <div className="mt-4 grid grid-cols-3 gap-2">
       {actions.map((action) => (
@@ -391,7 +395,7 @@ export function ReceiptActions({
           className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-control text-caption font-bold text-pine-primary"
         >
           <span className="flex h-9 w-9 items-center justify-center rounded-control bg-surface-tint">
-            <ScanPayIcon name={action.icon} />
+            <AppIcon src={action.icon} alt="" size={24} className="h-6 w-6" />
           </span>
           {action.label}
         </button>

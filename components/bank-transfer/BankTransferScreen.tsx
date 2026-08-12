@@ -2,6 +2,7 @@
 
 import { useCallback, useState, type Dispatch } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { BeneficiaryAddedSheet } from "@/components/bank-transfer/BeneficiaryAddedSheet";
 import { PaymentCheckoutFlow } from "@/components/scan-pay/PaymentCheckoutFlow";
 import { AppShell } from "@/components/shared/AppShell";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
@@ -57,6 +58,8 @@ export function BankTransferScreen() {
   const [recipient, setRecipient] = useState(EMPTY_RECIPIENT);
   const [recipientErrors, setRecipientErrors] =
     useState<BankRecipientErrors>({});
+  const [registeredRecipient, setRegisteredRecipient] =
+    useState<BankRecipient | null>(null);
   const [paymentState, setPaymentState] = useState<ScanPayState | null>(null);
 
   const dispatch = useCallback<Dispatch<ScanPayAction>>((action) => {
@@ -77,11 +80,17 @@ export function BankTransferScreen() {
     const errors = validateBankRecipient(recipient);
     setRecipientErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    startPayment(bankRecipientFromDraft(recipient));
+    setRegisteredRecipient(bankRecipientFromDraft(recipient));
   }
 
   function startPayment(bankRecipient: BankRecipient) {
     setPaymentState(createInitialBankTransferState(bankRecipient));
+  }
+
+  function continueFromRegistration() {
+    if (!registeredRecipient) return;
+    startPayment(registeredRecipient);
+    setRegisteredRecipient(null);
   }
 
   function navigateToBeneficiary(beneficiary: BankBeneficiary) {
@@ -140,6 +149,12 @@ export function BankTransferScreen() {
           onBeneficiary={navigateToBeneficiary}
         />
       </main>
+      <BeneficiaryAddedSheet
+        open={Boolean(registeredRecipient)}
+        accountHolder={registeredRecipient?.accountHolder ?? ""}
+        onClose={() => setRegisteredRecipient(null)}
+        onContinue={continueFromRegistration}
+      />
     </AppShell>
   );
 }
@@ -161,7 +176,7 @@ export function BankTransferRecipientForm({
 }) {
   return (
     <section>
-      <h2 className="type-section-title">Who are you paying?</h2>
+      <h2 className="type-section-title">Register New Beneficiary</h2>
       <p className="mt-1 type-body-secondary">
         Enter the bank details exactly as they appear on the account.
       </p>

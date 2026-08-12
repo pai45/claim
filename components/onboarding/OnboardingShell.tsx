@@ -200,7 +200,6 @@ export function OnboardingShell({
             dispatch({ type: "go", step: "kyc-intro" });
           }}
           onOpenCard={() => dispatch({ type: "go", step: "card-choice" })}
-          onContinueToReady={() => dispatch({ type: "go", step: "ready" })}
         />
       ) : null}
 

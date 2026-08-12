@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type Dispatch } from "react";
+import { useRouter } from "next/navigation";
 import { ScanPayConfirm } from "@/components/scan-pay/ScanPayConfirm";
 import { ScanPayReward } from "@/components/scan-pay/ScanPayReward";
 import {
@@ -41,6 +42,7 @@ export function PaymentCheckoutFlow({
   onClose: () => void;
   onConfirmBack?: () => void;
 }) {
+  const router = useRouter();
   const { personaId } = useActivePersona();
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -97,6 +99,15 @@ export function PaymentCheckoutFlow({
     if (result === "copied") setNotice("Receipt details copied");
   }, []);
 
+  const openTransactionDetails = useCallback(
+    (transaction: ScanPayTransaction) => {
+      router.push(
+        `/transaction-details/?id=${encodeURIComponent(transaction.transactionId)}&mode=${transaction.mode}`,
+      );
+    },
+    [router],
+  );
+
   let content = null;
   if (
     state.step === "confirmPayment" ||
@@ -130,7 +141,7 @@ export function PaymentCheckoutFlow({
         transaction={state.transaction}
         revealed={state.rewardRevealed}
         onReveal={() => dispatch({ type: "REVEAL_REWARD" })}
-        onViewDetails={() => dispatch({ type: "OPEN_PAYMENT_DETAILS" })}
+        onViewDetails={() => openTransactionDetails(state.transaction!)}
         onDownload={handleDownload}
         onShare={handleShare}
         onClose={onClose}

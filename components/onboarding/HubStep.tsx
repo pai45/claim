@@ -1,12 +1,11 @@
 "use client";
 
 import { HUB_STEPS } from "@/features/onboarding/constants";
-import { allStepsDone, canOpenHubStep } from "@/features/onboarding/machine";
+import { canOpenHubStep } from "@/features/onboarding/machine";
 import type { OnboardingState } from "@/features/onboarding/types";
 import { colors } from "@/lib/ui/colors";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { HubStepCard } from "./OnboardingPrimitives";
-import { PrimaryFooter } from "./PrimaryFooter";
 
 type HubStepProps = {
   state: OnboardingState;
@@ -15,7 +14,6 @@ type HubStepProps = {
   onOpenIdentity: () => void;
   onOpenKyc: () => void;
   onOpenCard: () => void;
-  onContinueToReady: () => void;
 };
 
 export function HubStep({
@@ -25,7 +23,6 @@ export function HubStep({
   onOpenIdentity,
   onOpenKyc,
   onOpenCard,
-  onContinueToReady,
 }: HubStepProps) {
   function statusFor(
     id: "identity" | "kyc" | "card",
@@ -53,10 +50,6 @@ export function HubStep({
   const steps = upgradeJourney
     ? HUB_STEPS.filter((step) => step.id !== "kyc")
     : HUB_STEPS;
-  const done = upgradeJourney
-    ? state.identityDone && state.cardSetupDone
-    : allStepsDone(state);
-
   return (
     <>
       <OnboardingHeader
@@ -96,9 +89,6 @@ export function HubStep({
           );
         })}
       </main>
-      {done ? (
-        <PrimaryFooter label="Continue" onClick={onContinueToReady} />
-      ) : null}
     </>
   );
 }
