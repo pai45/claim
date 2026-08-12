@@ -197,7 +197,13 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
       </div>
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-10 pt-4">
-        <section className="animate-rise-in relative flex flex-col gap-5 rounded-card border border-success bg-linear-to-b from-white to-success-tint p-card shadow-soft">
+        <section
+          className="animate-rise-in relative flex flex-col gap-5 rounded-card border p-card shadow-soft"
+          style={{
+            background: `linear-gradient(to bottom, ${colors.white}, ${categoryMeta.cardBackground})`,
+            borderColor: categoryMeta.cardBorder,
+          }}
+        >
           <div className="absolute right-3 top-2.5">
             <span className="inline-flex min-h-6 min-w-6 items-center rounded-full bg-surface px-1.5 py-0.5 shadow-[inset_0_0_0_1px_var(--color-border-muted)]">
               <span className="type-field-label text-center normal-case">
@@ -208,17 +214,22 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
 
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
-              <CategoryIcon icon={categoryMeta.icon} color={colors.pine} />
+              <CategoryIcon icon={categoryMeta.icon} />
               <p className="type-field-label tracking-wide">AVAILABLE LIMIT</p>
             </div>
-            <p className="type-amount">{formatINR(data.availableLimit)}</p>
+            <p className="type-amount" style={{ color: categoryMeta.cardAccent }}>
+              {formatINR(data.availableLimit)}
+            </p>
           </div>
 
           <div className="flex w-full flex-col gap-3">
-            <div className="h-2 w-full overflow-hidden rounded bg-border-muted">
+            <div className="h-2 w-full overflow-hidden rounded-pill bg-border-muted">
               <div
-                className="h-full rounded bg-success"
-                style={{ width: `${progressPercent}%` }}
+                className="h-full rounded-pill"
+                style={{
+                  width: `${progressPercent}%`,
+                  background: categoryMeta.cardAccent,
+                }}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -234,7 +245,10 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
                 <span className="text-caption text-ink-secondary">
                   Accrued for {BENEFIT_DASHBOARD_FY_LABEL}:
                 </span>
-                <span className="text-body-sm font-bold text-success">
+                <span
+                  className="text-body-sm font-bold"
+                  style={{ color: categoryMeta.cardAccent }}
+                >
                   {formatINR(data.accrued)}
                 </span>
               </div>
@@ -336,7 +350,7 @@ function MonthSummary({
 
         <div className="flex gap-2">
           <div className="flex flex-1 flex-col gap-1 rounded-control bg-surface p-3">
-            <span className="type-field-label">Total Claims</span>
+            <span className="type-field-label">Total</span>
             <span className="text-body font-bold text-ink">
               {formatINR(data.monthTotal)}
             </span>

@@ -9,6 +9,7 @@ import {
   formatScanPayINR,
   paymentPayeeIdentifier,
   receiptRows,
+  transactionStatusLabel,
 } from "@/features/scan-pay/receipt";
 import type { ScanPayTransaction } from "@/features/scan-pay/types";
 import { withBasePath } from "@/lib/basePath";
@@ -107,6 +108,66 @@ export function ScanPayReward({
           ? `${formatScanPayINR(transaction.cashbackAmount)} cashback revealed`
           : "Scratch card ready"}
       </p>
+    </AppShell>
+  );
+}
+
+/** Bank transfers share the Scan & Pay paid-to layout but never offer cashback. */
+export function ScanPayBankTransferPaid({
+  transaction,
+  onClose,
+}: {
+  transaction: ScanPayTransaction;
+  onClose: () => void;
+}) {
+  return (
+    <AppShell className="scan-pay-shell scan-pay-reward-screen relative overflow-hidden bg-white">
+      <main className="min-h-0 flex-1 overflow-y-auto pb-28">
+        <section className="scan-pay-bank-transfer-hero scan-pay-reward-hero relative flex flex-col items-center px-page pt-4 text-center text-white">
+          <div className="scan-pay-reward-copy relative z-10 flex flex-col items-center">
+            <AppIcon
+              src={SCAN_PAY_ASSETS.financeIllustration}
+              alt=""
+              width={80}
+              height={80}
+              className="h-20 w-20 object-contain"
+            />
+            <p className="mt-2 text-caption font-bold uppercase tracking-wide text-white/80">
+              Paid to <span className="ml-1 text-body font-bold normal-case text-white">{transaction.payee.name}</span>
+            </p>
+            <p className="mt-1 text-body-sm text-white/80">
+              {paymentPayeeIdentifier(transaction)}
+            </p>
+            <p className="mt-2 font-display text-display font-bold text-white">
+              {formatScanPayINR(transaction.amount)}
+            </p>
+          </div>
+        </section>
+
+        <section className="scan-pay-bank-transfer-details scan-pay-reward-details px-page pt-3">
+          <dl className="divide-y divide-border-soft">
+            {receiptRows(transaction).map(([label, value], index) => (
+              <div
+                key={label}
+                className="animate-rise-in flex items-start justify-between gap-4 py-2.5 text-caption"
+                style={staggerStyle(index, 55, 360)}
+              >
+                <dt className="text-ink-secondary">{label}</dt>
+                <dd className={`max-w-[62%] text-right font-bold ${label === "Status" ? "text-warning" : "text-ink"}`}>
+                  {label === "Status" ? transactionStatusLabel(transaction) : value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      </main>
+
+      <footer className="absolute inset-x-0 bottom-0 z-30 border-t border-border-soft bg-white px-page pb-5 pt-3">
+        <button type="button" className="btn-primary gap-2" onClick={onClose}>
+          Back to Home
+          <ScanPayIcon name="arrow" />
+        </button>
+      </footer>
     </AppShell>
   );
 }

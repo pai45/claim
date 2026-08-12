@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
-import { EbBottomNav } from "@/components/shared/EbBottomNav";
+import {
+  EB_BOTTOM_NAV_SCROLL_PADDING,
+  EbBottomNav,
+} from "@/components/shared/EbBottomNav";
 import { NativeMonthPicker } from "@/components/shared/NativeMonthPicker";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
 import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
@@ -118,7 +121,7 @@ function BenefitsTransactionsScreen() {
   );
 
   return (
-    <AppShell className="overflow-hidden">
+    <AppShell className="relative overflow-hidden">
       <ScreenHeader
         title="Transaction History"
         onBack={() => router.push("/")}
@@ -163,7 +166,9 @@ function BenefitsTransactionsScreen() {
         </div>
       </div>
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
+      <main
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto px-page pt-4 ${EB_BOTTOM_NAV_SCROLL_PADDING}`}
+      >
         {tab === "transactions" ? (
           <TransactionsPanel
             selectedWallet={selectedWallet}
@@ -186,7 +191,7 @@ function BenefitsTransactionsScreen() {
         )}
       </main>
 
-      <EbBottomNav active="transactions" />
+      <EbBottomNav active="transactions" overlay />
     </AppShell>
   );
 }
@@ -214,14 +219,16 @@ function PlusPayTransactionsScreen() {
     selectedMonth;
 
   return (
-    <AppShell className="overflow-hidden">
+    <AppShell className="relative overflow-hidden">
       <ScreenHeader
         title="Transaction History"
         eyebrow="PlusPay"
         onBack={() => router.push("/?mode=pluspay")}
       />
 
-      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto px-page pb-4 pt-4">
+      <main
+        className={`flex min-h-0 flex-1 flex-col overflow-y-auto px-page pt-4 ${EB_BOTTOM_NAV_SCROLL_PADDING}`}
+      >
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-2">
             <NativeMonthPicker
@@ -314,7 +321,7 @@ function PlusPayTransactionsScreen() {
         </div>
       </main>
 
-      <EbBottomNav active="transactions" variant="pluspay" />
+      <EbBottomNav active="transactions" variant="pluspay" overlay />
     </AppShell>
   );
 }

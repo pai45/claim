@@ -16,7 +16,7 @@ export function buildScanPayReceiptText(transaction: ScanPayTransaction): string
   return [
     receiptTitle(transaction),
     `${formatScanPayINR(transaction.amount)} paid to ${payee.name}`,
-    `Status: ${statusLabel(transaction.outcome)}`,
+    `Status: ${transactionStatusLabel(transaction)}`,
     payee.kind === "bank-transfer"
       ? `Account: ${maskAccountNumber(payee.accountNumber)}`
       : payee.kind === "upi"
@@ -27,6 +27,12 @@ export function buildScanPayReceiptText(transaction: ScanPayTransaction): string
       : `UPI Transaction ID: ${transaction.transactionId}`,
     bankTransfer ? `Reference ID: ${transaction.transactionId}` : "",
     `Payment method: ${transaction.paymentMethod}`,
+    ...(bankTransfer && transaction.convenienceFee
+      ? [
+          `Transfer amount: ${formatScanPayINR(transaction.transferAmount ?? transaction.amount - transaction.convenienceFee)}`,
+          `Convenience fee: ${formatScanPayINR(transaction.convenienceFee)}`,
+        ]
+      : []),
     ...fundingTextLines(transaction),
     `Date & time: ${transaction.dateTime}`,
     `Category: ${transaction.category ?? "Not specified"}${transaction.subcategory ? ` / ${transaction.subcategory}` : ""}`,
@@ -185,9 +191,24 @@ export function receiptRows(
           ["UPI Transaction ID", transaction.transactionId],
         ];
   return [
-    ["Status", statusLabel(transaction.outcome)],
+    ["Status", transactionStatusLabel(transaction)],
     ...identityRows,
     ["Payment Method", transaction.paymentMethod],
+    ...(transaction.payee.kind === "bank-transfer" && transaction.convenienceFee
+      ? [
+          [
+            "Transfer amount",
+            formatScanPayINR(
+              transaction.transferAmount ??
+                transaction.amount - transaction.convenienceFee,
+            ),
+          ] as [string, string],
+          ["Convenience fee", formatScanPayINR(transaction.convenienceFee)] as [
+            string,
+            string,
+          ],
+        ]
+      : []),
     ...fundingRows,
     ["Date & Time", transaction.dateTime],
     [
@@ -221,6 +242,11 @@ export function statusLabel(outcome: ScanPayTransaction["outcome"]): string {
   if (outcome === "failed") return "Failed";
   if (outcome === "processing") return "Processing";
   return "Success";
+}
+
+export function transactionStatusLabel(transaction: ScanPayTransaction): string {
+  if (transaction.payee.kind === "bank-transfer") return "Pending";
+  return statusLabel(transaction.outcome);
 }
 
 function compactValue(value: string): string {

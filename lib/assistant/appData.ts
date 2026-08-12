@@ -461,7 +461,7 @@ export function createAppDataFallbackSummary(
   const filterLabel = resolution.status
     ? `${resolution.status.toLowerCase()} `
     : "";
-  return `**Your ${filterLabel}claims**\n\n- **Count:** ${summary.totalCount}\n- **Total:** ${formatINR(summary.totalAmount)}\n- **Approved:** ${summary.approvedCount}\n- **Pending:** ${summary.pendingCount}\n- **Needs info:** ${summary.needsInfoCount}\n- **Rejected:** ${summary.rejectedCount}\n- **Revoked:** ${summary.revokedCount}\n\n**Latest**\n${describeClaims(claims)}`;
+  return `**Your ${filterLabel}claims**\n\n- **Count:** ${summary.totalCount}\n- **Total:** ${formatINR(summary.totalAmount)}\n\n**Latest**\n${describeClaims(claims)}`;
 }
 
 function numericFacts(value: string): string[] {

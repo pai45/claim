@@ -17,6 +17,7 @@ export const colors = {
   success: "#279E6C",
   warning: "#B25E00",
   danger: "#7A2E24",
+  driverSalary: "#745C53",
   /** Soft mint accents used by ColorBends background */
   mintSoft: "#9DDBC1",
   mintWash: "#E7F4EE",

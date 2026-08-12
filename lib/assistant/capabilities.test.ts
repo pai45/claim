@@ -48,10 +48,7 @@ describe("documented answers", () => {
     const reply = answer("How many claims do I have?");
 
     expect(reply).toContain("- **Count:** 25");
-    expect(reply).toContain("- **Approved:** 18");
-    expect(reply).toContain("- **Pending:** 4");
-    expect(reply).toContain("- **Needs info:** 1");
-    expect(reply).toContain("- **Rejected:** 2");
+    expect(reply).toContain("- **Total:** \u20B91,06,895");
   });
 
   it("Why was my claim rejected?", () => {

@@ -189,7 +189,7 @@ describe("scan pay machine", () => {
         {
           walletId: "misc" as const,
           walletLabel: "Reimbursement Wallet",
-          amount: 500,
+          amount: 510,
         },
       ],
     };
@@ -200,9 +200,25 @@ describe("scan pay machine", () => {
       ifsc: "HDFC0001234",
     });
     expect(transaction.paymentMethod).toBe("Bank Transfer");
+    expect(transaction.amount).toBe(510);
+    expect(transaction.transferAmount).toBe(500);
+    expect(transaction.convenienceFee).toBe(10);
     expect(transaction.transactionId).toMatch(/^EB\d{10}$/);
     expect(transaction.category).toBe("Finance");
     expect(transaction.subcategory).toBe("Bank");
+  });
+
+  it("skips the scratch-card reward after a successful bank transfer", () => {
+    let state = createInitialBankTransferState({
+      accountHolder: "Ananya Rao",
+      accountNumber: "123456789012",
+      ifsc: "HDFC0001234",
+    });
+    state = scanPayReducer(state, { type: "SET_AMOUNT", amount: "500" });
+    state = scanPayReducer(state, { type: "PAY" });
+    state = scanPayReducer(state, { type: "RESOLVE_PAYMENT" });
+
+    expect(state.step).toBe("result");
   });
 
   it("preserves payment input when retrying a failed transaction", () => {

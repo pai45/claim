@@ -201,11 +201,6 @@ function ClaimsBody({ data }: { data: Extract<GroundedAppData, { kind: "claims_h
         rows={[
           { label: "Count", value: summary.totalCount },
           { label: "Total", value: formatINR(summary.totalAmount) },
-          { label: "Approved", value: summary.approvedCount },
-          { label: "Pending", value: summary.pendingCount },
-          { label: "Needs info", value: summary.needsInfoCount },
-          { label: "Rejected", value: summary.rejectedCount },
-          { label: "Revoked", value: summary.revokedCount },
         ]}
       />
 

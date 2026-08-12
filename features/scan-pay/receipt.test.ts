@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { ScanPayBankTransferPaid } from "@/components/scan-pay/ScanPayReward";
 import { createScanPayTransaction } from "@/features/scan-pay/fixtures";
 import {
   buildScanPayReceiptText,
@@ -7,7 +10,9 @@ import {
 } from "@/features/scan-pay/receipt";
 
 const transaction = createScanPayTransaction({
-  amount: 500,
+  amount: 510,
+  transferAmount: 500,
+  convenienceFee: 10,
   walletId: "misc",
   categoryId: "finance",
   subcategoryId: "bank",
@@ -19,7 +24,7 @@ const transaction = createScanPayTransaction({
     {
       walletId: "misc",
       walletLabel: "Reimbursement Wallet",
-      amount: 500,
+      amount: 510,
     },
   ],
   paymentContext: {
@@ -36,18 +41,38 @@ describe("bank-transfer receipt", () => {
   it("uses account, IFSC, reference, and wallet fields without UPI labels", () => {
     expect(receiptRows(transaction)).toEqual(
       expect.arrayContaining([
+        ["Status", "Pending"],
         ["Account", "••••••••9012"],
         ["IFSC", "HDFC0001234"],
         ["Reference ID", transaction.transactionId],
         ["Payment Method", "Bank Transfer"],
-        ["Paid from Reimbursement Wallet", "₹500"],
+        ["Transfer amount", "₹500"],
+        ["Convenience fee", "₹10"],
+        ["Paid from Reimbursement Wallet", "₹510"],
         ["Category", "Finance / Bank"],
       ]),
     );
     const text = buildScanPayReceiptText(transaction);
     expect(text).toContain("EB+ bank transfer receipt");
+    expect(text).toContain("Status: Pending");
+    expect(text).toContain("Convenience fee: ₹10");
     expect(text).not.toContain("Merchant ID");
     expect(text).not.toContain("UPI Transaction ID");
     expect(paymentPayeeIdentifier(transaction)).toContain("HDFC0001234");
+  });
+
+  it("uses the paid-to screen variant without a scratch card", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ScanPayBankTransferPaid, {
+        transaction,
+        onClose: () => {},
+      }),
+    );
+
+    expect(markup).toContain("Paid to");
+    expect(markup).toContain("Pending");
+    expect(markup).toContain("Convenience fee");
+    expect(markup).toContain("Back to Home");
+    expect(markup).not.toContain("Scratch card");
   });
 });

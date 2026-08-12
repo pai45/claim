@@ -20,21 +20,50 @@ const host = readFileSync(
 );
 
 describe("EB+ home payment actions", () => {
-  it("groups Scan QR code and the created UPI ID card in one home row", () => {
+  it("groups the created UPI ID card and the scan tile in one home row", () => {
     expect(html).not.toContain('class="payment-shortcuts"');
+    // UPI ID card first, scan tile last: DOM order matches the visual order so
+    // keyboard focus travels left to right.
     expect(html).toMatch(
-      /class="upi-panel"[\s\S]*class="home-scan-card"[\s\S]*data-scan-pay-open[\s\S]*Scan<br \/>QR code[\s\S]*class="upi-card upi-card-id"/,
+      /class="upi-panel"[\s\S]*class="upi-card upi-card-id"[\s\S]*class="home-scan-card"[\s\S]*data-scan-pay-open/,
     );
     expect(styles).toMatch(
-      /body:not\(\.is-pluspay\)\.is-upi-created \.upi-panel[\s\S]*grid-template-columns: minmax\(0, 0\.8fr\) minmax\(0, 1\.2fr\)/,
+      /body:not\(\.is-pluspay\)\.is-upi-created \.upi-panel \{[\s\S]*grid-template-columns: minmax\(0, 1fr\) var\(--pay-row-h\)/,
     );
-    expect(html).toContain("UPI ID:");
+    expect(html).toContain("UPI ID");
     expect(sourceApp).toContain('const CREATED_UPI_ID = "8646721579@pinelabs"');
     expect(styles).toMatch(
-      /\.home-scan-card strong[\s\S]*font-size: 14px[\s\S]*white-space: nowrap/,
-    );
-    expect(styles).toMatch(
       /@media \(max-width: 370px\)[\s\S]*body:not\(\.is-pluspay\)\.is-upi-created \.upi-panel[\s\S]*gap: 8px/,
+    );
+  });
+
+  it("renders the scan shortcut as an icon-only square with no visible caption", () => {
+    expect(html).not.toContain("Scan<br />QR code");
+    const scanButton = html.match(
+      /<button\s+class="home-scan-card"[\s\S]*?<\/button>/,
+    );
+    expect(scanButton).not.toBeNull();
+    // The glyph is aria-hidden, so the button's accessible name rests entirely
+    // on this label.
+    expect(scanButton![0]).toContain('aria-label="Scan QR code"');
+    expect(scanButton![0]).not.toContain("<strong>");
+    // Square: one token drives both the tile and the UPI card's height.
+    expect(styles).toMatch(
+      /\.home-scan-card \{[\s\S]*width: var\(--pay-row-h\);[\s\S]*height: var\(--pay-row-h\)/,
+    );
+    // `body.is-upi-created [data-upi-created-only]` forces display:flex
+    // !important on this button, and justify-items is a no-op in flexbox. The
+    // glyph must therefore be centred with justify-content, not place-items,
+    // or it snaps back to the left edge of the tile.
+    const scanRule = styles.match(/\n\.home-scan-card \{[\s\S]*?\}/);
+    expect(scanRule).not.toBeNull();
+    // Strip comments so the prose explaining the bug is not mistaken for a
+    // declaration.
+    const scanDecls = scanRule![0].replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(scanDecls).toContain("justify-content: center");
+    expect(scanDecls).not.toContain("place-items");
+    expect(styles).toMatch(
+      /body:not\(\.is-pluspay\)\.is-upi-created \.upi-card-id \{[\s\S]*height: var\(--pay-row-h\)/,
     );
   });
 

@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useState, type Dispatch } from "react";
 import { useRouter } from "next/navigation";
+import { MobileOtpSheet } from "@/components/bank-transfer/MobileOtpSheet";
 import { ScanPayConfirm } from "@/components/scan-pay/ScanPayConfirm";
-import { ScanPayReward } from "@/components/scan-pay/ScanPayReward";
+import {
+  ScanPayBankTransferPaid,
+  ScanPayReward,
+} from "@/components/scan-pay/ScanPayReward";
 import {
   ScanPayPaymentDetails,
   ScanPayReceiptCapture,
@@ -14,6 +18,7 @@ import {
 import { ScanPayFaq } from "@/components/scan-pay/ScanPayScanner";
 import { createPaymentLedgerRows } from "@/features/scan-pay/ledger";
 import { recordBankTransfer } from "@/features/bank-transfer/history";
+import { bankTransferTotal } from "@/features/bank-transfer/fees";
 import { createPaymentTransactionForState } from "@/features/scan-pay/machine";
 import { recordRecipientPayment } from "@/features/send-money/history";
 import {
@@ -28,6 +33,7 @@ import type {
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { getBaseWalletBalances } from "@/features/transactions/constants";
 import { commitBenefitPayment } from "@/features/transactions/financialState";
+import type { FundingAllocation } from "@/features/transactions/financialState";
 import { recordPlusPayTransaction } from "@/features/transactions/plusPayHistory";
 import "./scanPay.css";
 
@@ -43,8 +49,39 @@ export function PaymentCheckoutFlow({
   onConfirmBack?: () => void;
 }) {
   const router = useRouter();
-  const { personaId } = useActivePersona();
+  const { personaId, persona } = useActivePersona();
   const [notice, setNotice] = useState<string | null>(null);
+  const [bankOtpOpen, setBankOtpOpen] = useState(false);
+  const [pendingBankPayment, setPendingBankPayment] = useState<
+    FundingAllocation[] | null
+  >(null);
+
+  const dispatchPaymentAction = useCallback<Dispatch<ScanPayAction>>(
+    (action) => {
+      if (
+        action.type === "PAY" &&
+        state.paymentContext.origin === "bank-transfer"
+      ) {
+        setPendingBankPayment(action.fundingAllocations ?? []);
+        setBankOtpOpen(true);
+        return;
+      }
+      dispatch(action);
+    },
+    [dispatch, state.paymentContext.origin],
+  );
+
+  const closeBankOtp = useCallback(() => {
+    setBankOtpOpen(false);
+    setPendingBankPayment(null);
+  }, []);
+
+  const confirmBankOtp = useCallback(() => {
+    if (!pendingBankPayment) return;
+    setBankOtpOpen(false);
+    setPendingBankPayment(null);
+    dispatch({ type: "PAY", fundingAllocations: pendingBankPayment });
+  }, [dispatch, pendingBankPayment]);
 
   useEffect(() => {
     if (state.step !== "submitting") return;
@@ -117,7 +154,7 @@ export function PaymentCheckoutFlow({
       <div className="h-full">
         <ScanPayConfirm
           state={state}
-          dispatch={dispatch}
+          dispatch={dispatchPaymentAction}
           onBack={
             state.step === "confirmPayment" ? onConfirmBack : undefined
           }
@@ -127,13 +164,25 @@ export function PaymentCheckoutFlow({
   } else if (state.step === "submitting") {
     content = (
       <ScanPaySubmitting
-        transactionAmount={Number(state.amount)}
+        transactionAmount={
+          state.paymentContext.origin === "bank-transfer"
+            ? bankTransferTotal(Number(state.amount))
+            : Number(state.amount)
+        }
         onBack={() => dispatch({ type: "BACK" })}
       />
     );
   } else if (state.step === "result") {
     content = (
-      <ScanPayResult state={state} dispatch={dispatch} onClose={onClose} />
+      state.transaction?.payee.kind === "bank-transfer" &&
+      state.transaction.outcome !== "failed" ? (
+        <ScanPayBankTransferPaid
+          transaction={state.transaction}
+          onClose={onClose}
+        />
+      ) : (
+        <ScanPayResult state={state} dispatch={dispatch} onClose={onClose} />
+      )
     );
   } else if (state.step === "successReward" && state.transaction) {
     content = (
@@ -172,6 +221,14 @@ export function PaymentCheckoutFlow({
   return (
     <>
       {content}
+      {bankOtpOpen ? (
+        <MobileOtpSheet
+          open
+          mobile={persona.profile.phone}
+          onClose={closeBankOtp}
+          onVerified={confirmBankOtp}
+        />
+      ) : null}
       {notice ? (
         <div
           className="fixed bottom-24 left-1/2 z-[160] -translate-x-1/2 rounded-pill bg-pine px-4 py-2 text-body-sm font-bold text-white shadow-menu"

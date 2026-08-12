@@ -4,7 +4,9 @@ import { createPaymentLedgerRows } from "@/features/scan-pay/ledger";
 
 function bankTransaction() {
   return createScanPayTransaction({
-    amount: 500,
+    amount: 510,
+    transferAmount: 500,
+    convenienceFee: 10,
     walletId: "misc",
     categoryId: "finance",
     subcategoryId: "bank",
@@ -16,7 +18,7 @@ function bankTransaction() {
       {
         walletId: "misc",
         walletLabel: "Reimbursement Wallet",
-        amount: 500,
+        amount: 510,
       },
     ],
     paymentContext: {
@@ -44,7 +46,7 @@ describe("payment ledger", () => {
       category: "Finance / Bank",
       location: "Online transfer",
       cardMasked: "••••••••9012",
-      amount: 500,
+      amount: 510,
     });
   });
 });

@@ -188,6 +188,8 @@ export function walletLabel(walletId: ScanPayWalletId): string {
 
 export function createScanPayTransaction({
   amount,
+  transferAmount,
+  convenienceFee,
   walletId,
   categoryId,
   subcategoryId,
@@ -199,6 +201,8 @@ export function createScanPayTransaction({
   paymentContext = { origin: "scan-pay" },
 }: {
   amount: number;
+  transferAmount?: number;
+  convenienceFee?: number;
   walletId: ScanPayWalletId;
   categoryId: ScanPayCategoryId | null;
   subcategoryId: string | null;
@@ -249,6 +253,8 @@ export function createScanPayTransaction({
     payee,
     mode,
     amount,
+    transferAmount,
+    convenienceFee,
     transactionId: isBankTransfer
       ? `EB${now.getTime().toString().slice(-10)}`
       : paymentGroupId.replace(/\D/g, "").slice(-12),

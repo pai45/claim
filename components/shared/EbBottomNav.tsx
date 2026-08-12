@@ -7,9 +7,25 @@ import { BenefitsLogo } from "@/components/shared/BenefitsLogo";
 import { withBasePath } from "@/lib/basePath";
 import { BRAND_ASSETS } from "@/lib/ui/assets";
 
+/**
+ * Bottom padding a scrolling screen body owes the overlaid bar, so its last row
+ * comes to rest clear of the artwork and the floating centre button instead of
+ * under them.
+ */
+export const EB_BOTTOM_NAV_SCROLL_PADDING =
+  "pb-[calc(139px+env(safe-area-inset-bottom,0px))]";
+
 type EbBottomNavProps = {
   active?: "home" | "benefits" | "transactions";
   className?: string;
+  /**
+   * Floats the bar over the screen body instead of reserving a row for it.
+   * Only the lower 87px of the 139px artwork is opaque, so a bar kept in flow
+   * cuts the scroll area off along an invisible line 52px above the visible
+   * surface. Overlaying moves that cut under the artwork; pair it with
+   * `EB_BOTTOM_NAV_SCROLL_PADDING` on the scrolling element.
+   */
+  overlay?: boolean;
   /**
    * Visually retires the bar without unmounting it, so the host can fade it
    * out while a full-screen surface takes over.
@@ -32,6 +48,7 @@ const NAV_BG =
 export function EbBottomNav({
   active,
   className = "",
+  overlay = false,
   hidden = false,
   variant = "benefits",
   onBenefits,
@@ -86,7 +103,9 @@ export function EbBottomNav({
 
   return (
     <nav
-      className={`eb-bottom-nav relative z-20 mx-auto grid h-[calc(139px+env(safe-area-inset-bottom,0px))] w-full max-w-phone shrink-0 grid-cols-3 items-start overflow-visible pb-[env(safe-area-inset-bottom,0px)] ${className}`.trim()}
+      className={`eb-bottom-nav ${
+        overlay ? "absolute inset-x-0 bottom-0" : "relative"
+      } z-20 mx-auto grid h-[calc(139px+env(safe-area-inset-bottom,0px))] w-full max-w-phone shrink-0 grid-cols-3 items-start overflow-visible pb-[env(safe-area-inset-bottom,0px)] ${className}`.trim()}
       aria-label="Primary navigation"
       aria-hidden={hidden || undefined}
       inert={hidden || undefined}

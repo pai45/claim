@@ -90,6 +90,9 @@ export type ScanPayTransaction = {
   paymentContext: PaymentContext;
   payee: PaymentPayee;
   mode: ScanPayMode;
+  /** Amount sent to the beneficiary before any transfer fee. */
+  transferAmount?: number;
+  convenienceFee?: number;
   amount: number;
   transactionId: string;
   paymentMethod: string;

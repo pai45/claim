@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
-import { CarIcon } from "@/components/vehicle/VehiclePhoto";
+import { AppIcon } from "@/components/shared/AppIcon";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { VehicleLookup } from "@/lib/vehicle/types";
+import { UI_ICONS } from "@/lib/ui/assets";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 type VehicleSummaryCardProps = {
@@ -12,8 +13,8 @@ type VehicleSummaryCardProps = {
 };
 
 /**
- * The registered vehicle in one row. Uses the glyph rather than the roster
- * photo, so this card carries no Commons attribution obligation.
+ * The registered vehicle in one row. Uses the supplied vehicle icon rather
+ * than the roster photo, so this card carries no Commons attribution obligation.
  */
 export function VehicleSummaryCard({ lookup }: VehicleSummaryCardProps) {
   return (
@@ -25,7 +26,7 @@ export function VehicleSummaryCard({ lookup }: VehicleSummaryCardProps) {
 
       <Link href="/vehicle/" className="flex min-h-11 items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface-tint-strong">
-          <CarIcon size={24} />
+          <AppIcon src={UI_ICONS.vehicleDetails} size={24} alt="" />
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="type-body truncate font-bold text-ink">

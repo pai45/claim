@@ -13,7 +13,51 @@ export type DashboardCategory = {
   allocation: number;
   iconBg: string;
   iconColor: string;
+  cardBackground: string;
+  cardBorder: string;
+  cardAccent: string;
   icon: "fuel" | "mobile" | "driver" | "books" | "professional";
+};
+
+type DashboardCardPalette = Pick<
+  DashboardCategory,
+  "cardBackground" | "cardBorder" | "cardAccent"
+>;
+
+const DASHBOARD_CARD_PALETTES: Record<
+  DashboardCategory["id"],
+  DashboardCardPalette
+> = {
+  meal: {
+    cardBackground: "#FFF5E2",
+    cardBorder: "#F1C77F",
+    cardAccent: "#B65400",
+  },
+  fuel: {
+    cardBackground: "#EAF3F0",
+    cardBorder: "#8FCDBB",
+    cardAccent: "#005656",
+  },
+  mobile: {
+    cardBackground: "#E6F7F0",
+    cardBorder: "#8CD7B5",
+    cardAccent: "#039258",
+  },
+  driver: {
+    cardBackground: "#F3EFED",
+    cardBorder: "#C6B5AE",
+    cardAccent: "#745C53",
+  },
+  books: {
+    cardBackground: "#EAF7EE",
+    cardBorder: "#9BD5AD",
+    cardAccent: "#166534",
+  },
+  professional: {
+    cardBackground: "#E8EFFF",
+    cardBorder: "#A7BCEB",
+    cardAccent: "#1D4ED8",
+  },
 };
 
 export const DASHBOARD_CATEGORIES: DashboardCategory[] =
@@ -30,6 +74,7 @@ export const DASHBOARD_CATEGORIES: DashboardCategory[] =
       allocation: benefit.balance.allocation,
       iconBg: benefit.display.iconBg,
       iconColor: benefit.display.iconTone,
+      ...DASHBOARD_CARD_PALETTES[benefit.id],
       icon: benefit.display.dashboardIcon as DashboardCategory["icon"],
     }));
 

@@ -308,6 +308,11 @@
   min-height: 360px;
 }
 
+/* Bank transfers reuse the paid-to hero without the scratch-card space. */
+.scan-pay-bank-transfer-hero {
+  min-height: 220px;
+}
+
 .scan-pay-reward-hero::before {
   position: absolute;
   z-index: 0;
@@ -369,6 +374,10 @@
   opacity: 0;
   transform: translateY(12px);
   animation: scan-pay-reward-details-in 0.45s ease 1.28s both;
+}
+
+.scan-pay-bank-transfer-details {
+  animation-delay: 0.72s;
 }
 
 @keyframes scan-pay-scanner-image-settle {

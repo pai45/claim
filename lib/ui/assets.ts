@@ -27,6 +27,8 @@ export const UI_ICONS = {
   policyDetails: "/assets/icons/policy-details.svg",
   claimHistory: "/assets/icons/claim-history.svg",
   notification: "/assets/icons/notification-bell.svg",
+  vehicleDetails: "/assets/icons/vehicle-details.svg",
+  driverDetails: "/assets/icons/driver-details.svg",
 } as const;
 
 export const PAYMENT_ASSETS = {

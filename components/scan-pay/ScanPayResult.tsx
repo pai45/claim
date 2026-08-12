@@ -322,7 +322,7 @@ export function ReceiptTicket({
           {receiptRows(transaction).map(([label, value]) => (
             <div key={label} className="flex items-start justify-between gap-4 py-2.5 text-caption">
               <dt className="text-ink-secondary">{label}</dt>
-              <dd className={`max-w-[62%] text-right font-bold ${label === "Status" ? tone.status : "text-ink"}`}>
+              <dd className={`max-w-[62%] text-right font-bold ${label === "Status" ? transaction.payee.kind === "bank-transfer" ? "text-warning" : tone.status : "text-ink"}`}>
                 {value}
               </dd>
             </div>

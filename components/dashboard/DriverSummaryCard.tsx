@@ -1,35 +1,15 @@
 "use client";
 
-import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
+import Link from "next/link";
+import { ChevronRightIcon } from "@/components/shared/ChevronRightIcon";
+import { AppIcon } from "@/components/shared/AppIcon";
 import type { RegisteredDriver } from "@/features/driver/registration";
+import { UI_ICONS } from "@/lib/ui/assets";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 type DriverSummaryCardProps = {
   driver: RegisteredDriver;
 };
-
-function formatStartDate(value?: string): string | undefined {
-  if (!value) return undefined;
-  const parsed = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(parsed.getTime())) return value;
-  return parsed.toLocaleDateString([], {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function DetailRow({ label, value }: { label: string; value?: string }) {
-  if (!value) return null;
-  return (
-    <div className="flex items-baseline justify-between gap-3 py-1.5">
-      <span className="type-field-label shrink-0">{label}</span>
-      <span className="truncate text-right text-body-sm font-bold text-pine">
-        {value}
-      </span>
-    </div>
-  );
-}
 
 /** Compact registered-driver record for the Driver Salary dashboard. */
 export function DriverSummaryCard({ driver }: DriverSummaryCardProps) {
@@ -40,20 +20,25 @@ export function DriverSummaryCard({ driver }: DriverSummaryCardProps) {
     >
       <h2 className="type-field-label">Driver details</h2>
 
-      <div className="flex items-center gap-3">
+      <Link href="/driver/" className="flex min-h-11 items-center gap-3">
         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface-tint-strong">
-          <CategoryIcon icon="driver" />
+          <AppIcon src={UI_ICONS.driverDetails} size={24} alt="" />
         </span>
-        <span className="type-body min-w-0 flex-1 truncate font-bold text-ink">
-          {driver.driverName}
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="type-body truncate font-bold text-ink">
+            {driver.driverName}
+          </span>
+          {driver.dlNumber ? (
+            <span className="type-body-secondary tracking-wide">
+              {driver.dlNumber}
+            </span>
+          ) : null}
         </span>
-      </div>
-
-      <div className="divide-y divide-border-soft">
-        <DetailRow label="DL number" value={driver.dlNumber} />
-        <DetailRow label="Monthly salary" value={driver.salary} />
-        <DetailRow label="Start date" value={formatStartDate(driver.startDate)} />
-      </div>
+        <span className="flex shrink-0 items-center gap-1 text-body-sm font-bold text-pine-primary">
+          View Details
+          <ChevronRightIcon />
+        </span>
+      </Link>
     </section>
   );
 }

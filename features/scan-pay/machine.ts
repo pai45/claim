@@ -4,6 +4,10 @@ import {
   outcomeForScenario,
 } from "@/features/scan-pay/fixtures";
 import { defaultWalletForMerchant } from "@/features/scan-pay/funding";
+import {
+  BANK_TRANSFER_CONVENIENCE_FEE,
+  bankTransferTotal,
+} from "@/features/bank-transfer/fees";
 import type { BankRecipient } from "@/features/bank-transfer/validation";
 import type {
   ScanPayAction,
@@ -225,7 +229,11 @@ export function scanPayReducer(
         action.transaction ?? createPaymentTransactionForState(state);
       return {
         ...state,
-        step: state.outcome === "success" ? "successReward" : "result",
+        step:
+          state.outcome === "success" &&
+          state.paymentContext.origin !== "bank-transfer"
+            ? "successReward"
+            : "result",
         transaction,
       };
     }
@@ -272,8 +280,12 @@ export function scanPayReducer(
 export function createPaymentTransactionForState(
   state: ScanPayState,
 ) {
+  const transferAmount = Number(state.amount);
+  const bankTransfer = state.paymentContext.origin === "bank-transfer";
   return createScanPayTransaction({
-    amount: Number(state.amount),
+    amount: bankTransfer ? bankTransferTotal(transferAmount) : transferAmount,
+    transferAmount: bankTransfer ? transferAmount : undefined,
+    convenienceFee: bankTransfer ? BANK_TRANSFER_CONVENIENCE_FEE : undefined,
     walletId: state.walletId,
     categoryId: state.selectedCategoryId,
     subcategoryId: state.selectedSubcategoryId,

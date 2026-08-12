@@ -6,6 +6,7 @@ import {
   BankTransferRecipientForm,
 } from "@/components/bank-transfer/BankTransferScreen";
 import { BeneficiaryAddedSheet } from "@/components/bank-transfer/BeneficiaryAddedSheet";
+import { MobileOtpSheet } from "@/components/bank-transfer/MobileOtpSheet";
 import {
   SEEDED_BANK_TRANSFER_RECORDS,
   getSavedBankBeneficiaries,
@@ -56,6 +57,22 @@ describe("BankTransferRecipientForm", () => {
     expect(markup).toContain("₹2L");
     expect(markup).toContain("support@pinelabs.com");
     expect(markup).not.toContain("issued by");
+  });
+
+  it("uses the OTP bottom sheet before a newly added beneficiary can continue", () => {
+    const markup = renderToStaticMarkup(
+      createElement(MobileOtpSheet, {
+        open: true,
+        mobile: "+91 98765 43210",
+        onClose: vi.fn(),
+        onVerified: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain("Verify mobile OTP to continue");
+    expect(markup).toContain("+91 98765 43210");
+    expect(markup).toContain("Verify OTP");
+    expect(markup).toContain("Resend OTP");
   });
 
   it("shows the divider and four saved rows only when beneficiaries exist", () => {

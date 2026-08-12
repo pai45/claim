@@ -2,6 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ScanPayConfirm } from "@/components/scan-pay/ScanPayConfirm";
+import { ScanPaySubmitting } from "@/components/scan-pay/ScanPayResult";
 import {
   createInitialBankTransferState,
   createInitialScanPayState,
@@ -83,6 +84,19 @@ describe("ScanPayConfirm payment source", () => {
       expect(markup).toContain("Available balance ₹9,100");
       expect(markup).not.toContain("Choose your wallet");
     }
+
+    const bankPaymentMarkup = renderConfirm({
+      ...createInitialBankTransferState({
+        accountHolder: "Ananya Rao",
+        accountNumber: "123456789012",
+        ifsc: "HDFC0001234",
+      }),
+      amount: "500",
+    });
+    expect(bankPaymentMarkup).not.toContain("Transfer amount");
+    expect(bankPaymentMarkup).toContain("Convenience fee");
+    expect(bankPaymentMarkup).toContain("Total payable");
+    expect(upiMarkup).not.toContain("Convenience fee");
   });
 
   it("shows the fixed ANQ source without inventing an EB+ balance", () => {
@@ -95,5 +109,17 @@ describe("ScanPayConfirm payment source", () => {
     expect(markup).toContain("PlusPay");
     expect(markup).not.toContain("Available balance");
     expect(markup).not.toContain("Choose your wallet");
+  });
+
+  it("does not show a convenience-fee callout while payment is processing", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ScanPaySubmitting, {
+        transactionAmount: 510,
+        onBack: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain("₹510");
+    expect(markup).not.toContain("Convenience fee");
   });
 });

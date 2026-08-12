@@ -58,6 +58,7 @@ export function bankRecipientFromDraft(
 export function validateBankTransferAmount(
   value: string,
   availableBalance: number,
+  convenienceFee = 0,
 ): string | null {
   const amount = Number(value);
   if (!Number.isFinite(amount) || amount <= 0) {
@@ -66,7 +67,7 @@ export function validateBankTransferAmount(
   if (amount > 100_000) {
     return "The per-transfer limit is ₹1,00,000.";
   }
-  if (amount > availableBalance) {
+  if (amount + convenienceFee > availableBalance) {
     return "Amount exceeds your available EB+ balance.";
   }
   return null;

@@ -13,12 +13,17 @@ import {
   validateBankTransferAmount,
 } from "@/features/bank-transfer/validation";
 import {
+  BANK_TRANSFER_CONVENIENCE_FEE,
+  bankTransferTotal,
+} from "@/features/bank-transfer/fees";
+import {
   SCAN_PAY_CATEGORIES,
   SCAN_PAY_QUICK_CATEGORIES,
   categoryById,
   merchantForType,
 } from "@/features/scan-pay/fixtures";
 import { calculateScanPayFunding } from "@/features/scan-pay/funding";
+import { formatScanPayINR } from "@/features/scan-pay/receipt";
 import { scanPayAmountIsValid } from "@/features/scan-pay/machine";
 import type {
   ScanPayAction,
@@ -82,6 +87,11 @@ export function ScanPayConfirm({
       ? state.paymentContext.recipient
       : null;
   const scanAmountValid = scanPayAmountIsValid(state.amount);
+  const transferAmount = Number(state.amount);
+  const convenienceFee = bankRecipient ? BANK_TRANSFER_CONVENIENCE_FEE : 0;
+  const totalPaymentAmount = bankRecipient
+    ? bankTransferTotal(transferAmount)
+    : transferAmount;
   const merchant = merchantForType(state.merchantType);
   const balances = useMemo(
     () => {
@@ -104,17 +114,17 @@ export function ScanPayConfirm({
   const fundingPlan = useMemo(
     () =>
       calculateScanPayFunding({
-        amount: Number(state.amount),
+        amount: totalPaymentAmount,
         walletId: state.walletId,
         mode: state.mode,
         merchantType: state.merchantType,
         balances,
         fallback,
       }),
-    [balances, fallback, state.amount, state.merchantType, state.mode, state.walletId],
+    [balances, fallback, state.merchantType, state.mode, state.walletId, totalPaymentAmount],
   );
   const bankAmountError = bankRecipient
-    ? validateBankTransferAmount(state.amount, balances.misc)
+    ? validateBankTransferAmount(state.amount, balances.misc, convenienceFee)
     : null;
   const amountValid = bankRecipient ? bankAmountError === null : scanAmountValid;
   const valid =
@@ -249,6 +259,19 @@ export function ScanPayConfirm({
               </span>
             </div>
 
+            {bankRecipient && scanAmountValid ? (
+              <dl className="mx-auto mt-3 w-full max-w-card divide-y divide-border-soft text-caption text-ink-secondary">
+                <div className="flex items-center justify-between py-1.5">
+                  <dt>Convenience fee</dt>
+                  <dd className="font-bold text-ink">{formatScanPayINR(convenienceFee)}</dd>
+                </div>
+                <div className="flex items-center justify-between pt-2 text-pine">
+                  <dt className="font-bold">Total payable</dt>
+                  <dd className="font-bold">{formatScanPayINR(totalPaymentAmount)}</dd>
+                </div>
+              </dl>
+            ) : null}
+
             {showCategorySelection ? (
               <>
                 <p className="scan-pay-receipt-prompt mt-9 type-body-secondary">
@@ -341,12 +364,8 @@ export function ScanPayConfirm({
           </section>
         </div>
 
-        <div className="scan-pay-brand-space relative flex min-h-28 flex-1 items-center justify-center py-6">
-          {bankRecipient ? (
-            <p className="text-caption font-bold text-ink-secondary">
-              Secure bank transfer with EB+
-            </p>
-          ) : (
+        {!bankRecipient ? (
+          <div className="scan-pay-brand-space relative flex min-h-28 flex-1 items-center justify-center py-6">
             <AppIcon
               src={SCAN_PAY_ASSETS.poweredByUpi}
               alt=""
@@ -354,8 +373,8 @@ export function ScanPayConfirm({
               height={32}
               className="relative z-10 h-6 w-auto object-contain opacity-70"
             />
-          )}
-        </div>
+          </div>
+        ) : null}
       </main>
 
       <footer className="relative z-20 shrink-0 rounded-t-bubble bg-white px-page pb-5 pt-3 shadow-drawer">

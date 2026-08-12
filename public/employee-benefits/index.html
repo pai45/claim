@@ -441,21 +441,6 @@
       </section>
 
       <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
-        <button
-          class="home-scan-card"
-          type="button"
-          aria-label="Scan QR code"
-          data-scan-pay-open
-          data-upi-created-only
-          data-pluspay-hide
-          data-walkthrough="upi-scan"
-          hidden
-        >
-          <span class="home-scan-icon" aria-hidden="true">
-            <svg><use href="#icon-scan" /></svg>
-          </span>
-          <strong>Scan<br />QR code</strong>
-        </button>
         <!-- <div class="section-heading compact-heading">
           <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
           <a href="#" data-lens-text="Manage" data-pluspay-text="View QR">Manage</a>
@@ -492,7 +477,7 @@
             <img src="../assets/payments/upi-id.svg" alt="" />
           </span>
           <span class="upi-copy">
-            <small>UPI ID:</small>
+            <small>UPI ID</small>
             <span class="upi-id-row">
               <strong
                 data-lens-text="8646721579@pinelabs"
@@ -508,6 +493,22 @@
           <span class="upi-arrow" aria-hidden="true"
             ><svg><use href="#icon-chevron-right" /></svg
           ></span>
+        </button>
+        <!-- Icon-only: the aria-label is the accessible name now that the
+             visible "Scan QR code" text is gone. -->
+        <button
+          class="home-scan-card"
+          type="button"
+          aria-label="Scan QR code"
+          data-scan-pay-open
+          data-upi-created-only
+          data-pluspay-hide
+          data-walkthrough="upi-scan"
+          hidden
+        >
+          <span class="home-scan-icon" aria-hidden="true">
+            <svg><use href="#icon-scan" /></svg>
+          </span>
         </button>
       </section>
 
