@@ -60,7 +60,6 @@ import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import { saveRegisteredVehicle } from "@/features/vehicle/registration";
 import { saveRegisteredDriver } from "@/features/driver/registration";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
-import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { BenefitType } from "@/lib/merchants/types";
 import type { VehicleLookup } from "@/lib/vehicle/types";
 import type {
@@ -902,7 +901,7 @@ export function useChat() {
         prev.concat({
           id: createId(),
           role: "user",
-          content: `${replaceMessageId ? "Replaced with" : "Selected demo"}: ${scenario.label}`,
+          content: `Uploading: ${scenario.extract.fileName}`,
           createdAt: Date.now(),
           kind: "text",
         }),
@@ -1289,10 +1288,10 @@ export function useChat() {
           ? {
               id: createId(),
               role: "assistant",
-              content: `I found your ${vehicleDisplayName(result.lookup.profile)}. Is this vehicle Self Owned or Company Leased?`,
+              content: "",
               createdAt: Date.now(),
-              kind: "vehicle_ownership",
-              vehicleLookup: { lookup: result.lookup },
+              kind: "vehicle_details",
+              vehicleLookup: { lookup: result.lookup, stage: "found" },
             }
           : {
               id: createId(),
@@ -1315,7 +1314,9 @@ export function useChat() {
     ) => {
       if (isLoading || isScanning || isLocating) return;
 
-      patchVehicleLookup(messageId, { ownership });
+      // Keep the original "Vehicle Found" card as a completed ownership
+      // prompt. The selected ownership belongs only to the review card below.
+      patchVehicleLookup(messageId, { ownershipSelected: true });
       setMessages((prev) => [
         ...prev,
         {
@@ -1331,7 +1332,7 @@ export function useChat() {
           content: "Here's a summary. Submit when everything looks right.",
           createdAt: Date.now(),
           kind: "vehicle_details",
-          vehicleLookup: { lookup, ownership },
+          vehicleLookup: { lookup, ownership, stage: "review" },
         },
       ]);
     },
@@ -1361,7 +1362,7 @@ export function useChat() {
         {
           id: createId(),
           role: "assistant",
-          content: `Vehicle registration ${claimId} submitted to HR.`,
+          content: `Vehicle registration ${claimId} submitted to Admin.`,
           createdAt: Date.now(),
           kind: "claim_cta",
           claimId,
@@ -1394,7 +1395,7 @@ export function useChat() {
         {
           id: createId(),
           role: "user",
-          content: "Driver Salary",
+          content: "Register driver",
           createdAt: Date.now(),
           kind: "text",
         },
@@ -1641,7 +1642,7 @@ export function useChat() {
           .concat({
             id: createId(),
             role: "assistant",
-            content: `Driver registration ${claimId} submitted to HR.`,
+            content: `Driver registration ${claimId} submitted to Admin.`,
             createdAt: Date.now(),
             kind: "claim_cta",
             claimId,

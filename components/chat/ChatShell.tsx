@@ -79,6 +79,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
     sendMessage,
     startClaimEdit,
     processBillScenario,
+    openUploadOptions,
     processDlScenario,
     updateBillExtract,
     submitBillClaim,
@@ -180,7 +181,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
 
   function handleReplaceBill(messageId: string) {
     setReplacementBillId(messageId);
-    setScenarioPicker({ kind: "bill", source: "gallery" });
+    openUploadOptions();
   }
 
   function handleStartAnotherBill() {

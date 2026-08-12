@@ -8,6 +8,7 @@ import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
 import { RegistrationDeclaration } from "./RegistrationDeclaration";
+import { VehicleOwnershipCard } from "./VehicleOwnershipCard";
 
 type VehicleDetailsCardProps = {
   messageId: string;
@@ -17,6 +18,7 @@ type VehicleDetailsCardProps = {
     lookup: VehicleLookup,
     ownership: VehicleOwnership,
   ) => void;
+  onSelectOwnership?: (ownership: VehicleOwnership) => void;
   disabled?: boolean;
 };
 
@@ -24,6 +26,7 @@ export function VehicleDetailsCard({
   messageId,
   payload,
   onSubmitToHr,
+  onSelectOwnership,
   disabled,
 }: VehicleDetailsCardProps) {
   const [declarationAccepted, setDeclarationAccepted] = useState(
@@ -43,20 +46,25 @@ export function VehicleDetailsCard({
 
   const { profile, location } = lookup;
   const name = vehicleDisplayName(profile);
+  const isReviewStep =
+    payload.stage === "review" ||
+    (payload.stage === undefined && Boolean(payload.ownership));
 
   return (
     <div className="flex w-full max-w-card flex-col gap-3">
       <div className="flex flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card">
         <div className="flex flex-col gap-0.5">
           <h3 className="text-body font-bold text-pine">
-            Review vehicle details
+            {isReviewStep ? "Review vehicle details" : "Vehicle Found"}
           </h3>
           <p className="type-body-secondary">
-            Confirm details before submitting
+            {isReviewStep
+              ? "Confirm details before submitting"
+              : "Is this vehicle self owned or company leased?"}
           </p>
         </div>
 
-        <VehiclePhoto profile={profile} />
+        {isReviewStep ? <VehiclePhoto profile={profile} /> : null}
 
         <div className="flex flex-col gap-0.5">
           <h3 className="text-body font-bold text-pine">{name}</h3>
@@ -66,14 +74,16 @@ export function VehicleDetailsCard({
         </div>
 
         <div className="divide-y divide-border-soft rounded-control border border-border-soft px-3 py-1">
-          <VehicleDetailRow
-            label="Ownership"
-            value={
-              payload.ownership
-                ? vehicleOwnershipLabel(payload.ownership)
-                : undefined
-            }
-          />
+          {isReviewStep ? (
+            <VehicleDetailRow
+              label="Ownership"
+              value={
+                payload.ownership
+                  ? vehicleOwnershipLabel(payload.ownership)
+                  : undefined
+              }
+            />
+          ) : null}
           <VehicleDetailRow label="Owner" value={lookup.ownerName} />
           <VehicleDetailRow label="Engine" value={profile.engineType} />
           <VehicleDetailRow
@@ -85,10 +95,8 @@ export function VehicleDetailsCard({
             }
           />
           <VehicleDetailRow label="Fuel" value={profile.fuel} />
-          <VehicleDetailRow label="Body" value={profile.bodyType} />
           <VehicleDetailRow label="Chassis" value={lookup.chassisNumber} />
           <VehicleDetailRow label="Engine no." value={lookup.engineNumber} />
-          <VehicleDetailRow label="Registered" value={lookup.registrationDate} />
           <VehicleDetailRow
             label="RTO"
             value={
@@ -101,31 +109,35 @@ export function VehicleDetailsCard({
           />
         </div>
 
-        <RegistrationDeclaration
-          subject="vehicle"
-          checked={declarationAccepted}
-          onChange={setDeclarationAccepted}
-          disabled={disabled || payload.submitted}
-        />
+        {!isReviewStep ? (
+          <VehicleOwnershipCard
+            onSelect={(ownership) => onSelectOwnership?.(ownership)}
+            disabled={disabled || payload.ownershipSelected}
+          />
+        ) : (
+          <RegistrationDeclaration
+            subject="vehicle"
+            checked={declarationAccepted}
+            onChange={setDeclarationAccepted}
+            disabled={disabled || payload.submitted}
+          />
+        )}
       </div>
 
-      <button
-        type="button"
-        disabled={
-          disabled ||
-          payload.submitted ||
-          !payload.ownership ||
-          !declarationAccepted
-        }
-        onClick={() => {
-          if (payload.ownership) {
-            onSubmitToHr?.(messageId, lookup, payload.ownership);
-          }
-        }}
-        className="min-h-11 rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
-      >
-        {payload.submitted ? "Submitted to HR" : "Submit to HR"}
-      </button>
+      {isReviewStep ? (
+        <button
+          type="button"
+          disabled={disabled || payload.submitted || !declarationAccepted}
+          onClick={() => {
+            if (payload.ownership) {
+              onSubmitToHr?.(messageId, lookup, payload.ownership);
+            }
+          }}
+          className="min-h-11 rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
+        >
+          {payload.submitted ? "Submitted to Admin" : "Submit to Admin"}
+        </button>
+      ) : null}
     </div>
   );
 }

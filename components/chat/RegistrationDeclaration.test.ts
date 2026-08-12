@@ -42,7 +42,7 @@ describe("registration declarations", () => {
     expect(html).toContain(
       "I declare that the driver details provided are correct and valid.",
     );
-    expect(html.indexOf("I declare")).toBeLessThan(html.indexOf("Submit to HR"));
+    expect(html.indexOf("I declare")).toBeLessThan(html.indexOf("Submit to Admin"));
   });
 
   it("includes the declaration in the vehicle review bubble", () => {
@@ -62,7 +62,31 @@ describe("registration declarations", () => {
     expect(html).toContain(
       "I declare that the vehicle details provided are correct and valid.",
     );
-    expect(html.indexOf("I declare")).toBeLessThan(html.indexOf("Submit to HR"));
+    expect(html.indexOf("I declare")).toBeLessThan(html.indexOf("Submit to Admin"));
     expect(html).toContain('disabled=""');
+  });
+
+  it("keeps the found vehicle card separate from the review card", () => {
+    const result = buildVehicleLookup("KA011111", "Vishal Sharma");
+    if (!result.ok) throw new Error("Expected the demo vehicle lookup to pass");
+
+    const html = renderToStaticMarkup(
+      createElement(VehicleDetailsCard, {
+        messageId: "vehicle-found",
+        payload: {
+          lookup: result.lookup,
+          stage: "found",
+          ownershipSelected: true,
+        },
+      }),
+    );
+
+    expect(html).toContain("Vehicle Found");
+    expect(html).toContain("Self Owned");
+    expect(html).toContain("Company Leased");
+    expect(html).not.toContain("Review vehicle details");
+    expect(html).not.toContain("Submit to Admin");
+    expect(html).not.toContain("<img");
+    expect(html).not.toContain(">Ownership<");
   });
 });

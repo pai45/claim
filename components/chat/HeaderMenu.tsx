@@ -42,7 +42,7 @@ const MENU_ITEMS: {
   },
   {
     id: "notifications",
-    label: "Notification",
+    label: "Alerts",
     href: "/notifications/",
     icon: <AppIcon src={UI_ICONS.notification} size={20} alt="" />,
   },

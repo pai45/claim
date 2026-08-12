@@ -265,6 +265,15 @@ export function MessageBubble({
         <VehicleDetailsCard
           messageId={message.id}
           payload={message.vehicleLookup}
+          onSelectOwnership={(ownership) => {
+            if (message.vehicleLookup?.lookup) {
+              onSelectVehicleOwnership?.(
+                message.id,
+                message.vehicleLookup.lookup,
+                ownership,
+              );
+            }
+          }}
           onSubmitToHr={onSubmitVehicleToHr}
           disabled={uploadDisabled}
         />
@@ -410,7 +419,6 @@ export function MessageBubble({
       return (
         <div className="flex w-full flex-col items-start gap-2">
           <VehicleClaimReceiptCard
-            claimId={message.claimId}
             lookup={message.vehicleLookup.lookup}
             ownership={message.vehicleLookup.ownership}
             submittedAt={message.createdAt}
@@ -427,7 +435,7 @@ export function MessageBubble({
               onClick={() => onStartDriverSalary?.(message.claimId)}
               className={`${pillClass} disabled:opacity-50`}
             >
-              Driver Salary
+              Register driver
             </button>
           </div>
         </div>

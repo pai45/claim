@@ -56,7 +56,7 @@ function toFields(extract: BillExtract): EditableFields {
   return {
     category: extract.category ?? "",
     vendor: extract.vendor || extract.merchant || "",
-    amount: extract.amount ?? "",
+    amount: sanitizeAmountInput(extract.amount ?? ""),
     billDate: toDateInput(extract.billDate || extract.date),
     billingMonth: toMonthInput(extract.billingMonth),
     invoiceNo: extract.invoiceNo ?? "",
@@ -165,6 +165,15 @@ const editorClass =
 const actionClass =
   "inline-flex min-h-11 flex-1 items-center justify-center whitespace-nowrap rounded-pill border border-border-muted bg-white px-4 py-2 text-body-sm font-bold text-pine shadow-soft transition-colors hover:bg-surface focus-visible:outline-2 focus-visible:outline-pine-primary disabled:cursor-not-allowed disabled:opacity-50";
 
+function sanitizeAmountInput(value: string): string {
+  const numeric = value.replace(/[^\d.]/g, "");
+  const [whole = "", ...decimalParts] = numeric.split(".");
+  const decimal = decimalParts.join("").slice(0, 2);
+
+  if (decimalParts.length === 0) return whole;
+  return `${whole || "0"}.${decimal}`;
+}
+
 export function BillExtractCard({
   messageId,
   extract,
@@ -255,6 +264,7 @@ export function BillExtractCard({
   function handleSubmit() {
     if (submitDisabled) return;
     onUpdate?.(messageId, workingExtract);
+    setEditing(false);
     onSubmitted?.(messageId, workingExtract);
   }
 
@@ -369,15 +379,23 @@ export function BillExtractCard({
             issue={amountIssue}
           >
             {editing ? (
-              <input
-                inputMode="decimal"
-                value={fields.amount.replace(/[^\d.,]/g, "")}
-                onChange={(event) => updateField("amount", event.target.value)}
-                className={editorClass}
-                aria-label="Amount"
-                aria-invalid={Boolean(amountIssue)}
-                placeholder={amountIssue === "missing" ? "Enter amount" : undefined}
-              />
+              <div className="mt-1 flex min-h-11 items-center gap-1 text-body-sm font-bold text-pine">
+                <span aria-hidden className="shrink-0">
+                  ₹
+                </span>
+                <input
+                  inputMode="decimal"
+                  value={fields.amount}
+                  onChange={(event) =>
+                    updateField("amount", sanitizeAmountInput(event.target.value))
+                  }
+                  className="min-h-11 min-w-0 flex-1 bg-transparent outline-none"
+                  aria-label="Amount in rupees"
+                  aria-invalid={Boolean(amountIssue)}
+                  pattern="\\d+(\\.\\d{1,2})?"
+                  placeholder={amountIssue === "missing" ? "Enter amount" : undefined}
+                />
+              </div>
             ) : undefined}
           </DetailTile>
           <DetailTile
@@ -461,11 +479,11 @@ export function BillExtractCard({
           <>
             <button
               type="button"
-              disabled={precheck.status === "blocked"}
-              onClick={saveEdits}
+              disabled={isClaimEdit ? precheck.status === "blocked" : submitDisabled}
+              onClick={isClaimEdit ? saveEdits : handleSubmit}
               className={actionClass}
             >
-              {isClaimEdit ? "Save changes" : "Save details"}
+              {isClaimEdit ? "Save changes" : "Submit claim"}
             </button>
             <button type="button" onClick={cancelEdits} className={actionClass}>
               Cancel

@@ -123,10 +123,6 @@ export function VehicleDetailsScreen() {
                 label="Engine Number"
                 value={vehicle.lookup.engineNumber}
               />
-              <VehicleDetailRow
-                label="Registration Date"
-                value={vehicle.lookup.registrationDate}
-              />
             </section>
           </>
         )}

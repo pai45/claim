@@ -44,7 +44,7 @@ export function NotificationsScreen() {
 
   return (
     <AppShell className="overflow-hidden">
-      <ScreenHeader title="Notifications" onBack={() => router.back()}>
+      <ScreenHeader title="Alerts" onBack={() => router.back()}>
         {totalCount > 0 ? (
           <button
             type="button"
@@ -119,13 +119,13 @@ export function NotificationsScreen() {
               <AppIcon src={UI_ICONS.notification} size={30} alt="" />
             </span>
             <h2 className="mt-4 type-section-title text-pine">
-              {hidden ? "Notifications hidden" : "No notifications"}
+              {hidden ? "Alerts hidden" : "No alerts"}
             </h2>
             <p className="mt-2 max-w-64 type-body-secondary">
               {hidden
-                ? "Your notifications are hidden on this page and the Benefits Assistant home."
+                ? "Your alerts are hidden on this page and the Benefits Assistant home."
                 : personaId === "new_user"
-                  ? "Aarav doesn't have any notifications yet."
+                  ? "Aarav doesn't have any alerts yet."
                   : "You're all caught up."}
             </p>
           </section>

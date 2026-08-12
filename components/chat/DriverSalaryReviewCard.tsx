@@ -64,7 +64,7 @@ export function DriverSalaryReviewCard({
         onClick={() => onSubmit(payload)}
         className="min-h-11 rounded-pill bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white disabled:opacity-50"
       >
-        {payload.submitted ? "Submitted to HR" : "Submit to HR"}
+        {payload.submitted ? "Submitted to Admin" : "Submit to Admin"}
       </button>
     </div>
   );

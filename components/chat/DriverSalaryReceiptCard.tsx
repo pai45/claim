@@ -84,7 +84,7 @@ export function DriverSalaryReceiptCard({
           <CheckIcon />
           <div className="flex min-w-0 flex-col">
             <span className="text-caption font-bold uppercase tracking-[0.3px] text-success">
-              Submitted to HR
+              Submitted to Admin
             </span>
             <span className="truncate text-body-sm font-bold text-pine">
               {claimId}
@@ -92,7 +92,7 @@ export function DriverSalaryReceiptCard({
           </div>
         </div>
         <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
-          With HR
+          With Admin
         </span>
       </div>
 

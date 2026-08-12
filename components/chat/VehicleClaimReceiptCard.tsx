@@ -1,10 +1,8 @@
 import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
-import { vehicleDisplayName } from "@/lib/vehicle/roster";
 import { colors } from "@/lib/ui/colors";
 import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 
 type VehicleClaimReceiptCardProps = {
-  claimId: string;
   lookup: VehicleLookup;
   ownership?: VehicleOwnership;
   submittedAt: number;
@@ -63,18 +61,10 @@ function formatSubmittedAt(timestamp: number) {
 }
 
 export function VehicleClaimReceiptCard({
-  claimId,
   lookup,
   ownership,
   submittedAt,
 }: VehicleClaimReceiptCardProps) {
-  const name = vehicleDisplayName(lookup.profile);
-  const rto = lookup.location
-    ? lookup.location.officeKnown
-      ? `${lookup.location.office}, ${lookup.location.stateName}`
-      : lookup.location.stateName
-    : "";
-
   return (
     <div className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
       <div className="flex items-center justify-between gap-3 bg-success-soft px-4 py-3">
@@ -82,36 +72,16 @@ export function VehicleClaimReceiptCard({
           <CheckIcon />
           <div className="flex min-w-0 flex-col">
             <span className="text-caption font-bold uppercase tracking-[0.3px] text-success">
-              Submitted to HR
-            </span>
-            <span className="truncate text-body-sm font-bold text-pine">
-              {claimId}
+              Submitted to Admin
             </span>
           </div>
         </div>
         <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
-          With HR
+          With Admin
         </span>
       </div>
 
       <div className="flex flex-col gap-3 px-4 py-4">
-        <div className="flex flex-col gap-0.5">
-          <p className="truncate text-body font-bold text-pine">
-            {name}
-          </p>
-          <p className="truncate type-body-secondary tracking-wide">
-            Vehicle registration
-          </p>
-        </div>
-
-        <div
-          className="h-px w-full"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, var(--color-input-border) 0 6px, transparent 6px 10px)",
-          }}
-        />
-
         <div className="flex flex-col">
           <ReceiptRow
             label="Reg. no."
@@ -125,13 +95,6 @@ export function VehicleClaimReceiptCard({
             />
           ) : null}
           <ReceiptRow label="Owner" value={lookup.ownerName} />
-          {lookup.registrationDate ? (
-            <ReceiptRow label="Registered" value={lookup.registrationDate} />
-          ) : null}
-          {lookup.profile.fuel ? (
-            <ReceiptRow label="Fuel" value={lookup.profile.fuel} />
-          ) : null}
-          {rto ? <ReceiptRow label="RTO" value={rto} /> : null}
           <ReceiptRow
             label="Submitted"
             value={formatSubmittedAt(submittedAt)}

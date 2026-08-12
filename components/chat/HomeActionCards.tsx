@@ -81,10 +81,12 @@ export function HomeActionCards({
           style={{ animationDelay: "220ms" }}
         >
           <p
-            className={`relative z-10 type-body font-bold text-ink ${isSplit ? "max-w-28" : "min-w-0 flex-1 whitespace-nowrap"}`}
+            className={`relative z-10 type-body font-bold text-ink ${isSplit ? "max-w-28" : "min-w-0 flex-1"}`}
           >
-            You have <span className="text-warning">{notificationCount}</span>{" "}
-            new notifications
+            <span className="block">You have</span>
+            <span className="block">
+              <span className="text-warning">{notificationCount}</span> new alert
+            </span>
           </p>
           <CardCorner isSplit={isSplit}>
             <span className="relative flex h-10 w-10 items-center justify-center rounded-pill border border-white bg-white/90 shadow-soft">

@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState } from "react";
 import {
   vehicleDisplayName,
-  vehicleImagePageUrl,
   vehicleImageUrl,
 } from "@/lib/vehicle/roster";
 import type { VehicleProfile } from "@/lib/vehicle/types";
@@ -66,7 +65,7 @@ export function VehiclePhoto({
   const name = vehicleDisplayName(profile);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div>
       {/* Commons photos vary wildly in aspect ratio, so the frame is fixed
           and the image is cropped into it rather than letterboxed. */}
       <div
@@ -87,29 +86,6 @@ export function VehiclePhoto({
         )}
       </div>
 
-      {imageFailed ? null : (
-        <p className="text-caption leading-3 text-ink-secondary">
-          Photo:{" "}
-          <a
-            href={vehicleImagePageUrl(profile)}
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            {profile.imageAuthor}
-          </a>{" "}
-          /{" "}
-          <a
-            href={profile.imageLicenseUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            {profile.imageLicense}
-          </a>{" "}
-          via Wikimedia Commons
-        </p>
-      )}
     </div>
   );
 }
