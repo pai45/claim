@@ -8,6 +8,9 @@ export const colors = {
   pinePrimary: "#005656",
   pineDark: "#003434",
   mint: "#36CC8B",
+  /** Brand lime accent (`--brand-300` in the source app). */
+  lime: "#D0F255",
+  limeWash: "#EDF7BF",
   ink: "#1C2725",
   inkSecondary: "#667A74",
   inkTertiary: "#8D92A3",

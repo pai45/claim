@@ -9447,6 +9447,13 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   );
 }
 
+/* Keep the payment shortcut visually connected to the balance wallet in both
+   UPI states. Together with the UPI panel's 16px top margin, this creates one
+   standard 24px section gap instead of the previous stacked 40px gap. */
+body:not(.is-pluspay) .hero-panel {
+  padding-bottom: var(--space-8);
+}
+
 .topbar {
   background: transparent;
   box-shadow: none;
@@ -9472,81 +9479,154 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   height: 44px;
 }
 
+/* The two halves are painted by full-width fill layers behind the labels, each
+   clipped to one side of a shared S-curve seam (`#switcher-seam-*` in
+   index.html). Both fills span the same box, which is what lets one normalised
+   curve line the two halves up exactly — a `border-radius` seam can only ever
+   be a circular arc, and the seam here leans.
+
+   The inactive fill is the one on top, and it stays translucent, so the active
+   fill's edge shows through the offset band as a second line. */
 .product-switcher {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  position: relative;
+  display: flex;
   align-items: stretch;
   justify-self: center;
-  width: min(100%, 272px);
-  min-height: 44px;
-  padding: 2px;
-  border: 2px solid rgba(54, 204, 139, 0.62);
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.48);
-  box-shadow: 2px 2px 8px rgba(0, 42, 25, 0.06);
+  width: min(100%, 276px);
+  min-height: 52px;
+  padding: 3px;
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    rgba(234, 248, 240, 0.96) 0%,
+    rgba(202, 235, 217, 0.96) 100%
+  );
+  box-shadow:
+    0 8px 20px rgba(0, 42, 25, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  /* `filter` is applied before `clip-path`, so each fill's drop-shadow is cast
+     from its full unclipped rounded rect and then squared off at the clip's
+     outer edge. Clipping to the track hides that overspill; the part of the
+     shadow that matters — along the seam — is interior and survives. */
   overflow: hidden;
-  transition: background 180ms ease, border-color 180ms ease;
+  transition:
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.product-switcher:active {
+  transform: scale(0.99);
+}
+
+/* `inset: 0` resolves against the button's padding box, so the 3px track inset
+   still applies. `border-radius` and `clip-path` intersect: the outer end keeps
+   the pill curve while the inner end follows the seam. Depth has to come from
+   `filter`, not `box-shadow` — a shadow traces the border-box and would ignore
+   the clip, leaving a straight edge floating beside the curve. */
+.switcher-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  transition:
+    background 220ms ease,
+    filter 220ms ease;
+}
+
+/* Default state: EB+ is the raised fill, pluspay is the glass sheet over it. */
+.switcher-fill-lens {
+  z-index: 1;
+  clip-path: url(#switcher-seam-lens);
+  background: linear-gradient(160deg, #ffffff 0%, #edf9f2 100%);
+  /* Kept tight on purpose: the raised fill sits *under* the glass sheet, so a
+     wide blur bleeds through it and smears the seam instead of lifting it. */
+  filter:
+    drop-shadow(0 2px 6px rgba(0, 42, 25, 0.14))
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.9));
+}
+
+.switcher-fill-pluspay {
+  z-index: 2;
+  clip-path: url(#switcher-seam-pluspay);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .product-segment {
+  position: relative;
+  z-index: 3;
   display: flex;
+  flex: 1 1 0;
   min-width: 0;
-  min-height: 38px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
-  border-radius: 32px;
   font-family: "PP Telegraf", "Lato", sans-serif;
-  font-size: 18px;
-  font-weight: var(--fw-semibold);
-  transition: color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  font-size: 20px;
+  font-weight: var(--fw-bold);
+  transition: color 220ms ease;
 }
 
 .product-segment-lens {
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--brand-900);
-  box-shadow: 2px 2px 8px rgba(0, 42, 25, 0.06);
+  color: #0b211a;
 }
 
-.product-segment-pluspay {
-  background: transparent;
-}
-
+/* The wordmark ships as pine `#005656`; the filters below are what carry it
+   from muted grey (resting) to solid black (on the mint fill). */
 .product-segment-pluspay img {
   display: block;
   width: auto;
-  height: 18px;
-  max-width: 84px;
-  opacity: 0.42;
-  transition: opacity 180ms ease;
+  height: 19px;
+  max-width: 92px;
+  filter: grayscale(1) brightness(2.05);
+  opacity: 0.9;
+  transition: filter 220ms ease, opacity 220ms ease;
 }
 
 body.is-pluspay .product-switcher {
-  border-color: rgba(54, 204, 139, 0.78);
-  background: rgba(0, 52, 52, 0.62);
+  border-color: rgba(76, 222, 155, 0.5);
+  background: linear-gradient(
+    135deg,
+    rgba(6, 40, 32, 0.92) 0%,
+    rgba(12, 58, 46, 0.92) 100%
+  );
+  box-shadow:
+    0 10px 24px rgba(0, 18, 12, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.is-pluspay .switcher-fill-lens {
+  z-index: 2;
+  background: rgba(7, 39, 31, 0.82);
+  filter: none;
+}
+
+body.is-pluspay .switcher-fill-pluspay {
+  z-index: 1;
+  background: linear-gradient(150deg, #74ecad 0%, #3ccb8a 100%);
+  filter:
+    drop-shadow(0 2px 6px rgba(0, 30, 18, 0.3))
+    drop-shadow(0 1px 0 rgba(255, 255, 255, 0.5));
 }
 
 body.is-pluspay .product-segment-lens {
-  background: transparent;
-  box-shadow: none;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-body.is-pluspay .product-segment-pluspay {
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--brand-500) 78%, white) 0%,
-    var(--brand-500) 100%
-  );
-  box-shadow: 0 6px 16px rgba(0, 86, 86, 0.18);
+  color: rgba(222, 234, 228, 0.72);
 }
 
 body.is-pluspay .product-segment-pluspay img {
-  opacity: 1;
+  filter: brightness(0);
+  opacity: 0.92;
+}
+
+/* Locked personas render a bare wordmark with no track, so nothing may paint
+   behind it. */
+body.is-product-locked .switcher-fill {
+  display: none;
 }
 
 body.is-product-locked [data-pluspay-toggle] {
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr);
+  display: flex !important;
+  justify-content: center;
   width: auto;
   max-width: none;
   min-height: 44px;
@@ -9560,22 +9640,15 @@ body.is-product-locked [data-pluspay-toggle] {
 }
 
 body.is-product-locked .product-segment {
+  flex: 0 0 auto;
   min-height: 44px;
   padding: 0 8px;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
 }
 
 body.is-product-locked .product-segment-lens {
   color: var(--brand-900);
   font-size: 30px;
   line-height: 1;
-}
-
-body.is-product-locked.is-pluspay .product-segment-pluspay {
-  background: transparent;
-  box-shadow: none;
 }
 
 body.is-product-locked.is-pluspay .product-segment-pluspay img {
@@ -10292,8 +10365,19 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
     height: 40px;
   }
 
+  /* The seam is defined in objectBoundingBox units, so its lean stays
+     proportional here on its own — only the box needs shrinking. */
+  .product-switcher {
+    min-height: 48px;
+  }
+
   .product-segment {
-    font-size: 16px;
+    min-height: 40px;
+    font-size: 18px;
+  }
+
+  .product-segment-pluspay img {
+    height: 17px;
   }
 
   body:not(.is-pluspay).is-upi-created .upi-panel,

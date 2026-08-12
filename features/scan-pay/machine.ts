@@ -60,7 +60,6 @@ export function createInitialScanPayState(
     ),
     fundingAllocations: [],
     transaction: null,
-    rewardRevealed: false,
     receiptState: "empty",
     receiptPreview: null,
     faqReturnStep: "scanner",
@@ -246,8 +245,6 @@ export function scanPayReducer(
       };
     case "RETRY_PAYMENT":
       return { ...state, step: "confirmPayment", transaction: null };
-    case "REVEAL_REWARD":
-      return { ...state, rewardRevealed: true };
     case "OPEN_PAYMENT_DETAILS":
       return { ...state, step: "paymentDetails" };
     case "OPEN_RECEIPT_CAPTURE":

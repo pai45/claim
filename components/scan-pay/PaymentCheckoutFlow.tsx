@@ -16,6 +16,7 @@ import {
   ScanPaySubmitting,
 } from "@/components/scan-pay/ScanPayResult";
 import { ScanPayFaq } from "@/components/scan-pay/ScanPayScanner";
+import { ScanPaySuccessTick } from "@/components/scan-pay/ScanPaySuccessTick";
 import { createPaymentLedgerRows } from "@/features/scan-pay/ledger";
 import { recordBankTransfer } from "@/features/bank-transfer/history";
 import { bankTransferTotal } from "@/features/bank-transfer/fees";
@@ -24,7 +25,13 @@ import { recordRecipientPayment } from "@/features/send-money/history";
 import {
   downloadScanPayReceipt,
   shareScanPayReceipt,
+  transactionStatusLabel,
 } from "@/features/scan-pay/receipt";
+import {
+  PAID_ENTER_BASE_MS,
+  SUBMIT_DELAY_MS,
+  SUCCESS_VEIL_MS,
+} from "@/features/scan-pay/timing";
 import type {
   ScanPayAction,
   ScanPayState,
@@ -36,6 +43,14 @@ import { commitBenefitPayment } from "@/features/transactions/financialState";
 import type { FundingAllocation } from "@/features/transactions/financialState";
 import { recordPlusPayTransaction } from "@/features/transactions/plusPayHistory";
 import "./scanPay.css";
+
+/** Read lazily inside effects and handlers — tests render with `environment: "node"`. */
+function prefersReducedMotion(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+}
 
 export function PaymentCheckoutFlow({
   state,
@@ -55,6 +70,14 @@ export function PaymentCheckoutFlow({
   const [pendingBankPayment, setPendingBankPayment] = useState<
     FundingAllocation[] | null
   >(null);
+  /**
+   * The transaction waiting behind the success tick. `RESOLVE_PAYMENT` is deferred
+   * until the green covers the screen, so the step swap is never visible.
+   */
+  const [veiledTransaction, setVeiledTransaction] =
+    useState<ScanPayTransaction | null>(null);
+  /** Offsets the paid-to screen's entrance so it waits for the veil to lift. */
+  const [paidEntranceBase, setPaidEntranceBase] = useState(0);
 
   const dispatchPaymentAction = useCallback<Dispatch<ScanPayAction>>(
     (action) => {
@@ -66,6 +89,9 @@ export function PaymentCheckoutFlow({
         setBankOtpOpen(true);
         return;
       }
+      // `goBack` returns from payment details to the paid-to screen, which by then
+      // has no veil in front of it — a stale offset would leave it blank for a second.
+      if (action.type === "OPEN_PAYMENT_DETAILS") setPaidEntranceBase(0);
       dispatch(action);
     },
     [dispatch, state.paymentContext.origin],
@@ -107,10 +133,35 @@ export function PaymentCheckoutFlow({
       recordPlusPayTransaction(personaId, transaction);
       recordRecipientPayment(transaction);
       recordBankTransfer(personaId, transaction);
+
+      // Only a settled success earns the tick. Failures and still-processing
+      // payments resolve straight through, so a green tick never lands on top of
+      // "Payment Failed".
+      if (transaction.outcome === "success" && !prefersReducedMotion()) {
+        setPaidEntranceBase(PAID_ENTER_BASE_MS);
+        setVeiledTransaction(transaction);
+        return;
+      }
+      setPaidEntranceBase(0);
       dispatch({ type: "RESOLVE_PAYMENT", transaction });
-    }, 1450);
+    }, SUBMIT_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [dispatch, personaId, state]);
+
+  // Unmount the veil on its own clock, independent of the dispatch it triggers.
+  useEffect(() => {
+    if (!veiledTransaction) return;
+    const timer = window.setTimeout(
+      () => setVeiledTransaction(null),
+      SUCCESS_VEIL_MS,
+    );
+    return () => window.clearTimeout(timer);
+  }, [veiledTransaction]);
+
+  const resolveVeiledPayment = useCallback(() => {
+    if (!veiledTransaction) return;
+    dispatch({ type: "RESOLVE_PAYMENT", transaction: veiledTransaction });
+  }, [dispatch, veiledTransaction]);
 
   useEffect(() => {
     if (!notice) return;
@@ -178,6 +229,9 @@ export function PaymentCheckoutFlow({
       state.transaction.outcome !== "failed" ? (
         <ScanPayBankTransferPaid
           transaction={state.transaction}
+          entranceBaseMs={paidEntranceBase}
+          onDownload={handleDownload}
+          onShare={handleShare}
           onClose={onClose}
         />
       ) : (
@@ -188,8 +242,7 @@ export function PaymentCheckoutFlow({
     content = (
       <ScanPayReward
         transaction={state.transaction}
-        revealed={state.rewardRevealed}
-        onReveal={() => dispatch({ type: "REVEAL_REWARD" })}
+        entranceBaseMs={paidEntranceBase}
         onViewDetails={() => openTransactionDetails(state.transaction!)}
         onDownload={handleDownload}
         onShare={handleShare}
@@ -221,6 +274,16 @@ export function PaymentCheckoutFlow({
   return (
     <>
       {content}
+      {veiledTransaction ? (
+        <ScanPaySuccessTick
+          statusLabel={
+            transactionStatusLabel(veiledTransaction) === "Pending"
+              ? "Transfer initiated"
+              : "Payment successful"
+          }
+          onCovered={resolveVeiledPayment}
+        />
+      ) : null}
       {bankOtpOpen ? (
         <MobileOtpSheet
           open

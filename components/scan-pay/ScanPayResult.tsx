@@ -39,21 +39,41 @@ export function ScanPaySubmitting({
     <AppShell className="scan-pay-shell overflow-hidden bg-white">
       <ScreenHeader title="Processing Payment" onBack={onBack} />
       <main className="flex min-h-0 flex-1 flex-col items-center justify-center px-page text-center">
-        <div className="scan-pay-processing-orbit flex h-24 w-24 items-center justify-center rounded-pill bg-surface-tint shadow-icon">
-          <AppIcon
-            src={SCAN_PAY_ASSETS.paymentProcessingLogo}
-            alt=""
-            width={80}
-            height={80}
-            className="h-20 w-20 object-contain"
-            priority
+        <div className="relative flex items-center justify-center">
+          <span className="scan-pay-processing-halo" aria-hidden="true" />
+          <span
+            className="scan-pay-processing-halo scan-pay-processing-halo--b"
+            aria-hidden="true"
           />
+          <div className="scan-pay-processing-orbit relative z-10 flex h-24 w-24 items-center justify-center rounded-pill bg-surface-tint shadow-icon">
+            <AppIcon
+              src={SCAN_PAY_ASSETS.paymentProcessingLogo}
+              alt=""
+              width={80}
+              height={80}
+              className="h-20 w-20 object-contain"
+              priority
+            />
+          </div>
         </div>
-        <h2 className="type-section-title mt-7 text-pine">
+        <h2
+          className="animate-rise-in type-section-title mt-8 text-pine"
+          style={{ animationDelay: "140ms" }}
+        >
           Processing payment
         </h2>
-        <p className="mt-1 type-body-secondary">Please don’t close the app</p>
-        <p className="type-amount mt-5">{formatScanPayINR(transactionAmount)}</p>
+        <p
+          className="animate-rise-in mt-1 type-body-secondary"
+          style={{ animationDelay: "200ms" }}
+        >
+          Please don’t close the app
+        </p>
+        <p
+          className="animate-rise-in type-amount mt-5"
+          style={{ animationDelay: "260ms" }}
+        >
+          {formatScanPayINR(transactionAmount)}
+        </p>
       </main>
       <footer className="shrink-0 px-page pb-8 text-center text-caption text-ink-secondary">
         Your payment is secure and encrypted
@@ -386,7 +406,9 @@ export function ReceiptActions({
     },
   ].filter(Boolean) as { label: string; icon: string; action: () => void }[];
   return (
-    <div className="mt-4 grid grid-cols-3 gap-2">
+    <div
+      className={`mt-4 grid gap-2 ${actions.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
+    >
       {actions.map((action) => (
         <button
           key={action.label}

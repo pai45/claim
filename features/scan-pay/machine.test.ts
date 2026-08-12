@@ -208,7 +208,7 @@ describe("scan pay machine", () => {
     expect(transaction.subcategory).toBe("Bank");
   });
 
-  it("skips the scratch-card reward after a successful bank transfer", () => {
+  it("routes a successful bank transfer to the paid-to result step", () => {
     let state = createInitialBankTransferState({
       accountHolder: "Ananya Rao",
       accountNumber: "123456789012",
@@ -244,15 +244,13 @@ describe("scan pay machine", () => {
     expect(state.amount).toBe("780");
   });
 
-  it("integrates reward reveal and receipt confirmation into success", () => {
+  it("integrates receipt confirmation into the success flow", () => {
     let state = createInitialScanPayState("success");
     state = scanPayReducer(state, { type: "SET_AMOUNT", amount: "780" });
     state = scanPayReducer(state, { type: "PAY" });
     state = scanPayReducer(state, { type: "RESOLVE_PAYMENT" });
     expect(state.step).toBe("successReward");
 
-    state = scanPayReducer(state, { type: "REVEAL_REWARD" });
-    expect(state.rewardRevealed).toBe(true);
     state = scanPayReducer(state, { type: "OPEN_PAYMENT_DETAILS" });
     state = scanPayReducer(state, { type: "OPEN_RECEIPT_CAPTURE" });
     state = scanPayReducer(state, {

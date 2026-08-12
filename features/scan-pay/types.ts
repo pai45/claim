@@ -58,6 +58,7 @@ export type ScanPayStep =
   | "categoryPicker"
   | "submitting"
   | "result"
+  /** The paid-to receipt. Named for the scratch-card reward it used to carry. */
   | "successReward"
   | "paymentDetails"
   | "receiptCapture"
@@ -129,7 +130,6 @@ export type ScanPayState = {
   walletId: ScanPayWalletId;
   fundingAllocations: FundingAllocation[];
   transaction: ScanPayTransaction | null;
-  rewardRevealed: boolean;
   receiptState: ScanPayReceiptState;
   receiptPreview: string | null;
   faqReturnStep: ScanPayFaqReturnStep;
@@ -162,7 +162,6 @@ export type ScanPayAction =
   | { type: "RESOLVE_PAYMENT"; transaction?: ScanPayTransaction }
   | { type: "PAYMENT_COMMIT_FAILED" }
   | { type: "RETRY_PAYMENT" }
-  | { type: "REVEAL_REWARD" }
   | { type: "OPEN_PAYMENT_DETAILS" }
   | { type: "OPEN_RECEIPT_CAPTURE" }
   | { type: "CAPTURE_RECEIPT"; preview: string }

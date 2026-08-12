@@ -103,7 +103,6 @@ export const SCAN_PAY_ASSETS = {
   flashlight: "/assets/scan-pay/flashlight.svg",
   gallery: "/assets/scan-pay/gallery.svg",
   questionCircle: "/assets/scan-pay/question-circle.svg",
-  scratchCard: "/assets/scan-pay/scratch-card.png",
   financeIllustration: "/assets/scan-pay/finance-illustration.svg",
   categoryMore: "/assets/scan-pay/category-more.svg",
   confirmPaymentMark: "/assets/scan-pay/confirm-payment-mark.png",

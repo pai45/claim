@@ -71,8 +71,11 @@ describe("bank-transfer receipt", () => {
 
     expect(markup).toContain("Paid to");
     expect(markup).toContain("Pending");
+    expect(markup).toContain("Transaction details");
     expect(markup).toContain("Convenience fee");
+    expect(markup).toContain("Total debited");
     expect(markup).toContain("Back to Home");
     expect(markup).not.toContain("Scratch card");
+    expect(markup).not.toContain("Cashback");
   });
 });
