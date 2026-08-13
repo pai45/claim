@@ -22,6 +22,8 @@ export const UI_ICONS = {
   send: "/assets/icons/send.svg",
   menu: "/assets/icons/menu.svg",
   card: "/assets/icons/card.svg",
+  homeSelected: "/assets/icons/home-selected.svg",
+  transactionHistorySelected: "/assets/icons/transaction-history-selected.svg",
   rupay: "/employee-benefits/assets/icons/rupay-logo.svg",
   onlineTransactions: "/assets/icons/online-transactions.svg",
   tapToPay: "/assets/icons/tap-to-pay.svg",

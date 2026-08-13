@@ -77,15 +77,29 @@ describe("EB+ home payment actions", () => {
     );
   });
 
+  it("gives PlusPay the full-width EB+ UPI identity card treatment", () => {
+    expect(styles).toMatch(
+      /body\.is-pluspay\.is-upi-created \.upi-card-id \{[\s\S]*grid-template-columns: 40px minmax\(0, 1fr\) 16px;[\s\S]*width: 100%;[\s\S]*height: 64px/,
+    );
+    expect(styles).toMatch(
+      /body\.is-pluspay\.is-upi-created \.upi-card-id \.upi-brand-badge \{[\s\S]*width: 40px;[\s\S]*height: 40px;[\s\S]*border: 1px solid var\(--line\)/,
+    );
+    expect(styles).toMatch(
+      /body\.is-pluspay\.is-upi-created \.upi-card-id \.upi-copy \{[\s\S]*display: contents/,
+    );
+    expect(styles).toMatch(
+      /body\.is-pluspay\.is-upi-created \.upi-card-id \.upi-copy-icon \{[\s\S]*display: none/,
+    );
+  });
+
   it("moves Bank Transfer and the renamed UPI payment action into Reimbursement Wallet", () => {
     expect(html).not.toContain("Pay to<br />Anyone");
     expect(html).toMatch(
       /data-reimbursement-actions[\s\S]*data-bank-transfer-open[\s\S]*Bank<br \/>Transfer[\s\S]*data-send-money-open[\s\S]*data-upi-created-only[\s\S]*Pay<br \/>UPI ID/,
     );
-    // Only the Reimbursement Wallet action uses the raw asset. The PlusPay home
-    // CTA draws the same glyph from the #icon-send sprite so it can inherit
-    // currentColor against the dark hero.
-    expect(html.match(/assets\/payments\/send-money\.svg/g)).toHaveLength(1);
+    // The PlusPay home CTA intentionally shares the Reimbursement Wallet's
+    // Pay UPI ID asset, keeping the send-money affordance consistent.
+    expect(html.match(/assets\/payments\/send-money\.svg/g)).toHaveLength(2);
     expect(sourceApp).toContain(
       'reimbursementActions.hidden = walletTone !== "misc"',
     );

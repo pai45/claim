@@ -73,11 +73,6 @@ export function MerchantResultsCard({
                   {merchant.allowed ? "Allowed" : "Not allowed"}
                 </span>
               </div>
-              {merchant.networkPartner ? (
-                <p className="mt-2 text-caption font-bold text-pine-primary">
-                  Network partner
-                </p>
-              ) : null}
             </li>
           );
         })}

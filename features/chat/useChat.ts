@@ -50,10 +50,11 @@ import {
   USER_DISPLAY_NAME,
   VEHICLE_REGISTRATION_INTENT,
 } from "./constants";
+import { searchMerchantsByName } from "@/lib/merchants/openStreetMap";
 import {
-  searchMerchantsByName,
-  searchMerchantsNearby,
-} from "@/lib/merchants/openStreetMap";
+  DEMO_NEARBY_MEAL_MERCHANTS,
+  DEMO_NEARBY_MEAL_SEARCH_DELAY_MS,
+} from "@/lib/merchants/demoNearby";
 import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runBillOcr } from "@/lib/ocr/runOcr";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
@@ -111,6 +112,7 @@ function articleFor(value: string): "a" | "an" {
 
 export function useChat() {
   const chatVersionRef = useRef(0);
+  const nearbyMerchantTimerRef = useRef<number | null>(null);
   const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
   const previewUrlsRef = useRef(new Map<string, string>());
   // Lets sendMessage read the transcript for prompt history without taking
@@ -179,6 +181,10 @@ export function useChat() {
 
   useEffect(
     () => () => {
+      if (nearbyMerchantTimerRef.current !== null) {
+        window.clearTimeout(nearbyMerchantTimerRef.current);
+        nearbyMerchantTimerRef.current = null;
+      }
       previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
       previewUrlsRef.current.clear();
     },
@@ -187,6 +193,10 @@ export function useChat() {
 
   const startNewChat = useCallback(() => {
     chatVersionRef.current += 1;
+    if (nearbyMerchantTimerRef.current !== null) {
+      window.clearTimeout(nearbyMerchantTimerRef.current);
+      nearbyMerchantTimerRef.current = null;
+    }
     previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
     previewUrlsRef.current.clear();
     driverSalaryDraftRef.current = {};
@@ -828,7 +838,7 @@ export function useChat() {
         {
           id: createId(),
           role: "assistant",
-          content: "Getting your location to find the 3 nearest merchants…",
+          content: "Searching for the 5 nearest meal merchants…",
           createdAt: Date.now(),
           kind: "text",
         },
@@ -837,115 +847,36 @@ export function useChat() {
       setIsLocating(true);
       setError(null);
 
-      if (!navigator.geolocation) {
-        setIsLocating(false);
+      const chatVersion = chatVersionRef.current;
+      // Live GPS/OpenStreetMap nearby lookup is intentionally disabled for the
+      // demo. Preserve the five-second locating state before showing fixtures.
+      nearbyMerchantTimerRef.current = window.setTimeout(() => {
+        nearbyMerchantTimerRef.current = null;
+        if (chatVersionRef.current !== chatVersion) return;
+
         setMessages((prev) => [
           ...prev,
           {
             id: createId(),
             role: "assistant",
-            content:
-              "Location isn't available on this device. Please type the merchant name instead.",
+            content: "Here are the 5 nearest meal merchants:",
             createdAt: Date.now(),
             kind: "text",
           },
           {
             id: createId(),
             role: "assistant",
-            content: "Merchant name",
+            content: "Merchant results",
             createdAt: Date.now(),
-            kind: "merchant_name_input",
-            merchantLocator: { benefitType: resolvedType },
+            kind: "merchant_results",
+            merchantLocator: {
+              benefitType: resolvedType,
+              results: DEMO_NEARBY_MEAL_MERCHANTS,
+            },
           },
         ]);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          try {
-            const results = await searchMerchantsNearby(
-              resolvedType,
-              position.coords.latitude,
-              position.coords.longitude,
-            );
-
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: createId(),
-                role: "assistant",
-                content:
-                  results.length > 0
-                    ? `Here are the ${Math.min(3, results.length)} nearest ${benefitLabel(resolvedType).toLowerCase()} merchants:`
-                    : `I couldn't find nearby ${benefitLabel(resolvedType).toLowerCase()} merchants. Try typing a merchant name.`,
-                createdAt: Date.now(),
-                kind: "text",
-              },
-              {
-                id: createId(),
-                role: "assistant",
-                content: "Merchant results",
-                createdAt: Date.now(),
-                kind: "merchant_results",
-                merchantLocator: {
-                  benefitType: resolvedType,
-                  results,
-                },
-              },
-            ]);
-          } catch (err) {
-            const message =
-              err instanceof Error
-                ? err.message
-                : "Couldn't find nearby merchants.";
-            setError(message);
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: createId(),
-                role: "assistant",
-                content: `${message} You can type a merchant name instead.`,
-                createdAt: Date.now(),
-                kind: "text",
-              },
-              {
-                id: createId(),
-                role: "assistant",
-                content: "Merchant name",
-                createdAt: Date.now(),
-                kind: "merchant_name_input",
-                merchantLocator: { benefitType: resolvedType },
-              },
-            ]);
-          } finally {
-            setIsLocating(false);
-          }
-        },
-        () => {
-          setIsLocating(false);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: createId(),
-              role: "assistant",
-              content:
-                "I couldn't access your location. Please enable GPS permission, or type the merchant name instead.",
-              createdAt: Date.now(),
-              kind: "text",
-            },
-            {
-              id: createId(),
-              role: "assistant",
-              content: "Merchant name",
-              createdAt: Date.now(),
-              kind: "merchant_name_input",
-              merchantLocator: { benefitType: resolvedType },
-            },
-          ]);
-        },
-        { enableHighAccuracy: false, timeout: 15000, maximumAge: 60000 },
-      );
+        setIsLocating(false);
+      }, DEMO_NEARBY_MEAL_SEARCH_DELAY_MS);
     },
     [
       activeBenefitType,

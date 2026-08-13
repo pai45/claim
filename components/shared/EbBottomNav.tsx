@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BenefitsLogo } from "@/components/shared/BenefitsLogo";
 import { withBasePath } from "@/lib/basePath";
-import { BRAND_ASSETS } from "@/lib/ui/assets";
+import { BRAND_ASSETS, UI_ICONS } from "@/lib/ui/assets";
 
 /**
  * Bottom padding a scrolling screen body owes the overlaid bar, so its last row
@@ -141,6 +141,7 @@ export function EbBottomNav({
       >
         <NavIcon
           src="/employee-benefits/assets/icons/home.svg"
+          activeSrc={UI_ICONS.homeSelected}
           active={current === "home"}
         />
         <span>Home</span>
@@ -191,6 +192,7 @@ export function EbBottomNav({
       >
         <NavIcon
           src="/employee-benefits/assets/icons/transaction-history.svg"
+          activeSrc={UI_ICONS.transactionHistorySelected}
           active={current === "transactions"}
         />
         <span className="max-w-[92px] overflow-hidden text-ellipsis">
@@ -201,14 +203,26 @@ export function EbBottomNav({
   );
 }
 
-function NavIcon({ src, active }: { src: string; active: boolean }) {
+function NavIcon({
+  src,
+  activeSrc,
+  active,
+}: {
+  src: string;
+  activeSrc: string;
+  active: boolean;
+}) {
+  if (active) {
+    return (
+      <AppIcon src={activeSrc} size={22} className="h-[22px] w-[22px]" />
+    );
+  }
+
   const iconUrl = `url("${withBasePath(src)}")`;
 
   return (
     <span
-      className={`block h-[22px] w-[22px] ${
-        active ? "bg-pine-primary" : "bg-subtle"
-      }`}
+      className="block h-[22px] w-[22px] bg-subtle"
       style={{
         WebkitMaskImage: iconUrl,
         maskImage: iconUrl,

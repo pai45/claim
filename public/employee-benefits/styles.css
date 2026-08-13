@@ -38,6 +38,7 @@
   --text-16: 16px;
   --text-18: 18px;
   --text-20: 20px;
+  --text-24: 24px;
   --text-32: 32px;
   /* Type weight scale — backed by the three real PP Telegraf faces.
      Regular for body/meta, SemiBold for labels/sub-headings/UI,
@@ -166,6 +167,7 @@ svg {
 
 .hero-panel,
 .upi-panel,
+.pluspay-payment-surface,
 .pluspay-actions-panel,
 .pluspay-corporate-message,
 .tap-pay-discovery,
@@ -9463,6 +9465,10 @@ body.is-pluspay .bottom-nav .pluspay-scan-button > span:last-child {
   );
 }
 
+.pluspay-payment-surface {
+  display: contents;
+}
+
 /* Keep the payment shortcut visually connected to the balance wallet in both
    UPI states. Together with the UPI panel's 16px top margin, this creates one
    standard 24px section gap instead of the previous stacked 40px gap. */
@@ -9847,6 +9853,99 @@ body:not(.is-pluspay).is-upi-created .upi-card-id .upi-arrow svg {
   stroke-width: 2.4;
 }
 
+/* PlusPay uses the same two-line UPI identity treatment as EB+, but without
+   the adjacent scan tile, so the card stretches across the complete panel. */
+body.is-pluspay.is-upi-created .upi-card-id {
+  grid-template-columns: 40px minmax(0, 1fr) 16px;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: 10px;
+  row-gap: 2px;
+  width: 100%;
+  height: 64px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  box-sizing: border-box;
+  justify-self: stretch;
+  transition: transform 150ms ease, border-color 150ms ease;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id:active {
+  transform: scale(0.98);
+}
+
+body.is-pluspay.is-upi-created .upi-card-id:focus-visible {
+  outline: 2px solid var(--brand-700);
+  outline-offset: 2px;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-brand-badge {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-brand-badge img {
+  width: 24px;
+  height: 24px;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-copy {
+  display: contents;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-copy small {
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--subtle);
+  font-size: var(--text-12);
+  line-height: var(--text-16);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.01em;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-id-row {
+  grid-column: 2;
+  grid-row: 2;
+  min-width: 0;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-copy strong {
+  min-width: 0;
+  max-width: 100%;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 17px;
+  font-weight: var(--fw-semibold);
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-copy-icon {
+  display: none;
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-arrow {
+  display: grid;
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  align-self: center;
+  justify-self: end;
+  width: 16px;
+  height: 16px;
+  color: var(--subtle);
+}
+
+body.is-pluspay.is-upi-created .upi-card-id .upi-arrow svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.4;
+}
+
 .upi-panel {
   gap: 0;
   margin-top: 16px;
@@ -10064,33 +10163,48 @@ body.is-upi-created .reimbursement-actions {
 }
 
 body.is-pluspay .phone-shell::before {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  top: 0;
-  right: 0;
-  left: 0;
-  display: block;
-  height: 580px;
-  background: linear-gradient(
-    180deg,
-    var(--brand-900) 0%,
-    var(--brand-700) 42%,
-    color-mix(in srgb, var(--brand-700) 82%, var(--bg)) 50%,
-    color-mix(in srgb, var(--brand-700) 64%, var(--bg)) 57%,
-    color-mix(in srgb, var(--brand-700) 46%, var(--bg)) 63%,
-    color-mix(in srgb, var(--brand-700) 28%, var(--bg)) 68%,
-    color-mix(in srgb, var(--brand-700) 12%, var(--bg)) 73%,
-    var(--bg) 78%,
-    var(--bg) 100%
-  );
-  pointer-events: none;
+  content: none;
 }
 
 body.is-pluspay .hero-panel {
+  --pluspay-hero-a: color-mix(
+    in srgb,
+    var(--brand-500) 18%,
+    var(--brand-700)
+  );
+  --pluspay-hero-b: var(--brand-700);
+  --pluspay-hero-c: var(--brand-900);
+  --pluspay-hero-d: color-mix(
+    in srgb,
+    var(--brand-500) 16%,
+    transparent
+  );
+
   margin-bottom: 0;
   padding-bottom: 0;
-  background: transparent;
+  background:
+    radial-gradient(
+      74% 62% at 18% 22%,
+      var(--pluspay-hero-d) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      58% 68% at 82% 12%,
+      var(--pluspay-hero-a) 0%,
+      transparent 64%
+    ),
+    radial-gradient(
+      84% 84% at 76% 92%,
+      var(--pluspay-hero-c) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      142deg,
+      var(--pluspay-hero-b) 0%,
+      var(--pluspay-hero-c) 58%,
+      var(--pluspay-hero-c) 100%
+    );
+  overflow: hidden;
 }
 
 body.is-pluspay .avatar-button {
@@ -10104,11 +10218,12 @@ body.is-pluspay .avatar-button {
 
 body.is-pluspay .pluspay-corporate-message {
   display: grid;
-  grid-template-columns: minmax(0, 1.65fr) minmax(112px, 0.72fr);
-  align-items: center;
-  min-height: 112px;
+  grid-template-columns: minmax(0, 1fr) clamp(76px, 24vw, 104px);
+  column-gap: var(--space-8);
+  align-items: end;
+  min-height: 144px;
   margin-top: 0;
-  padding: 12px 4px 8px 10px;
+  padding: var(--space-24) var(--space-4) var(--space-20) var(--space-12);
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -10124,15 +10239,18 @@ body.is-pluspay .pluspay-corporate-message {
 .pluspay-corporate-copy {
   position: relative;
   z-index: 2;
+  align-self: center;
+  transform: translateY(calc(var(--space-20) * -1));
 }
 
 .pluspay-corporate-message p {
   max-width: none;
   color: #ffffff;
   font-family: "PP Telegraf", "Lato", sans-serif;
-  font-size: 18px;
+  font-size: clamp(var(--text-18), 5.5vw, var(--text-20));
   font-weight: var(--fw-bold);
-  line-height: 1.18;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .pluspay-corporate-message p > span {
@@ -10150,15 +10268,33 @@ body.is-pluspay .pluspay-corporate-message {
   position: relative;
   z-index: 1;
   display: block;
-  width: min(100%, 104px);
+  width: 100%;
+  max-width: 104px;
   height: auto;
   justify-self: end;
-  filter: drop-shadow(4px 8px 12px rgba(0, 42, 25, 0.12));
-  transform: none;
+  filter: drop-shadow(4px 4px 12px rgba(0, 42, 25, 0.08));
+  transform: translateY(calc(var(--space-20) * -1));
+}
+
+body.is-pluspay .pluspay-payment-surface {
+  position: relative;
+  z-index: 2;
+  display: block;
+  margin-top: calc(var(--space-20) * -1);
+  margin-right: calc(var(--space-16) * -1);
+  margin-left: calc(var(--space-16) * -1);
+  padding: var(--space-20) var(--space-16) var(--space-24);
+  border-radius: var(--radius-20) var(--radius-20) 0 0;
+  background: linear-gradient(
+    180deg,
+    var(--bg-soft) 0%,
+    var(--bg-soft) 20%,
+    var(--bg) 100%
+  );
 }
 
 body.is-pluspay .upi-panel {
-  margin-top: var(--space-20);
+  margin-top: 0;
 }
 
 body.is-pluspay .upi-card,
@@ -10167,8 +10303,17 @@ body.is-pluspay .upi-card-create {
 }
 
 body.is-pluspay .pluspay-actions-panel {
-  margin-top: 20px;
+  margin-top: var(--space-24);
   padding-bottom: 0;
+}
+
+.pluspay-actions-heading {
+  margin: 0 0 var(--space-12);
+  color: var(--brand-900);
+  font-family: "PP Telegraf", "Lato", sans-serif;
+  font-size: var(--text-18);
+  font-weight: var(--fw-bold);
+  line-height: 1.33;
 }
 
 .pluspay-actions-grid {
@@ -10179,68 +10324,84 @@ body.is-pluspay .pluspay-actions-panel {
 
 .pluspay-action-card {
   display: flex;
-  min-height: 108px;
+  min-height: 96px;
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.44);
-  border-radius: 18px;
-  /* Pale mint rather than neutral white: at this opacity a white veil over the
-     teal hero reads as milky grey and drifts out of the palette. */
-  background: linear-gradient(
-    225deg,
-    rgba(214, 248, 232, 0.44) 0%,
-    rgba(214, 248, 232, 0.17) 100%
-  );
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    0 8px 20px rgba(0, 32, 26, 0.2);
-  backdrop-filter: blur(10px);
+  padding: var(--space-16);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-strong);
+  box-shadow: 2px 2px 10px rgba(0, 42, 25, 0.05);
   text-align: left;
-  transition: transform 0.16s ease;
+  transition: transform 150ms ease, border-color 150ms ease;
 }
 
 .pluspay-action-card.is-highlight {
-  border-color: rgba(54, 204, 139, 0.8);
-  background: linear-gradient(
-    225deg,
-    rgba(54, 204, 139, 0.62) 0%,
-    rgba(54, 204, 139, 0.26) 100%
-  );
+  border-color: var(--line-strong);
+  background: var(--surface-strong);
 }
 
 .pluspay-action-card:active {
   transform: scale(0.97);
 }
 
+.pluspay-action-card:focus-visible {
+  outline: 2px solid var(--brand-700);
+  outline-offset: 2px;
+}
+
 .pluspay-action-icon {
   display: grid;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.32);
+  background:
+    radial-gradient(
+      circle at 28% 18%,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 255, 255, 0.12) 28%,
+      transparent 62%
+    ),
+    var(--brand-700);
+  box-shadow: 4px 4px 12px rgba(0, 42, 25, 0.08);
   color: #ffffff;
 }
 
 .pluspay-action-card.is-highlight .pluspay-action-icon {
-  border-color: transparent;
-  background: var(--brand-500);
-  box-shadow: 0 0 18px rgba(54, 204, 139, 0.28);
-  color: var(--brand-900);
+  background:
+    radial-gradient(
+      circle at 28% 18%,
+      rgba(255, 255, 255, 0.34) 0%,
+      rgba(255, 255, 255, 0.14) 28%,
+      transparent 62%
+    ),
+    var(--brand-900);
+  box-shadow: 4px 4px 12px rgba(0, 42, 25, 0.08);
+  color: #ffffff;
+}
+
+.pluspay-action-icon svg,
+.pluspay-action-icon img {
+  display: block;
+  width: 24px;
+  height: 24px;
 }
 
 .pluspay-action-icon svg {
-  width: 22px;
-  height: 22px;
   stroke-width: 2;
+}
+
+.pluspay-action-icon--scanner svg {
+  width: 28px;
+  height: 28px;
 }
 
 .pluspay-action-card strong {
   margin-top: auto;
-  color: #ffffff;
+  color: var(--brand-900);
   font-family: "PP Telegraf", "Lato", sans-serif;
   font-size: 16px;
   font-weight: var(--fw-bold);
@@ -10447,12 +10608,8 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
     height: 24px;
   }
 
-  .pluspay-corporate-message p {
-    font-size: 18px;
-  }
-
   .pluspay-action-card {
-    min-height: 100px;
+    min-height: 92px;
     padding: 12px;
   }
 

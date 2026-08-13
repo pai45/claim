@@ -370,7 +370,7 @@
         <section class="pluspay-corporate-message" data-pluspay-show>
           <div class="pluspay-corporate-copy">
             <p>
-              <span>Your Corporate Payments</span>
+              <span>Corporate Payments</span>
               <span>With <strong>Pluspay</strong></span>
             </p>
           </div>
@@ -490,108 +490,118 @@
         </section>
       </section>
 
-      <section
-        class="pluspay-actions-panel"
-        aria-label="PlusPay actions"
-        data-pluspay-show
-      >
-        <div class="pluspay-actions-grid">
+      <div class="pluspay-payment-surface">
+        <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
+          <!-- <div class="section-heading compact-heading">
+            <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
+            <a href="#" data-lens-text="Manage" data-pluspay-text="View QR">Manage</a>
+          </div> -->
           <button
-            class="pluspay-action-card"
+            class="upi-card upi-card-create"
             type="button"
-            data-send-money-open
-            data-upi-feature
+            data-upi-setup-open
+            data-walkthrough="upi-create"
+            aria-label="Link EB+ to UPI for seamless payments"
           >
-            <span class="pluspay-action-icon" aria-hidden="true"
-              ><svg><use href="#icon-send" /></svg
-            ></span>
-            <strong>Send Money</strong>
-          </button>
-          <button
-            class="pluspay-action-card is-highlight"
-            type="button"
-            data-scan-pay-open
-            data-upi-feature
-          >
-            <span class="pluspay-action-icon" aria-hidden="true"
-              ><svg><use href="#icon-scan" /></svg
-            ></span>
-            <strong>Scan & Pay</strong>
-          </button>
-        </div>
-      </section>
-
-      <section class="upi-panel" aria-label="UPI payment" data-upi-feature>
-        <!-- <div class="section-heading compact-heading">
-          <h2 data-lens-text="UPI" data-pluspay-text="PlusPay UPI">UPI</h2>
-          <a href="#" data-lens-text="Manage" data-pluspay-text="View QR">Manage</a>
-        </div> -->
-        <button
-          class="upi-card upi-card-create"
-          type="button"
-          data-upi-setup-open
-          data-walkthrough="upi-create"
-          aria-label="Link EB+ to UPI for seamless payments"
-        >
-          <span
-            class="upi-brand-badge upi-brand-badge-create"
-            aria-hidden="true"
-          >
-            <img src="../assets/payments/upi-id.svg" alt="" />
-          </span>
-          <span class="upi-copy upi-copy-create">
-            <strong class="upi-create-message"
-              >Link EB+ to UPI for seamless payments</strong
+            <span
+              class="upi-brand-badge upi-brand-badge-create"
+              aria-hidden="true"
             >
-          </span>
-          <span class="upi-card-cta" aria-hidden="true">Create UPI ID</span>
-        </button>
-        <button
-          class="upi-card upi-card-id"
-          type="button"
-          data-upi-id-card
-          data-upi-settings-open
-          data-walkthrough="upi-id"
-          aria-label="Open UPI settings"
-        >
-          <span class="upi-brand-badge" aria-hidden="true">
-            <img src="../assets/payments/upi-id.svg" alt="" />
-          </span>
-          <span class="upi-copy">
-            <small>UPI ID</small>
-            <span class="upi-id-row">
-              <strong
-                data-lens-text="8646721579@pinelabs"
-                data-pluspay-text="vishal.sharma@pluspay"
-                data-upi-id-value
-                >8646721579@pinelabs</strong
-              >
-              <span class="upi-copy-icon" aria-hidden="true"
-                ><svg><use href="#icon-copy" /></svg
-              ></span>
+              <img src="../assets/payments/upi-id.svg" alt="" />
             </span>
-          </span>
-          <span class="upi-arrow" aria-hidden="true"
-            ><svg><use href="#icon-chevron-right" /></svg
-          ></span>
-        </button>
-        <!-- Icon-only: the aria-label is the accessible name now that the
-             visible "Scan QR code" text is gone. -->
-        <button
-          class="home-scan-card"
-          type="button"
-          aria-label="Scan QR code"
-          data-scan-pay-open
-          data-upi-created-only
-          data-pluspay-hide
-          data-walkthrough="upi-scan"
-          hidden
+            <span class="upi-copy upi-copy-create">
+              <strong class="upi-create-message"
+                >Link EB+ to UPI for seamless payments</strong
+              >
+            </span>
+            <span class="upi-card-cta" aria-hidden="true">Create UPI ID</span>
+          </button>
+          <button
+            class="upi-card upi-card-id"
+            type="button"
+            data-upi-id-card
+            data-upi-settings-open
+            data-walkthrough="upi-id"
+            aria-label="Open UPI settings"
+          >
+            <span class="upi-brand-badge" aria-hidden="true">
+              <img src="../assets/payments/upi-id.svg" alt="" />
+            </span>
+            <span class="upi-copy">
+              <small data-lens-text="UPI ID" data-pluspay-text="UPI ID:"
+                >UPI ID</small
+              >
+              <span class="upi-id-row">
+                <strong
+                  data-lens-text="8646721579@pinelabs"
+                  data-pluspay-text="vishal.sharma@pluspay"
+                  data-upi-id-value
+                  >8646721579@pinelabs</strong
+                >
+                <span class="upi-copy-icon" aria-hidden="true"
+                  ><svg><use href="#icon-copy" /></svg
+                ></span>
+              </span>
+            </span>
+            <span class="upi-arrow" aria-hidden="true"
+              ><svg><use href="#icon-chevron-right" /></svg
+            ></span>
+          </button>
+          <!-- Icon-only: the aria-label is the accessible name now that the
+               visible "Scan QR code" text is gone. -->
+          <button
+            class="home-scan-card"
+            type="button"
+            aria-label="Scan QR code"
+            data-scan-pay-open
+            data-upi-created-only
+            data-pluspay-hide
+            data-walkthrough="upi-scan"
+            hidden
+          >
+            <span class="home-scan-icon" aria-hidden="true">
+              <svg><use href="#icon-scan-qr" /></svg>
+            </span>
+          </button>
+        </section>
+
+        <section
+          class="pluspay-actions-panel"
+          aria-labelledby="pluspay-actions-title"
+          data-pluspay-show
         >
-          <span class="home-scan-icon" aria-hidden="true">
-            <svg><use href="#icon-scan-qr" /></svg>
-          </span>
-        </button>
-      </section>
+          <h2 id="pluspay-actions-title" class="pluspay-actions-heading">
+            UPI payments
+          </h2>
+          <div class="pluspay-actions-grid">
+            <button
+              class="pluspay-action-card"
+              type="button"
+              data-send-money-open
+              data-upi-feature
+            >
+              <span class="pluspay-action-icon" aria-hidden="true">
+                <img src="../assets/payments/send-money.svg" alt="" />
+              </span>
+              <strong>Send Money</strong>
+            </button>
+            <button
+              class="pluspay-action-card is-highlight"
+              type="button"
+              data-scan-pay-open
+              data-upi-feature
+            >
+              <span
+                class="pluspay-action-icon pluspay-action-icon--scanner"
+                aria-hidden="true"
+              >
+                <svg><use href="#icon-scan-qr" /></svg>
+              </span>
+              <strong>Scan & Pay</strong>
+            </button>
+          </div>
+        </section>
+      </div>
 
       <section
         class="eb-plus-setup-card"

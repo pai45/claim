@@ -565,7 +565,7 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=home-revamp-v1${
+        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-hero-v12${
           returnsToManageCards ? MANAGE_CARDS_FRAME_HASH : ""
         }`}
         title="Employee Benefits"

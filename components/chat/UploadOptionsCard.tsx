@@ -18,7 +18,13 @@ type UploadOptionsCardProps = {
 
 function BookmarkIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 22 22"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M6.25 3.5h9.5a1.25 1.25 0 0 1 1.25 1.25v13.6l-6-3.45-6 3.45V4.75A1.25 1.25 0 0 1 6.25 3.5Z"
         stroke={colors.pine}
@@ -62,7 +68,7 @@ export function UploadOptionsCard({
   onSourceSelected,
   disabled,
   title = "Upload options",
-  subtitle = "Choose a source, then select a demo bill",
+  subtitle = "Choose a source of your bill.",
 }: UploadOptionsCardProps) {
   function handlePick(optionId: UploadOptionId) {
     if (disabled) return;
@@ -76,9 +82,7 @@ export function UploadOptionsCard({
           <BookmarkIcon />
         </div>
         <div className="min-w-0 pt-1">
-          <h3 className="type-section-title text-pine">
-            {title}
-          </h3>
+          <h3 className="type-section-title text-pine">{title}</h3>
           <p className="mt-0.5 type-body-secondary text-subtle">{subtitle}</p>
         </div>
       </div>
@@ -101,7 +105,6 @@ export function UploadOptionsCard({
           </button>
         ))}
       </div>
-
     </div>
   );
 }
