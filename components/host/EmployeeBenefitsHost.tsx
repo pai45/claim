@@ -82,7 +82,12 @@ export function EmployeeBenefitsHost() {
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const scanPayMerchantRotationRef = useRef(0);
   const scanPayLocationRef = useRef<string | null>(null);
-  const [claimsOpen, setClaimsOpen] = useState(false);
+  const [claimsOpen, setClaimsOpen] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      persona.access.products.ebPlus &&
+      window.location.hash.toLowerCase() === CLAIMS_HASH,
+  );
   const [scanPayOpen, setScanPayOpen] = useState(false);
   const [scanPayScenario, setScanPayScenario] =
     useState<ScanPayScenario>("success");
@@ -540,6 +545,7 @@ export function EmployeeBenefitsHost() {
     configureScanPay,
     openClaims,
     openManageLimits,
+    openManageTokens,
     openProfile,
     openBankTransfer,
     openEbPlusSetup,
