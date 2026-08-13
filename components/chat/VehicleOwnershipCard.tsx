@@ -16,7 +16,11 @@ export function VehicleOwnershipCard({
   disabled,
 }: VehicleOwnershipCardProps) {
   return (
-    <div className="flex w-full max-w-card flex-col gap-2">
+    <div
+      role="group"
+      aria-label="Vehicle ownership choices"
+      className="flex w-full max-w-card flex-col gap-2"
+    >
       {VEHICLE_OWNERSHIP_OPTIONS.map((option) => {
         const isSelected = selected === option.id;
         return (

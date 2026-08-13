@@ -5,17 +5,17 @@ export const PRODUCT_INTRO_SLIDES = [
     id: "payments",
     title: "Flexible payment options",
     description:
-      "Pay smoothly with UPI, prepaid cards, or Tap & Pay all in one app",
+      "Enjoy hassle-free payments with UPI, prepaid cards, and Tap & Pay in one place.",
   },
   {
     id: "tracking",
     title: "Easy expense tracking",
-    description: "View, track & manage expenses & receipts easily",
+    description: "Manage expenses and receipts seamlessly in one place.",
   },
   {
     id: "signup",
     title: "Start in minutes",
-    description: "Easy signup and quick KYC to get you started",
+    description: "Get started quickly with a simple sign-up and hassle-free KYC.",
   },
 ] as const;
 

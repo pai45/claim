@@ -111,7 +111,7 @@ export function IntroStep({ onContinue, onBack }: IntroStepProps) {
             />
             <span
               aria-hidden="true"
-              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-control border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-pine-primary ${
+              className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-checkbox border transition-colors peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-pine-primary ${
                 hasAcceptedTerms
                   ? "border-pine-primary bg-pine-primary text-white"
                   : "border-input-border bg-white text-transparent"

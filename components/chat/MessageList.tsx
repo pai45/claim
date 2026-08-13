@@ -16,11 +16,16 @@ import type {
   DocumentUploadKind,
   DriverSalaryPayload,
   PolicyModelStatus,
+  QuickAction,
   UploadOptionId,
 } from "@/features/chat/types";
+import { trailingContextualQuickChats } from "@/features/chat/contextualQuickChats";
 import type { PolicyTabId } from "@/features/policy/constants";
 import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
+import type { BillDraftOperationResult } from "@/features/chat/drafts";
+import { ChatAvatar } from "./ChatAvatar";
 import { ChatStatusBubble } from "./ChatStatusBubble";
+import { ContextualQuickChats } from "./ContextualQuickChats";
 import { MessageBubble } from "./MessageBubble";
 import { ScannedDocumentCard } from "./ScannedDocumentCard";
 
@@ -35,16 +40,22 @@ type MessageListProps = {
   isLocating?: boolean;
   policyModelStatus?: PolicyModelStatus | null;
   onAwayFromBottomChange?: (away: boolean) => void;
+  onQuickChatSelected?: (action: QuickAction) => void;
   onBillSourceSelected?: (source: UploadOptionId) => void;
   onDlSourceSelected?: (source: UploadOptionId) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onSaveBillDraft?: (
+    messageId: string,
+    extract: BillExtract,
+  ) => Promise<BillDraftOperationResult>;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
     extract: BillExtract,
   ) => void;
   onReplaceBill?: (messageId: string) => void;
+  onNewClaim?: () => void;
   onStartAnotherBill?: () => void;
   documentProcessingStage?: DocumentProcessingStage | null;
   documentProcessingKind?: DocumentUploadKind;
@@ -108,12 +119,15 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       isLocating,
       policyModelStatus,
       onAwayFromBottomChange,
+      onQuickChatSelected,
       onBillSourceSelected,
       onDlSourceSelected,
       onUpdateBillExtract,
       onSubmitBillClaim,
+      onSaveBillDraft,
       onSaveClaimEdit,
       onReplaceBill,
+      onNewClaim,
       onStartAnotherBill,
       documentProcessingStage,
       documentProcessingKind,
@@ -142,6 +156,22 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
     const lastMessageId = lastMessage?.id;
     const lastMessageKind = lastMessage?.kind;
     const lastMessageRole = lastMessage?.role;
+    const contextualQuickChats = trailingContextualQuickChats(messages);
+    let latestAssistantMessageIndex = -1;
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      if (messages[index].role === "assistant") {
+        latestAssistantMessageIndex = index;
+        break;
+      }
+    }
+    let latestAssistantTurnStartIndex = latestAssistantMessageIndex;
+    while (
+      latestAssistantTurnStartIndex > 0 &&
+      messages[latestAssistantTurnStartIndex - 1].role === "assistant"
+    ) {
+      latestAssistantTurnStartIndex -= 1;
+    }
+    const hasActiveStatus = Boolean(isLoading || isScanning || isLocating);
 
     const updateNearBottom = useCallback(
       (fromScrollEvent = false) => {
@@ -285,6 +315,8 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       <div ref={listRef} className="flex flex-col gap-3.5 px-4">
         {messages.map((message, index) => {
           const isTrailing = index === messages.length - 1;
+          const startsLatestAssistantTurn =
+            !hasActiveStatus && index === latestAssistantTurnStartIndex;
           return (
             <div
               key={message.id}
@@ -295,8 +327,12 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                   : { animationDelay: `${Math.min(index, 6) * 18}ms` }
               }
             >
+              {startsLatestAssistantTurn ? (
+                <ChatAvatar className="mb-2.5 ml-0.5" />
+              ) : null}
               <MessageBubble
                 message={message}
+                showAssistantAvatar={false}
                 reveal={
                   isTrailing &&
                   message.role === "assistant" &&
@@ -306,8 +342,10 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onDlSourceSelected={onDlSourceSelected}
                 onUpdateBillExtract={onUpdateBillExtract}
                 onSubmitBillClaim={onSubmitBillClaim}
+                onSaveBillDraft={onSaveBillDraft}
                 onSaveClaimEdit={onSaveClaimEdit}
                 onReplaceBill={onReplaceBill}
+                onNewClaim={onNewClaim}
                 onStartAnotherBill={onStartAnotherBill}
                 onSelectPolicyCategory={onSelectPolicyCategory}
                 onSelectMerchantBenefitType={onSelectMerchantBenefitType}
@@ -323,6 +361,13 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onSubmitDriverSalaryClaim={onSubmitDriverSalaryClaim}
                 uploadDisabled={interactionDisabled}
               />
+              {isTrailing && contextualQuickChats.length > 0 ? (
+                <ContextualQuickChats
+                  actions={contextualQuickChats}
+                  disabled={interactionDisabled}
+                  onSelect={(action) => onQuickChatSelected?.(action)}
+                />
+              ) : null}
             </div>
           );
         })}

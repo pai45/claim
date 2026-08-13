@@ -118,7 +118,7 @@ export function calculateScanPayFunding({
       status: "fallback-disabled",
       allocations: [],
       shortfall,
-      message: `${LABELS[selected]} does not have enough balance. Enable Fallback Control, reduce the amount, or use Reimbursement Wallet.`,
+      message: `${LABELS[selected]} does not have enough balance. Turn on Fallback Control or reduce the amount.`,
     };
   }
   if (shortfall > balances.misc) {

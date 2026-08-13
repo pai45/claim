@@ -7,6 +7,10 @@ import {
 import { clearAuthSession } from "@/features/auth/session";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
 import { clearChatSession } from "@/features/chat/persistence";
+import {
+  BILL_DRAFT_DELETE_HINT_KEY,
+  clearBillDraftsBestEffort,
+} from "@/features/chat/drafts";
 import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
 import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
 import { BENEFICIARY_LIMITS_STORAGE_KEY } from "@/features/beneficiary-limits/store";
@@ -53,6 +57,7 @@ const LOCAL_KEYS = [
   LEGACY_BANNER_STAGE_KEY,
   WIDGET_POSITION_KEY,
   NUDGE_SNOOZE_KEY,
+  BILL_DRAFT_DELETE_HINT_KEY,
   VKYC_DONE_KEY,
   VKYC_ROUTE_KEY,
 ];
@@ -84,6 +89,7 @@ export function resetDemoJourney(
 ): void {
   // Always clear session-bound keys and transcript
   clearChatSession(local);
+  clearBillDraftsBestEffort();
   clearAuthSession(local);
   clearMpinUnlock(session);
 

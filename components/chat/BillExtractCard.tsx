@@ -3,9 +3,15 @@
 /* eslint-disable @next/next/no-img-element -- previews can be transient blob/data URLs */
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import { getDemoPrecheckDate } from "@/features/chat/demoUploadScenarios";
+import {
+  billDraftFingerprint,
+  isBillDraftEligible,
+  type BillDraftOperationResult,
+} from "@/features/chat/drafts";
 import type { BillExtract } from "@/features/chat/types";
 import { formatINR } from "@/features/dashboard/constants";
 import {
@@ -20,6 +26,11 @@ type BillExtractCardProps = {
   onUpdate?: (messageId: string, next: BillExtract) => void;
   onSubmitted?: (messageId: string, extract: BillExtract) => void;
   onReplace?: (messageId: string) => void;
+  onNewClaim?: () => void;
+  onSaveDraft?: (
+    messageId: string,
+    extract: BillExtract,
+  ) => Promise<BillDraftOperationResult>;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
@@ -179,7 +190,8 @@ export function BillExtractCard({
   extract,
   onUpdate,
   onSubmitted,
-  onReplace,
+  onNewClaim,
+  onSaveDraft,
   onSaveClaimEdit,
 }: BillExtractCardProps) {
   const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
@@ -192,6 +204,10 @@ export function BillExtractCard({
   const categoryRef = useRef<HTMLSelectElement>(null);
   const previewDialogRef = useRef<HTMLDivElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [draftError, setDraftError] = useState<BillDraftOperationResult | null>(
+    null,
+  );
   const isClaimEdit = Boolean(extract.editClaimId);
 
   useModalFocus(previewDialogRef, previewOpen, () => setPreviewOpen(false));
@@ -226,6 +242,12 @@ export function BillExtractCard({
     precheck.status === "blocked" ||
     (precheck.requiresAcknowledgement && !acknowledged);
   const reviewItems = precheck.checks.filter((check) => check.status !== "pass");
+  const currentDraftFingerprint = billDraftFingerprint(workingExtract);
+  const draftIsCurrent = Boolean(
+    extract.draftId &&
+      extract.draftSavedFingerprint === currentDraftFingerprint,
+  );
+  const canSaveDraft = isBillDraftEligible(workingExtract) && Boolean(onSaveDraft);
 
   function issueFor(
     field: keyof EditableFields,
@@ -256,16 +278,25 @@ export function BillExtractCard({
     setEditing(false);
   }
 
-  function editCategory() {
-    setEditing(true);
-    window.requestAnimationFrame(() => categoryRef.current?.focus());
-  }
-
   function handleSubmit() {
     if (submitDisabled) return;
     onUpdate?.(messageId, workingExtract);
     setEditing(false);
     onSubmitted?.(messageId, workingExtract);
+  }
+
+  async function handleSaveDraft() {
+    if (!canSaveDraft || savingDraft || !onSaveDraft) return;
+    const nextExtract = { ...workingExtract, manualReview: false };
+    setSavingDraft(true);
+    setDraftError(null);
+    const result = await onSaveDraft(messageId, nextExtract);
+    setSavingDraft(false);
+    if (!result.ok) {
+      setDraftError(result);
+      return;
+    }
+    setEditing(false);
   }
 
   if (extract.error && !editing) {
@@ -274,14 +305,46 @@ export function BillExtractCard({
         <p role="alert" className="type-body text-danger">
           {extract.error}
         </p>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 grid grid-cols-2 gap-2">
           <button type="button" onClick={() => setEditing(true)} className={actionClass}>
             Enter details
           </button>
-          <button type="button" onClick={() => onReplace?.(messageId)} className={actionClass}>
-            Replace bill
-          </button>
+          {canSaveDraft ? (
+            <button
+              type="button"
+              onClick={() => void handleSaveDraft()}
+              disabled={savingDraft || draftIsCurrent}
+              className={actionClass}
+            >
+              {savingDraft
+                ? "Saving…"
+                : draftIsCurrent
+                  ? "Draft saved"
+                  : extract.draftId
+                    ? "Update draft"
+                    : "Draft"}
+            </button>
+          ) : null}
+          {!isClaimEdit ? (
+            <button
+              type="button"
+              onClick={onNewClaim}
+              className={`${actionClass} w-fit justify-self-start`}
+            >
+              New claim
+            </button>
+          ) : null}
         </div>
+        {draftError && !draftError.ok ? (
+          <p role="alert" className="mt-2 text-caption text-danger">
+            {draftError.message}{" "}
+            {draftError.code === "limit" ? (
+              <Link href="/chat-drafts" className="font-bold underline">
+                Manage drafts
+              </Link>
+            ) : null}
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -294,7 +357,14 @@ export function BillExtractCard({
             <CardIcon />
           </span>
           <div className="min-w-0">
-            <h3 className="type-section-title text-pine">Claim details ready</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="type-section-title text-pine">Claim details ready</h3>
+              {extract.draftId ? (
+                <span className="rounded-pill border border-success-border bg-success-soft px-2 py-0.5 text-caption font-bold text-success">
+                  {draftIsCurrent ? "Draft saved" : "Draft changed"}
+                </span>
+              ) : null}
+            </div>
             <p className="truncate type-body-secondary">
               {fields.vendor || "Review the selected demo bill"}
             </p>
@@ -474,7 +544,11 @@ export function BillExtractCard({
         ) : null}
       </article>
 
-      <div className="mt-3 flex gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+      <div
+        className={`mt-3 grid gap-2 ${
+          editing && isClaimEdit ? "grid-cols-2" : "grid-cols-3"
+        }`}
+      >
         {editing ? (
           <>
             <button
@@ -483,14 +557,36 @@ export function BillExtractCard({
               onClick={isClaimEdit ? saveEdits : handleSubmit}
               className={actionClass}
             >
-              {isClaimEdit ? "Save changes" : "Submit claim"}
+              {isClaimEdit ? "Save changes" : "Submit"}
             </button>
             <button type="button" onClick={cancelEdits} className={actionClass}>
               Cancel
             </button>
-            <button type="button" onClick={() => onReplace?.(messageId)} className={actionClass}>
-              Replace bill
-            </button>
+            {canSaveDraft ? (
+              <button
+                type="button"
+                onClick={() => void handleSaveDraft()}
+                disabled={savingDraft || draftIsCurrent}
+                className={actionClass}
+              >
+                {savingDraft
+                  ? "Saving…"
+                  : draftIsCurrent
+                    ? "Draft saved"
+                    : extract.draftId
+                      ? "Update draft"
+                      : "Draft"}
+              </button>
+            ) : null}
+            {!isClaimEdit ? (
+              <button
+                type="button"
+                onClick={onNewClaim}
+                className={`${actionClass} w-fit justify-self-start`}
+              >
+                New claim
+              </button>
+            ) : null}
           </>
         ) : (
           <>
@@ -501,21 +597,51 @@ export function BillExtractCard({
                 onClick={handleSubmit}
                 className={actionClass}
               >
-                {extract.submitted ? "Submitted" : "Submit claim"}
+                {extract.submitted ? "Submitted" : "Submit"}
               </button>
             )}
             <button type="button" onClick={() => setEditing(true)} className={actionClass}>
-              {extract.demoScenarioId === "fuel_exceeding" ? "Edit amount" : "Edit details"}
+              Edit
             </button>
-            <button type="button" onClick={editCategory} className={actionClass}>
-              Change category
-            </button>
-            <button type="button" onClick={() => onReplace?.(messageId)} className={actionClass}>
-              Replace bill
-            </button>
+            {canSaveDraft ? (
+              <button
+                type="button"
+                onClick={() => void handleSaveDraft()}
+                disabled={savingDraft || draftIsCurrent}
+                className={actionClass}
+              >
+                {savingDraft
+                  ? "Saving…"
+                  : draftIsCurrent
+                    ? "Draft saved"
+                    : extract.draftId
+                      ? "Update draft"
+                      : "Draft"}
+              </button>
+            ) : null}
+            {!isClaimEdit ? (
+              <button
+                type="button"
+                onClick={onNewClaim}
+                className={`${actionClass} w-fit justify-self-start`}
+              >
+                New claim
+              </button>
+            ) : null}
           </>
         )}
       </div>
+
+      {draftError && !draftError.ok ? (
+        <p role="alert" className="mt-2 px-1 text-caption text-danger">
+          {draftError.message}{" "}
+          {draftError.code === "limit" ? (
+            <Link href="/chat-drafts" className="font-bold underline">
+              Manage drafts
+            </Link>
+          ) : null}
+        </p>
+      ) : null}
 
       <div
         ref={previewDialogRef}

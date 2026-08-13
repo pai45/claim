@@ -171,7 +171,7 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
 
   return (
     <AppShell className="overflow-hidden">
-      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
+      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-4">
         <BackNavigationButton onClick={() => router.replace(backHref)} />
         <h1 className="type-screen-title flex-1 truncate">Claim details</h1>
       </header>

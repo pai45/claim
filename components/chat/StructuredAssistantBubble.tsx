@@ -14,6 +14,7 @@ type StructuredAssistantBubbleProps = {
   title: string;
   summary?: string;
   reveal?: boolean;
+  showAvatar?: boolean;
   actions?: StructuredReplyAction[];
   children: ReactNode;
 };
@@ -22,6 +23,7 @@ export function StructuredAssistantBubble({
   title,
   summary,
   reveal = false,
+  showAvatar = true,
   actions = [],
   children,
 }: StructuredAssistantBubbleProps) {
@@ -29,7 +31,7 @@ export function StructuredAssistantBubble({
 
   return (
     <div className="flex w-full max-w-card flex-col items-start gap-2.5">
-      <ChatAvatar className="ml-0.5" />
+      {showAvatar ? <ChatAvatar className="ml-0.5" /> : null}
       <article className="w-full overflow-hidden rounded-bubble rounded-tl-control border border-border-line bg-white shadow-soft">
         <header className="border-b border-border-line bg-surface-tint px-card py-3">
           <h2 className="type-section-title text-pine">{title}</h2>

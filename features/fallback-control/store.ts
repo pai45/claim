@@ -45,7 +45,7 @@ export function readFallbackControlState(
     }
 
     // Legacy v1 stored `{ meal, fuel }` without a version. Preserve explicit
-    // choices while moving future writes to the versioned Split Pay contract.
+    // choices while moving future writes to the versioned Fallback Control contract.
     return normalizeFallbackWallets(parsed as Partial<FallbackControlState>);
   } catch {
     return { ...DEFAULT_FALLBACK_CONTROL_STATE };

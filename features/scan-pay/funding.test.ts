@@ -54,8 +54,14 @@ describe("scan pay funding", () => {
         merchantType: "meal",
         balances,
         fallback: { ...fallback, meal: false },
-      }).status,
-    ).toBe("fallback-disabled");
+      }),
+    ).toMatchObject({
+      status: "fallback-disabled",
+      allocations: [],
+      shortfall: 60,
+      message:
+        "Meal Wallet does not have enough balance. Turn on Fallback Control or reduce the amount.",
+    });
   });
 
   it("blocks insufficient reimbursement and combined balances", () => {

@@ -148,7 +148,7 @@ export function BenefitClaimsScreen({ categoryId }: BenefitClaimsScreenProps) {
   return (
     <AppShell className="overflow-hidden">
       <div className="w-full min-w-0 shrink-0 bg-white">
-        <header className="flex items-center gap-4 px-page pb-4 pt-2">
+        <header className="flex items-center gap-4 px-page pb-4 pt-4">
           <BackNavigationButton onClick={() => router.push("/dashboard/")} />
           <h1 className="type-screen-title flex-1 truncate">{data.title}</h1>
         </header>

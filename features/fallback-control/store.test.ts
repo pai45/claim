@@ -15,7 +15,7 @@ function memoryStorage() {
 }
 
 describe("fallback control store", () => {
-  it("defaults both split-pay controls to enabled", () => {
+  it("defaults both fallback controls to enabled", () => {
     expect(readFallbackControlState(memoryStorage())).toEqual({
       meal: true,
       fuel: true,

@@ -10,6 +10,7 @@ import type {
   UploadOptionId,
 } from "@/features/chat/types";
 import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
+import type { BillDraftOperationResult } from "@/features/chat/drafts";
 import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
 import {
   getPolicyCategory,
@@ -53,16 +54,18 @@ function formatTime(timestamp: number) {
 function AssistantText({
   content,
   reveal = false,
+  showAvatar = true,
 }: {
   content: string;
   createdAt?: number;
   reveal?: boolean;
+  showAvatar?: boolean;
 }) {
   const { visible } = useRevealText({ text: content, enabled: reveal });
 
   return (
     <div className="flex w-full max-w-[96%] flex-col items-start gap-2.5">
-      <ChatAvatar className="ml-0.5" />
+      {showAvatar ? <ChatAvatar className="ml-0.5" /> : null}
       <div className="flex min-w-0 flex-col gap-1">
         <div className="px-0.5 text-pine">
           <AssistantMarkdown content={visible} />
@@ -75,16 +78,22 @@ function AssistantText({
 type MessageBubbleProps = {
   message: ChatMessage;
   reveal?: boolean;
+  showAssistantAvatar?: boolean;
   onBillSourceSelected?: (source: UploadOptionId) => void;
   onDlSourceSelected?: (source: UploadOptionId) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onSaveBillDraft?: (
+    messageId: string,
+    extract: BillExtract,
+  ) => Promise<BillDraftOperationResult>;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
     extract: BillExtract,
   ) => void;
   onReplaceBill?: (messageId: string) => void;
+  onNewClaim?: () => void;
   onStartAnotherBill?: () => void;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
@@ -115,12 +124,15 @@ type MessageBubbleProps = {
 export function MessageBubble({
   message,
   reveal = false,
+  showAssistantAvatar = true,
   onBillSourceSelected,
   onDlSourceSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
+  onSaveBillDraft,
   onSaveClaimEdit,
   onReplaceBill,
+  onNewClaim,
   onStartAnotherBill,
   onSelectPolicyCategory,
   onSelectMerchantBenefitType,
@@ -240,7 +252,11 @@ export function MessageBubble({
   ) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText content={message.content} createdAt={message.createdAt} />
+        <AssistantText
+          content={message.content}
+          createdAt={message.createdAt}
+          showAvatar={showAssistantAvatar}
+        />
         <VehicleOwnershipCard
           selected={message.vehicleLookup.ownership}
           onSelect={(ownership) =>
@@ -260,7 +276,11 @@ export function MessageBubble({
     return (
       <div className="flex w-full flex-col items-start gap-2">
         {message.content && !message.vehicleLookup.error ? (
-          <AssistantText content={message.content} createdAt={message.createdAt} />
+          <AssistantText
+            content={message.content}
+            createdAt={message.createdAt}
+            showAvatar={showAssistantAvatar}
+          />
         ) : null}
         <VehicleDetailsCard
           messageId={message.id}
@@ -276,6 +296,10 @@ export function MessageBubble({
           }}
           onSubmitToHr={onSubmitVehicleToHr}
           disabled={uploadDisabled}
+          showAvatar={
+            showAssistantAvatar &&
+            (!message.content || Boolean(message.vehicleLookup.error))
+          }
         />
       </div>
     );
@@ -289,7 +313,11 @@ export function MessageBubble({
     return (
       <div className="flex w-full flex-col items-start gap-2">
         {!message.billExtract.error ? (
-          <AssistantText content={message.content} createdAt={message.createdAt} />
+          <AssistantText
+            content={message.content}
+            createdAt={message.createdAt}
+            showAvatar={showAssistantAvatar}
+          />
         ) : null}
         <BillExtractCard
           key={`${message.id}-${message.billExtract.fileName}-${message.billExtract.previewAsset ?? message.billExtract.previewUrl ?? "saved"}`}
@@ -297,7 +325,9 @@ export function MessageBubble({
           extract={message.billExtract}
           onUpdate={onUpdateBillExtract}
           onSubmitted={onSubmitBillClaim}
+          onSaveDraft={onSaveBillDraft}
           onReplace={onReplaceBill}
+          onNewClaim={onNewClaim}
           onSaveClaimEdit={onSaveClaimEdit}
         />
       </div>
@@ -332,7 +362,11 @@ export function MessageBubble({
     return (
       <div className="flex w-full flex-col items-start gap-2">
         {!message.driverSalary.dlError ? (
-          <AssistantText content={message.content} createdAt={message.createdAt} />
+          <AssistantText
+            content={message.content}
+            createdAt={message.createdAt}
+            showAvatar={showAssistantAvatar}
+          />
         ) : null}
         <DriverDlExtractCard
           payload={message.driverSalary}
@@ -359,7 +393,11 @@ export function MessageBubble({
   if (message.kind === "driver_salary_review" && message.driverSalary) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText content={message.content} createdAt={message.createdAt} />
+        <AssistantText
+          content={message.content}
+          createdAt={message.createdAt}
+          showAvatar={showAssistantAvatar}
+        />
         <DriverSalaryReviewCard
           payload={message.driverSalary}
           onSubmit={(payload) => onSubmitDriverSalaryClaim?.(payload)}
@@ -372,16 +410,17 @@ export function MessageBubble({
   if (message.kind === "claim_cta" && message.claimId) {
     if (message.billExtract) {
       return (
-        <div className="flex w-full flex-col items-start gap-2">
-          <ClaimReceiptCard
-            claimId={message.claimId}
-            extract={message.billExtract}
-            submittedAt={message.createdAt}
-            action={message.claimAction}
-          />
+      <div className="flex w-full flex-col items-start gap-2">
+        <ClaimReceiptCard
+          claimId={message.claimId}
+          extract={message.billExtract}
+          submittedAt={message.createdAt}
+          action={message.claimAction}
+        />
+        <div className="flex w-full flex-nowrap items-center gap-2">
           <Link
             href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
-            className={pillClass}
+            className={`${pillClass} whitespace-nowrap`}
           >
             View claim details
           </Link>
@@ -389,12 +428,13 @@ export function MessageBubble({
             <button
               type="button"
               onClick={onStartAnotherBill}
-              className={pillClass}
+              className={`${pillClass} whitespace-nowrap`}
             >
-              Claim another bill
+              New bill
             </button>
           ) : null}
         </div>
+      </div>
       );
     }
 
@@ -448,6 +488,7 @@ export function MessageBubble({
           content={message.content}
           createdAt={message.createdAt}
           reveal={textReveal}
+          showAvatar={showAssistantAvatar}
         />
         <Link
           href={`/claim-details/?id=${encodeURIComponent(message.claimId)}&from=assistant`}
@@ -468,6 +509,7 @@ export function MessageBubble({
           content={message.content}
           payload={message.policyAnswer}
           reveal={textReveal}
+          showAvatar={showAssistantAvatar}
         />
       );
     }
@@ -475,6 +517,7 @@ export function MessageBubble({
     return (
       <StructuredAssistantBubble
         title={policy.tabLabel}
+        showAvatar={showAssistantAvatar}
         actions={[
           {
             href: `/policy-details/${policy.id}/`,
@@ -498,6 +541,7 @@ export function MessageBubble({
           content={message.content}
           payload={payload}
           reveal={textReveal}
+          showAvatar={showAssistantAvatar}
         />
       );
     }
@@ -532,6 +576,7 @@ export function MessageBubble({
     return (
       <StructuredAssistantBubble
         title="Claims answer"
+        showAvatar={showAssistantAvatar}
         actions={payload.target === "none" ? [] : [{ href, label }]}
       >
         <div className="text-pine">
@@ -587,6 +632,7 @@ export function MessageBubble({
       content={message.content}
       createdAt={message.createdAt}
       reveal={textReveal}
+      showAvatar={showAssistantAvatar}
     />
   );
 }

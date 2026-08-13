@@ -67,8 +67,11 @@ function LockArtwork() {
 export function MpinIntroStep({ onStart }: MpinIntroStepProps) {
   return (
     <section
-      className="animate-sheet-rise mt-auto flex h-[60dvh] min-h-0 flex-col overflow-hidden rounded-t-card bg-white shadow-drawer"
+      role="dialog"
+      aria-modal="true"
+      className="animate-sheet-rise mt-auto flex h-[60dvh] min-h-0 flex-col overflow-hidden rounded-t-bubble bg-white shadow-drawer"
       aria-labelledby="mpin-setup-title"
+      aria-describedby="mpin-setup-description"
     >
       <div
         className="mx-auto mt-2 h-1 w-12 shrink-0 rounded-full bg-border-muted"
@@ -81,7 +84,10 @@ export function MpinIntroStep({ onStart }: MpinIntroStepProps) {
           <br />
           before your 1st Transaction
         </h1>
-        <p className="type-body-secondary mt-3 text-center">
+        <p
+          id="mpin-setup-description"
+          className="type-body-secondary mt-3 text-center"
+        >
           Create your 4-digit MPIN to get started with your first transaction!
         </p>
 

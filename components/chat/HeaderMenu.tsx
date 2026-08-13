@@ -35,6 +35,12 @@ const MENU_ITEMS: {
     icon: <AppIcon src={UI_ICONS.policyDetails} size={20} alt="" />,
   },
   {
+    id: "chat-drafts",
+    label: "Chat drafts",
+    href: "/chat-drafts",
+    icon: <AppIcon src={UI_ICONS.chatDrafts} size={20} alt="" />,
+  },
+  {
     id: "claim-history",
     label: "Claim history",
     href: "/claims-history",
@@ -72,11 +78,11 @@ export function HeaderMenu({ open, onClose, onNewChat }: HeaderMenuProps) {
         }`}
       />
 
-      {/* Anchored under the 69px header (pt-3 + h-11 + pb-3 + border) */}
+      {/* Placed 3px beneath the 73px header (pt-4 + h-11 + pb-3 + border). */}
       <div
         role="menu"
         aria-label="Assistant menu"
-        className={`absolute right-page top-[72px] w-56 origin-top-right overflow-hidden rounded-card border border-border-soft bg-white shadow-menu transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
+        className={`absolute right-page top-[76px] w-56 origin-top-right overflow-hidden rounded-card border border-border-soft bg-white shadow-menu transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
           open
             ? "scale-100 opacity-100"
             : "pointer-events-none -translate-y-1 scale-95 opacity-0"

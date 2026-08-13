@@ -1,5 +1,5 @@
 export const BRAND_ASSETS = {
-  logo: "/assets/benefits-logo.gif",
+  logo: "/assets/benefits-logo-v2.gif",
   pineLabs: "/assets/pine-labs-logo.svg",
   /**
    * Also referenced document-relative (`../assets/login/pluspay-logo.svg`) by
@@ -23,8 +23,11 @@ export const UI_ICONS = {
   menu: "/assets/icons/menu.svg",
   card: "/assets/icons/card.svg",
   rupay: "/employee-benefits/assets/icons/rupay-logo.svg",
+  onlineTransactions: "/assets/icons/online-transactions.svg",
+  tapToPay: "/assets/icons/tap-to-pay.svg",
   claimsDashboard: "/assets/icons/claims-dashboard.svg",
   policyDetails: "/assets/icons/policy-details.svg",
+  chatDrafts: "/assets/icons/chat-drafts.svg",
   claimHistory: "/assets/icons/claim-history.svg",
   notification: "/assets/icons/notification-bell.svg",
   vehicleDetails: "/assets/icons/vehicle-details.svg",
@@ -47,6 +50,10 @@ export const CHAT_ASSETS = {
 export const PRODUCT_INTRO_ASSETS = {
   animation: "/assets/product-intro/onboarding-animation.json",
   images: "/assets/product-intro/",
+} as const;
+
+export const ONBOARDING_ASSETS = {
+  kycInProgress: "/assets/onboarding/in-progress.svg",
 } as const;
 
 /** Supplied artwork used by the Profile screen's menu rows. */

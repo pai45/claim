@@ -20,7 +20,7 @@ export function ChatHeader({ onNewChat, onBack }: ChatHeaderProps) {
   return (
     <>
       <header
-        className="animate-rise-in flex items-center gap-3 border-b border-white/40 bg-white/70 px-page pb-3 pt-3 backdrop-blur-xl"
+        className="animate-rise-in flex items-center gap-3 border-b border-white/40 bg-white/70 px-page pb-3 pt-4 backdrop-blur-xl"
         style={{ animationDelay: "0ms" }}
       >
         <BackNavigationButton

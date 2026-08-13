@@ -94,11 +94,9 @@ function SuccessBottomSheet({
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="onboarding-success-title"
-        // 368px, not `max-w-card`, so this renders identically to the card
-        // success sheet in the employee-benefits prototype. The seal overhangs
-        // the top edge, so the sheet travels further than its own height to
-        // clear the viewport when closed.
-        className={`absolute inset-x-5 bottom-[calc(env(safe-area-inset-bottom,0px)+18px)] mx-auto max-w-[368px] rounded-[18px] bg-white px-6 pb-6 pt-17 text-center shadow-drawer transition-transform ${open ? "translate-y-0" : "translate-y-[calc(100%+80px)]"}`}
+        // The seal overhangs the top edge, so the closed state travels further
+        // than the sheet's height to clear the viewport completely.
+        className={`absolute inset-x-0 bottom-0 rounded-t-bubble bg-white px-6 pb-[max(24px,env(safe-area-inset-bottom))] pt-17 text-center shadow-drawer transition-transform ${open ? "translate-y-0" : "translate-y-[calc(100%+80px)]"}`}
       >
         <span
           className="absolute -top-12 left-1/2 flex h-24 w-24 -translate-x-1/2 items-center justify-center rounded-full bg-white"

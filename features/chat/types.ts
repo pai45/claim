@@ -106,8 +106,16 @@ export type BillExtract = {
   /** Transient object URL. It is deliberately removed before persistence. */
   previewUrl?: string;
   previewType?: string;
+  /** Transient source file used only while saving a browser-local bill draft. */
+  fileBlob?: Blob;
   /** Static, base-path-safe preview used by deterministic demo scenarios. */
   previewAsset?: string;
+  /** Links this bill card to its browser-local draft, when explicitly saved. */
+  draftId?: string;
+  /** Timestamp of the most recent explicit draft save/update. */
+  draftSavedAt?: number;
+  /** Fingerprint used to distinguish a saved snapshot from later field edits. */
+  draftSavedFingerprint?: string;
   demoScenarioId?: BillUploadScenarioId;
   /** Opens incomplete demo data directly in the editable review state. */
   manualReview?: boolean;
@@ -206,7 +214,7 @@ export type ChatResponse = {
 export type QuickAction = {
   id: string;
   label: string;
-  intentId: string;
+  intentId?: string;
   featured?: boolean;
 };
 

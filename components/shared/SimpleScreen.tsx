@@ -11,7 +11,7 @@ type SimpleScreenProps = {
 export function SimpleScreen({ title, description }: SimpleScreenProps) {
   return (
     <AppShell>
-      <header className="flex items-center gap-4 px-page pb-4 pt-2">
+      <header className="flex items-center gap-4 px-page pb-4 pt-4">
         <BackNavigationButton href="/#claims" />
         <h1 className="type-screen-title truncate">{title}</h1>
       </header>

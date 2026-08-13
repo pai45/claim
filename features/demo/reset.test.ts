@@ -3,6 +3,7 @@ import { MPIN_STORAGE_KEY, MPIN_UNLOCK_STORAGE_KEY } from "@/features/auth/mpinS
 import { AUTH_STORAGE_KEY } from "@/features/auth/session";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
 import { CHAT_STORAGE_KEY } from "@/features/chat/persistence";
+import { BILL_DRAFT_DELETE_HINT_KEY } from "@/features/chat/drafts";
 import { WIDGET_POSITION_KEY } from "@/features/chat/widgetPosition";
 import { MANAGE_LIMIT_STORAGE_KEY } from "@/features/manage-limit/constants";
 import { BENEFICIARY_LIMITS_STORAGE_KEY } from "@/features/beneficiary-limits/store";
@@ -41,6 +42,7 @@ function memoryStorage() {
 const LOCAL_KEYS = [
   AUTH_STORAGE_KEY,
   CHAT_STORAGE_KEY,
+  BILL_DRAFT_DELETE_HINT_KEY,
   ONBOARDING_STORAGE_KEY,
   EB_PLUS_ACTIVATION_STORAGE_KEY,
   VEHICLE_STORAGE_KEY,

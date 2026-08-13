@@ -64,7 +64,6 @@ export type OnboardingAction =
   | { type: "identity-complete" }
   | { type: "kyc-handoff-started" }
   | { type: "kyc-verifying" }
-  | { type: "kyc-mark-in-progress" }
   | { type: "kyc-complete" }
   | { type: "set-address-field"; field: keyof AddressForm; value: string | boolean }
   | { type: "autofill-kyc-address" }

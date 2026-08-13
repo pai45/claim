@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ChatAvatar } from "@/components/chat/ChatAvatar";
 import { VehicleDetailRow } from "@/components/vehicle/VehicleDetailRow";
 import { VehiclePhoto } from "@/components/vehicle/VehiclePhoto";
 import type { VehicleLookupPayload } from "@/features/chat/types";
@@ -20,6 +21,7 @@ type VehicleDetailsCardProps = {
   ) => void;
   onSelectOwnership?: (ownership: VehicleOwnership) => void;
   disabled?: boolean;
+  showAvatar?: boolean;
 };
 
 export function VehicleDetailsCard({
@@ -28,6 +30,7 @@ export function VehicleDetailsCard({
   onSubmitToHr,
   onSelectOwnership,
   disabled,
+  showAvatar = true,
 }: VehicleDetailsCardProps) {
   const [declarationAccepted, setDeclarationAccepted] = useState(
     Boolean(payload.submitted),
@@ -52,9 +55,11 @@ export function VehicleDetailsCard({
 
   return (
     <div className="flex w-full max-w-card flex-col gap-3">
-      <div className="flex flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card">
+      {showAvatar && !isReviewStep ? <ChatAvatar className="ml-0.5" /> : null}
+
+      <article className="flex flex-col gap-3 rounded-bubble rounded-tl border border-border-line bg-white p-card shadow-soft">
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-body font-bold text-pine">
+          <h3 className="type-section-title text-pine">
             {isReviewStep ? "Review vehicle details" : "Vehicle Found"}
           </h3>
           <p className="type-body-secondary">
@@ -67,7 +72,7 @@ export function VehicleDetailsCard({
         {isReviewStep ? <VehiclePhoto profile={profile} /> : null}
 
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-body font-bold text-pine">{name}</h3>
+          <p className="text-body font-bold text-pine">{name}</p>
           <p className="type-body-secondary tracking-wide">
             {lookup.regNumber.formatted}
           </p>
@@ -109,20 +114,22 @@ export function VehicleDetailsCard({
           />
         </div>
 
-        {!isReviewStep ? (
-          <VehicleOwnershipCard
-            onSelect={(ownership) => onSelectOwnership?.(ownership)}
-            disabled={disabled || payload.ownershipSelected}
-          />
-        ) : (
+        {isReviewStep ? (
           <RegistrationDeclaration
             subject="vehicle"
             checked={declarationAccepted}
             onChange={setDeclarationAccepted}
             disabled={disabled || payload.submitted}
           />
-        )}
-      </div>
+        ) : null}
+      </article>
+
+      {!isReviewStep ? (
+        <VehicleOwnershipCard
+          onSelect={(ownership) => onSelectOwnership?.(ownership)}
+          disabled={disabled || payload.ownershipSelected}
+        />
+      ) : null}
 
       {isReviewStep ? (
         <button

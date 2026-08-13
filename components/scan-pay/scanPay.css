@@ -494,25 +494,47 @@
     scan-pay-success-circle-out 0.4s cubic-bezier(0.22, 1, 0.36, 1) 1.5s both;
 }
 
-/* The Lottie carries only the tick and halo — the circle above is the disc. It
-   renders on top of that circle so the tick stays centred and legible while the
-   green grows out past it, then fades once the screen is fully covered.
-
-   The 1.3s fade is load-bearing: the green dissolves at 1.5s, and anything still
-   visible under it would reappear over the receipt.
-
-   240px matches the composition's own canvas. Lottie clips every layer to that
-   canvas with a rect, so the halo — which ripples out to 170%, about 207px across
-   — has to fit inside it or it gets cut off square at the edges. */
-.scan-pay-success-mark {
+/* Pale ring that grows with the circle and then flourishes outward. Sits behind
+   the circle and outside its clip, so it is never masked. */
+.scan-pay-success-halo {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 240px;
-  height: 240px;
-  margin: -120px 0 0 -120px;
-  will-change: opacity;
-  animation: scan-pay-success-veil-out 0.15s linear 1.3s both;
+  width: 122px;
+  height: 122px;
+  margin: -61px 0 0 -61px;
+  border: 10px solid var(--color-success-border);
+  border-radius: 50%;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: scan-pay-success-halo 1.3s linear both;
+}
+
+/* Carries the same clip-path animation as the circle, so the tick is masked to the
+   circle's silhouette on every frame and can never overhang the green — the bug
+   that showed up on a throttled device when the tick ran on Lottie's own clock.
+
+   The 1.3s fade is load-bearing: the green dissolves at 1.5s, and anything still
+   visible under it would reappear over the receipt. */
+.scan-pay-success-mark {
+  position: absolute;
+  inset: 0;
+  will-change: clip-path, opacity;
+  animation:
+    scan-pay-success-circle 1.3s linear both,
+    scan-pay-success-veil-out 0.15s linear 1.3s both;
+}
+
+.scan-pay-success-tick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 104px;
+  height: 104px;
+  margin: -52px 0 0 -52px;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: scan-pay-success-tick-in 1.3s linear both;
 }
 
 @keyframes scan-pay-scanner-image-settle {
@@ -691,6 +713,56 @@
   to {
     opacity: 0;
     transform: scale(1.06);
+  }
+}
+
+/* The tick and halo run the same 1.3s linear timeline as the circle, so a given
+   percentage is the same instant for all three no matter how the device performs.
+   The tick's overshoot at 24% lands exactly where the circle settles to 52px. */
+@keyframes scan-pay-success-tick-in {
+  0%,
+  10% {
+    opacity: 0;
+    transform: scale(0.3);
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.25, 1.25);
+  }
+  16% {
+    opacity: 1;
+    transform: scale(0.72);
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.25, 1.25);
+  }
+  24% {
+    opacity: 1;
+    transform: scale(1.04);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  30%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes scan-pay-success-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.55);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  15% {
+    opacity: 0.7;
+    transform: scale(0.9);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  24% {
+    opacity: 0.7;
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  55%,
+  100% {
+    opacity: 0;
+    transform: scale(1.7);
   }
 }
 

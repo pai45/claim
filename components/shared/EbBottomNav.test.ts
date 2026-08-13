@@ -13,6 +13,8 @@ describe("EbBottomNav", () => {
     const markup = renderToStaticMarkup(createElement(EbBottomNav));
 
     expect(markup).toContain('aria-label="Benefits"');
+    expect(markup).toContain('data-walkthrough="benefits-nav"');
+    expect(markup).toContain("/assets/benefits-logo-v2.gif");
     expect(markup).not.toContain('aria-label="Scan &amp; Pay"');
   });
 
@@ -22,6 +24,7 @@ describe("EbBottomNav", () => {
     );
 
     expect(markup).toContain('aria-label="Scan &amp; Pay"');
+    expect(markup).not.toContain('data-walkthrough="benefits-nav"');
     expect(markup).toContain("/assets/scan.gif");
     expect(markup).toMatch(/<a[^>]+aria-label="Scan &amp; Pay"/);
     expect(markup).toContain("text-caption font-normal leading-[1.2]");

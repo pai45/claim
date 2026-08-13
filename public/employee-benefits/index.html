@@ -971,7 +971,7 @@
           <span class="benefits-logo-shell" aria-hidden="true">
             <img
               class="benefits-nav-logo"
-              src="../assets/benefits-logo.gif"
+              src="../assets/benefits-logo-v2.gif"
               alt=""
               aria-hidden="true"
             />
@@ -1469,6 +1469,16 @@
                 </span>
                 <span>Payment<br />Approvals</span>
               </button>
+              <button
+                class="manage-cards-control-tile is-enabled"
+                type="button"
+                data-fallback-open
+              >
+                <span class="manage-cards-control-icon" aria-hidden="true">
+                  <img src="./assets/icons/fallback-control.svg" alt="" />
+                </span>
+                <span>Fallback<br />Control</span>
+              </button>
             </div>
           </section>
         </div>
@@ -1509,14 +1519,14 @@
             <div class="fallback-info-body" id="fallback-info-body">
               <div class="fallback-info-body-inner">
                 <p>
-                  Fallback Control enables Split Pay. When an eligible wallet
-                  has a low balance, its available balance is used first and
-                  only the remaining amount is taken from your Reimbursement
-                  Wallet.
+                  Fallback Control lets eligible payments fall back to your
+                  Reimbursement Wallet. When an eligible wallet has a low
+                  balance, its available balance is used first and only the
+                  remaining amount is taken from your Reimbursement Wallet.
                 </p>
                 <ul>
                   <li>
-                    Split Pay applies only to eligible Meal or Fuel merchant
+                    Fallback applies only to eligible Meal or Fuel merchant
                     payments.
                   </li>
                   <li>
@@ -1544,7 +1554,7 @@
                   class="fallback-toggle"
                   type="button"
                   role="switch"
-                  aria-checked="false"
+                  aria-checked="true"
                   aria-labelledby="fallback-wallet-meal"
                   data-fallback-toggle="meal"
                 ></button>
@@ -1552,15 +1562,14 @@
               <div
                 class="fallback-warning-box"
                 data-fallback-warning="meal"
-                hidden
               >
                 <span class="fallback-warning-icon" aria-hidden="true">
                   <svg><use href="#icon-warning-circle" /></svg>
                 </span>
                 <p class="fallback-warning-text">
-                  Split Pay is on for Meal Wallet. Its available balance will be
-                  used first and only the remaining amount will be deducted from
-                  Reimbursement Wallet.
+                  Fallback is on for Meal Wallet. Its available balance will be
+                  used first and only the remaining amount will be deducted
+                  from Reimbursement Wallet.
                 </p>
               </div>
             </li>
@@ -1576,7 +1585,7 @@
                   class="fallback-toggle"
                   type="button"
                   role="switch"
-                  aria-checked="false"
+                  aria-checked="true"
                   aria-labelledby="fallback-wallet-fuel"
                   data-fallback-toggle="fuel"
                 ></button>
@@ -1584,15 +1593,14 @@
               <div
                 class="fallback-warning-box"
                 data-fallback-warning="fuel"
-                hidden
               >
                 <span class="fallback-warning-icon" aria-hidden="true">
                   <svg><use href="#icon-warning-circle" /></svg>
                 </span>
                 <p class="fallback-warning-text">
-                  Split Pay is on for Fuel Wallet. Its available balance will be
-                  used first and only the remaining amount will be deducted from
-                  Reimbursement Wallet.
+                  Fallback is on for Fuel Wallet. Its available balance will be
+                  used first and only the remaining amount will be deducted
+                  from Reimbursement Wallet.
                 </p>
               </div>
             </li>
@@ -1968,7 +1976,7 @@
 
         <div data-card-success-fallback hidden>
           <h2 data-card-success-fallback-title>
-            Meal Wallet Split Pay Enabled
+            Meal Wallet Fallback Control Enabled
           </h2>
           <p data-card-success-fallback-desc>
             Meal Wallet will be used first and Reimbursement Wallet will cover

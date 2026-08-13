@@ -98,6 +98,18 @@ export function cleanScanPayAmount(value: string): string {
   return `${whole}.${fractionParts.join("").slice(0, 2)}`;
 }
 
+/** Formats the amount for the confirmation field without changing its numeric value. */
+export function formatScanPayAmountInput(amount: string): string {
+  if (!amount) return "";
+
+  const [whole, fraction] = amount.split(".");
+  const formattedWhole = new Intl.NumberFormat("en-IN", {
+    maximumFractionDigits: 0,
+  }).format(Number(whole || "0"));
+
+  return fraction === undefined ? formattedWhole : `${formattedWhole}.${fraction}`;
+}
+
 export function scanPayReducer(
   state: ScanPayState,
   action: ScanPayAction,

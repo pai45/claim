@@ -167,6 +167,7 @@ export function EbBottomNav({
           href="/#claims"
           className={centerActionClassName}
           aria-label="Benefits"
+          data-walkthrough="benefits-nav"
           aria-current={current === "benefits" ? "page" : undefined}
           onClick={
             onBenefits

@@ -4,18 +4,16 @@
  * Shared by the submit effect in `PaymentCheckoutFlow` and the choreography in
  * `scanPay.css`, so the CSS cannot drift out of sync with the timers.
  *
- * The interstitial is split across two technologies on purpose. The green circle is a
- * CSS `clip-path` on `.scan-pay-success-circle`, because Lottie clips every layer to
- * its own canvas and so can never draw a shape large enough to cover the screen. The
- * tick is `successTick.json`, rendered *above* that circle so it stays centred while
- * the green grows out past it. Its scale-in runs over frames 8–28 (60fps) to land as
- * the circle settles, and it is a centred scale rather than a trim-path draw — a trim
- * reveals the stroke from its first vertex, which parks the half-drawn tick left of
- * centre and reads as arriving after the circle.
+ * The whole interstitial — circle, tick and halo — runs on one 1.3s `linear` CSS
+ * timeline (`scan-pay-success-circle`, `-tick-in`, `-halo`), so a given percentage is
+ * the same instant for all three. It used to mix a CSS circle with a Lottie tick, and
+ * because Lottie drives its own rAF loop the two desynced on a throttled device: the
+ * tick hit full size while the circle was still small and overhung it. One clock means
+ * dropped frames hit everything equally. The tick is also clipped to the circle, so
+ * overflow is impossible even under drift.
  *
- * The circle's own 1.3s timeline (pop → hold → squash → cover) lives in the
- * `scan-pay-success-circle` keyframe. The tick must fade before the green dissolves at
- * 1.5s, or it reappears on top of the receipt.
+ * The circle's timeline is pop → hold → squash → cover. The tick must fade before the
+ * green dissolves at 1.5s, or it reappears on top of the receipt.
  */
 
 /** How long `submitting` runs before the ledger commits. */

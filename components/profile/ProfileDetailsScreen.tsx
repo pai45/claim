@@ -38,7 +38,7 @@ export function ProfileDetailsScreen({ onBack }: ProfileDetailsScreenProps) {
   return (
     <AppShell className="overflow-hidden bg-white">
       {/* Header with Back button and centered title */}
-      <header className="relative flex w-full shrink-0 items-center justify-between px-page pb-3 pt-2">
+      <header className="relative flex w-full shrink-0 items-center justify-between px-page pb-3 pt-4">
         <BackNavigationButton onClick={onBack} ariaLabel="Back to Profile" />
         <h1 className="type-screen-title absolute left-0 right-0 text-center pointer-events-none">
           Profile

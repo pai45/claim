@@ -13,6 +13,7 @@ describe("IntroStep", () => {
     expect(markup).toContain('checked=""');
     expect(markup).toContain("Infosys Terms and Conditions");
     expect(markup).toContain("Privacy Policy");
+    expect(markup).toContain("rounded-checkbox");
     expect(markup).toContain(">Activate Benefits Program</button>");
     expect(markup).not.toContain("disabled=\"\"");
   });

@@ -303,6 +303,7 @@ let activeManageWalletKey = "meal";
 let syncedTransactionItems = [];
 let syncedWalletTransactions = {};
 const UPI_CREATED_STORAGE_KEY = "employee-benefits:upi-created:v1";
+const UPI_CREATED_MESSAGE = "employee-benefits:upi-created";
 const CREATED_UPI_ID = "8646721579@pinelabs";
 const UPI_SETUP_STEP_DURATION = 1500;
 const upiSetupState = { stage: 0, view: "setup" };
@@ -1291,6 +1292,10 @@ function completeUpiSetupFlow() {
     // Keep the current session usable if browser storage is unavailable.
   }
   applyUpiCreatedState(true, false);
+  window.parent.postMessage(
+    { type: UPI_CREATED_MESSAGE },
+    window.location.origin,
+  );
   closeUpiSetupFlow();
   showToast("UPI ID created");
 }
@@ -4865,8 +4870,8 @@ function openCardSuccessSheet(mode, payload) {
       const isDisabled = payload.status === "disabled";
       if (cardSuccessFallbackTitle) {
         cardSuccessFallbackTitle.textContent = isDisabled
-          ? `${walletLabel} Split Pay Disabled`
-          : `${walletLabel} Split Pay Enabled`;
+          ? `${walletLabel} Fallback Control Disabled`
+          : `${walletLabel} Fallback Control Enabled`;
       }
       if (cardSuccessFallbackDesc) {
         cardSuccessFallbackDesc.textContent = isDisabled
@@ -5134,13 +5139,13 @@ function openFallbackConfirmSheet(key) {
   const walletKeyName = key === "fuel" ? "fuel wallet" : "meal wallet";
 
   if (fallbackConfirmTitle) {
-    fallbackConfirmTitle.textContent = `Disable ${label} Split Pay?`;
+    fallbackConfirmTitle.textContent = `Disable ${label} Fallback Control?`;
   }
   if (fallbackConfirmDesc1) {
     fallbackConfirmDesc1.textContent = `Reimbursement Wallet will no longer cover the remaining amount when ${walletKeyName} has a low balance.`;
   }
   if (fallbackConfirmDesc2) {
-    fallbackConfirmDesc2.textContent = `Low-balance payments will be blocked unless you select Reimbursement Wallet directly. Are you sure you want to disable Split Pay?`;
+    fallbackConfirmDesc2.textContent = `Low-balance payments will be blocked until Fallback Control is turned back on. Are you sure you want to disable Fallback Control?`;
   }
 
   fallbackConfirmOverlay.hidden = false;

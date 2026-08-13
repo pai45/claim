@@ -6,13 +6,12 @@ import {
   DEMO_KIT_NUMBER,
   FEATURE_WALLETS,
 } from "@/features/onboarding/constants";
-import type {
-  AddressForm,
-  CardEmbossmentForm,
-  OnboardingState,
-} from "@/features/onboarding/types";
+import type { AddressForm, OnboardingState } from "@/features/onboarding/types";
+import { useActivePersona } from "@/features/persona/useActivePersona";
 import { colors } from "@/lib/ui/colors";
+import { UI_ICONS } from "@/lib/ui/assets";
 import { withBasePath } from "@/lib/basePath";
+import { AppIcon } from "@/components/shared/AppIcon";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
@@ -152,43 +151,20 @@ export function CardAddressStep({
 }
 
 type CardEmbossmentStepProps = {
-  embossment: CardEmbossmentForm;
   onBack: () => void;
-  onChange: (field: keyof CardEmbossmentForm, value: string) => void;
   onComplete: () => void;
 };
 
-/** The second card-ordering step, where the cardholder name is chosen. */
+/** The second card-ordering step, where the cardholder name is confirmed. */
 export function CardEmbossmentStep({
-  embossment,
   onBack,
-  onChange,
   onComplete,
 }: CardEmbossmentStepProps) {
+  const { persona } = useActivePersona();
   const [successOpen, setSuccessOpen] = useState(false);
-  const [warning, setWarning] = useState<string | null>(null);
-
-  const cardholder =
-    `${embossment.firstName.trim()} ${embossment.lastName.trim()}`
-      .trim()
-      .toUpperCase();
-  const canProceed = Boolean(
-    embossment.firstName.trim() && embossment.lastName.trim(),
-  );
-
-  const handleNameChange = (field: "firstName" | "lastName", value: string) => {
-    const otherField =
-      field === "firstName" ? embossment.lastName : embossment.firstName;
-    const spaceLength = value.length > 0 && otherField.length > 0 ? 1 : 0;
-    const totalLength = value.length + otherField.length + spaceLength;
-
-    if (totalLength > 23) {
-      setWarning("Maximum 23 characters allowed");
-      return;
-    }
-    setWarning(null);
-    onChange(field, value);
-  };
+  const [firstName = "", ...remainingNames] = persona.profile.name.split(" ");
+  const lastName = remainingNames.join(" ");
+  const cardholder = persona.profile.name.trim().toUpperCase();
 
   return (
     <>
@@ -199,24 +175,20 @@ export function CardEmbossmentStep({
           <div className="flex flex-col gap-4">
             <TextField
               label="First Name"
-              value={embossment.firstName}
-              onChange={(value) => handleNameChange("firstName", value)}
-              placeholder="e.g. Vishal"
+              value={firstName}
+              readOnly
             />
             <TextField
               label="Last Name"
-              value={embossment.lastName}
-              onChange={(value) => handleNameChange("lastName", value)}
-              placeholder="e.g. Sharma"
+              value={lastName}
+              readOnly
             />
           </div>
-          {warning && <p className="mt-3 text-sm text-[#e04545]">{warning}</p>}
           <CardEmbossmentPreview cardholder={cardholder || "YOUR NAME"} />
         </section>
       </main>
       <PrimaryFooter
         label="Proceed"
-        disabled={!canProceed}
         onClick={() => setSuccessOpen(true)}
       />
       <CenterModal
@@ -238,7 +210,7 @@ export function CardEmbossmentStep({
 
 function CardOrderHeader({ onBack }: { onBack: () => void }) {
   return (
-    <header className="shrink-0 bg-white px-5 pb-4 pt-1">
+    <header className="shrink-0 bg-white px-5 pb-4 pt-4">
       <BackNavigationButton
         onClick={onBack}
         ariaLabel="Back to delivery address"
@@ -459,17 +431,32 @@ export function ReadyStep({
         </div>
 
         <section
-          className="mt-4 shrink-0 overflow-hidden rounded-card p-card text-white shadow-card"
-          style={{
-            background: `linear-gradient(145deg, ${colors.pinePrimary} 0%, ${colors.pine} 60%, ${colors.pineDark} 100%)`,
-          }}
+          className="relative mt-4 shrink-0 aspect-[740/384] overflow-hidden rounded-card text-white shadow-card"
+          aria-label="Employee benefit card preview"
         >
-          <p className="text-caption font-bold tracking-wide">RuPay</p>
-          <p className="mt-4 type-field-label text-white/70">Card Number</p>
-          <p className="mt-1 whitespace-nowrap font-display text-title-sm tracking-wider">
-            XXXX XXXX XXXX XXXX
-          </p>
-          <div className="mt-4 flex justify-between gap-3">
+          <Image
+            src={withBasePath(
+              "/employee-benefits/assets/icons/icici-card-front.png",
+            )}
+            alt=""
+            fill
+            sizes="(max-width: 434px) 100vw, 340px"
+            className="object-cover"
+          />
+          <Image
+            src={withBasePath(UI_ICONS.rupay)}
+            alt="RuPay"
+            width={56}
+            height={24}
+            className="absolute left-[4.5%] top-[8%] h-auto w-[14.5%]"
+          />
+          <div className="absolute inset-x-[4.5%] top-[28.5%]">
+            <p className="type-field-label text-white/70">Card Number</p>
+            <p className="mt-1 whitespace-nowrap font-display text-title-sm tracking-wider">
+              **** **** **** ***
+            </p>
+          </div>
+          <div className="absolute inset-x-[4.5%] bottom-[11%] flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="type-field-label text-white/70">Card Holder</p>
               <p className="mt-1 truncate text-body-sm font-bold">
@@ -478,7 +465,7 @@ export function ReadyStep({
             </div>
             <div className="shrink-0 text-right">
               <p className="type-field-label text-white/70">Expires</p>
-              <p className="mt-1 text-body-sm font-bold">xx/xx</p>
+              <p className="mt-1 text-body-sm font-bold">** / **</p>
             </div>
           </div>
         </section>
@@ -510,16 +497,21 @@ export function ReadyStep({
         <div className="mt-2 shrink-0 overflow-hidden rounded-card border border-border-line bg-white shadow-card">
           <ToggleRow
             label="Online Transactions"
+            icon={UI_ICONS.onlineTransactions}
             checked={state.onlineTransactions}
             onChange={onToggleOnline}
           />
           <div className="border-t border-border-line" />
           <ToggleRow
             label="Tap to Pay"
+            icon={UI_ICONS.tapToPay}
             checked={state.tapToPay}
             onChange={onToggleTap}
           />
         </div>
+        <p className="type-body-secondary mt-3 shrink-0 text-ink-tertiary">
+          You can change these anytime in Card Settings.
+        </p>
       </main>
       <PrimaryFooter label="Go to Homepage" onClick={onFinish} />
     </>
@@ -528,17 +520,19 @@ export function ReadyStep({
 
 function ToggleRow({
   label,
+  icon,
   checked,
   onChange,
 }: {
   label: string;
+  icon: string;
   checked: boolean;
   onChange: (value: boolean) => void;
 }) {
   return (
     <div className="flex min-h-14 items-center gap-3 px-page py-3">
       <span className="flex h-9 w-9 items-center justify-center rounded-control bg-success-tint">
-        <CardIcon />
+        <AppIcon src={icon} alt="" size={20} />
       </span>
       <p className="type-body flex-1 font-bold">{label}</p>
       <button
@@ -547,15 +541,19 @@ function ToggleRow({
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative h-8 w-14 shrink-0 rounded-pill transition-colors ${
-          checked ? "bg-pine-primary" : "bg-border-muted"
-        }`}
+        className="grid h-11 w-11 shrink-0 place-items-center"
       >
         <span
-          className={`absolute top-1 left-1 h-6 w-6 rounded-full bg-white shadow-soft transition-transform ${
-            checked ? "translate-x-6" : "translate-x-0"
+          className={`relative h-5 w-9 rounded-pill transition-colors ${
+            checked ? "bg-pine-primary" : "bg-border-muted"
           }`}
-        />
+        >
+          <span
+            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-soft transition-transform ${
+              checked ? "translate-x-4" : "translate-x-0"
+            }`}
+          />
+        </span>
       </button>
     </div>
   );

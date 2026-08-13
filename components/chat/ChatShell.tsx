@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DRIVER_REGISTRATION_INTENT,
@@ -27,7 +28,8 @@ import { ChatGreeting } from "./ChatGreeting";
 import { ChatHeader } from "./ChatHeader";
 import { HomeActionCards } from "./HomeActionCards";
 import { MessageList, type MessageListHandle } from "./MessageList";
-import { NewChatWidget } from "./NewChatWidget";
+import { NewChatDraftDrawer } from "./NewChatDraftDrawer";
+// import { NewChatWidget } from "./NewChatWidget";
 import { QuickActions } from "./QuickActions";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { AssistantWalkthrough } from "@/components/walkthrough/AssistantWalkthrough";
@@ -55,6 +57,7 @@ type ChatShellProps = {
 };
 
 export function ChatShell({ onClose }: ChatShellProps) {
+  const router = useRouter();
   const [replacementBillId, setReplacementBillId] = useState<string | null>(
     null,
   );
@@ -62,7 +65,16 @@ export function ChatShell({ onClose }: ChatShellProps) {
     kind: DocumentUploadKind;
     source: UploadOptionId;
   } | null>(null);
-  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+  const [draftDecision, setDraftDecision] = useState<
+    "new-chat" | "new-bill" | null
+  >(null);
+  const [pendingBillSelection, setPendingBillSelection] =
+    useState<DocumentScenarioSelection | null>(null);
+  const [pendingDraftId, setPendingDraftId] = useState<string | null>(null);
+  const [draftFailure, setDraftFailure] = useState<{
+    code: "limit" | "missing-file" | "storage-unavailable";
+    message: string;
+  } | null>(null);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [awayFromBottom, setAwayFromBottom] = useState(false);
   const messageListRef = useRef<MessageListHandle>(null);
@@ -82,6 +94,9 @@ export function ChatShell({ onClose }: ChatShellProps) {
     openUploadOptions,
     processDlScenario,
     updateBillExtract,
+    saveBillDraft,
+    saveEligibleBillDrafts,
+    openBillDraft,
     submitBillClaim,
     saveClaimEdit,
     selectPolicyCategory,
@@ -98,6 +113,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
     submitDriverSalaryClaim,
     startNewChat,
     hasMessages,
+    hasUnsavedBillDrafts,
   } = useChat();
 
   useEffect(() => {
@@ -121,21 +137,29 @@ export function ChatShell({ onClose }: ChatShellProps) {
       startClaimEdit(pending.claimId);
       return;
     }
+    if (pending.kind === "bill_draft") {
+      if (hasMessages) {
+        window.requestAnimationFrame(() => setPendingDraftId(pending.draftId));
+      } else {
+        void openBillDraft(pending.draftId);
+      }
+      return;
+    }
     void sendMessage(pending.label, pending.intentId);
-  }, [isHydrated, sendMessage, startClaimEdit]);
+  }, [hasMessages, isHydrated, openBillDraft, sendMessage, startClaimEdit]);
 
   // Marks the newest completed claim so the floating widget can nudge itself
   // open. Scans backwards rather than checking the last message: submitVehicleToHr
   // appends a "Next up — register your driver" turn *after* its claim_cta, so a
   // tail check would silently miss the vehicle flow. Keyed on the message id, not
   // claimId, because createClaimId is a random 5-digit number and could repeat.
-  const completedClaimKey = useMemo(() => {
-    for (let index = messages.length - 1; index >= 0; index -= 1) {
-      const message = messages[index];
-      if (message.kind === "claim_cta") return message.id;
-    }
-    return null;
-  }, [messages]);
+  // const completedClaimKey = useMemo(() => {
+  //   for (let index = messages.length - 1; index >= 0; index -= 1) {
+  //     const message = messages[index];
+  //     if (message.kind === "claim_cta") return message.id;
+  //   }
+  //   return null;
+  // }, [messages]);
 
   const { personaId } = useActivePersona();
   const { count: notificationCount } = useNotifications();
@@ -173,6 +197,11 @@ export function ChatShell({ onClose }: ChatShellProps) {
     setReplacementBillId(null);
 
     if (selection.kind === "bill") {
+      if (!target && hasUnsavedBillDrafts) {
+        setPendingBillSelection(selection);
+        setDraftDecision("new-bill");
+        return;
+      }
       void processBillScenario(selection.scenarioId, target ?? undefined);
       return;
     }
@@ -189,16 +218,66 @@ export function ChatShell({ onClose }: ChatShellProps) {
     void sendMessage("Claim another bill", "upload_bill");
   }
 
+  function handleNewClaim() {
+    setPendingBillSelection(null);
+    if (hasUnsavedBillDrafts) {
+      setDraftDecision("new-bill");
+      return;
+    }
+
+    handleConfirmedClear();
+    void sendMessage("New claim", "upload_bill");
+  }
+
   function handleConfirmedClear() {
-    setConfirmClearOpen(false);
+    setDraftDecision(null);
+    setPendingBillSelection(null);
     setScenarioPicker(null);
     setReplacementBillId(null);
     startNewChat();
   }
 
+  function continueWithPendingBill() {
+    const selection = draftDecision === "new-bill" ? pendingBillSelection : null;
+    const startNewClaim = draftDecision === "new-bill" && !selection;
+    handleConfirmedClear();
+    if (selection?.kind === "bill") {
+      void processBillScenario(selection.scenarioId);
+    } else if (startNewClaim) {
+      void sendMessage("New claim", "upload_bill");
+    }
+  }
+
+  async function handleKeepDraftAndContinue() {
+    const result = await saveEligibleBillDrafts();
+    if (!result.ok) {
+      setDraftDecision(null);
+      setPendingBillSelection(null);
+      setDraftFailure(result);
+      return;
+    }
+    continueWithPendingBill();
+  }
+
   function requestClear() {
-    if (hasMessages) setConfirmClearOpen(true);
-    else startNewChat();
+    if (hasUnsavedBillDrafts) {
+      setPendingBillSelection(null);
+      setDraftDecision("new-chat");
+    } else handleConfirmedClear();
+  }
+
+  async function openPendingDraft(saveCurrent: boolean) {
+    const draftId = pendingDraftId;
+    if (!draftId) return;
+    if (saveCurrent) {
+      const result = await saveEligibleBillDrafts();
+      if (!result.ok) {
+        setDraftFailure(result);
+        return;
+      }
+    }
+    setPendingDraftId(null);
+    await openBillDraft(draftId);
   }
 
   function handleVehicleRegistration() {
@@ -277,12 +356,15 @@ export function ChatShell({ onClose }: ChatShellProps) {
               documentProcessingKind={documentProcessingKind}
               policyModelStatus={policyModelStatus}
               onAwayFromBottomChange={setAwayFromBottom}
+              onQuickChatSelected={handleQuickAction}
               onBillSourceSelected={openBillScenarioPicker}
               onDlSourceSelected={openDlScenarioPicker}
               onUpdateBillExtract={updateBillExtract}
+              onSaveBillDraft={saveBillDraft}
               onSubmitBillClaim={submitBillClaim}
               onSaveClaimEdit={saveClaimEdit}
               onReplaceBill={handleReplaceBill}
+              onNewClaim={handleNewClaim}
               onStartAnotherBill={handleStartAnotherBill}
               onSelectPolicyCategory={selectPolicyCategory}
               onSelectMerchantBenefitType={selectMerchantBenefitType}
@@ -348,13 +430,16 @@ export function ChatShell({ onClose }: ChatShellProps) {
           </div>
         </div>
 
+        {/* Floating new-chat widget temporarily disabled.
         {hasMessages && !confirmClearOpen ? (
           <NewChatWidget
             onClearChat={handleConfirmedClear}
+            onRequestDraftDecision={() => setConfirmKeepDraftOpen(true)}
+            hasEligibleBillDrafts={hasEligibleBillDrafts}
             completedClaimKey={completedClaimKey}
             reduceMotion={reduceMotion}
           />
-        ) : null}
+        ) : null} */}
 
         <DocumentScenarioDrawer
           open={Boolean(scenarioPicker)}
@@ -364,13 +449,52 @@ export function ChatShell({ onClose }: ChatShellProps) {
           onClose={closeScenarioPicker}
         />
 
+        <NewChatDraftDrawer
+          open={Boolean(draftDecision) && !draftFailure}
+          mode={draftDecision ?? "new-chat"}
+          onKeepDraft={() => void handleKeepDraftAndContinue()}
+          onStartWithoutSaving={continueWithPendingBill}
+          onClose={() => {
+            setDraftDecision(null);
+            setPendingBillSelection(null);
+          }}
+        />
+
         <ConfirmDialog
-          open={confirmClearOpen}
-          title="Clear this conversation?"
-          description="This removes the current chat and the structured claim details saved in this browser. Original files and raw OCR text are not stored."
-          confirmLabel="Clear saved data"
-          onConfirm={handleConfirmedClear}
-          onClose={() => setConfirmClearOpen(false)}
+          open={Boolean(pendingDraftId) && !draftFailure}
+          title="Open this bill draft?"
+          description={
+            hasUnsavedBillDrafts
+              ? "You already have an unsubmitted bill in this chat. Save it first or discard this conversation."
+              : "Opening the draft starts a fresh bill chat and replaces the current conversation."
+          }
+          confirmLabel={hasUnsavedBillDrafts ? "Save current draft" : "Open draft"}
+          cancelLabel="Cancel"
+          extraAction={
+            hasUnsavedBillDrafts
+              ? {
+                  label: "Discard current and open draft",
+                  tone: "danger",
+                  onSelect: () => void openPendingDraft(false),
+                }
+              : undefined
+          }
+          onConfirm={() => void openPendingDraft(hasUnsavedBillDrafts)}
+          onClose={() => setPendingDraftId(null)}
+        />
+
+        <ConfirmDialog
+          open={Boolean(draftFailure)}
+          title={draftFailure?.code === "limit" ? "Draft limit reached" : "Draft not saved"}
+          description={draftFailure?.message ?? "The bill draft could not be saved."}
+          confirmLabel={draftFailure?.code === "limit" ? "Manage drafts" : "Close"}
+          cancelLabel="Keep chatting"
+          onConfirm={() => {
+            const manage = draftFailure?.code === "limit";
+            setDraftFailure(null);
+            if (manage) router.push("/chat-drafts");
+          }}
+          onClose={() => setDraftFailure(null)}
         />
 
         <span className="sr-only">Signed in as {USER_DISPLAY_NAME}</span>
@@ -381,7 +505,9 @@ export function ChatShell({ onClose }: ChatShellProps) {
           personaId === "new_user" &&
           showEmptyState &&
           !scenarioPicker &&
-          !confirmClearOpen
+          !draftDecision &&
+          !pendingDraftId &&
+          !draftFailure
         }
       />
     </div>

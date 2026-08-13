@@ -14,7 +14,7 @@ export function OnboardingHeader({
   subtitle,
 }: OnboardingHeaderProps) {
   return (
-    <header className="w-full shrink-0 bg-white px-page pb-3 pt-2">
+    <header className="w-full shrink-0 bg-white px-page pb-3 pt-4">
       <div className="flex items-start gap-3">
         {onBack ? (
           <BackNavigationButton onClick={onBack} />

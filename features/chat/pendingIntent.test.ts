@@ -80,4 +80,18 @@ describe("pending chat intent", () => {
 
     expect(takePendingChatIntent(storage)).toBeNull();
   });
+
+  it("hands off a bill draft once", () => {
+    const storage = fakeStorage();
+    setPendingChatIntent(
+      { kind: "bill_draft", draftId: "draft-123" },
+      storage,
+    );
+
+    expect(takePendingChatIntent(storage)).toEqual({
+      kind: "bill_draft",
+      draftId: "draft-123",
+    });
+    expect(takePendingChatIntent(storage)).toBeNull();
+  });
 });

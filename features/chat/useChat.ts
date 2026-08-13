@@ -88,6 +88,14 @@ import {
   loadChatSession,
   saveChatSession,
 } from "./persistence";
+import {
+  BillDraftError,
+  type BillDraftOperationResult,
+  billDraftStore,
+  isBillDraftEligible,
+  isBillDraftUnsaved,
+  restoreBillExtract,
+} from "./drafts";
 
 function createId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -196,6 +204,147 @@ export function useChat() {
     setActiveAppDataContext(null);
     clearChatSession();
   }, []);
+
+  const saveBillDraft = useCallback(
+    async (
+      messageId: string,
+      extract: BillExtract,
+    ): Promise<BillDraftOperationResult> => {
+      try {
+        const [draft] = await billDraftStore.save([extract]);
+        const restored = restoreBillExtract(draft);
+        setMessages((previous) =>
+          previous.map((message) =>
+            message.id === messageId
+              ? {
+                  ...message,
+                  billExtract: {
+                    ...message.billExtract,
+                    ...restored,
+                    previewUrl: extract.previewUrl,
+                    fileBlob: extract.fileBlob ?? restored.fileBlob,
+                  },
+                }
+              : message,
+          ),
+        );
+        return { ok: true };
+      } catch (caught) {
+        const error =
+          caught instanceof BillDraftError
+            ? caught
+            : new BillDraftError(
+                "storage-unavailable",
+                "The bill draft could not be saved. Please try again.",
+              );
+        return { ok: false, code: error.code, message: error.message };
+      }
+    },
+    [],
+  );
+
+  const saveEligibleBillDrafts = useCallback(async (): Promise<BillDraftOperationResult> => {
+    const eligibleMessages = messagesRef.current.filter(
+      (message) =>
+        message.kind === "bill_extract" && isBillDraftEligible(message.billExtract),
+    );
+    if (eligibleMessages.length === 0) return { ok: true };
+    try {
+      const drafts = await billDraftStore.save(
+        eligibleMessages.map((message) => message.billExtract as BillExtract),
+      );
+      // New drafts did not have ids in the transcript, so pair records with the
+      // eligible bill turns in the same order before applying the shared update.
+      const draftIdsByMessage = new Map(
+        eligibleMessages.map((message, index) => [message.id, drafts[index]?.id]),
+      );
+      setMessages((previous) =>
+        previous.map((message) => {
+          const draftId = draftIdsByMessage.get(message.id);
+          const saved = draftId
+            ? drafts.find((draft) => draft.id === draftId)
+            : undefined;
+          if (!saved || !message.billExtract) return message;
+          const restored = restoreBillExtract(saved);
+          return {
+            ...message,
+            billExtract: {
+              ...message.billExtract,
+              ...restored,
+              previewUrl: message.billExtract.previewUrl,
+              fileBlob: message.billExtract.fileBlob ?? restored.fileBlob,
+            },
+          };
+        }),
+      );
+      return { ok: true };
+    } catch (caught) {
+      const error =
+        caught instanceof BillDraftError
+          ? caught
+          : new BillDraftError(
+              "storage-unavailable",
+              "The bill drafts could not be saved. Please try again.",
+            );
+      return { ok: false, code: error.code, message: error.message };
+    }
+  }, []);
+
+  const openBillDraft = useCallback(
+    async (draftId: string): Promise<boolean> => {
+      try {
+        const draft = await billDraftStore.get(draftId);
+        if (!draft) {
+          setMessages((previous) => [
+            ...previous,
+            {
+              id: createId(),
+              role: "assistant",
+              content:
+                "That bill draft is no longer available. It may have expired or been deleted.",
+              createdAt: Date.now(),
+              kind: "text",
+            },
+          ]);
+          return false;
+        }
+
+        startNewChat();
+        const messageId = createId();
+        const restored = restoreBillExtract(draft);
+        if (draft.fileBlob) {
+          const previewUrl = URL.createObjectURL(draft.fileBlob);
+          previewUrlsRef.current.set(messageId, previewUrl);
+          restored.previewUrl = previewUrl;
+        }
+        setMessages([
+          {
+            id: messageId,
+            role: "assistant",
+            content:
+              "Here’s your saved bill draft. Review the details and submit when you’re ready.",
+            createdAt: Date.now(),
+            kind: "bill_extract",
+            billExtract: restored,
+          },
+        ]);
+        return true;
+      } catch {
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: createId(),
+            role: "assistant",
+            content: "I couldn’t open that draft. Please try again.",
+            createdAt: Date.now(),
+            kind: "text",
+          },
+        ]);
+        return false;
+      }
+    },
+    [startNewChat],
+  );
 
   const appendUploadOptions = useCallback(() => {
     setMessages((prev) => [
@@ -931,6 +1080,9 @@ export function useChat() {
             billExtract: {
               ...nextExtract,
               editClaimId: previousExtract?.editClaimId,
+              draftId: previousExtract?.draftId,
+              draftSavedAt: previousExtract?.draftSavedAt,
+              draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
               warningAcknowledged: false,
             },
           };
@@ -1054,6 +1206,7 @@ export function useChat() {
           ...extract,
           previewUrl,
           previewType: file.type,
+          fileBlob: file,
         };
         setDocumentProcessingStage("extracting");
         await new Promise((resolve) => window.setTimeout(resolve, 750));
@@ -1085,6 +1238,9 @@ export function useChat() {
             billExtract: {
               ...nextExtract,
               editClaimId: previousExtract?.editClaimId,
+              draftId: previousExtract?.draftId,
+              draftSavedAt: previousExtract?.draftSavedAt,
+              draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
               warningAcknowledged: previousExtract?.warningAcknowledged,
             },
           };
@@ -1124,7 +1280,11 @@ export function useChat() {
               rawText: "",
               previewUrl,
               previewType: file.type,
+              fileBlob: file,
               editClaimId: previousExtract?.editClaimId,
+              draftId: previousExtract?.draftId,
+              draftSavedAt: previousExtract?.draftSavedAt,
+              draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
               warningAcknowledged: previousExtract?.warningAcknowledged,
               error:
                 "I couldn't scan that file. Please try another clear photo or PDF.",
@@ -1193,13 +1353,26 @@ export function useChat() {
       }
       const submittedExtract = { ...extract, submitted: true };
       updateBillExtract(messageId, submittedExtract);
+      if (extract.draftId) {
+        void billDraftStore.delete(extract.draftId).catch(() => {
+          setError("The submitted claim was saved, but its draft could not be removed.");
+        });
+      }
+      const submittedAt = Date.now();
       setMessages((prev) => [
         ...prev,
         {
           id: createId(),
+          role: "user",
+          content: "Submit",
+          createdAt: submittedAt,
+          kind: "text",
+        },
+        {
+          id: createId(),
           role: "assistant",
           content: `Claim ${claimId} submitted.`,
-          createdAt: Date.now(),
+          createdAt: submittedAt,
           kind: "claim_cta",
           claimId,
           billExtract: submittedExtract,
@@ -1672,6 +1845,9 @@ export function useChat() {
     processDlScenario,
     openUploadOptions,
     updateBillExtract,
+    saveBillDraft,
+    saveEligibleBillDrafts,
+    openBillDraft,
     submitBillClaim,
     saveClaimEdit,
     selectPolicyCategory,
@@ -1688,5 +1864,9 @@ export function useChat() {
     submitDriverSalaryClaim,
     startNewChat,
     hasMessages: messages.length > 0,
+    hasUnsavedBillDrafts: messages.some(
+      (message) =>
+        message.kind === "bill_extract" && isBillDraftUnsaved(message.billExtract),
+    ),
   };
 }

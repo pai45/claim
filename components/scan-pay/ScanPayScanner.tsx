@@ -41,9 +41,7 @@ export function ScanPayScanner({
     <AppShell
       className={`scan-pay-shell scan-pay-scanner-stage relative overflow-hidden bg-pine-dark ${
         state.torchEnabled ? "is-torch-enabled" : ""
-      } ${
-        detected ? "is-detected" : ""
-      }`}
+      } ${detected ? "is-detected" : ""}`}
     >
       <AppIcon
         src={SCAN_PAY_ASSETS.scannerDemo}
@@ -156,9 +154,7 @@ export function ScanPayScanner({
           onClick={() => dispatch({ type: "DETECT_QR" })}
           className={`scan-pay-beam min-h-11 rounded-pill ${
             state.qrErrorVisible ? "is-invalid" : ""
-          } ${
-            detected ? "is-detected" : ""
-          }`}
+          } ${detected ? "is-detected" : ""}`}
           aria-label="Simulate QR detection"
         />
       </main>
@@ -211,7 +207,7 @@ export function ScanPayScanner({
 
       <ScanPayDrawer
         open={state.step === "upiEntry"}
-        title="Pay using UPI ID"
+        title="Will be deducted from UPI ID"
         description="Enter the merchant’s UPI ID to continue"
         onClose={onUpiEntryClose ?? (() => dispatch({ type: "BACK" }))}
       >

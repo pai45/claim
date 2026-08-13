@@ -24,7 +24,7 @@ export function ScreenHeader({
     <header
       className={`w-full min-w-0 shrink-0 bg-white ${className}`.trim()}
     >
-      <div className="flex items-center gap-3 px-page pb-3 pt-2">
+      <div className="flex items-center gap-3 px-page pb-3 pt-4">
         <BackNavigationButton onClick={onBack} />
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           {eyebrow ? <p className="type-field-label">{eyebrow}</p> : null}

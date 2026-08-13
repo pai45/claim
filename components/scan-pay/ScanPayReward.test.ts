@@ -44,6 +44,20 @@ describe("paid-to screen", () => {
     expect(markup).toContain("Back to Home");
   });
 
+  it("renders the three receipt actions in one accessible segmented tray", () => {
+    const markup = render();
+
+    expect(markup).toContain('role="group"');
+    expect(markup).toContain('aria-label="Receipt actions"');
+    expect(markup).toContain("grid-cols-3");
+    expect(markup).toContain("View Details");
+    expect(markup).toContain("Download");
+    expect(markup).toContain("Share");
+    expect(markup).toContain("/assets/scan-pay/maximize-square.svg");
+    expect(markup).toContain("/assets/scan-pay/download-square.svg");
+    expect(markup).toContain("/assets/scan-pay/square-share-line.svg");
+  });
+
   it("no longer offers a scratch card or cashback", () => {
     const markup = render();
 

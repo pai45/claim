@@ -24,6 +24,9 @@ type NewChatWidgetProps = {
    * through the dialog again would ask the same question twice.
    */
   onClearChat: () => void;
+  /** Opens the shared bill-draft bottom sheet for an eligible conversation. */
+  onRequestDraftDecision?: () => void;
+  hasEligibleBillDrafts?: boolean;
   /**
    * Id of the newest completed-claim turn, or null when the thread has none.
    * Every *change* to a non-null value pops the drawer open for {@link HOLD_MS}.
@@ -42,7 +45,7 @@ type NewChatWidgetProps = {
  *
  * - `handle`  a slim tab tucked against the wall, mostly hidden
  * - `cta`     the "New chat" pill, wiped in from the wall
- * - `options` "Clear chat" / "Keep my draft"
+ * - `options` "Clear chat" / "Keep chatting" for non-bill conversations
  */
 type Stage = "handle" | "cta" | "options";
 
@@ -69,7 +72,7 @@ const DRAG_SIZE = HANDLE_H;
 const CTA_W = 152;
 const CTA_H = HANDLE_H;
 /** 10 padding + 16 title + 6 + 40 + 6 + 40 + 10. */
-const OPTIONS_W = 200;
+const OPTIONS_W = 216;
 const OPTIONS_H = 128;
 
 const STAGE_BOX: Record<Stage, { width: number; height: number }> = {
@@ -114,6 +117,8 @@ function bandFor(layerHeight: number, boxHeight: number) {
 
 export function NewChatWidget({
   onClearChat,
+  onRequestDraftDecision,
+  hasEligibleBillDrafts = false,
   completedClaimKey,
   reduceMotion,
 }: NewChatWidgetProps) {
@@ -532,7 +537,14 @@ export function NewChatWidget({
             <button
               type="button"
               inert={stage !== "cta"}
-              onClick={() => setStage("options")}
+              onClick={() => {
+                if (hasEligibleBillDrafts && onRequestDraftDecision) {
+                  setStage("handle");
+                  onRequestDraftDecision();
+                  return;
+                }
+                setStage("options");
+              }}
               style={{ ...layerStyle("cta"), width: CTA_W }}
               className={`absolute inset-y-0 flex items-center ${
                 isRight ? "flex-row-reverse" : "flex-row"
@@ -568,16 +580,16 @@ export function NewChatWidget({
               <button
                 type="button"
                 onClick={handleClear}
-                className="min-h-10 rounded-control bg-pine-primary px-3 text-body-sm font-bold text-white"
+                className="min-h-11 rounded-control bg-pine-primary px-3 text-body-sm font-bold text-white"
               >
                 Clear chat
               </button>
               <button
                 type="button"
                 onClick={() => setStage("handle")}
-                className="min-h-10 rounded-control border border-input-border bg-white px-3 text-body-sm font-bold text-pine"
+                className="min-h-11 rounded-control border border-input-border bg-white px-3 text-body-sm font-bold text-pine"
               >
-                Keep my draft
+                Keep chatting
               </button>
             </div>
           </div>

@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useRef } from "react";
+import { AppIcon } from "@/components/shared/AppIcon";
 import { withBasePath } from "@/lib/basePath";
+import { ONBOARDING_ASSETS } from "@/lib/ui/assets";
+import { useModalFocus } from "@/lib/ui/useModalFocus";
 import { OnboardingHeader } from "./OnboardingHeader";
-import { CenterModal } from "./OnboardingModals";
 import { PrimaryFooter } from "./PrimaryFooter";
 import { SuccessSealIcon } from "./SuccessSealIcon";
 
@@ -76,7 +79,7 @@ export function KycIntroStep({
         </button>
         <button
           type="button"
-          className="mt-3 flex h-[50px] w-full items-center justify-center rounded-lg border border-[#006060] bg-white px-4 text-center text-[17px] leading-6 text-[#006060]"
+          className="btn-secondary mt-3 min-h-11 h-[50px]"
           onClick={onCompleted}
         >
           I&apos;ve completed my KYC
@@ -95,15 +98,75 @@ export function KycProgressOverlay({
   open,
   onDismiss,
 }: KycProgressOverlayProps) {
+  const panelRef = useRef<HTMLElement>(null);
+  useModalFocus(panelRef, open, onDismiss);
+
+  if (!open) return null;
+
   return (
-    <CenterModal
-      open={open}
-      variant="info"
-      title="Verifying your KYC"
-      description="Hang tight — we're confirming your Video KYC with Pine Labs."
-      onConfirm={onDismiss}
-      onClose={onDismiss}
-    />
+    <div
+      className="fixed inset-0 z-[70] mx-auto max-w-phone"
+    >
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label="Dismiss KYC verification status"
+        onClick={onDismiss}
+        className="absolute inset-0 bg-ink/55"
+      />
+      <section
+        ref={panelRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="kyc-progress-title"
+        aria-describedby="kyc-progress-description"
+        className="animate-sheet-rise absolute inset-x-0 bottom-0 rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-10 text-center shadow-drawer"
+      >
+        <AppIcon
+          src={ONBOARDING_ASSETS.kycInProgress}
+          size={80}
+          className="absolute -top-10 left-1/2 -translate-x-1/2"
+        />
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onDismiss}
+          className="absolute right-2 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-pill text-ink-secondary"
+        >
+          <CloseIcon />
+        </button>
+        <h2 id="kyc-progress-title" className="type-section-title">
+          KYC Verification in Progress
+        </h2>
+        <p
+          id="kyc-progress-description"
+          className="type-body-secondary mx-auto mt-3 max-w-card"
+        >
+          Your VKYC is under verification. Please wait while we complete the
+          process (usually 24-48 hrs)
+        </p>
+        <button
+          type="button"
+          className="btn-primary mt-6 min-h-11 h-auto py-3"
+          onClick={onDismiss}
+        >
+          OK
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M7 7l10 10M17 7 7 17"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }
 

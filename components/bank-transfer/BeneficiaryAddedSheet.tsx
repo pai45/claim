@@ -38,7 +38,7 @@ export function BeneficiaryAddedSheet({
         onClick={onClose}
         className="absolute inset-0 bg-pine-dark/40"
       />
-      <section className="animate-sheet-rise absolute inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+16px)] max-h-[calc(100dvh-32px)] overflow-y-auto rounded-card bg-white p-card shadow-drawer">
+      <section className="animate-sheet-rise absolute inset-x-0 bottom-0 max-h-dvh overflow-y-auto rounded-t-bubble bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-4 shadow-drawer">
         <header className="flex justify-end">
           <button
             type="button"

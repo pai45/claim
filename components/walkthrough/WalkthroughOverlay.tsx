@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import type { WalkthroughRect, WalkthroughStep } from "@/features/walkthrough/types";
 import "./walkthrough.css";
 
@@ -22,6 +29,11 @@ type Geometry = {
   width: number;
   height: number;
   placement: Placement;
+  pointerLeft: number;
+};
+
+type TooltipStyle = CSSProperties & {
+  "--walkthrough-pointer-left": string;
 };
 
 type WalkthroughOverlayProps = {
@@ -95,7 +107,13 @@ export function WalkthroughOverlay({
             ),
           };
 
-    setGeometry({ top, left, width, height, placement });
+    const cardWidth = Math.max(0, origin.width - 32);
+    const pointerLeft = Math.min(
+      Math.max(left + width / 2 - 16, 24),
+      Math.max(24, cardWidth - 24),
+    );
+
+    setGeometry({ top, left, width, height, placement, pointerLeft });
   }, [rect]);
 
   // Escape must be caught in the capture phase and stopped: the host closes the
@@ -154,7 +172,7 @@ export function WalkthroughOverlay({
       role="group"
       aria-label="Feature walkthrough"
     >
-      {geometry ? (
+      {rect && geometry ? (
         <>
           <div
             className="walkthrough-scrim"
@@ -204,56 +222,61 @@ export function WalkthroughOverlay({
         </>
       ) : null}
 
-      <div
-        className="walkthrough-card animate-rise-in"
-        style={
-          geometry?.placement.edge === "below"
-            ? { top: geometry.placement.offset }
-            : { bottom: geometry?.placement.offset ?? TOP_GUTTER }
-        }
-      >
-        <div className="rounded-card bg-white p-5 shadow-menu">
-          <div className="flex items-start justify-between gap-3">
-            <p className="type-field-label">{step.eyebrow}</p>
-            <button
-              type="button"
-              onClick={onSkip}
-              className="-mr-1 -mt-1 shrink-0 rounded-pill px-2 py-1 text-caption font-bold text-ink-secondary"
-            >
-              Skip
-            </button>
-          </div>
-
-          <h2 className="mt-1 type-section-title">{step.title}</h2>
-          <p className="mt-1.5 type-body-secondary" aria-live="polite">
-            {step.body}
-          </p>
-
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <span className="rounded-pill border border-input-border bg-white/95 px-3 py-1 text-caption font-bold text-pine">
-              {stepIndex + 1} / {stepCount}
-            </span>
-            <div className="flex items-center gap-2">
-              {stepIndex > 0 ? (
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="min-h-11 rounded-control px-3 text-body-sm font-bold text-pine-primary"
-                >
-                  Back
-                </button>
-              ) : null}
+      {rect && geometry ? (
+        <div
+          className={`walkthrough-card walkthrough-card--${geometry.placement.edge} animate-rise-in`}
+          style={
+            {
+              ...(geometry.placement.edge === "below"
+                ? { top: geometry.placement.offset }
+                : { bottom: geometry.placement.offset }),
+              "--walkthrough-pointer-left": `${geometry.pointerLeft}px`,
+            } as TooltipStyle
+          }
+        >
+          <div className="walkthrough-tooltip rounded-card border border-border-line bg-surface p-5 shadow-menu">
+            <div className="flex items-start justify-between gap-3">
+              <p className="type-field-label">{step.eyebrow}</p>
               <button
                 type="button"
-                onClick={onNext}
-                className="btn-primary h-auto min-h-11 px-5 py-2.5 text-body-sm"
+                onClick={onSkip}
+                className="-mr-2 -mt-2 min-h-11 shrink-0 rounded-pill px-3 text-caption font-bold text-ink-secondary"
               >
-                {isLast ? "Done" : "Next"}
+                Skip
               </button>
+            </div>
+
+            <h2 className="mt-1 type-section-title">{step.title}</h2>
+            <p className="mt-1.5 type-body-secondary" aria-live="polite">
+              {step.body}
+            </p>
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <span className="rounded-pill border border-input-border bg-white/95 px-3 py-1 text-caption font-bold text-pine">
+                {stepIndex + 1} / {stepCount}
+              </span>
+              <div className="flex items-center gap-2">
+                {stepIndex > 0 ? (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="min-h-11 rounded-control px-3 text-body-sm font-bold text-pine-primary"
+                  >
+                    Back
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={onNext}
+                  className="btn-primary h-auto min-h-11 px-5 py-2.5 text-body-sm"
+                >
+                  {isLast ? "Done" : "Next"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

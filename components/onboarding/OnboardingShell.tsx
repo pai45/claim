@@ -66,6 +66,9 @@ export function OnboardingShell({
   const [kycProgressOpen, setKycProgressOpen] = useState(false);
   /** True when the browser hand-off was triggered by this page load, not a previous one. */
   const handoffStartedHereRef = useRef(false);
+  const canShowKycProgress =
+    journey === "initial" &&
+    (state.step === "hub" || state.step === "kyc-intro");
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -117,6 +120,7 @@ export function OnboardingShell({
     if (
       journey === "eb-plus-activation" ||
       !hydrated ||
+      state.step !== "kyc-intro" ||
       state.kycStatus !== "awaiting_return"
     ) {
       return;
@@ -160,7 +164,7 @@ export function OnboardingShell({
       window.removeEventListener("focus", onEvent);
       window.removeEventListener("pageshow", onEvent);
     };
-  }, [hydrated, journey, state.kycStatus]);
+  }, [hydrated, journey, state.kycStatus, state.step]);
 
   if (!hydrated) {
     return <div className="h-dvh w-full bg-surface" aria-hidden="true" />;
@@ -230,8 +234,10 @@ export function OnboardingShell({
             dispatch({ type: "kyc-handoff-started" });
           }}
           onCompleted={() => {
-            dispatch({ type: "kyc-mark-in-progress" });
-            setKycProgressOpen(true);
+            clearVkycHandoff();
+            handoffStartedHereRef.current = false;
+            setKycProgressOpen(false);
+            dispatch({ type: "kyc-complete" });
           }}
         />
       ) : null}
@@ -263,11 +269,7 @@ export function OnboardingShell({
 
       {state.step === "card-embossment" ? (
         <CardEmbossmentStep
-          embossment={state.cardEmbossment}
           onBack={() => dispatch({ type: "go", step: "card-address" })}
-          onChange={(field, value) =>
-            dispatch({ type: "set-card-embossment-field", field, value })
-          }
           onComplete={() => dispatch({ type: "card-setup-complete" })}
         />
       ) : null}
@@ -305,7 +307,7 @@ export function OnboardingShell({
 
       {journey === "initial" ? (
         <KycProgressOverlay
-          open={kycProgressOpen}
+          open={kycProgressOpen && canShowKycProgress}
           onDismiss={() => setKycProgressOpen(false)}
         />
       ) : null}

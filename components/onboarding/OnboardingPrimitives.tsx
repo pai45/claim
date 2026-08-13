@@ -133,7 +133,7 @@ export function TextField({
           placeholder={placeholder}
           onChange={(event) => onChange?.(event.target.value)}
           className={`min-h-11 w-full bg-transparent text-body-sm font-bold outline-none placeholder:text-placeholder ${
-            readOnly ? "text-subtle" : "text-pine"
+            readOnly ? "text-ink-secondary" : "text-pine"
           }`}
         />
         {trailing}
@@ -161,7 +161,7 @@ export function CheckRow({
       className="flex min-h-11 items-start gap-3 text-left"
     >
       <span
-        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border ${
+        className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-checkbox border ${
           checked
             ? "border-pine-primary bg-pine-primary"
             : "border-input-border bg-white"

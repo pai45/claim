@@ -93,6 +93,7 @@
   --spacing-section: 24px;
 
   /* —— Radius (4pt) —— */
+  --radius-checkbox: 4px;
   --radius-card: 16px;
   --radius-bubble: 20px;
   --radius-pill: 32px;

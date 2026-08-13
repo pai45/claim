@@ -118,6 +118,23 @@ describe("verify-failed", () => {
   });
 });
 
+describe("verify-succeeded", () => {
+  it("locks the verified OTP state while MPIN setup is pending", () => {
+    const verified = reduce(filledOtp(), { type: "submit-otp" }, {
+      type: "verify-succeeded",
+    });
+
+    expect(verified.status).toBe("verified");
+    expect(canSubmitOtp(verified)).toBe(false);
+    expect(canSubmitMobile(verified)).toBe(false);
+  });
+
+  it("is ignored unless an OTP verification is in progress", () => {
+    const state = filledOtp();
+    expect(loginReducer(state, { type: "verify-succeeded" })).toBe(state);
+  });
+});
+
 describe("set-otp-digit", () => {
   it("keeps only the last typed digit", () => {
     const state = reduce(atOtpStep(), {

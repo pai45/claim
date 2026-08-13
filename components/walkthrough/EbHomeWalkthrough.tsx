@@ -9,7 +9,11 @@ import {
   type RefObject,
 } from "react";
 import { UPI_CREATED_STORAGE_KEY } from "@/features/demo/reset";
-import { getEbHomeSteps } from "@/features/walkthrough/steps";
+import {
+  EB_HOME_HOST_SELECTORS,
+  EB_HOME_POST_UPI_STEP_INDEX,
+  getEbHomeSteps,
+} from "@/features/walkthrough/steps";
 import type { WalkthroughRect } from "@/features/walkthrough/types";
 import { useWalkthrough } from "@/features/walkthrough/useWalkthrough";
 import { WalkthroughOverlay } from "./WalkthroughOverlay";
@@ -17,13 +21,19 @@ import { WalkthroughOverlay } from "./WalkthroughOverlay";
 const MEASURE_MESSAGE = "employee-benefits:walkthrough-measure";
 const RECT_MESSAGE = "employee-benefits:walkthrough-rect";
 const TAPPED_MESSAGE = "employee-benefits:walkthrough-tapped";
+const UPI_CREATED_MESSAGE = "employee-benefits:upi-created";
+const UPI_CREATED_EVENT = "employee-benefits:upi-created-local";
 const END_MESSAGE = "employee-benefits:walkthrough-end";
 /** The iframe answers on the next frame; anything slower is a missing target. */
 const MEASURE_TIMEOUT_MS = 600;
 
 function subscribeToUpiCreated(listener: () => void): () => void {
   window.addEventListener("storage", listener);
-  return () => window.removeEventListener("storage", listener);
+  window.addEventListener(UPI_CREATED_EVENT, listener);
+  return () => {
+    window.removeEventListener("storage", listener);
+    window.removeEventListener(UPI_CREATED_EVENT, listener);
+  };
 }
 
 function readUpiCreated(): boolean {
@@ -61,8 +71,24 @@ export function EbHomeWalkthrough({
   const steps = useMemo(() => getEbHomeSteps(upiCreated), [upiCreated]);
 
   const measure = useCallback(
-    (key: string) =>
-      new Promise<WalkthroughRect | null>((resolve) => {
+    (key: string) => {
+      const hostSelector = EB_HOME_HOST_SELECTORS[key];
+      if (hostSelector) {
+        // The previous target lived in the iframe. Release its scroll lock
+        // before moving the spotlight onto the React-owned bottom navigation.
+        frameRef.current?.contentWindow?.postMessage(
+          { type: END_MESSAGE },
+          window.location.origin,
+        );
+        const target = document.querySelector<HTMLElement>(hostSelector);
+        if (!target || target.offsetParent === null) {
+          return Promise.resolve(null);
+        }
+        const { top, left, width, height } = target.getBoundingClientRect();
+        return Promise.resolve({ top, left, width, height });
+      }
+
+      return new Promise<WalkthroughRect | null>((resolve) => {
         const frame = frameRef.current;
         const frameWindow = frame?.contentWindow;
         if (!frame || !frameWindow) {
@@ -106,7 +132,8 @@ export function EbHomeWalkthrough({
           { type: MEASURE_MESSAGE, key },
           window.location.origin,
         );
-      }),
+      });
+    },
     [frameRef],
   );
 
@@ -129,17 +156,28 @@ export function EbHomeWalkthrough({
   // Pointer events never leave the iframe, so the tap-through that pauses a run
   // has to be reported across the bridge.
   const pauseRef = useRef(controller.pause);
+  const queueResumeAtRef = useRef(controller.queueResumeAt);
 
   useEffect(() => {
     pauseRef.current = controller.pause;
+    queueResumeAtRef.current = controller.queueResumeAt;
   });
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       if (event.source !== frameRef.current?.contentWindow) return;
-      if (event.data?.type !== TAPPED_MESSAGE) return;
-      pauseRef.current();
+      if (event.data?.type === TAPPED_MESSAGE) {
+        pauseRef.current();
+        return;
+      }
+      if (event.data?.type === UPI_CREATED_MESSAGE) {
+        // localStorage events can be inconsistent across embedded browsing
+        // contexts. Refresh the snapshot explicitly and resume at step 6 once
+        // the setup overlay returns to the home screen.
+        window.dispatchEvent(new Event(UPI_CREATED_EVENT));
+        queueResumeAtRef.current(EB_HOME_POST_UPI_STEP_INDEX);
+      }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);

@@ -2,7 +2,7 @@ import { formatMobileInput, isValidMobile } from "./phoneNumber";
 import { distributeOtpPaste, isOtpComplete, OTP_LENGTH } from "./otp";
 
 export type LoginStep = "phone" | "otp";
-export type LoginStatus = "idle" | "verifying" | "error";
+export type LoginStatus = "idle" | "verifying" | "verified" | "error";
 
 export type LoginState = {
   step: LoginStep;
@@ -23,6 +23,7 @@ export type LoginAction =
   | { type: "set-otp-digit"; index: number; value: string }
   | { type: "fill-otp"; index: number; text: string }
   | { type: "submit-otp" }
+  | { type: "verify-succeeded" }
   | { type: "verify-failed"; message: string }
   | { type: "resend" };
 
@@ -46,11 +47,19 @@ export function otpValue(state: LoginState): string {
  * keypress cannot bypass what the greyed-out CTA implies.
  */
 export function canSubmitMobile(state: LoginState): boolean {
-  return isValidMobile(state.mobile) && state.status !== "verifying";
+  return (
+    isValidMobile(state.mobile) &&
+    state.status !== "verifying" &&
+    state.status !== "verified"
+  );
 }
 
 export function canSubmitOtp(state: LoginState): boolean {
-  return isOtpComplete(state.otp) && state.status !== "verifying";
+  return (
+    isOtpComplete(state.otp) &&
+    state.status !== "verifying" &&
+    state.status !== "verified"
+  );
 }
 
 export function loginReducer(
@@ -120,6 +129,11 @@ export function loginReducer(
         status: "error",
         error: action.message,
       };
+    }
+
+    case "verify-succeeded": {
+      if (state.status !== "verifying") return state;
+      return { ...state, status: "verified", error: null };
     }
 
     case "resend": {

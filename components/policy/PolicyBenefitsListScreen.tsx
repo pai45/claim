@@ -28,7 +28,7 @@ export function PolicyBenefitsListScreen() {
 
   return (
     <AppShell className="overflow-hidden">
-      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-2">
+      <header className="flex items-center gap-4 bg-white px-page pb-4 pt-4">
         <BackNavigationButton onClick={() => router.push("/#claims")} />
         <h1 className="type-screen-title flex-1 truncate">Policy details</h1>
       </header>

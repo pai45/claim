@@ -475,9 +475,9 @@ svg {
 }
 
 .hero-card-name {
-  color: inherit;
+  color: rgba(255, 255, 255, 0.6);
   font-family: "PP Telegraf", "Times New Roman", serif;
-  font-size: var(--text-18);
+  font-size: var(--text-14);
   font-weight: var(--fw-bold);
   line-height: 1.2;
   text-transform: uppercase;
@@ -545,7 +545,7 @@ svg {
 
 .balance-copy p {
   margin: 0 0 9px;
-  color: #ffffff;
+  color: rgba(255, 255, 255, 0.6);
   font-size: var(--text-14);
   font-weight: var(--fw-semibold);
 }
@@ -10772,18 +10772,18 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 
 .track-activation-sheet {
   position: absolute;
-  right: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: grid;
   gap: 16px;
-  width: calc(100% - 40px);
-  max-width: 368px;
-  max-height: calc(100dvh - 32px);
-  padding: 18px 18px 20px;
-  border-radius: 17px;
+  width: 100%;
+  max-height: 100dvh;
+  padding: 18px 18px max(20px, env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
   background: #ffffff;
   overflow-y: auto;
-  transform: translate(50%, calc(100% + 32px));
+  transform: translateY(calc(100% + 32px));
   transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -10792,7 +10792,7 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 }
 
 .track-activation-overlay.is-open .track-activation-sheet {
-  transform: translate(50%, 0);
+  transform: translateY(0);
 }
 
 .track-activation-header {
@@ -11020,7 +11020,6 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
   }
 
   .track-activation-sheet {
-    width: calc(100% - 24px);
     padding-inline: 16px;
   }
 }
@@ -11143,15 +11142,15 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 .card-lock-sheet,
 .card-status-sheet {
   position: absolute;
-  right: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+  right: 0;
+  bottom: 0;
+  left: 0;
   display: grid;
-  width: calc(100% - 40px);
-  max-width: 368px;
-  max-height: calc(100dvh - 32px);
-  border-radius: 17px;
+  width: 100%;
+  max-height: 100dvh;
+  border-radius: 20px 20px 0 0;
   background: #ffffff;
-  transform: translate(50%, calc(100% + 48px));
+  transform: translateY(calc(100% + 48px));
   transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -11162,12 +11161,12 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 
 .card-lock-overlay.is-open .card-lock-sheet,
 .card-status-overlay.is-open .card-status-sheet {
-  transform: translate(50%, 0);
+  transform: translateY(0);
 }
 
 .card-lock-sheet {
   gap: 4px;
-  padding: 18px 18px 20px;
+  padding: 18px 18px max(20px, env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
 }
 
@@ -11296,7 +11295,7 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 .card-status-sheet {
   gap: 10px;
   justify-items: center;
-  padding: 62px 20px 20px;
+  padding: 62px 20px max(20px, env(safe-area-inset-bottom, 0px));
   overflow: visible;
   text-align: center;
 }
@@ -11441,7 +11440,7 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 
 .card-status-sheet[data-card-status-mode="unlocked"] {
   gap: 18px;
-  padding-bottom: 22px;
+  padding-bottom: max(22px, env(safe-area-inset-bottom, 0px));
 }
 
 .balance-card-unlock:focus-visible,
@@ -11456,7 +11455,6 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 @media (max-width: 340px) {
   .card-lock-sheet,
   .card-status-sheet {
-    width: calc(100% - 24px);
     padding-inline: 16px;
   }
 
@@ -12095,16 +12093,16 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 
 .card-success-sheet {
   position: absolute;
-  right: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-  width: calc(100% - 40px);
-  max-width: 368px;
-  padding: 68px 24px 24px;
-  border-radius: 18px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 68px 24px max(24px, env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
   background: #ffffff;
   color: #202328;
   text-align: center;
-  transform: translate(50%, calc(100% + 90px));
+  transform: translateY(calc(100% + 90px));
   transition: transform 280ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -12113,7 +12111,7 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 }
 
 .card-success-overlay.is-open .card-success-sheet {
-  transform: translate(50%, 0);
+  transform: translateY(0);
 }
 
 /* The seal carries its own white disc, so the badge is centred on the sheet's
@@ -12241,15 +12239,15 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 
 .fallback-confirm-sheet {
   position: absolute;
-  right: 50%;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
-  width: calc(100% - 40px);
-  max-width: 368px;
-  padding: 22px 20px 20px;
-  border-radius: 18px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 22px 20px max(20px, env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
   background: #ffffff;
   box-shadow: 0 12px 36px rgba(0, 42, 25, 0.18);
-  transform: translate(50%, calc(100% + 60px));
+  transform: translateY(calc(100% + 60px));
   transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
@@ -12258,7 +12256,7 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
 }
 
 .fallback-confirm-overlay.is-open .fallback-confirm-sheet {
-  transform: translate(50%, 0);
+  transform: translateY(0);
 }
 
 .fallback-confirm-header {
@@ -12387,13 +12385,11 @@ body.is-pluspay.is-eb-plus-setup-eligible .eb-plus-setup-card {
   }
 
   .card-success-sheet {
-    width: calc(100% - 24px);
     padding-right: 18px;
     padding-left: 18px;
   }
 
   .fallback-confirm-sheet {
-    width: calc(100% - 24px);
     padding-right: 16px;
     padding-left: 16px;
   }

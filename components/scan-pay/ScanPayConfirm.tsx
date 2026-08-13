@@ -24,7 +24,10 @@ import {
 } from "@/features/scan-pay/fixtures";
 import { calculateScanPayFunding } from "@/features/scan-pay/funding";
 import { formatScanPayINR } from "@/features/scan-pay/receipt";
-import { scanPayAmountIsValid } from "@/features/scan-pay/machine";
+import {
+  formatScanPayAmountInput,
+  scanPayAmountIsValid,
+} from "@/features/scan-pay/machine";
 import type {
   ScanPayAction,
   ScanPayCategory,
@@ -32,7 +35,10 @@ import type {
   ScanPayState,
 } from "@/features/scan-pay/types";
 import { useActivePersona } from "@/features/persona/useActivePersona";
-import { useFallbackControlState } from "@/features/fallback-control/store";
+import {
+  useFallbackControlState,
+  writeFallbackControlState,
+} from "@/features/fallback-control/store";
 import {
   WALLET_FILTER_OPTIONS,
   getWalletBalance,
@@ -93,17 +99,14 @@ export function ScanPayConfirm({
     ? bankTransferTotal(transferAmount)
     : transferAmount;
   const merchant = merchantForType(state.merchantType);
-  const balances = useMemo(
-    () => {
-      void financialVersion;
-      return {
-        meal: getWalletBalance("meal", personaId).amount,
-        fuel: getWalletBalance("fuel", personaId).amount,
-        misc: getWalletBalance("misc", personaId).amount,
-      };
-    },
-    [financialVersion, personaId],
-  );
+  const balances = useMemo(() => {
+    void financialVersion;
+    return {
+      meal: getWalletBalance("meal", personaId).amount,
+      fuel: getWalletBalance("fuel", personaId).amount,
+      misc: getWalletBalance("misc", personaId).amount,
+    };
+  }, [financialVersion, personaId]);
   const selectedWallet =
     WALLET_FILTER_OPTIONS.find((wallet) => wallet.id === state.walletId) ??
     WALLET_FILTER_OPTIONS.find((wallet) => wallet.id === "misc")!;
@@ -121,12 +124,21 @@ export function ScanPayConfirm({
         balances,
         fallback,
       }),
-    [balances, fallback, state.merchantType, state.mode, state.walletId, totalPaymentAmount],
+    [
+      balances,
+      fallback,
+      state.merchantType,
+      state.mode,
+      state.walletId,
+      totalPaymentAmount,
+    ],
   );
   const bankAmountError = bankRecipient
     ? validateBankTransferAmount(state.amount, balances.misc, convenienceFee)
     : null;
-  const amountValid = bankRecipient ? bankAmountError === null : scanAmountValid;
+  const amountValid = bankRecipient
+    ? bankAmountError === null
+    : scanAmountValid;
   const valid =
     amountValid &&
     (state.mode === "pluspay" ||
@@ -136,7 +148,8 @@ export function ScanPayConfirm({
     state.amountTouched &&
     !amountValid &&
     (Boolean(bankRecipient) || state.amount !== "");
-  const amountFontSize = amountFontSizeFor(state.amount);
+  const displayedAmount = formatScanPayAmountInput(state.amount);
+  const amountFontSize = amountFontSizeFor(displayedAmount);
   const noCategory = state.scenario === "no-category";
   const showCategorySelection = state.mode === "pluspay";
   const quickCategories = useMemo(() => {
@@ -149,13 +162,24 @@ export function ScanPayConfirm({
     return SCAN_PAY_QUICK_CATEGORIES;
   }, [state.selectedCategoryId]);
 
-  const appendAmount = useCallback((value: string) => {
-    dispatch({ type: "SET_AMOUNT", amount: `${state.amount}${value}` });
-  }, [dispatch, state.amount]);
+  const appendAmount = useCallback(
+    (value: string) => {
+      dispatch({ type: "SET_AMOUNT", amount: `${state.amount}${value}` });
+    },
+    [dispatch, state.amount],
+  );
 
   const removeAmountDigit = useCallback(() => {
     dispatch({ type: "SET_AMOUNT", amount: state.amount.slice(0, -1) });
   }, [dispatch, state.amount]);
+
+  const enableFallbackForPayment = useCallback(() => {
+    if (state.walletId !== "meal" && state.walletId !== "fuel") return;
+    writeFallbackControlState({
+      ...fallback,
+      [state.walletId]: true,
+    });
+  }, [fallback, state.walletId]);
 
   // Keep the on-screen keypad from becoming a touch-only control. Ignore note
   // fields and any other text controls so their normal typing is unaffected.
@@ -197,11 +221,16 @@ export function ScanPayConfirm({
         }}
       >
         {showError ? (
-          <div className="animate-rise-in mb-3 flex items-start gap-3 rounded-card border border-danger bg-danger-soft p-card text-danger shadow-card" role="alert">
+          <div
+            className="animate-rise-in mb-3 flex items-start gap-3 rounded-card border border-danger bg-danger-soft p-card text-danger shadow-card"
+            role="alert"
+          >
             <ScanPayIcon name="warning" className="mt-0.5 shrink-0" />
             <div>
               <p className="text-body-sm font-bold">
-                {bankRecipient ? "Enter a valid amount" : "Enter Value Before Payment"}
+                {bankRecipient
+                  ? "Enter a valid amount"
+                  : "Enter Value Before Payment"}
               </p>
               <p className="mt-0.5 text-caption">
                 {bankAmountError ??
@@ -221,7 +250,9 @@ export function ScanPayConfirm({
             aria-label="Payment receipt"
           >
             <h2 className="scan-pay-receipt-merchant type-section-title text-pine">
-              {bankRecipient?.accountHolder ?? upiRecipient?.name ?? merchant.name}
+              {bankRecipient?.accountHolder ??
+                upiRecipient?.name ??
+                merchant.name}
             </h2>
             <p className="scan-pay-receipt-upi mt-0.5 text-subtle">
               {bankRecipient
@@ -239,7 +270,7 @@ export function ScanPayConfirm({
               <span className="scan-pay-amount-sizer">
                 {/* Mirrors the value so the field is sized to the exact text width. */}
                 <span className="scan-pay-amount-ghost" aria-hidden="true">
-                  {state.amount || "0"}
+                  {displayedAmount || "0"}
                 </span>
                 <input
                   ref={amountRef}
@@ -248,7 +279,7 @@ export function ScanPayConfirm({
                   inputMode="decimal"
                   autoComplete="off"
                   placeholder="0"
-                  value={state.amount}
+                  value={displayedAmount}
                   readOnly
                   onChange={(event) =>
                     dispatch({ type: "SET_AMOUNT", amount: event.target.value })
@@ -263,11 +294,15 @@ export function ScanPayConfirm({
               <dl className="mx-auto mt-3 w-full max-w-card divide-y divide-border-soft text-caption text-ink-secondary">
                 <div className="flex items-center justify-between py-1.5">
                   <dt>Convenience fee</dt>
-                  <dd className="font-bold text-ink">{formatScanPayINR(convenienceFee)}</dd>
+                  <dd className="font-bold text-ink">
+                    {formatScanPayINR(convenienceFee)}
+                  </dd>
                 </div>
                 <div className="flex items-center justify-between pt-2 text-pine">
                   <dt className="font-bold">Total payable</dt>
-                  <dd className="font-bold">{formatScanPayINR(totalPaymentAmount)}</dd>
+                  <dd className="font-bold">
+                    {formatScanPayINR(totalPaymentAmount)}
+                  </dd>
                 </div>
               </dl>
             ) : null}
@@ -279,12 +314,19 @@ export function ScanPayConfirm({
                 </p>
                 {bankRecipient ? (
                   <div className="mx-auto mt-3 flex min-h-14 w-full items-center justify-center gap-3 rounded-control border border-pine-primary bg-surface-tint px-card text-left shadow-card">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-white text-pine-primary" aria-hidden="true">
+                    <span
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-white text-pine-primary"
+                      aria-hidden="true"
+                    >
                       <ScanPayIcon name="bank" />
                     </span>
                     <span>
-                      <span className="block text-body-sm font-bold text-pine">Bank Transfer</span>
-                      <span className="block text-caption text-ink-secondary">Finance</span>
+                      <span className="block text-body-sm font-bold text-pine">
+                        Bank Transfer
+                      </span>
+                      <span className="block text-caption text-ink-secondary">
+                        Finance
+                      </span>
                     </span>
                   </div>
                 ) : noCategory ? (
@@ -293,7 +335,10 @@ export function ScanPayConfirm({
                       <input
                         value={state.note}
                         onChange={(event) =>
-                          dispatch({ type: "SET_NOTE", note: event.target.value })
+                          dispatch({
+                            type: "SET_NOTE",
+                            note: event.target.value,
+                          })
                         }
                         placeholder="Add a payment note"
                         className="min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 text-body-sm text-ink outline-none placeholder:text-placeholder"
@@ -331,7 +376,10 @@ export function ScanPayConfirm({
                           }
                           selected={state.selectedCategoryId === id}
                           onClick={() =>
-                            dispatch({ type: "SELECT_CATEGORY", categoryId: id })
+                            dispatch({
+                              type: "SELECT_CATEGORY",
+                              categoryId: id,
+                            })
                           }
                         />
                       );
@@ -389,11 +437,22 @@ export function ScanPayConfirm({
             aria-live="polite"
           >
             <ScanPayIcon name="warning" className="mt-0.5 shrink-0" size={18} />
-            <span className="font-bold">{fundingPlan.message}</span>
+            <span className="min-w-0 flex-1 font-bold">
+              {fundingPlan.message}
+              {fundingPlan.status === "fallback-disabled" ? (
+                <button
+                  type="button"
+                  onClick={enableFallbackForPayment}
+                  className="mt-2 flex min-h-11 w-full items-center justify-center rounded-control border border-danger bg-white px-3 py-2 text-caption font-bold text-danger"
+                >
+                  Turn on Fallback Control
+                </button>
+              ) : null}
+            </span>
           </div>
         ) : null}
         <section aria-label="Payment source">
-          <p className="type-field-label">Pay Using</p>
+          <p className="type-field-label">Will be deducted from</p>
           <div className="mt-2 flex min-h-16 items-center gap-3 rounded-card border border-border-line bg-input-soft p-card">
             {state.mode === "pluspay" ? (
               <>
@@ -407,8 +466,12 @@ export function ScanPayConfirm({
                   />
                 </span>
                 <span className="min-w-0">
-                  <span className="type-body block font-bold text-pine">ANQ</span>
-                  <span className="type-body-secondary mt-0.5 block">PlusPay</span>
+                  <span className="type-body block font-bold text-pine">
+                    ANQ
+                  </span>
+                  <span className="type-body-secondary mt-0.5 block">
+                    PlusPay
+                  </span>
                 </span>
               </>
             ) : (

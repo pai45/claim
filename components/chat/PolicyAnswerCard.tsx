@@ -11,6 +11,7 @@ type PolicyAnswerCardProps = {
   content: string;
   payload: PolicyAnswerPayload;
   reveal?: boolean;
+  showAvatar?: boolean;
 };
 
 function FactList({
@@ -89,6 +90,7 @@ export function PolicyAnswerCard({
   content,
   payload,
   reveal = false,
+  showAvatar = true,
 }: PolicyAnswerCardProps) {
   const structured = payload.structured;
   if (!structured) return null;
@@ -103,6 +105,7 @@ export function PolicyAnswerCard({
       title={structured.title}
       summary={content}
       reveal={reveal}
+      showAvatar={showAvatar}
       actions={actions}
     >
       <div className="flex flex-col gap-4">

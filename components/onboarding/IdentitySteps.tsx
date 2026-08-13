@@ -7,8 +7,16 @@ import type { IdentityForm } from "@/features/onboarding/types";
 import { colors } from "@/lib/ui/colors";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { BottomSheet, CenterModal } from "./OnboardingModals";
-import { CheckRow, TextField } from "./OnboardingPrimitives";
+import { TextField } from "./OnboardingPrimitives";
 import { PrimaryFooter } from "./PrimaryFooter";
+
+const verificationNote = (
+  <p className="type-body-secondary mb-3 text-subtle">
+    <span className="font-bold text-subtle">Note: </span>
+    I verify that the information given above is accurate. If you find any
+    discrepancies, please reach out to your HR Admin.
+  </p>
+);
 
 function IdentityStepProgress({
   label,
@@ -112,6 +120,7 @@ export function IdentityEmailStep({
         label="Verify Email"
         disabled={!email.trim()}
         onClick={openSheet}
+        secondary={verificationNote}
       />
 
       <BottomSheet
@@ -204,11 +213,9 @@ export function IdentityDetailsStep({
   onBack,
   onComplete,
 }: IdentityDetailsStepProps) {
-  const [confirmed, setConfirmed] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
 
   const canProceed =
-    confirmed &&
     identity.firstName.trim() &&
     identity.lastName.trim() &&
     identity.dateOfBirth.trim();
@@ -252,16 +259,12 @@ export function IdentityDetailsStep({
           trailing={<CalendarIcon />}
           readOnly
         />
-        <CheckRow
-          checked={confirmed}
-          onChange={setConfirmed}
-          label="I verify that the information given above is accurate. If you find any discrepancies, please reach out to your HR Admin."
-        />
       </main>
       <PrimaryFooter
         label="Proceed"
         disabled={!canProceed}
         onClick={() => setSuccessOpen(true)}
+        secondary={verificationNote}
       />
       <CenterModal
         open={successOpen}

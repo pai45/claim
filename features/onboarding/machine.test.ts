@@ -63,12 +63,12 @@ describe("onboardingReducer", () => {
     expect(state.step).toBe("kyc-completed");
   });
 
-  it("sends the manual 'already completed' path back to the hub", () => {
+  it("takes the demo KYC shortcut directly to the completed screen", () => {
     let state = createInitialOnboardingState();
     state = onboardingReducer(state, { type: "go", step: "kyc-intro" });
-    state = onboardingReducer(state, { type: "kyc-mark-in-progress" });
-    expect(state.kycStatus).toBe("in_progress");
-    expect(state.step).toBe("hub");
+    state = onboardingReducer(state, { type: "kyc-complete" });
+    expect(state.kycStatus).toBe("completed");
+    expect(state.step).toBe("kyc-completed");
   });
 
   it("autofills KYC address when sameAsKyc is checked", () => {

@@ -68,6 +68,8 @@ describe("bank-transfer receipt", () => {
     const markup = renderToStaticMarkup(
       createElement(ScanPayBankTransferPaid, {
         transaction,
+        onDownload: () => {},
+        onShare: () => {},
         onClose: () => {},
       }),
     );
@@ -81,6 +83,13 @@ describe("bank-transfer receipt", () => {
     expect(markup).toContain("Convenience fee");
     expect(markup).toContain("Total debited");
     expect(markup).toContain("Back to Home");
+    expect(markup).toContain('aria-label="Receipt actions"');
+    expect(markup).toContain("grid-cols-2");
+    expect(markup).toContain("Download");
+    expect(markup).toContain("Share");
+    expect(markup).not.toContain("View Details");
+    expect(markup).toContain("/assets/scan-pay/download-square.svg");
+    expect(markup).toContain("/assets/scan-pay/square-share-line.svg");
     expect(markup).not.toContain("Scratch card");
     expect(markup).not.toContain("Cashback");
   });

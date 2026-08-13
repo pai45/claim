@@ -25,7 +25,16 @@ describe("ReadyStep", () => {
       "Your Employee Benefit Card is Ready for Use!",
     );
     expect(markup).toContain("ROHAN MEHTA");
+    expect(markup).toContain("**** **** **** ***");
+    expect(markup).toContain("** / **");
+    expect(markup).toContain("rupay-logo.svg");
+    expect(markup).toContain("icici-card-front.png");
+    expect(markup).toContain("online-transactions.svg");
+    expect(markup).toContain("tap-to-pay.svg");
     expect(markup).toContain("Linked Wallets");
+    expect(markup).toContain(
+      "You can change these anytime in Card Settings.",
+    );
     expect(markup).toContain(">Go to Homepage</button>");
   });
 });

@@ -8,6 +8,7 @@ import {
   createInitialBankTransferState,
   createInitialScanPayState,
   createPaymentTransactionForState,
+  formatScanPayAmountInput,
   scanPayAmountIsValid,
   scanPayReducer,
 } from "@/features/scan-pay/machine";
@@ -64,6 +65,9 @@ describe("scan pay machine", () => {
 
   it("cleans and validates currency input", () => {
     expect(cleanScanPayAmount("₹1,23.456")).toBe("123.45");
+    expect(formatScanPayAmountInput("12000")).toBe("12,000");
+    expect(formatScanPayAmountInput("1234567.5")).toBe("12,34,567.5");
+    expect(formatScanPayAmountInput("12000.")).toBe("12,000.");
     expect(scanPayAmountIsValid("0")).toBe(false);
     expect(scanPayAmountIsValid("1")).toBe(true);
   });

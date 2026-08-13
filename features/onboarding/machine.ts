@@ -50,13 +50,6 @@ export function onboardingReducer(
     case "kyc-verifying":
       return { ...state, kycStatus: "in_progress" };
 
-    case "kyc-mark-in-progress":
-      return {
-        ...state,
-        kycStatus: "in_progress",
-        step: "hub",
-      };
-
     case "kyc-complete":
       return {
         ...state,

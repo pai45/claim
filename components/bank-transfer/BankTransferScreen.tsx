@@ -296,7 +296,7 @@ export function BankBeneficiaryHistoryScreen({
 
   return (
     <AppShell className="overflow-hidden bg-white">
-      <header className="relative flex shrink-0 items-center px-page pb-2 pt-2">
+      <header className="relative flex shrink-0 items-center px-page pb-2 pt-4">
         <BackNavigationButton
           onClick={onBack}
           ariaLabel="Back to saved beneficiaries"

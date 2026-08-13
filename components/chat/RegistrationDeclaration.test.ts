@@ -19,6 +19,7 @@ describe("registration declarations", () => {
       );
       expect(html).toContain("bg-pine-primary");
       expect(html).toContain("h-5 w-5");
+      expect(html).toContain("rounded-checkbox");
       expect(html).toContain("text-caption");
       expect(html).toContain("<svg");
     },
@@ -84,9 +85,14 @@ describe("registration declarations", () => {
     expect(html).toContain("Vehicle Found");
     expect(html).toContain("Self Owned");
     expect(html).toContain("Company Leased");
+    expect(html).toContain("Vehicle ownership choices");
+    expect(html).toContain("benefits-logo-v2.gif");
+    expect(html.indexOf("</article>")).toBeLessThan(
+      html.indexOf("Vehicle ownership choices"),
+    );
     expect(html).not.toContain("Review vehicle details");
     expect(html).not.toContain("Submit to Admin");
-    expect(html).not.toContain("<img");
+    expect(html).not.toContain('alt="Tata Altroz"');
     expect(html).not.toContain(">Ownership<");
   });
 });

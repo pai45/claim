@@ -6,7 +6,10 @@ import { LoginScreen } from "@/components/login/LoginScreen";
 import { MpinFlow } from "@/components/mpin/MpinFlow";
 import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { OnboardingShell } from "@/components/onboarding/OnboardingShell";
-import { isDirectClaimsEntry } from "@/features/auth/directClaimsEntry";
+import {
+  resolveClaimsEntry,
+  takeInAppClaimsEntry,
+} from "@/features/auth/directClaimsEntry";
 import { isMpinUnlocked, markMpinUnlocked } from "@/features/auth/mpinStorage";
 import { useAuthSession } from "@/features/auth/useAuthSession";
 import { useMpin } from "@/features/auth/useMpin";
@@ -41,27 +44,28 @@ export function HomeEntry() {
   const [entryIntent, setEntryIntent] = useState<EntryIntent>("checking");
 
   /**
-   * Seeded from the tab session, not from a fresh `false`: this gate only
-   * renders on the home screen, so every trip out to /profile, /dashboard or
-   * /transactions and back unmounts it. Held in component state alone, that
-   * round trip demands the PIN again. Closing the tab still starts locked.
+   * The unlock itself lives in sessionStorage. This state is only a render
+   * revision for the MPIN screens owned by HomeEntry; reading sessionStorage
+   * below also picks up MPIN creation completed inside LoginScreen before the
+   * auth-session update re-renders this component.
    */
-  const [unlocked, setUnlocked] = useState(readUnlocked);
+  const [, setUnlockRevision] = useState(0);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      const directClaimsEntry = isDirectClaimsEntry(
+      const entry = resolveClaimsEntry(
         window.location.hash,
         window.location.search,
+        takeInAppClaimsEntry(),
       );
 
-      if (directClaimsEntry) {
+      if (entry.shouldSelectDefaultPersona) {
         // The dedicated deep link always demonstrates Vishal's returning-user
         // assistant, regardless of which persona was used in an earlier demo.
         setActivePersonaId(DEFAULT_PERSONA_ID);
       }
 
-      setEntryIntent(directClaimsEntry ? "claims" : "standard");
+      setEntryIntent(entry.isClaimsEntry ? "claims" : "standard");
     });
 
     return () => window.cancelAnimationFrame(frame);
@@ -69,7 +73,7 @@ export function HomeEntry() {
 
   function unlock() {
     markMpinUnlocked();
-    setUnlocked(true);
+    setUnlockRevision((revision) => revision + 1);
   }
 
   if (
@@ -88,7 +92,7 @@ export function HomeEntry() {
   // would read as the flow not having registered it.
   if (!mpinSet) return <MpinFlow onDone={unlock} />;
 
-  if (!unlocked) return <MpinLockScreen onUnlock={unlock} />;
+  if (!readUnlocked()) return <MpinLockScreen onUnlock={unlock} />;
 
   if (!completed) return <OnboardingShell />;
 

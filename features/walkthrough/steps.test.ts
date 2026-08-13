@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { BENEFITS_ASSISTANT_SELECTORS, BENEFITS_ASSISTANT_STEPS, getEbHomeSteps } from "./steps";
+import {
+  BENEFITS_ASSISTANT_SELECTORS,
+  BENEFITS_ASSISTANT_STEPS,
+  EB_HOME_HOST_SELECTORS,
+  EB_HOME_POST_UPI_STEP_INDEX,
+  getEbHomeSteps,
+} from "./steps";
 
 describe("getEbHomeSteps", () => {
   it("explains the Create UPI ID call to action before one exists", () => {
@@ -10,26 +16,36 @@ describe("getEbHomeSteps", () => {
       "upi-create",
       "wallets",
       "quick-actions",
+      "benefits-nav",
     ]);
   });
 
-  it("splits the UPI panel into Scan and UPI ID once one is created", () => {
+  it("appends Scan & Pay and the created UPI ID once setup completes", () => {
     const keys = getEbHomeSteps(true).map((step) => step.key);
 
     expect(keys).toEqual([
       "wallet-card",
-      "upi-scan",
-      "upi-id",
+      "upi-create",
       "wallets",
       "quick-actions",
+      "benefits-nav",
+      "upi-scan",
+      "upi-id",
     ]);
   });
 
-  it("keeps the UPI steps in the same slot so a paused run resumes in place", () => {
-    // A client who pauses on `upi-create` and creates a UPI ID resumes at the
-    // same index, which is now the first of the two replacement steps.
-    expect(getEbHomeSteps(false)[1].key).toBe("upi-create");
-    expect(getEbHomeSteps(true)[1].key).toBe("upi-scan");
+  it("keeps Benefits fifth and the post-setup steps sixth and seventh", () => {
+    const beforeSetup = getEbHomeSteps(false);
+    const afterSetup = getEbHomeSteps(true);
+
+    expect(beforeSetup[4].key).toBe("benefits-nav");
+    expect(afterSetup[4].key).toBe("benefits-nav");
+    expect(afterSetup.slice(5).map((step) => step.key)).toEqual([
+      "upi-scan",
+      "upi-id",
+    ]);
+    expect(afterSetup[EB_HOME_POST_UPI_STEP_INDEX].key).toBe("upi-scan");
+    expect(EB_HOME_HOST_SELECTORS[afterSetup[4].key]).toBeTruthy();
   });
 });
 

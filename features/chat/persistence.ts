@@ -43,6 +43,7 @@ export function sanitizeChatMessage(message: ChatMessage): ChatMessage {
           rawText: "",
           previewUrl: undefined,
           previewType: undefined,
+          fileBlob: undefined,
         }
       : undefined,
     driverSalary: sanitizeDriverSalary(message.driverSalary),

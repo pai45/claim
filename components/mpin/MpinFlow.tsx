@@ -10,17 +10,25 @@ import {
   mpinSetupReducer,
 } from "@/features/auth/mpinMachine";
 import { clearMpinLock, saveMpin } from "@/features/auth/mpinStorage";
+import { useModalFocus } from "@/lib/ui/useModalFocus";
 import { MpinCreateStep } from "./MpinCreateStep";
 import { MpinIntroStep } from "./MpinIntroStep";
 import { MpinSuccessStep } from "./MpinSuccessStep";
 
 type MpinFlowProps = {
   onDone: () => void;
+  overlay?: boolean;
+  onRequestClose?: () => void;
 };
 
-export function MpinFlow({ onDone }: MpinFlowProps) {
+export function MpinFlow({
+  onDone,
+  overlay = false,
+  onRequestClose = () => {},
+}: MpinFlowProps) {
   const [state, dispatch] = useReducer(mpinSetupReducer, initialMpinSetupState);
   const [shakeKey, setShakeKey] = useState(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
   /**
    * Held in memory until the success screen is acknowledged.
    *
@@ -34,6 +42,7 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
     digest: string;
   } | null>(null);
   const ready = canAdvance(state);
+  useModalFocus(overlayRef, overlay, onRequestClose);
 
   // Guards the async hash against a component that unmounted mid-flight.
   const aliveRef = useRef(true);
@@ -66,12 +75,8 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
     });
   }
 
-  return (
-    <AppShell
-      className={
-        state.step === "intro" ? "overflow-hidden bg-black/70" : "overflow-hidden"
-      }
-    >
+  const content = (
+    <>
       {state.step === "intro" ? (
         <MpinIntroStep onStart={() => dispatch({ type: "start" })} />
       ) : null}
@@ -106,6 +111,40 @@ export function MpinFlow({ onDone }: MpinFlowProps) {
           }}
         />
       ) : null}
+    </>
+  );
+
+  if (overlay) {
+    return (
+      <div
+        ref={overlayRef}
+        className={`fixed inset-0 z-[80] mx-auto flex max-w-phone flex-col overflow-hidden ${
+          state.step === "intro" ? "bg-transparent" : "bg-surface"
+        }`}
+      >
+        {state.step === "intro" ? (
+          <button
+            type="button"
+            tabIndex={-1}
+            aria-label="Close MPIN setup"
+            onClick={onRequestClose}
+            className="absolute inset-0 bg-pine-dark/40"
+          />
+        ) : null}
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <AppShell
+      className={
+        state.step === "intro"
+          ? "overflow-hidden bg-pine-dark/40"
+          : "overflow-hidden"
+      }
+    >
+      {content}
     </AppShell>
   );
 }

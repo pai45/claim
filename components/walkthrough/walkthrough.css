@@ -47,7 +47,7 @@
      over a pale green screen and has to make the spotlight read as the only lit
      thing, not merely tint what is behind it. */
   box-shadow:
-    0 0 0 1px #005656,
+    0 0 0 1px var(--color-pine-primary),
     0 0 0 7px rgba(0, 86, 86, 0.12),
     0 0 0 9999px rgba(0, 52, 52, 0.62);
   transition:
@@ -57,8 +57,7 @@
     height 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* Lime halo — the brand accent (--brand-300 in the source app), so the
-   walkthrough reads as its own layer without leaving the palette. */
+/* Mint halo keeps the walkthrough distinct while staying in the palette. */
 .walkthrough-spotlight::after {
   content: "";
   position: absolute;
@@ -69,13 +68,13 @@
 
 @keyframes walkthrough-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(208, 242, 85, 0.32);
+    box-shadow: 0 0 0 0 rgba(54, 204, 139, 0.32);
   }
   50% {
-    box-shadow: 0 0 0 9px rgba(208, 242, 85, 0);
+    box-shadow: 0 0 0 9px rgba(54, 204, 139, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(208, 242, 85, 0);
+    box-shadow: 0 0 0 0 rgba(54, 204, 139, 0);
   }
 }
 
@@ -84,6 +83,50 @@
   left: 16px;
   right: 16px;
   pointer-events: auto;
+}
+
+.walkthrough-tooltip {
+  position: relative;
+}
+
+/* The card is the walkthrough's tooltip. Its caret stays centred over the
+   target until that would crowd a rounded corner, where geometry clamps it. */
+.walkthrough-tooltip::before,
+.walkthrough-tooltip::after {
+  content: "";
+  position: absolute;
+  left: var(--walkthrough-pointer-left);
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+}
+
+.walkthrough-card--below .walkthrough-tooltip::before {
+  top: -10px;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid var(--color-border-line);
+  border-left: 10px solid transparent;
+}
+
+.walkthrough-card--below .walkthrough-tooltip::after {
+  top: -8px;
+  border-right: 9px solid transparent;
+  border-bottom: 9px solid var(--color-surface);
+  border-left: 9px solid transparent;
+}
+
+.walkthrough-card--above .walkthrough-tooltip::before {
+  bottom: -10px;
+  border-top: 10px solid var(--color-border-line);
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+}
+
+.walkthrough-card--above .walkthrough-tooltip::after {
+  bottom: -8px;
+  border-top: 9px solid var(--color-surface);
+  border-right: 9px solid transparent;
+  border-left: 9px solid transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

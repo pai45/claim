@@ -13,6 +13,7 @@ type AppDataAnswerCardProps = {
   content: string;
   payload: AppDataAnswerPayload;
   reveal?: boolean;
+  showAvatar?: boolean;
 };
 
 type DataRow = {
@@ -393,7 +394,12 @@ function actionsFor(payload: AppDataAnswerPayload) {
   return [{ href: "/dashboard/", label: "View claims dashboard" }];
 }
 
-export function AppDataAnswerCard({ content, payload, reveal = false }: AppDataAnswerCardProps) {
+export function AppDataAnswerCard({
+  content,
+  payload,
+  reveal = false,
+  showAvatar = true,
+}: AppDataAnswerCardProps) {
   const structured = payload.structured;
   if (!structured) return null;
 
@@ -402,6 +408,7 @@ export function AppDataAnswerCard({ content, payload, reveal = false }: AppDataA
       title={titleFor(structured)}
       summary={content}
       reveal={reveal}
+      showAvatar={showAvatar}
       actions={actionsFor(payload)}
     >
       {bodyFor(structured)}

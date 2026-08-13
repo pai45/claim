@@ -92,7 +92,7 @@ export function PayeeListScreen({
 }) {
   return (
     <AppShell className="overflow-hidden bg-white">
-      <header className="relative flex shrink-0 items-center justify-between px-page pb-3 pt-2">
+      <header className="relative flex shrink-0 items-center justify-between px-page pb-3 pt-4">
         <BackNavigationButton onClick={onBack} ariaLabel="Back" />
         <h1 className="type-screen-title pointer-events-none absolute left-0 right-0 text-center text-ink">
           Pay to UPI ID
@@ -179,7 +179,7 @@ export function RecipientHistoryScreen({
 
   return (
     <AppShell className="overflow-hidden bg-white">
-      <header className="relative flex shrink-0 items-center px-page pb-2 pt-2">
+      <header className="relative flex shrink-0 items-center px-page pb-2 pt-4">
         <BackNavigationButton onClick={onBack} ariaLabel="Back to recent payees" />
         <h1 className="type-screen-title pointer-events-none absolute left-0 right-0 text-center text-ink">
           Account

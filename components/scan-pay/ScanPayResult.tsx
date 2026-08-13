@@ -221,7 +221,7 @@ export function ScanPayReceiptCapture({
         className="absolute inset-0 h-full w-full object-cover opacity-70"
       />
       <div className="absolute inset-0 bg-pine-dark/35" aria-hidden="true" />
-      <header className="relative z-10 flex items-center justify-between px-page pt-3">
+      <header className="relative z-10 flex items-center justify-between px-page pt-4">
         <button
           type="button"
           onClick={() => dispatch({ type: "BACK" })}
@@ -407,19 +407,21 @@ export function ReceiptActions({
   ].filter(Boolean) as { label: string; icon: string; action: () => void }[];
   return (
     <div
-      className={`mt-4 grid gap-2 ${actions.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
+      role="group"
+      aria-label="Receipt actions"
+      className={`mt-4 grid divide-x divide-border-line overflow-hidden rounded-card border border-border-line bg-white shadow-card ${actions.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
     >
       {actions.map((action) => (
         <button
           key={action.label}
           type="button"
           onClick={action.action}
-          className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-control text-caption font-bold text-pine-primary"
+          className="flex min-h-20 flex-col items-center justify-center gap-2 px-2 py-3 transition-colors hover:bg-surface-tint active:bg-surface-tint-strong focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-pine-primary"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-surface-tint">
-            <AppIcon src={action.icon} alt="" size={24} className="h-6 w-6" />
+          <AppIcon src={action.icon} alt="" size={24} className="h-6 w-6" />
+          <span className="text-caption font-normal leading-4 text-ink-secondary">
+            {action.label}
           </span>
-          {action.label}
         </button>
       ))}
     </div>

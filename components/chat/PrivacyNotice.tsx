@@ -12,8 +12,9 @@ export function PrivacyNotice({ onClearData, compact }: PrivacyNoticeProps) {
     <div className="rounded-control border border-input-border bg-surface-tint px-3 py-2.5 text-ink-secondary">
       <p className="text-caption leading-4">
         <strong className="text-pine">Privacy:</strong> Your bill is processed
-        on this device. The original file and raw scanned text are not saved.
-        Extracted details and chat history remain in this browser for {privacy.retentionDays} days.
+        on this device. If you choose Save draft, the bill file and extracted
+        details remain in this browser for up to {privacy.retentionDays} days.
+        Raw scanned text is never saved.
       </p>
       <details className="mt-2">
         <summary className="cursor-pointer text-caption font-bold text-pine focus-visible:outline-none">
@@ -31,9 +32,10 @@ export function PrivacyNotice({ onClearData, compact }: PrivacyNoticeProps) {
               your employer.
             </li>
             {!compact ? (
-              <>
-            <li>Original files and raw OCR or DL text are never persisted.</li>
-              </>
+              <li>
+                Original bill files are persisted only when you explicitly save
+                a draft. Raw OCR or DL text is never persisted.
+              </li>
             ) : null}
           </ul>
           {onClearData ? (

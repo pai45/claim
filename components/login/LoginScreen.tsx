@@ -3,7 +3,10 @@
 import dynamic from "next/dynamic";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { ProductIntroScreen } from "@/components/product-intro/ProductIntroScreen";
+import { MpinFlow } from "@/components/mpin/MpinFlow";
+import { MpinRequiredDialog } from "@/components/mpin/MpinRequiredDialog";
 import { AppShell } from "@/components/shared/AppShell";
+import { completeNewUserSignIn } from "@/features/auth/completeNewUserSignIn";
 import { saveAuthSession } from "@/features/auth/session";
 import { resetDemoJourney } from "@/features/demo/reset";
 import {
@@ -54,6 +57,8 @@ export function LoginScreen() {
     null,
   );
   const [productIntroDismissed, setProductIntroDismissed] = useState(false);
+  const [mpinSetupOpen, setMpinSetupOpen] = useState(false);
+  const [mpinWarningOpen, setMpinWarningOpen] = useState(false);
 
   const phoneRef = useRef<HTMLInputElement>(null);
   const otpRef = useRef<OtpInputHandle>(null);
@@ -77,8 +82,10 @@ export function LoginScreen() {
     const code = otpValue(state);
     const timer = window.setTimeout(() => {
       const result = verifyOtp(code);
-      if (result.ok) saveAuthSession(state.mobile);
-      else dispatch({ type: "verify-failed", message: result.message });
+      if (result.ok) {
+        dispatch({ type: "verify-succeeded" });
+        setMpinSetupOpen(true);
+      } else dispatch({ type: "verify-failed", message: result.message });
     }, VERIFY_DELAY_MS);
 
     return () => window.clearTimeout(timer);
@@ -149,6 +156,16 @@ export function LoginScreen() {
   function continueWithMpin(personaId: PersonaId | null) {
     if (!personaId || !hasReturningAccountState(personaId)) return;
     saveAuthSession(getPersonaConfig(personaId).profile.mobile);
+  }
+
+  function requestCloseMpinSetup() {
+    setMpinSetupOpen(false);
+    setMpinWarningOpen(true);
+  }
+
+  function returnToMpinSetup() {
+    setMpinWarningOpen(false);
+    setMpinSetupOpen(true);
   }
 
   const personaSelected = selectedPersonaId !== null;
@@ -225,7 +242,7 @@ export function LoginScreen() {
             mobile={state.mobile}
             digits={state.otp}
             error={state.error}
-            verifying={verifying}
+            verifying={verifying || state.status === "verified"}
             canSubmit={canSubmitOtp(state)}
             resendIn={resendIn}
             onDigitChange={(index, value) =>
@@ -238,6 +255,19 @@ export function LoginScreen() {
           />
         )}
       </section>
+
+      {mpinSetupOpen ? (
+        <MpinFlow
+          overlay
+          onRequestClose={requestCloseMpinSetup}
+          onDone={() => completeNewUserSignIn(state.mobile)}
+        />
+      ) : null}
+
+      <MpinRequiredDialog
+        open={mpinWarningOpen}
+        onReturnToSetup={returnToMpinSetup}
+      />
     </AppShell>
   );
 }
