@@ -35,7 +35,11 @@ export function buildScanPayReceiptText(transaction: ScanPayTransaction): string
       : []),
     ...fundingTextLines(transaction),
     `Date & time: ${transaction.dateTime}`,
-    `Category: ${transaction.category ?? "Not specified"}${transaction.subcategory ? ` / ${transaction.subcategory}` : ""}`,
+    ...(transaction.mode === "pluspay"
+      ? [
+          `Category: ${transaction.category ?? "Not specified"}${transaction.subcategory ? ` / ${transaction.subcategory}` : ""}`,
+        ]
+      : []),
     transaction.note ? `Note: ${transaction.note}` : "",
   ]
     .filter(Boolean)
@@ -211,12 +215,16 @@ export function receiptRows(
       : []),
     ...fundingRows,
     ["Date & Time", transaction.dateTime],
-    [
-      "Category",
-      transaction.category
-        ? `${transaction.category}${transaction.subcategory ? ` / ${transaction.subcategory}` : ""}`
-        : "Not specified",
-    ],
+    ...(transaction.mode === "pluspay"
+      ? [
+          [
+            "Category",
+            transaction.category
+              ? `${transaction.category}${transaction.subcategory ? ` / ${transaction.subcategory}` : ""}`
+              : "Not specified",
+          ] as [string, string],
+        ]
+      : []),
   ];
 }
 

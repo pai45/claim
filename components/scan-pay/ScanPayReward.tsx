@@ -73,7 +73,9 @@ function ScanPayPaidScreen({
         <section className="scan-pay-paid-details mt-7">
           <h2 className="type-section-title">Transaction details</h2>
           <p className="mt-0.5 type-body-secondary">
-            Reference, funding source and category
+            {transaction.mode === "benefits"
+              ? "Reference and funding source"
+              : "Reference, funding source and category"}
           </p>
 
           <dl className="mt-3 divide-y divide-border-soft">

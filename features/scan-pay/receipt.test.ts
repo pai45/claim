@@ -49,8 +49,10 @@ describe("bank-transfer receipt", () => {
         ["Transfer amount", "₹500"],
         ["Convenience fee", "₹10"],
         ["Paid from Reimbursement Wallet", "₹510"],
-        ["Category", "Finance / Bank"],
       ]),
+    );
+    expect(receiptRows(transaction)).not.toEqual(
+      expect.arrayContaining([["Category", "Finance / Bank"]]),
     );
     const text = buildScanPayReceiptText(transaction);
     expect(text).toContain("EB+ bank transfer receipt");
@@ -58,6 +60,7 @@ describe("bank-transfer receipt", () => {
     expect(text).toContain("Convenience fee: ₹10");
     expect(text).not.toContain("Merchant ID");
     expect(text).not.toContain("UPI Transaction ID");
+    expect(text).not.toContain("Category:");
     expect(paymentPayeeIdentifier(transaction)).toContain("HDFC0001234");
   });
 
@@ -72,10 +75,34 @@ describe("bank-transfer receipt", () => {
     expect(markup).toContain("Paid to");
     expect(markup).toContain("Pending");
     expect(markup).toContain("Transaction details");
+    expect(markup).toContain("Reference and funding source");
+    expect(markup).not.toContain("Reference, funding source and category");
+    expect(markup).not.toContain("Category");
     expect(markup).toContain("Convenience fee");
     expect(markup).toContain("Total debited");
     expect(markup).toContain("Back to Home");
     expect(markup).not.toContain("Scratch card");
     expect(markup).not.toContain("Cashback");
+  });
+
+  it("keeps category details on PlusPay receipts", () => {
+    const plusPayTransaction = createScanPayTransaction({
+      amount: 510,
+      walletId: "misc",
+      categoryId: "finance",
+      subcategoryId: "bank",
+      note: "",
+      outcome: "success",
+      mode: "pluspay",
+      merchantType: "unclassified",
+      fundingAllocations: [],
+    });
+
+    expect(receiptRows(plusPayTransaction)).toEqual(
+      expect.arrayContaining([["Category", "Finance / Bank"]]),
+    );
+    expect(buildScanPayReceiptText(plusPayTransaction)).toContain(
+      "Category: Finance / Bank",
+    );
   });
 });
