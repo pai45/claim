@@ -1465,6 +1465,13 @@ export function useChat() {
         ...prev,
         {
           id: createId(),
+          role: "user",
+          content: "Submit vehicle registration to Admin",
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
           role: "assistant",
           content: `Vehicle registration ${claimId} submitted to Admin.`,
           createdAt: Date.now(),
@@ -1666,6 +1673,13 @@ export function useChat() {
         ...prev,
         {
           id: createId(),
+          role: "user",
+          content: "Continue with this driving licence",
+          createdAt: Date.now(),
+          kind: "text",
+        },
+        {
+          id: createId(),
           role: "assistant",
           content:
             "Got it. What's the monthly driver salary and employment start date?",
@@ -1743,15 +1757,24 @@ export function useChat() {
               ? { ...message, driverSalary: submitted }
               : message,
           )
-          .concat({
-            id: createId(),
-            role: "assistant",
-            content: `Driver registration ${claimId} submitted to Admin.`,
-            createdAt: Date.now(),
-            kind: "claim_cta",
-            claimId,
-            driverSalary: submitted,
-          }),
+          .concat(
+            {
+              id: createId(),
+              role: "user",
+              content: "Submit driver registration to Admin",
+              createdAt: Date.now(),
+              kind: "text",
+            },
+            {
+              id: createId(),
+              role: "assistant",
+              content: `Driver registration ${claimId} submitted to Admin.`,
+              createdAt: Date.now(),
+              kind: "claim_cta",
+              claimId,
+              driverSalary: submitted,
+            },
+          ),
       );
     },
     [],

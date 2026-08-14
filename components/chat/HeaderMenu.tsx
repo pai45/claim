@@ -82,7 +82,7 @@ export function HeaderMenu({ open, onClose, onNewChat }: HeaderMenuProps) {
       <div
         role="menu"
         aria-label="Assistant menu"
-        className={`absolute right-page top-[76px] w-56 origin-top-right overflow-hidden rounded-card border border-border-soft bg-white shadow-menu transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
+        className={`absolute right-page top-[76px] w-64 origin-top-right overflow-hidden rounded-card border border-border-soft bg-white shadow-menu transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${
           open
             ? "scale-100 opacity-100"
             : "pointer-events-none -translate-y-1 scale-95 opacity-0"
@@ -111,22 +111,25 @@ export function HeaderMenu({ open, onClose, onNewChat }: HeaderMenuProps) {
           ))}
         </ul>
 
-        <div className="h-1.5 bg-surface-muted" aria-hidden />
-
-        <button
-          type="button"
-          role="menuitem"
-          onClick={() => {
-            onNewChat();
-            handleClose();
-          }}
-          className={`${ROW} text-pine-primary`}
-        >
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center">
-            <AppIcon src={UI_ICONS.plus} size={20} alt="" />
-          </span>
-          <span>New chat</span>
-        </button>
+        <div className="border-t border-border-soft p-3">
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              onNewChat();
+              handleClose();
+            }}
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-pine-primary px-4 py-2.5 text-body-sm font-bold text-white shadow-cta transition-opacity hover:opacity-90 active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-primary"
+          >
+            <AppIcon
+              src={UI_ICONS.plus}
+              size={20}
+              alt=""
+              className="brightness-0 invert"
+            />
+            <span>New chat</span>
+          </button>
+        </div>
       </div>
     </div>
   );
