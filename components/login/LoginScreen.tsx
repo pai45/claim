@@ -2,10 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useReducer, useRef, useState } from "react";
+import { NewUserInstallJourney } from "@/components/app-install/NewUserInstallJourney";
 import { ProductIntroScreen } from "@/components/product-intro/ProductIntroScreen";
 import { MpinFlow } from "@/components/mpin/MpinFlow";
 import { MpinRequiredDialog } from "@/components/mpin/MpinRequiredDialog";
 import { AppShell } from "@/components/shared/AppShell";
+import { shouldShowInstallJourney } from "@/features/app-install/controller";
 import { completeNewUserSignIn } from "@/features/auth/completeNewUserSignIn";
 import { saveAuthSession } from "@/features/auth/session";
 import { resetDemoJourney } from "@/features/demo/reset";
@@ -57,6 +59,7 @@ export function LoginScreen() {
     null,
   );
   const [productIntroDismissed, setProductIntroDismissed] = useState(false);
+  const [installJourneyCompleted, setInstallJourneyCompleted] = useState(false);
   const [mpinSetupOpen, setMpinSetupOpen] = useState(false);
   const [mpinWarningOpen, setMpinWarningOpen] = useState(false);
 
@@ -134,6 +137,7 @@ export function LoginScreen() {
   function handleSelectPersona(personaId: PersonaId) {
     resetDemoJourney(personaId);
     dispatch({ type: "change-number" });
+    setInstallJourneyCompleted(false);
 
     // Aarav is the demo's new-user persona, so surface his registered mobile
     // number as soon as the sign-in form opens.
@@ -169,6 +173,16 @@ export function LoginScreen() {
   }
 
   const personaSelected = selectedPersonaId !== null;
+
+  if (
+    shouldShowInstallJourney(selectedPersonaId, installJourneyCompleted)
+  ) {
+    return (
+      <NewUserInstallJourney
+        onComplete={() => setInstallJourneyCompleted(true)}
+      />
+    );
+  }
 
   if (personaSelected && !productIntroHydrated) {
     return (

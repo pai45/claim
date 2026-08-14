@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  createScanPayTransaction,
   resolveScanPayMerchantSelection,
   resolveScanPayScenario,
 } from "@/features/scan-pay/fixtures";
@@ -210,6 +211,33 @@ describe("scan pay machine", () => {
     expect(transaction.transactionId).toMatch(/^EB\d{10}$/);
     expect(transaction.category).toBe("Finance");
     expect(transaction.subcategory).toBe("Bank");
+  });
+
+  it("restores a completed payment directly to its receipt", () => {
+    const transaction = createScanPayTransaction({
+      amount: 480,
+      walletId: "meal",
+      categoryId: "food",
+      subcategoryId: null,
+      note: "Lunch",
+      outcome: "success",
+      mode: "benefits",
+      merchantType: "meal",
+      fundingAllocations: [
+        { walletId: "meal", walletLabel: "Meal Wallet", amount: 480 },
+      ],
+    });
+    const state = createInitialScanPayState(
+      "success",
+      "benefits",
+      "meal",
+      { kind: "completed", transaction },
+    );
+
+    expect(state.step).toBe("successReward");
+    expect(state.transaction).toEqual(transaction);
+    expect(state.amount).toBe("480");
+    expect(state.fundingAllocations).toEqual(transaction.fundingAllocations);
   });
 
   it("routes a successful bank transfer to the paid-to result step", () => {

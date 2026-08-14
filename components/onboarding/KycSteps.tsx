@@ -92,11 +92,13 @@ export function KycIntroStep({
 type KycProgressOverlayProps = {
   open: boolean;
   onDismiss: () => void;
+  onComplete: () => void;
 };
 
 export function KycProgressOverlay({
   open,
   onDismiss,
+  onComplete,
 }: KycProgressOverlayProps) {
   const panelRef = useRef<HTMLElement>(null);
   useModalFocus(panelRef, open, onDismiss);
@@ -148,7 +150,7 @@ export function KycProgressOverlay({
         <button
           type="button"
           className="btn-primary mt-6 min-h-11 h-auto py-3"
-          onClick={onDismiss}
+          onClick={onComplete}
         >
           OK
         </button>

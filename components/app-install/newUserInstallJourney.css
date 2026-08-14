@@ -1,0 +1,206 @@
+/* Aarav's simulated app-install journey — the PlusPay splash only. The WhatsApp
+   and Play Store mocks in the same component are styled by their own sibling,
+   `nativeInstallMocks.css`, since they imitate other vendors' UI rather than
+   drawing on this design system. */
+
+/* —— PlusPay splash ——
+   A bare pine field with nothing on it but the wordmark, so the animation is
+   the whole screen. The wordmark is inlined as SVG rather than drawn through
+   next/image because each glyph has to be individually addressable, and because
+   a fetched white logo would flash in against the dark field.
+
+   Timeline, all delays measured from mount:
+     0.00–0.94s  seven letters cascade left-to-right
+     0.56–1.18s  the `+` glyph pops in and flashes mint before settling white
+     0.62–1.52s  mint glow blooms behind and holds low
+     2.26–2.60s  wordmark and glow dissolve, pine field stays opaque
+     2.60s       APP_SPLASH_DURATION_MS fires and the tree swaps
+   Any change to the tail here needs the same change to that constant. */
+
+.pp-splash-mark {
+  width: min(60%, 236px);
+  height: auto;
+  /* Opacity is left to the letters — the wrapper only carries the settle, so a
+     wrapper fade would not double up on the per-letter one. */
+  animation:
+    pp-splash-settle 1.2s cubic-bezier(0.22, 1, 0.36, 1) both,
+    pp-splash-mark-out 0.34s ease-in 2.26s forwards;
+}
+
+/* Sits behind the wordmark and outside its bounds, so the light reads as coming
+   off the mark rather than as a panel behind it. Mint rather than white: on
+   #003434 a white bloom greys the field, mint keeps it brand. */
+.pp-splash-glow {
+  position: absolute;
+  z-index: 0;
+  width: min(84%, 340px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(54, 204, 139, 0.2) 0%,
+    rgba(54, 204, 139, 0.07) 42%,
+    transparent 68%
+  );
+  opacity: 0;
+  will-change: opacity, transform;
+  /* The exit is `forwards`, not `both`, on purpose: a backwards fill would apply
+     its `from` opacity through the delay and hold the glow at full brightness
+     from the first frame instead of letting the bloom above run. */
+  animation:
+    pp-splash-glow-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.62s both,
+    pp-splash-glow-out 0.34s ease-in 2.26s forwards;
+}
+
+/* `transform-box: fill-box` is load-bearing on both glyph classes. Without it an
+   SVG transform pivots on the user-space origin, not the glyph, and the scale
+   and rotate below throw the letters off-canvas instead of settling them. */
+.pp-splash-letter,
+.pp-splash-plus {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: opacity, transform;
+}
+
+.pp-splash-letter {
+  animation: pp-splash-letter-in 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The wordmark's own paths are already in reading order, so nth-of-type is the
+   stagger. 70ms apart: close enough to read as one gesture, far enough that
+   each letter is a distinct beat. */
+.pp-splash-letter:nth-of-type(1) {
+  animation-delay: 0ms;
+}
+
+.pp-splash-letter:nth-of-type(2) {
+  animation-delay: 70ms;
+}
+
+.pp-splash-letter:nth-of-type(3) {
+  animation-delay: 140ms;
+}
+
+.pp-splash-letter:nth-of-type(4) {
+  animation-delay: 210ms;
+}
+
+.pp-splash-letter:nth-of-type(5) {
+  animation-delay: 280ms;
+}
+
+.pp-splash-letter:nth-of-type(6) {
+  animation-delay: 350ms;
+}
+
+.pp-splash-letter:nth-of-type(7) {
+  animation-delay: 420ms;
+}
+
+/* The brand's signature glyph, so it lands last and alone — held back to 560ms,
+   by which point every letter is underway and the last one has started, on an
+   overshoot curve the rest of the cascade does not use. */
+.pp-splash-plus {
+  animation: pp-splash-plus-in 0.62s cubic-bezier(0.2, 0.9, 0.25, 1.2) 0.56s
+    both;
+}
+
+@keyframes pp-splash-settle {
+  from {
+    transform: scale(0.97);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes pp-splash-letter-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Mint on arrival fading to white as it seats, the same flash-then-settle cue
+   `magic-shimmer-in` uses for revealed text in app/globals.css. */
+@keyframes pp-splash-plus-in {
+  from {
+    opacity: 0;
+    fill: var(--color-mint);
+    transform: rotate(-24deg) scale(0.4);
+  }
+  55% {
+    opacity: 1;
+    fill: var(--color-mint);
+    transform: rotate(0deg) scale(1.12);
+  }
+  to {
+    opacity: 1;
+    fill: #fff;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes pp-splash-glow-in {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  to {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+}
+
+/* Only the wordmark and its light leave. The pine field stays opaque through the
+   swap — fading the shell would expose the body background for the last few
+   frames. The glow exits on the same curve so the light goes with the mark
+   rather than hanging on an empty field. */
+@keyframes pp-splash-mark-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Starts from the resting opacity `pp-splash-glow-in` leaves behind. */
+@keyframes pp-splash-glow-out {
+  from {
+    opacity: 0.72;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-splash-mark,
+  .pp-splash-glow,
+  .pp-splash-letter,
+  .pp-splash-plus {
+    animation: none;
+  }
+
+  /* Has to land fully assembled, not mid-cascade — and explicitly white, since
+     the `+` otherwise keeps whatever fill the keyframes would have set. */
+  .pp-splash-letter,
+  .pp-splash-plus {
+    opacity: 1;
+    fill: #fff;
+    transform: none;
+  }
+
+  .pp-splash-glow {
+    opacity: 0;
+  }
+}

@@ -29,21 +29,21 @@ describe("Rohan product-switcher walkthrough", () => {
     expect(WALKTHROUGH_IDS).toContain("product-switcher");
   });
 
-  it("starts only for activated Rohan on EB+ and remains enabled in PlusPay", () => {
+  it("starts only for activated Rohan on PlusPay and remains enabled in EB+", () => {
     expect(host).toContain('persona.id === "pluspay_only"');
     expect(host).toContain("persona.access.products.ebPlus");
     expect(host).toContain("persona.access.products.plusPay");
-    expect(host).toContain("startEnabled={!plusPayMode}");
+    expect(host).toContain("startEnabled={plusPayMode}");
     expect(productWalkthrough).toContain('id: "product-switcher"');
   });
 
   it("advances only after the expected product transition succeeds", () => {
-    expect(shouldAdvanceProductSwitcher(0, false, true)).toBe(true);
-    expect(shouldAdvanceProductSwitcher(0, false, false)).toBe(false);
-    expect(shouldAdvanceProductSwitcher(0, true, false)).toBe(false);
-    expect(shouldAdvanceProductSwitcher(1, true, false)).toBe(true);
-    expect(shouldAdvanceProductSwitcher(1, true, true)).toBe(false);
-    expect(shouldAdvanceProductSwitcher(1, false, true)).toBe(false);
+    expect(shouldAdvanceProductSwitcher(0, true, false)).toBe(true);
+    expect(shouldAdvanceProductSwitcher(0, true, true)).toBe(false);
+    expect(shouldAdvanceProductSwitcher(0, false, true)).toBe(false);
+    expect(shouldAdvanceProductSwitcher(1, false, true)).toBe(true);
+    expect(shouldAdvanceProductSwitcher(1, false, false)).toBe(false);
+    expect(shouldAdvanceProductSwitcher(1, true, false)).toBe(false);
   });
 
   it("skips guidance without changing the selected product", () => {

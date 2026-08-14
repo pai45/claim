@@ -9,7 +9,8 @@ export const RETURNING_PERSONA: PersonaConfig = {
   id: "returning",
   label: "Returning User",
   badge: "Active User",
-  description: "Vishal Sharma • Onboarding done, active claims, transactions & used limits",
+  description:
+    "Vishal Sharma • Onboarding done, active claims, transactions & used limits",
   profile: {
     id: "returning",
     name: "Vishal Sharma",
@@ -123,7 +124,7 @@ export const EBPLUS_ONLY_PERSONA: PersonaConfig = {
 export const PLUSPAY_ONLY_PERSONA: PersonaConfig = {
   id: "pluspay_only",
   label: "PlusPay Only",
-  badge: "PlusPay Plan",
+  badge: "Expense User",
   description: "Rohan Mehta • PlusPay payments without EB+ benefits",
   profile: {
     id: "pluspay_only",

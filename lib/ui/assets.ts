@@ -29,6 +29,7 @@ export const UI_ICONS = {
   rupay: "/employee-benefits/assets/icons/rupay-logo.svg",
   onlineTransactions: "/assets/icons/online-transactions.svg",
   tapToPay: "/assets/icons/tap-to-pay.svg",
+  pos: "/assets/icons/pos.svg",
   claimsDashboard: "/assets/icons/claims-dashboard.svg",
   policyDetails: "/assets/icons/policy-details.svg",
   chatDrafts: "/assets/icons/chat-drafts.svg",

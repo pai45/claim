@@ -122,6 +122,9 @@ describe("BankTransferRecipientForm", () => {
     expect(markup).toContain("Account");
     expect(markup).toContain("Ananya Rao");
     expect(markup).toContain("24 July");
+    expect(markup).toContain(
+      "type-body-secondary mb-2 font-bold text-pine-primary",
+    );
     expect(markup).toContain("Bank Transfer");
     expect(markup).toContain("Pay Again");
     expect(markup).not.toContain("Powered by UPI");

@@ -218,17 +218,25 @@ export function ScanPayScanner({
             onChange={(event) =>
               dispatch({ type: "SET_UPI_ID", upiId: event.target.value })
             }
-            className="min-w-0 flex-1 bg-transparent text-body-sm font-bold text-pine outline-none"
+            placeholder="e.g. name@bank"
+            aria-invalid={
+              state.upiIdDraft.length > 0 && !isValidUpiId(state.upiIdDraft)
+            }
+            className="min-w-0 flex-1 bg-transparent text-body-sm font-bold text-pine outline-none placeholder:font-normal placeholder:text-placeholder"
             autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
           />
-          <span className="text-success">
-            <ScanPayIcon name="check" />
-          </span>
+          {isValidUpiId(state.upiIdDraft) ? (
+            <span className="text-success" aria-label="Valid UPI ID">
+              <ScanPayIcon name="check" />
+            </span>
+          ) : null}
         </div>
         <button
           type="button"
           className="btn-primary mt-5"
-          disabled={!state.upiIdDraft.includes("@")}
+          disabled={!isValidUpiId(state.upiIdDraft)}
           onClick={() => dispatch({ type: "VERIFY_UPI" })}
         >
           Verify
@@ -236,6 +244,65 @@ export function ScanPayScanner({
       </ScanPayDrawer>
     </AppShell>
   );
+}
+
+export function UpiEntryDrawer({
+  open,
+  upiId,
+  onChange,
+  onVerify,
+  onClose,
+}: {
+  open: boolean;
+  upiId: string;
+  onChange: (upiId: string) => void;
+  onVerify: () => void;
+  onClose: () => void;
+}) {
+  const valid = isValidUpiId(upiId);
+
+  return (
+    <ScanPayDrawer
+      open={open}
+      title="Will be deducted from UPI ID"
+      description="Enter the merchant’s UPI ID to continue"
+      onClose={onClose}
+    >
+      <label htmlFor="pay-upi-id" className="type-field-label">
+        UPI ID
+      </label>
+      <div className="field-focus-shell mt-1.5 flex min-h-11 items-center gap-2 rounded-control border border-input-border bg-input-soft px-3">
+        <input
+          id="pay-upi-id"
+          value={upiId}
+          onChange={(event) => onChange(event.target.value)}
+          placeholder="e.g. name@bank"
+          aria-invalid={upiId.length > 0 && !valid}
+          className="min-w-0 flex-1 bg-transparent text-body-sm font-bold text-pine outline-none placeholder:font-normal placeholder:text-placeholder"
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+        />
+        {valid ? (
+          <span className="text-success" aria-label="Valid UPI ID">
+            <ScanPayIcon name="check" />
+          </span>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        className="btn-primary mt-5"
+        disabled={!valid}
+        onClick={onVerify}
+      >
+        Verify
+      </button>
+    </ScanPayDrawer>
+  );
+}
+
+function isValidUpiId(value: string): boolean {
+  return /^[a-z0-9][a-z0-9._-]*@[a-z0-9][a-z0-9.-]*$/i.test(value.trim());
 }
 
 export function ScanPayFaq({

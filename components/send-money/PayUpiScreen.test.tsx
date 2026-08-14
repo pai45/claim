@@ -5,6 +5,7 @@ import {
   PayeeListScreen,
   RecipientHistoryScreen,
 } from "@/components/send-money/PayUpiScreen";
+import { UpiEntryDrawer } from "@/components/scan-pay/ScanPayScanner";
 import { SEEDED_PAYEES } from "@/features/send-money/history";
 
 describe("Pay to UPI screens", () => {
@@ -38,5 +39,39 @@ describe("Pay to UPI screens", () => {
     expect(markup).toContain("Powered by UPI");
     expect(markup).toContain("Pay Again");
     expect(markup).toContain("UPI");
+    expect(markup).toContain(
+      "type-body-secondary mb-2 font-bold text-pine-primary",
+    );
+  });
+
+  it("shows an example without marking an empty UPI ID as valid", () => {
+    const markup = renderToStaticMarkup(
+      createElement(UpiEntryDrawer, {
+        open: true,
+        upiId: "",
+        onChange: vi.fn(),
+        onVerify: vi.fn(),
+        onClose: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain('placeholder="e.g. name@bank"');
+    expect(markup).not.toContain('aria-label="Valid UPI ID"');
+    expect(markup).toContain("disabled");
+  });
+
+  it("shows the valid tick only after a UPI ID is entered", () => {
+    const markup = renderToStaticMarkup(
+      createElement(UpiEntryDrawer, {
+        open: true,
+        upiId: "person@bank",
+        onChange: vi.fn(),
+        onVerify: vi.fn(),
+        onClose: vi.fn(),
+      }),
+    );
+
+    expect(markup).toContain('aria-label="Valid UPI ID"');
+    expect(markup).not.toContain("disabled");
   });
 });

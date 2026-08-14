@@ -13,7 +13,7 @@ type ProductSwitcherWalkthroughProps = {
   frameRef: RefObject<HTMLIFrameElement | null>;
   /** Rohan's activated account and unobstructed home-surface gate. */
   enabled: boolean;
-  /** A fresh run starts on EB+, then remains enabled across both products. */
+  /** A fresh run starts on PlusPay, then remains enabled across both products. */
   startEnabled: boolean;
   /** The iframe has loaded and been synced. */
   ready: boolean;
@@ -25,8 +25,8 @@ export function shouldAdvanceProductSwitcher(
   previousPlusPayMode: boolean,
   plusPayMode: boolean,
 ): boolean {
-  if (stepIndex === 0) return !previousPlusPayMode && plusPayMode;
-  if (stepIndex === 1) return previousPlusPayMode && !plusPayMode;
+  if (stepIndex === 0) return previousPlusPayMode && !plusPayMode;
+  if (stepIndex === 1) return !previousPlusPayMode && plusPayMode;
   return false;
 }
 

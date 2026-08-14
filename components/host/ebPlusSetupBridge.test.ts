@@ -29,9 +29,9 @@ describe("Rohan EB+ setup bridge", () => {
     expect(sourceApp).toContain("is-eb-plus-setup-eligible");
   });
 
-  it("lands on EB+ after completion while keeping exit on PlusPay", () => {
+  it("lands on PlusPay after completion while keeping exit on PlusPay", () => {
     expect(host).toMatch(
-      /const completeEbPlusSetup[\s\S]*setPlusPayMode\(false\)[\s\S]*setEbPlusSetupOpen\(false\)/,
+      /const completeEbPlusSetup[\s\S]*setPlusPayMode\(true\)[\s\S]*setEbPlusSetupOpen\(false\)/,
     );
     expect(host).toContain("onExit={closeEbPlusSetup}");
     expect(host).toContain("onComplete={completeEbPlusSetup}");

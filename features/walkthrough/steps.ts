@@ -110,16 +110,25 @@ export const PRODUCT_SWITCHER_STEPS: WalkthroughStep[] = [
   {
     key: "product-switcher",
     eyebrow: "Product switcher",
-    title: "Your PlusPay is still here",
-    body: "Tap the highlighted switch to move from your new EB+ account to PlusPay.",
+    title: "Your EB+ is ready",
+    body: "Tap the highlighted switch to explore your new EB+ benefits.",
     advanceOn: "target",
   },
   {
     key: "product-switcher",
     eyebrow: "Product switcher",
-    title: "Return to EB+",
-    body: "Use the same switch anytime. Tap it again to return to your EB+ benefits.",
+    title: "Return to PlusPay",
+    body: "Use the same switch anytime. Tap it again to return to PlusPay.",
     advanceOn: "target",
+  },
+];
+
+export const ROHAN_EB_PLUS_SETUP_STEPS: WalkthroughStep[] = [
+  {
+    key: "eb-plus-setup",
+    eyebrow: "Your EB+ benefits",
+    title: "Welcome to EB+",
+    body: "You’ve been enrolled in your company’s EB+ benefits program. Complete your setup to start using your benefits.",
   },
 ];
 

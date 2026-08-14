@@ -10,6 +10,7 @@ import { TransactionIcon } from "@/components/transactions/TransactionIcon";
 import { formatSignedINR } from "@/features/transactions/constants";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
+import { buildTransactionDetailsHref } from "@/features/transactions/navigation";
 import {
   WALLET_STATEMENT_MAX_MONTH,
   filterWalletStatementTransactions,
@@ -41,7 +42,12 @@ export function WalletStatementScreen() {
     },
     [financialVersion, personaId, searchParams],
   );
-  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(() => {
+    const requestedMonth = searchParams.get("month");
+    return requestedMonth && /^\d{4}-(0[1-9]|1[0-2])$/.test(requestedMonth)
+      ? requestedMonth
+      : null;
+  });
 
   const visibleTransactions = useMemo(
     () => filterWalletStatementTransactions(statement.transactions, selectedMonth),
@@ -109,7 +115,13 @@ export function WalletStatementScreen() {
                   {group.transactions.map((transaction, index) => (
                     <Link
                       key={transaction.id}
-                      href={`/transaction-details/?id=${encodeURIComponent(transaction.id)}&mode=benefits`}
+                      href={buildTransactionDetailsHref({
+                        transactionId: transaction.id,
+                        mode: "benefits",
+                        returnTo: `/wallet-statement/?wallet=${statement.id}${
+                          selectedMonth ? `&month=${selectedMonth}` : ""
+                        }`,
+                      })}
                       className={`flex min-h-11 items-center gap-3 px-card py-3 transition-colors hover:bg-surface ${
                         index < group.transactions.length - 1 ? "border-b border-border-soft" : ""
                       }`}

@@ -91,7 +91,7 @@ export function VehicleDetailsScreen() {
 
             <div className="flex justify-center py-1">
               <div className="inline-flex min-h-11 overflow-hidden rounded-control border-2 border-border-tab bg-white">
-                <span className="flex w-12 shrink-0 flex-col items-center justify-center gap-0.5 bg-pine-primary px-2 py-1.5 text-white">
+                <span className="flex w-12 shrink-0 flex-col items-center justify-center gap-0.5 bg-vehicle-plate px-2 py-1.5 text-white">
                   <span aria-hidden="true" className="text-caption leading-none">
                     ✦
                   </span>

@@ -23,6 +23,19 @@ function dashboardMessage(): ChatMessage {
   };
 }
 
+function claimHistoryMessage(): ChatMessage {
+  const resolution = { kind: "claims" as const };
+  const structured = buildGroundedAppData(resolution);
+  return {
+    id: "claim-history-answer",
+    role: "assistant",
+    content: "Here is your claim history.",
+    createdAt: 1,
+    kind: "app_data_answer",
+    appDataAnswer: appDataPayloadForResolution(resolution, structured),
+  };
+}
+
 describe("ContextualQuickChats", () => {
   it("renders three accessible, wrapping touch targets", () => {
     const actions = getContextualQuickChats(dashboardMessage());
@@ -37,7 +50,7 @@ describe("ContextualQuickChats", () => {
     expect(html).toContain("max-w-card flex-wrap");
     expect((html.match(/<button/g) ?? []).length).toBe(3);
     expect((html.match(/min-h-11/g) ?? []).length).toBe(3);
-    expect(html).toContain("Show pending claims");
+    expect(html).toContain("Pending claims");
     expect(html).toContain("View claim history");
     expect(html).toContain("Check a policy");
   });
@@ -61,5 +74,22 @@ describe("ContextualQuickChats", () => {
 
     expect(withTrailingAnswer).toContain('aria-label="Suggested replies"');
     expect(withTrailingUser).not.toContain('aria-label="Suggested replies"');
+  });
+
+  it("keeps claim-history replies in two paired rows", () => {
+    const actions = getContextualQuickChats(claimHistoryMessage());
+    const html = renderToStaticMarkup(
+      createElement(ContextualQuickChats, {
+        actions,
+        onSelect: vi.fn(),
+      }),
+    );
+
+    expect((html.match(/flex flex-nowrap gap-2/g) ?? []).length).toBe(2);
+    expect((html.match(/<button/g) ?? []).length).toBe(4);
+    expect(html).toContain("Pending");
+    expect(html).toContain("Approved");
+    expect(html).toContain("View dashboard");
+    expect(html).toContain("New claim");
   });
 });

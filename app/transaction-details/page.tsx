@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { TransactionDetailsScreen } from "@/components/transactions/TransactionDetailsScreen";
 import { resolveTransactionMode } from "@/features/transactions/mode";
+import { resolveTransactionDetailsReturnTo } from "@/features/transactions/navigation";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 
 function TransactionDetailsInner() {
@@ -11,7 +12,17 @@ function TransactionDetailsInner() {
   const { persona } = useActivePersona();
   const id = searchParams.get("id") || "txn-amazon";
   const mode = resolveTransactionMode(searchParams.get("mode"), persona.access);
-  return <TransactionDetailsScreen transactionId={id} mode={mode} />;
+  const returnTo = resolveTransactionDetailsReturnTo(
+    searchParams.get("returnTo"),
+    mode,
+  );
+  return (
+    <TransactionDetailsScreen
+      transactionId={id}
+      mode={mode}
+      returnTo={returnTo}
+    />
+  );
 }
 
 export default function TransactionDetailsPage() {

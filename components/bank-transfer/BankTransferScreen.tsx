@@ -6,7 +6,9 @@ import { BeneficiaryAddedSheet } from "@/components/bank-transfer/BeneficiaryAdd
 import { PaymentCheckoutFlow } from "@/components/scan-pay/PaymentCheckoutFlow";
 import { AppShell } from "@/components/shared/AppShell";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { TransactionListCard } from "@/components/transactions/TransactionListCard";
 import {
   getBankBeneficiary,
   getBankBeneficiaryHistory,
@@ -18,7 +20,6 @@ import {
 import {
   bankRecipientFromDraft,
   digitsOnly,
-  formatBankTransferINR,
   maskAccountNumber,
   normalizeIfsc,
   validateBankRecipient,
@@ -27,6 +28,7 @@ import {
   type BankRecipientErrors,
 } from "@/features/bank-transfer/validation";
 import { useActivePersona } from "@/features/persona/useActivePersona";
+import { formatSignedINR } from "@/features/transactions/constants";
 import {
   createInitialBankTransferState,
   scanPayReducer,
@@ -35,6 +37,7 @@ import type {
   ScanPayAction,
   ScanPayState,
 } from "@/features/scan-pay/types";
+import { buildTransactionDetailsHref } from "@/features/transactions/navigation";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
 const EMPTY_RECIPIENT: BankRecipientDraft = {
@@ -126,7 +129,11 @@ export function BankTransferScreen() {
         onPayAgain={() => startPayment(selectedBeneficiary)}
         onTransaction={(transactionId) =>
           router.push(
-            `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=benefits`,
+            buildTransactionDetailsHref({
+              transactionId,
+              mode: "benefits",
+              returnTo: `/bank-transfer/?beneficiary=${encodeURIComponent(selectedBeneficiary.id)}`,
+            }),
           )
         }
       />
@@ -328,32 +335,24 @@ export function BankBeneficiaryHistoryScreen({
             >
               <h3
                 id={`bank-history-${groupIndex}`}
-                className="type-body-secondary mb-2 text-center"
+                className="type-body-secondary mb-2 font-bold text-pine-primary"
               >
                 {dateLabel}
               </h3>
-              <div className="flex flex-col gap-2">
-                {groupRecords.map((record) => (
-                  <button
-                    key={record.transaction.paymentGroupId}
-                    type="button"
-                    onClick={() =>
-                      onTransaction(record.transaction.transactionId)
-                    }
-                    className="flex min-h-14 w-full items-center justify-between rounded-card border border-success-border bg-white px-card py-3 text-left shadow-card transition-transform active:scale-[0.99]"
-                  >
-                    <span className="min-w-0">
-                      <span className="type-amount block text-ink">
-                        {formatBankTransferINR(record.transaction.amount)}
-                      </span>
-                      <span className="mt-1 block truncate text-caption text-ink-secondary">
-                        {formatTime(record.createdAt)} · Bank Transfer
-                      </span>
-                    </span>
-                    <ChevronIcon className="shrink-0 text-mint" />
-                  </button>
-                ))}
-              </div>
+              <TransactionListCard
+                items={groupRecords.map((record) => ({
+                  id: record.transaction.transactionId,
+                  title: beneficiary.accountHolder,
+                  subtitle: `Bank Transfer | Ref ID: ${record.transaction.transactionId}`,
+                  amountLabel: formatSignedINR(
+                    record.transaction.amount,
+                    "debit",
+                  ),
+                  metaLabel: formatTime(record.createdAt),
+                  icon: <BenefitWalletIcon wallet="misc" />,
+                }))}
+                onSelect={(item) => onTransaction(item.id)}
+              />
             </section>
           ))}
         </div>

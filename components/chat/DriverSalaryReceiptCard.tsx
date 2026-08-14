@@ -9,7 +9,13 @@ type DriverSalaryReceiptCardProps = {
 
 function CheckIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+    >
       <circle cx="9" cy="9" r="9" fill={colors.success} />
       <path
         d="M5.5 9.2 7.6 11.2 12.5 6.5"
@@ -33,9 +39,7 @@ function ReceiptRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
-      <span className="shrink-0 text-caption text-ink-secondary">
-        {label}
-      </span>
+      <span className="shrink-0 text-caption text-ink-secondary">{label}</span>
       <span
         className={`truncate text-right ${
           emphasize
@@ -92,7 +96,7 @@ export function DriverSalaryReceiptCard({
           </div>
         </div>
         <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
-          With Admin
+          Admin
         </span>
       </div>
 
@@ -121,9 +125,14 @@ export function DriverSalaryReceiptCard({
           {payload.dlNumber ? (
             <ReceiptRow label="DL number" value={payload.dlNumber} />
           ) : null}
-          {startDate ? <ReceiptRow label="Start date" value={startDate} /> : null}
+          {startDate ? (
+            <ReceiptRow label="Start date" value={startDate} />
+          ) : null}
           {payload.vehicleClaimId ? (
-            <ReceiptRow label="Vehicle registration" value={payload.vehicleClaimId} />
+            <ReceiptRow
+              label="Vehicle registration"
+              value={payload.vehicleClaimId}
+            />
           ) : null}
           <ReceiptRow
             label="Submitted"

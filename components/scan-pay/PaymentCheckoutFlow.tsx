@@ -28,6 +28,10 @@ import {
   transactionStatusLabel,
 } from "@/features/scan-pay/receipt";
 import {
+  buildCompletedPaymentReturnTo,
+  saveCompletedPaymentReturn,
+} from "@/features/scan-pay/paymentReturn";
+import {
   PAID_ENTER_BASE_MS,
   SUBMIT_DELAY_MS,
   SUCCESS_VEIL_MS,
@@ -42,6 +46,7 @@ import { getBaseWalletBalances } from "@/features/transactions/constants";
 import { commitBenefitPayment } from "@/features/transactions/financialState";
 import type { FundingAllocation } from "@/features/transactions/financialState";
 import { recordPlusPayTransaction } from "@/features/transactions/plusPayHistory";
+import { buildTransactionDetailsHref } from "@/features/transactions/navigation";
 import "./scanPay.css";
 
 /** Read lazily inside effects and handlers — tests render with `environment: "node"`. */
@@ -189,8 +194,13 @@ export function PaymentCheckoutFlow({
 
   const openTransactionDetails = useCallback(
     (transaction: ScanPayTransaction) => {
+      saveCompletedPaymentReturn(transaction);
       router.push(
-        `/transaction-details/?id=${encodeURIComponent(transaction.transactionId)}&mode=${transaction.mode}`,
+        buildTransactionDetailsHref({
+          transactionId: transaction.transactionId,
+          mode: transaction.mode,
+          returnTo: buildCompletedPaymentReturnTo(transaction),
+        }),
       );
     },
     [router],

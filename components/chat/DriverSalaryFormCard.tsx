@@ -34,6 +34,10 @@ export function DriverSalaryFormCard({
       <form onSubmit={handleSubmit} className="mt-3 flex flex-col gap-3">
         <label className="flex flex-col gap-1">
           <span className="type-field-label">Monthly salary</span>
+          <div className="field-focus-shell flex min-h-11 items-center gap-1 rounded-control border border-input-border bg-input-soft px-3">
+            <span aria-hidden="true" className="text-body-sm font-bold text-ink-secondary">
+              ₹
+            </span>
           <input
             type="text"
             inputMode="decimal"
@@ -41,8 +45,12 @@ export function DriverSalaryFormCard({
             onChange={(event) => setSalary(event.target.value)}
             placeholder="e.g. ₹25,000"
             disabled={disabled}
-            className="w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm text-body outline-none placeholder:text-muted focus:border-pine disabled:opacity-50"
+            className="min-h-11 min-w-0 flex-1 bg-transparent py-2.5 text-body-sm text-body outline-none placeholder:text-muted disabled:opacity-50"
           />
+          </div>
+          <p className="rounded-control bg-warning-tint px-3 py-2 text-caption text-warning-ink">
+            Monthly driver salary limit is ₹15,000.
+          </p>
         </label>
         <label className="flex flex-col gap-1">
           <span className="type-field-label">Start date</span>

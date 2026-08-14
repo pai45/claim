@@ -9,6 +9,7 @@ describe("KYC progress visibility", () => {
       createElement(KycProgressOverlay, {
         open: false,
         onDismiss: vi.fn(),
+        onComplete: vi.fn(),
       }),
     );
 

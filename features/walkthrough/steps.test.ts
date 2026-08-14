@@ -68,20 +68,20 @@ describe("BENEFITS_ASSISTANT_STEPS", () => {
 });
 
 describe("PRODUCT_SWITCHER_STEPS", () => {
-  it("guides Rohan to PlusPay and back through the same target", () => {
+  it("guides Rohan to EB+ and back to PlusPay through the same target", () => {
     expect(PRODUCT_SWITCHER_STEPS).toEqual([
       {
         key: "product-switcher",
         eyebrow: "Product switcher",
-        title: "Your PlusPay is still here",
-        body: "Tap the highlighted switch to move from your new EB+ account to PlusPay.",
+        title: "Your EB+ is ready",
+        body: "Tap the highlighted switch to explore your new EB+ benefits.",
         advanceOn: "target",
       },
       {
         key: "product-switcher",
         eyebrow: "Product switcher",
-        title: "Return to EB+",
-        body: "Use the same switch anytime. Tap it again to return to your EB+ benefits.",
+        title: "Return to PlusPay",
+        body: "Use the same switch anytime. Tap it again to return to PlusPay.",
         advanceOn: "target",
       },
     ]);

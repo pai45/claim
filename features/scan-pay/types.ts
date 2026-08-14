@@ -172,7 +172,8 @@ export type ScanPayAction =
 export type ScanPayLaunch =
   | { kind: "scanner" }
   | { kind: "upi-entry"; initialUpiId?: string }
-  | { kind: "payee"; payee: UpiPayee };
+  | { kind: "payee"; payee: UpiPayee }
+  | { kind: "completed"; transaction: ScanPayTransaction };
 
 export type ScanPayFlowProps = {
   open: boolean;

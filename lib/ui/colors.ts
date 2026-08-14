@@ -8,6 +8,7 @@ export const colors = {
   pinePrimary: "#005656",
   pineDark: "#003434",
   mint: "#36CC8B",
+  vehiclePlate: "#0A57D5",
   /** Brand lime accent (`--brand-300` in the source app). */
   lime: "#D0F255",
   limeWash: "#EDF7BF",

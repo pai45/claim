@@ -2,7 +2,10 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { PaymentCheckoutFlow } from "@/components/scan-pay/PaymentCheckoutFlow";
-import { ScanPayScanner } from "@/components/scan-pay/ScanPayScanner";
+import {
+  ScanPayScanner,
+  UpiEntryDrawer,
+} from "@/components/scan-pay/ScanPayScanner";
 import { createInitialScanPayState, scanPayReducer } from "@/features/scan-pay/machine";
 import type { ScanPayFlowProps } from "@/features/scan-pay/types";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
@@ -25,7 +28,9 @@ export function ScanPayFlow({
     createInitialScanPayState(scenario, mode, merchantType, launch),
   );
   const [scannerDetected, setScannerDetected] = useState(false);
-  useModalFocus(flowRef, open, onClose);
+  const isListUpiEntry =
+    launch.kind === "upi-entry" && state.step === "upiEntry";
+  useModalFocus(flowRef, open && !isListUpiEntry, onClose);
 
   useEffect(() => {
     if (!open) return;
@@ -53,6 +58,20 @@ export function ScanPayFlow({
   }, [open, state.qrErrorVisible, state.step]);
 
   if (!open) return null;
+
+  if (isListUpiEntry) {
+    return (
+      <div className="fixed inset-0 z-[120] mx-auto max-w-phone">
+        <UpiEntryDrawer
+          open
+          upiId={state.upiIdDraft}
+          onChange={(upiId) => dispatch({ type: "SET_UPI_ID", upiId })}
+          onVerify={() => dispatch({ type: "VERIFY_UPI" })}
+          onClose={onClose}
+        />
+      </div>
+    );
+  }
 
   let content;
   if (state.step === "scanner" || state.step === "upiEntry") {

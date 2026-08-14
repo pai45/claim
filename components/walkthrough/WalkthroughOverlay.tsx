@@ -41,6 +41,7 @@ type WalkthroughOverlayProps = {
   stepIndex: number;
   stepCount: number;
   rect: WalkthroughRect | null;
+  showHeader?: boolean;
   onNext: () => void;
   onBack: () => void;
   onSkip: () => void;
@@ -53,6 +54,7 @@ export function WalkthroughOverlay({
   stepIndex,
   stepCount,
   rect,
+  showHeader = true,
   onNext,
   onBack,
   onSkip,
@@ -236,18 +238,22 @@ export function WalkthroughOverlay({
           }
         >
           <div className="walkthrough-tooltip rounded-card border border-border-line bg-surface p-5 shadow-menu">
-            <div className="flex items-start justify-between gap-3">
-              <p className="type-field-label">{step.eyebrow}</p>
-              <button
-                type="button"
-                onClick={onSkip}
-                className="-mr-2 -mt-2 min-h-11 shrink-0 rounded-pill px-3 text-caption font-bold text-ink-secondary"
-              >
-                Skip
-              </button>
-            </div>
+            {showHeader ? (
+              <div className="flex items-start justify-between gap-3">
+                <p className="type-field-label">{step.eyebrow}</p>
+                <button
+                  type="button"
+                  onClick={onSkip}
+                  className="-mr-2 -mt-2 min-h-11 shrink-0 rounded-pill px-3 text-caption font-bold text-ink-secondary"
+                >
+                  Skip
+                </button>
+              </div>
+            ) : null}
 
-            <h2 className="mt-1 type-section-title">{step.title}</h2>
+            <h2 className={showHeader ? "mt-1 type-section-title" : "type-section-title"}>
+              {step.title}
+            </h2>
             <p className="mt-1.5 type-body-secondary" aria-live="polite">
               {step.body}
             </p>

@@ -11,6 +11,7 @@ import {
 } from "@/components/shared/EbBottomNav";
 import { NativeMonthPicker } from "@/components/shared/NativeMonthPicker";
 import { TransactionIcon } from "@/components/transactions/TransactionIcon";
+import { TransactionListCard } from "@/components/transactions/TransactionListCard";
 import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
 import { WalletFilterDropdown } from "@/components/transactions/WalletFilterDropdown";
 import {
@@ -40,10 +41,13 @@ import {
   type TransactionWalletFilterId,
 } from "@/features/transactions/constants";
 import { useActivePersona } from "@/features/persona/useActivePersona";
-import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { colors } from "@/lib/ui/colors";
 import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
-import { resolveTransactionMode } from "@/features/transactions/mode";
+import {
+  resolveTransactionMode,
+  type TransactionProductMode,
+} from "@/features/transactions/mode";
+import { buildTransactionDetailsHref } from "@/features/transactions/navigation";
 import {
   filterPlusPayTransactionsByMonth,
   getPlusPayTransactionItems,
@@ -83,7 +87,12 @@ function BenefitsTransactionsScreen() {
         ? requestedView
         : "trends";
     });
-  const [selectedMonth, setSelectedMonth] = useState(TRANSACTION_MAX_MONTH);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const requestedMonth = searchParams.get("month");
+    return TRANSACTION_MONTHS.some((month) => month.key === requestedMonth)
+      ? requestedMonth!
+      : TRANSACTION_MAX_MONTH;
+  });
 
   const allTransactions = useMemo(
     () => {
@@ -177,6 +186,13 @@ function BenefitsTransactionsScreen() {
             totalTransactions={filteredTransactions.length}
             monthKey={selectedMonth}
             onSelectMonth={setSelectedMonth}
+            detailsReturnTo={buildTransactionsReturnTo({
+              mode: "benefits",
+              month: selectedMonth,
+              tab,
+              wallet: selectedWallet,
+              view: analyticsView,
+            })}
           />
         ) : (
           <AnalyticsPanel
@@ -198,9 +214,15 @@ function BenefitsTransactionsScreen() {
 
 function PlusPayTransactionsScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { personaId } = useActivePersona();
   const historyVersion = usePlusPayHistoryVersion();
-  const [selectedMonth, setSelectedMonth] = useState(TRANSACTION_MAX_MONTH);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const requestedMonth = searchParams.get("month");
+    return TRANSACTION_MONTHS.some((month) => month.key === requestedMonth)
+      ? requestedMonth!
+      : TRANSACTION_MAX_MONTH;
+  });
 
   const transactions = useMemo(() => {
     void historyVersion;
@@ -281,40 +303,26 @@ function PlusPayTransactionsScreen() {
                 <h2 className="type-section-title text-pine-primary">
                   {section.label}
                 </h2>
-                <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
-                  {section.items.map((txn, index) => (
-                    <Link
-                      key={txn.id}
-                      href={`/transaction-details/?id=${encodeURIComponent(txn.id)}&mode=pluspay`}
-                      style={staggerStyle(index)}
-                      className={`animate-rise-in flex min-h-11 items-center gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
-                        index < section.items.length - 1
-                          ? "border-b border-border-line"
-                          : ""
-                      }`}
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
-                        <TransactionIcon icon={txn.icon} tone="success" />
-                      </div>
-                      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                        <h3 className="type-body truncate font-bold text-ink">
-                          {txn.merchant}
-                        </h3>
-                        <p className="truncate text-caption text-ink-secondary">
-                          ANQ | Ref ID: {txn.refId}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 flex-col items-end gap-0.5">
-                        <p className="text-body-sm font-bold text-ink">
-                          {formatSignedINR(txn.amount, txn.type)}
-                        </p>
-                        <p className="text-caption text-ink-secondary">
-                          {txn.dateLabel}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
+                <TransactionListCard
+                  items={section.items.map((txn) => ({
+                    id: txn.id,
+                    title: txn.merchant,
+                    subtitle: `ANQ | Ref ID: ${txn.refId}`,
+                    amountLabel: formatSignedINR(txn.amount, txn.type),
+                    metaLabel: txn.dateLabel,
+                    icon: <TransactionIcon icon={txn.icon} tone="success" />,
+                  }))}
+                  getHref={(item) =>
+                    buildTransactionDetailsHref({
+                      transactionId: item.id,
+                      mode: "pluspay",
+                      returnTo: buildTransactionsReturnTo({
+                        mode: "pluspay",
+                        month: selectedMonth,
+                      }),
+                    })
+                  }
+                />
               </section>
             ))
           )}
@@ -333,6 +341,7 @@ function TransactionsPanel({
   totalTransactions,
   monthKey,
   onSelectMonth,
+  detailsReturnTo,
 }: {
   selectedWallet: TransactionWalletFilterId;
   onSelectWallet: (wallet: TransactionWalletFilterId) => void;
@@ -340,6 +349,7 @@ function TransactionsPanel({
   totalTransactions: number;
   monthKey: string;
   onSelectMonth: (monthKey: string) => void;
+  detailsReturnTo: string;
 }) {
   const currentWalletOption = WALLET_FILTER_OPTIONS.find(
     (o) => o.id === selectedWallet,
@@ -402,45 +412,24 @@ function TransactionsPanel({
             <h2 className="type-section-title text-pine-primary">
               {section.label}
             </h2>
-            <div className="overflow-hidden rounded-card border border-border-line bg-white shadow-card">
-              {section.items.map((txn, index) => {
-                const isLast = index === section.items.length - 1;
-                return (
-                  <Link
-                    key={txn.id}
-                    href={`/transaction-details/?id=${encodeURIComponent(txn.id)}&mode=benefits`}
-                    style={staggerStyle(index)}
-                    className={`animate-rise-in flex min-h-11 items-center gap-3 px-page py-3.5 transition-colors hover:bg-surface ${
-                      !isLast ? "border-b border-border-line" : ""
-                    }`}
-                  >
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint text-success">
-                      <BenefitWalletIcon wallet={txn.wallet} />
-                    </div>
-                    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                      <h3 className="type-body truncate font-bold text-ink">
-                        {txn.merchant}
-                      </h3>
-                      <p className="truncate text-caption text-ink-secondary">
-                        {txn.paymentMethod} | Ref ID: {txn.refId}
-                      </p>
-                    </div>
-                    <div className="flex shrink-0 flex-col items-end gap-0.5">
-                      <p
-                        className={`text-body-sm font-bold ${
-                          txn.type === "credit" ? "text-success" : "text-ink"
-                        }`}
-                      >
-                        {formatSignedINR(txn.amount, txn.type)}
-                      </p>
-                      <p className="text-caption text-ink-secondary">
-                        {txn.dateLabel}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            <TransactionListCard
+              items={section.items.map((txn) => ({
+                id: txn.id,
+                title: txn.merchant,
+                subtitle: `${txn.paymentMethod} | Ref ID: ${txn.refId}`,
+                amountLabel: formatSignedINR(txn.amount, txn.type),
+                metaLabel: txn.dateLabel,
+                icon: <BenefitWalletIcon wallet={txn.wallet} />,
+                amountTone: txn.type === "credit" ? "success" : "default",
+              }))}
+              getHref={(item) =>
+                buildTransactionDetailsHref({
+                  transactionId: item.id,
+                  mode: "benefits",
+                  returnTo: detailsReturnTo,
+                })
+              }
+            />
           </section>
         ))
       )}
@@ -842,4 +831,24 @@ function CalendarIcon() {
       />
     </svg>
   );
+}
+
+function buildTransactionsReturnTo({
+  mode,
+  month,
+  tab,
+  wallet,
+  view,
+}: {
+  mode: TransactionProductMode;
+  month: string;
+  tab?: HistoryTabId;
+  wallet?: TransactionWalletFilterId;
+  view?: AnalyticsViewId;
+}): string {
+  const params = new URLSearchParams({ mode, month });
+  if (tab) params.set("tab", tab);
+  if (wallet) params.set("wallet", wallet);
+  if (view) params.set("view", view);
+  return `/transactions/?${params.toString()}`;
 }

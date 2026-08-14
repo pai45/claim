@@ -1,10 +1,20 @@
-import { getPolicyCategory, type PolicyTabId } from "@/features/policy/constants";
+import {
+  getPolicyCategory,
+  type PolicyTabId,
+} from "@/features/policy/constants";
 import type { ChatMessage, QuickAction } from "@/features/chat/types";
 
 const CLAIM_STATUSES = ["Pending", "Approved", "Rejected"] as const;
 
-function action(id: string, label: string, intentId?: string): QuickAction {
-  return { id, label, intentId };
+function action(
+  id: string,
+  label: string,
+  intentId?: string,
+  row?: number,
+): QuickAction {
+  return row === undefined
+    ? { id, label, intentId }
+    : { id, label, intentId, row };
 }
 
 function categoryLabel(categoryId?: PolicyTabId): string | undefined {
@@ -33,17 +43,15 @@ function policyActions(categoryId?: PolicyTabId): QuickAction[] {
       action("policy-dashboard", "View dashboard", "view_dashboard"),
       action("policy-history", "View claim history", "claim_history"),
       action("policy-another", "Choose another policy", "view_policy"),
+      action("policy-new-claim", "New claim", "upload_bill"),
     ];
   }
 
   return [
-    action(
-      "policy-balance",
-      `Check ${benefit} balance`,
-      "view_dashboard",
-    ),
+    action("policy-balance", `Check ${benefit} balance`, "view_dashboard"),
     action("policy-claims", `Show ${benefit} claims`, "claim_history"),
     action("policy-another", "Choose another policy", "view_policy"),
+    action("policy-new-claim", "New claim", "upload_bill"),
   ];
 }
 
@@ -60,7 +68,7 @@ function categoryDashboardActions(categoryId?: PolicyTabId): QuickAction[] {
 
 function dashboardActions(): QuickAction[] {
   return [
-    action("dashboard-pending", "Show pending claims", "claim_history"),
+    action("dashboard-pending", "Pending claims", "claim_history"),
     action("dashboard-history", "View claim history", "claim_history"),
     action("dashboard-policy", "Check a policy", "view_policy"),
   ];
@@ -70,7 +78,6 @@ function claimsHistoryActions(message: ChatMessage): QuickAction[] {
   const structured = message.appDataAnswer?.structured;
   const filters =
     structured?.kind === "claims_history" ? structured.filters : undefined;
-  const benefit = categoryLabel(filters?.categoryId ?? appDataCategoryId(message));
   const statusActions = CLAIM_STATUSES.filter(
     (status) => status !== filters?.status,
   )
@@ -79,16 +86,16 @@ function claimsHistoryActions(message: ChatMessage): QuickAction[] {
       const statusLabel = status.toLowerCase();
       return action(
         `history-${statusLabel}`,
-        benefit
-          ? `Show ${statusLabel} ${benefit} claims`
-          : `Show ${statusLabel} claims`,
+        status,
         "claim_history",
+        0,
       );
     });
 
   return [
     ...statusActions,
-    action("history-dashboard", "View dashboard", "view_dashboard"),
+    action("history-dashboard", "View dashboard", "view_dashboard", 1),
+    action("history-new-claim", "New claim", "upload_bill", 1),
   ];
 }
 
@@ -97,6 +104,7 @@ function individualClaimActions(): QuickAction[] {
     action("claim-history", "View claim history", "claim_history"),
     action("claim-dashboard", "View dashboard", "view_dashboard"),
     action("claim-policy", "Check a policy", "view_policy"),
+    action("claim-new-claim", "New claim", "upload_bill"),
   ];
 }
 

@@ -25,41 +25,51 @@ export function createInitialScanPayState(
   launch: ScanPayLaunch = { kind: "scanner" },
 ): ScanPayState {
   const payeeLaunch = launch.kind === "payee" ? launch.payee : null;
-  const startsWithUpi = launch.kind !== "scanner";
+  const completedTransaction =
+    launch.kind === "completed" ? launch.transaction : null;
+  const startsWithUpi = launch.kind === "upi-entry" || launch.kind === "payee";
   return {
-    paymentContext: payeeLaunch
-      ? { origin: "upi-transfer", recipient: payeeLaunch }
-      : { origin: "scan-pay" },
+    paymentContext:
+      completedTransaction?.paymentContext ??
+      (payeeLaunch
+        ? { origin: "upi-transfer", recipient: payeeLaunch }
+        : { origin: "scan-pay" }),
     upiIdDraft:
       launch.kind === "upi-entry"
         ? launch.initialUpiId ?? ""
         : payeeLaunch?.upiId ?? "",
-    step:
-      launch.kind === "upi-entry"
+    step: completedTransaction
+      ? "successReward"
+      : launch.kind === "upi-entry"
         ? "upiEntry"
         : launch.kind === "payee"
           ? "confirmPayment"
           : "scanner",
-    mode,
-    merchantType: startsWithUpi ? "unclassified" : merchantType,
+    mode: completedTransaction?.mode ?? mode,
+    merchantType:
+      completedTransaction || startsWithUpi ? "unclassified" : merchantType,
     scenario,
-    outcome: outcomeForScenario(scenario),
+    outcome: completedTransaction?.outcome ?? outcomeForScenario(scenario),
     qrErrorVisible: false,
     qrErrorReason: null,
     torchEnabled: false,
-    amount: "",
-    amountTouched: false,
-    note: "",
+    amount: completedTransaction
+      ? String(completedTransaction.transferAmount ?? completedTransaction.amount)
+      : "",
+    amountTouched: Boolean(completedTransaction),
+    note: completedTransaction?.note ?? "",
     noteOpen: false,
     selectedCategoryId: null,
     pendingCategoryId: null,
     selectedSubcategoryId: null,
-    walletId: defaultWalletForMerchant(
-      mode,
-      startsWithUpi ? "unclassified" : merchantType,
-    ),
-    fundingAllocations: [],
-    transaction: null,
+    walletId:
+      completedTransaction?.walletId ??
+      defaultWalletForMerchant(
+        mode,
+        startsWithUpi ? "unclassified" : merchantType,
+      ),
+    fundingAllocations: completedTransaction?.fundingAllocations ?? [],
+    transaction: completedTransaction,
     receiptState: "empty",
     receiptPreview: null,
     faqReturnStep: "scanner",

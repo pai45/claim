@@ -1,6 +1,7 @@
 export type WalkthroughId =
   | "eb-home"
   | "benefits-assistant"
+  | "rohan-eb-plus-setup"
   | "product-switcher";
 
 export type WalkthroughPhase = "idle" | "running" | "paused" | "done";

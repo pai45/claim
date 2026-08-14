@@ -25,6 +25,7 @@ import { colors } from "@/lib/ui/colors";
 type TransactionDetailsScreenProps = {
   transactionId: string;
   mode: TransactionProductMode;
+  returnTo: string;
 };
 
 type TransactionDetailItem = TransactionItem | PlusPayTransactionItem;
@@ -32,6 +33,7 @@ type TransactionDetailItem = TransactionItem | PlusPayTransactionItem;
 export function TransactionDetailsScreen({
   transactionId,
   mode,
+  returnTo,
 }: TransactionDetailsScreenProps) {
   const router = useRouter();
   const { personaId } = useActivePersona();
@@ -59,7 +61,7 @@ export function TransactionDetailsScreen({
       <AppShell className="overflow-hidden" variant="surface">
         <ScreenHeader
           title="Transaction Details"
-          onBack={() => router.push(`/transactions/?mode=${mode}`)}
+          onBack={() => router.replace(returnTo)}
         />
         <main className="flex min-h-0 flex-1 items-center px-page pb-8">
           <section className="w-full rounded-card border border-border-line bg-white p-card text-center shadow-card">
@@ -72,9 +74,9 @@ export function TransactionDetailsScreen({
             <button
               type="button"
               className="btn-primary mt-5 w-full"
-              onClick={() => router.push(`/transactions/?mode=${mode}`)}
+              onClick={() => router.replace(returnTo)}
             >
-              Back to Transactions
+              Go back
             </button>
           </section>
         </main>
@@ -87,7 +89,7 @@ export function TransactionDetailsScreen({
       <ScreenHeader
         title="Transaction Details"
         eyebrow={mode === "pluspay" ? "PlusPay" : undefined}
-        onBack={() => router.push(`/transactions/?mode=${mode}`)}
+        onBack={() => router.replace(returnTo)}
       />
 
       <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-8 pt-2">

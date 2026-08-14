@@ -17,8 +17,6 @@ export const ONBOARDING_SESSION_EVENT = "eb-claims:onboarding-changed";
 
 export const DEMO_EMAIL = "vishal.sharma@infosys.com";
 export const DEMO_KIT_NUMBER = "PKT20241234567";
-/** How long "Verifying your KYC" shows before the completed screen. */
-export const KYC_AUTO_COMPLETE_MS = 2000;
 
 /**
  * The shortest believable round trip out to the VKYC page and back. Below this,

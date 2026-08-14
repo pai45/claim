@@ -3,7 +3,7 @@ import type { CSSProperties, ReactNode } from "react";
 type AppShellProps = {
   children: ReactNode;
   /** Page surface. Default `surface` for most screens; use `chat` for the assistant. */
-  variant?: "surface" | "chat" | "bg" | "login";
+  variant?: "surface" | "chat" | "bg" | "login" | "pine";
   className?: string;
   /** Escape hatch for per-screen custom properties that header and footer both read. */
   style?: CSSProperties;
@@ -14,6 +14,8 @@ const variantClass = {
   chat: "bg-surface-chat",
   bg: "bg-bg",
   login: "bg-login-canvas",
+  /** Full-bleed brand field, used by the PlusPay splash. */
+  pine: "bg-pine-dark",
 } as const;
 
 export function AppShell({

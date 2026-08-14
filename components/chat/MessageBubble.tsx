@@ -448,9 +448,19 @@ export function MessageBubble({
           />
           {/* Registering a driver files no bill, so there is no claim to
               open — the registered driver on the dashboard is what the user wants to see. */}
-          <Link href="/driver/" className={pillClass}>
-            View driver details
-          </Link>
+          <div className="flex flex-wrap content-start gap-2">
+            <Link href="/driver/" className={pillClass}>
+              View driver details
+            </Link>
+            <button
+              type="button"
+              disabled={uploadDisabled}
+              onClick={onNewClaim}
+              className={`${pillClass} disabled:opacity-50`}
+            >
+              New claim
+            </button>
+          </div>
         </div>
       );
     }

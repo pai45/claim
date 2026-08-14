@@ -5,6 +5,7 @@ type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 export const WALKTHROUGH_IDS: WalkthroughId[] = [
   "eb-home",
   "benefits-assistant",
+  "rohan-eb-plus-setup",
   "product-switcher",
 ];
 

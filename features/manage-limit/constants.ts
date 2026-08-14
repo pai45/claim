@@ -18,6 +18,13 @@ export type LimitChannelState = {
 
 export type ManageLimitState = Record<LimitChannelId, LimitChannelState>;
 
+type StorageLike = Pick<Storage, "getItem" | "setItem">;
+
+export type TransactionChannelPreferences = {
+  onlineTransactions: boolean;
+  tapToPay: boolean;
+};
+
 export const LIMIT_CHANNELS: LimitChannelConfig[] = [
   {
     id: "online",
@@ -47,7 +54,7 @@ export const MANAGE_LIMIT_STORAGE_KEY = "eb-claims:manage-limit";
 export function createDefaultLimitState(): ManageLimitState {
   return LIMIT_CHANNELS.reduce((acc, channel) => {
     acc[channel.id] = {
-      enabled: false,
+      enabled: channel.id === "pos",
       dailyLimit: channel.daily.defaultValue,
       perTxnLimit: channel.perTxn.defaultValue,
     };
@@ -55,17 +62,21 @@ export function createDefaultLimitState(): ManageLimitState {
   }, {} as ManageLimitState);
 }
 
-export function loadLimitState(): ManageLimitState {
+export function loadLimitState(
+  storage: StorageLike = defaultStorage(),
+): ManageLimitState {
   const defaults = createDefaultLimitState();
-  if (typeof window === "undefined") return defaults;
   try {
-    const raw = window.localStorage.getItem(MANAGE_LIMIT_STORAGE_KEY);
+    const raw = storage.getItem(MANAGE_LIMIT_STORAGE_KEY);
     if (!raw) return defaults;
     const parsed = JSON.parse(raw) as Partial<ManageLimitState>;
     return LIMIT_CHANNELS.reduce((acc, channel) => {
       const saved = parsed[channel.id];
       acc[channel.id] = {
-        enabled: Boolean(saved?.enabled),
+        enabled:
+          typeof saved?.enabled === "boolean"
+            ? saved.enabled
+            : defaults[channel.id].enabled,
         dailyLimit: clamp(
           Number(saved?.dailyLimit ?? channel.daily.defaultValue),
           channel.daily.min,
@@ -84,9 +95,35 @@ export function loadLimitState(): ManageLimitState {
   }
 }
 
-export function saveLimitState(state: ManageLimitState): void {
-  if (typeof window === "undefined") return;
-  window.localStorage.setItem(MANAGE_LIMIT_STORAGE_KEY, JSON.stringify(state));
+export function saveLimitState(
+  state: ManageLimitState,
+  storage: StorageLike = defaultStorage(),
+): void {
+  storage.setItem(MANAGE_LIMIT_STORAGE_KEY, JSON.stringify(state));
+}
+
+export function saveTransactionChannelPreferences(
+  preferences: TransactionChannelPreferences,
+  storage: StorageLike = defaultStorage(),
+): ManageLimitState {
+  const state = loadLimitState(storage);
+  const nextState: ManageLimitState = {
+    ...state,
+    online: {
+      ...state.online,
+      enabled: preferences.onlineTransactions,
+    },
+    pos: {
+      ...state.pos,
+      enabled: true,
+    },
+    contactless: {
+      ...state.contactless,
+      enabled: preferences.tapToPay,
+    },
+  };
+  saveLimitState(nextState, storage);
+  return nextState;
 }
 
 export function formatLimitINR(amount: number): string {
@@ -96,4 +133,10 @@ export function formatLimitINR(amount: number): string {
 function clamp(value: number, min: number, max: number): number {
   if (Number.isNaN(value)) return min;
   return Math.min(max, Math.max(min, value));
+}
+
+function defaultStorage(): StorageLike {
+  return typeof window !== "undefined"
+    ? window.localStorage
+    : { getItem: () => null, setItem: () => {} };
 }

@@ -13,6 +13,7 @@ import { UI_ICONS } from "@/lib/ui/assets";
 import { withBasePath } from "@/lib/basePath";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { OnboardingHeader } from "./OnboardingHeader";
 import { CenterModal } from "./OnboardingModals";
 import { CheckRow, TextField } from "./OnboardingPrimitives";
@@ -162,19 +163,17 @@ export function CardEmbossmentStep({
 }: CardEmbossmentStepProps) {
   const { persona } = useActivePersona();
   const [successOpen, setSuccessOpen] = useState(false);
-  const [firstName = "", ...remainingNames] = persona.profile.name.split(" ");
-  const lastName = remainingNames.join(" ");
-  const cardholder = persona.profile.name.trim().toUpperCase();
+  const fullName = persona.profile.name.trim();
+  const cardholder = fullName.toUpperCase();
 
   return (
     <>
       <CardOrderHeader onBack={onBack} />
-      <CardOrderProgress label="Name Embossment" step={2} />
+      <CardOrderProgress label="Name on card" step={2} />
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#f4f4f4] px-5 py-5">
         <section className="rounded-card bg-white p-3 shadow-card">
           <div className="flex flex-col gap-4">
-            <TextField label="First Name" value={firstName} readOnly />
-            <TextField label="Last Name" value={lastName} readOnly />
+            <TextField label="Full Name" value={fullName} readOnly />
           </div>
           <CardEmbossmentPreview cardholder={cardholder || "YOUR NAME"} />
         </section>
@@ -259,7 +258,7 @@ function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
         <p className="text-[10px] font-normal text-[#bdd2d0]">CARD NUMBER</p>
         <div className="mt-1">
           <p className="whitespace-nowrap text-[15px] tracking-[0.22em]">
-            **** **** **** ••••
+            **** **** **** ****
           </p>
         </div>
       </div>
@@ -524,26 +523,7 @@ function ToggleRow({
         <AppIcon src={icon} alt="" size={20} />
       </span>
       <p className="type-body flex-1 font-bold">{label}</p>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        onClick={() => onChange(!checked)}
-        className="grid h-11 w-11 shrink-0 place-items-center"
-      >
-        <span
-          className={`relative h-5 w-9 rounded-pill transition-colors ${
-            checked ? "bg-pine-primary" : "bg-border-muted"
-          }`}
-        >
-          <span
-            className={`absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow-soft transition-transform ${
-              checked ? "translate-x-4" : "translate-x-0"
-            }`}
-          />
-        </span>
-      </button>
+      <ToggleSwitch checked={checked} label={label} onChange={onChange} />
     </div>
   );
 }

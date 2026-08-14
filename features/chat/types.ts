@@ -216,6 +216,7 @@ export type QuickAction = {
   label: string;
   intentId?: string;
   featured?: boolean;
+  row?: number;
 };
 
 export type UploadOptionId = "camera" | "pdf" | "gallery";

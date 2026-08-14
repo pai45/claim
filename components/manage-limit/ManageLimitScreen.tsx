@@ -3,7 +3,9 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/shared/AppShell";
+import { AppIcon } from "@/components/shared/AppIcon";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
+import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { CenterModal } from "@/components/onboarding/OnboardingModals";
 import {
   LIMIT_CHANNELS,
@@ -17,7 +19,14 @@ import {
   type ManageLimitState,
 } from "@/features/manage-limit/constants";
 import { colors } from "@/lib/ui/colors";
+import { UI_ICONS } from "@/lib/ui/assets";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
+
+const LIMIT_CHANNEL_ICONS: Record<LimitChannelId, string> = {
+  online: UI_ICONS.onlineTransactions,
+  pos: UI_ICONS.pos,
+  contactless: UI_ICONS.tapToPay,
+};
 
 export function ManageLimitScreen() {
   const router = useRouter();
@@ -144,7 +153,7 @@ function LimitChannelCard({
     >
       <div className="flex min-h-14 items-center gap-3 p-card">
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-tint">
-          <ChannelIcon id={channel.icon} />
+          <AppIcon src={LIMIT_CHANNEL_ICONS[channel.icon]} alt="" size={20} />
         </span>
         <p className="type-body min-w-0 flex-1 font-bold text-ink">
           {channel.label}
@@ -228,104 +237,3 @@ function LimitSlider({
   );
 }
 
-function ToggleSwitch({
-  checked,
-  label,
-  onChange,
-}: {
-  checked: boolean;
-  label: string;
-  onChange: (checked: boolean) => void;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={() => onChange(!checked)}
-      className={`relative h-8 w-14 shrink-0 rounded-pill transition-colors ${
-        checked ? "bg-success" : "bg-border-muted"
-      }`}
-    >
-      <span
-        className={`absolute top-1 left-1 h-6 w-6 rounded-full bg-white shadow-soft transition-transform ${
-          checked ? "translate-x-6" : "translate-x-0"
-        }`}
-      />
-    </button>
-  );
-}
-
-function ChannelIcon({ id }: { id: LimitChannelId }) {
-  const stroke = colors.pinePrimary;
-  const common = {
-    width: 22,
-    height: 22,
-    viewBox: "0 0 24 24",
-    fill: "none" as const,
-    "aria-hidden": true as const,
-  };
-
-  if (id === "online") {
-    return (
-      <svg {...common}>
-        <path
-          d="M4 8h16l-1.5 11.2a1.5 1.5 0 0 1-1.5 1.3H7a1.5 1.5 0 0 1-1.5-1.3L4 8Z"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M8 8V7a4 4 0 0 1 8 0v1M9 12h.01M12 12h.01M15 12h.01"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-
-  if (id === "pos") {
-    return (
-      <svg {...common}>
-        <rect
-          x="4"
-          y="3"
-          width="12"
-          height="18"
-          rx="2"
-          stroke={stroke}
-          strokeWidth="1.7"
-        />
-        <path
-          d="M7 7h6M7 10h6M7 13h4M16 10h3.5A1.5 1.5 0 0 1 21 11.5V16a2 2 0 0 1-2 2h-3"
-          stroke={stroke}
-          strokeWidth="1.7"
-          strokeLinecap="round"
-        />
-      </svg>
-    );
-  }
-
-  return (
-    <svg {...common}>
-      <path
-        d="M7 12a5 5 0 0 1 5-5M5 12a7 7 0 0 1 7-7M9 12a3 3 0 0 1 3-3"
-        stroke={stroke}
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-      <circle cx="12" cy="16.5" r="1.5" fill={stroke} />
-      <rect
-        x="8"
-        y="18"
-        width="8"
-        height="2.5"
-        rx="1"
-        stroke={stroke}
-        strokeWidth="1.4"
-      />
-    </svg>
-  );
-}

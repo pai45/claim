@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ScanPayFlow } from "@/components/scan-pay/ScanPayFlow";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import { BenefitWalletIcon } from "@/components/shared/BenefitWalletIcon";
+import { TransactionListCard } from "@/components/transactions/TransactionListCard";
 import {
   getPayee,
   getPayeeHistory,
@@ -18,7 +20,13 @@ import type {
   ScanPayMode,
   UpiPayee,
 } from "@/features/scan-pay/types";
+import {
+  clearCompletedPaymentReturn,
+  readCompletedPaymentReturn,
+} from "@/features/scan-pay/paymentReturn";
+import { buildTransactionDetailsHref } from "@/features/transactions/navigation";
 import { useActivePersona } from "@/features/persona/useActivePersona";
+import { formatSignedINR } from "@/features/transactions/constants";
 import { UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
 import { staggerStyle } from "@/lib/ui/staggerStyle";
 
@@ -30,9 +38,21 @@ export function PayUpiScreen() {
   void historyVersion;
   const mode = resolveMode(searchParams.get("mode"), persona.access);
   const payeeId = searchParams.get("payee");
+  const resumePaymentId = searchParams.get("resumePayment");
   const payees = getRecentPayees(mode);
   const selectedPayee = payeeId ? getPayee(payeeId, mode) : undefined;
-  const [launch, setLaunch] = useState<ScanPayLaunch | null>(null);
+  const [launch, setLaunch] = useState<ScanPayLaunch | null>(() => {
+    const transaction = resumePaymentId
+      ? readCompletedPaymentReturn(resumePaymentId)
+      : null;
+    return transaction ? { kind: "completed", transaction } : null;
+  });
+
+  useEffect(() => {
+    if (launch?.kind === "completed") {
+      clearCompletedPaymentReturn(launch.transaction.transactionId);
+    }
+  }, [launch]);
 
   function navigateToPayee(payee: UpiPayee) {
     router.push(sendMoneyUrl(mode, payee.id));
@@ -40,6 +60,13 @@ export function PayUpiScreen() {
 
   function closePayee() {
     router.push(sendMoneyUrl(mode));
+  }
+
+  function closePaymentFlow() {
+    setLaunch(null);
+    if (resumePaymentId) {
+      router.replace(sendMoneyUrl(mode, selectedPayee?.id));
+    }
   }
 
   return (
@@ -52,7 +79,11 @@ export function PayUpiScreen() {
           onPayAgain={() => setLaunch({ kind: "payee", payee: selectedPayee })}
           onTransaction={(transactionId) =>
             router.push(
-              `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=${mode}`,
+              buildTransactionDetailsHref({
+                transactionId,
+                mode,
+                returnTo: sendMoneyUrl(mode, selectedPayee.id),
+              }),
             )
           }
         />
@@ -72,7 +103,7 @@ export function PayUpiScreen() {
           mode={mode}
           merchantType="unclassified"
           launch={launch}
-          onClose={() => setLaunch(null)}
+          onClose={closePaymentFlow}
         />
       ) : null}
     </>
@@ -203,21 +234,24 @@ export function RecipientHistoryScreen({
             >
               <h3
                 id={`history-${groupIndex}`}
-                className="type-body-secondary mb-2 text-center"
+                className="type-body-secondary mb-2 font-bold text-pine-primary"
               >
                 {dateLabel}
               </h3>
-              <div className="flex flex-col gap-2">
-                {records.map((record) => (
-                  <HistoryRow
-                    key={record.transaction.paymentGroupId}
-                    record={record}
-                    onClick={() =>
-                      onTransaction(record.transaction.transactionId)
-                    }
-                  />
-                ))}
-              </div>
+              <TransactionListCard
+                items={records.map((record) => ({
+                  id: record.transaction.transactionId,
+                  title: payee.name,
+                  subtitle: `${record.transaction.paymentMethod} | Ref ID: ${record.transaction.transactionId}`,
+                  amountLabel: formatSignedINR(
+                    record.transaction.amount,
+                    "debit",
+                  ),
+                  metaLabel: formatTime(record.createdAt),
+                  icon: <BenefitWalletIcon wallet="misc" />,
+                }))}
+                onSelect={(item) => onTransaction(item.id)}
+              />
             </section>
           ))}
         </div>
@@ -237,32 +271,6 @@ export function RecipientHistoryScreen({
         </button>
       </footer>
     </AppShell>
-  );
-}
-
-function HistoryRow({
-  record,
-  onClick,
-}: {
-  record: RecipientPaymentRecord;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-h-14 w-full items-center justify-between rounded-card border border-success-border bg-white px-card py-3 text-left shadow-card transition-transform active:scale-[0.99]"
-    >
-      <span className="min-w-0">
-        <span className="type-amount block text-ink">
-          {formatINR(record.transaction.amount)}
-        </span>
-        <span className="mt-1 block truncate text-caption text-ink-secondary">
-          {formatTime(record.createdAt)} · {record.transaction.paymentMethod}
-        </span>
-      </span>
-      <ChevronIcon className="shrink-0 text-mint" />
-    </button>
   );
 }
 
@@ -354,12 +362,4 @@ function formatTime(value: string): string {
     hour12: true,
     timeZone: "UTC",
   }).format(new Date(value));
-}
-
-function formatINR(amount: number): string {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: Number.isInteger(amount) ? 0 : 2,
-  }).format(amount);
 }

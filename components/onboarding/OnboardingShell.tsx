@@ -2,10 +2,7 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 import { AppShell } from "@/components/shared/AppShell";
-import {
-  KYC_AUTO_COMPLETE_MS,
-  MIN_HANDOFF_AWAY_MS,
-} from "@/features/onboarding/constants";
+import { MIN_HANDOFF_AWAY_MS } from "@/features/onboarding/constants";
 import {
   createInitialOnboardingState,
   onboardingReducer,
@@ -19,6 +16,7 @@ import {
   loadOnboardingState,
   saveOnboardingState,
 } from "@/features/onboarding/storage";
+import { saveTransactionChannelPreferences } from "@/features/manage-limit/constants";
 import {
   clearVkycHandoff,
   handoffFlagCanCross,
@@ -92,23 +90,6 @@ export function OnboardingShell({
       saveOnboardingState(state);
     }
   }, [state, hydrated, journey]);
-
-  // Complete KYC from status, not from the modal staying open — dismissing
-  // "OK" must not cancel the demo auto-approve timer.
-  useEffect(() => {
-    if (
-      journey === "eb-plus-activation" ||
-      !hydrated ||
-      state.kycStatus !== "in_progress"
-    ) {
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      setKycProgressOpen(false);
-      dispatch({ type: "kyc-complete" });
-    }, KYC_AUTO_COMPLETE_MS);
-    return () => window.clearTimeout(timer);
-  }, [hydrated, journey, state.kycStatus]);
 
   // The VKYC page runs in another browsing context, so coming back here is the
   // only signal that it is over. When it ran in a tab of this same browser it
@@ -291,6 +272,10 @@ export function OnboardingShell({
           }
           onToggleTap={(value) => dispatch({ type: "set-tap-to-pay", value })}
           onFinish={() => {
+            saveTransactionChannelPreferences({
+              onlineTransactions: state.onlineTransactions,
+              tapToPay: state.tapToPay,
+            });
             if (journey === "eb-plus-activation") {
               const completedState = onboardingReducer(state, {
                 type: "finish",
@@ -309,6 +294,10 @@ export function OnboardingShell({
         <KycProgressOverlay
           open={kycProgressOpen && canShowKycProgress}
           onDismiss={() => setKycProgressOpen(false)}
+          onComplete={() => {
+            setKycProgressOpen(false);
+            dispatch({ type: "kyc-complete" });
+          }}
         />
       ) : null}
     </AppShell>

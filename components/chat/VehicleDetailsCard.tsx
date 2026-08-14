@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChatAvatar } from "@/components/chat/ChatAvatar";
 import { VehicleDetailRow } from "@/components/vehicle/VehicleDetailRow";
 import { VehiclePhoto } from "@/components/vehicle/VehiclePhoto";
+import { VehicleRegistrationPlate } from "@/components/vehicle/VehicleRegistrationPlate";
 import type { VehicleLookupPayload } from "@/features/chat/types";
 import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
@@ -69,13 +70,20 @@ export function VehicleDetailsCard({
           </p>
         </div>
 
-        <VehiclePhoto profile={profile} />
+        {isReviewStep ? (
+          <div className="flex flex-col gap-1">
+            <VehiclePhoto profile={profile} />
+            <p className="text-caption text-ink-secondary">
+              Vehicle image is for representation purposes only.
+            </p>
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-0.5">
           <p className="text-body font-bold text-pine">{name}</p>
-          <p className="type-body-secondary tracking-wide">
-            {lookup.regNumber.formatted}
-          </p>
+          <VehicleRegistrationPlate
+            registrationNumber={lookup.regNumber.formatted}
+          />
         </div>
 
         <div className="divide-y divide-border-soft rounded-control border border-border-soft px-3 py-1">

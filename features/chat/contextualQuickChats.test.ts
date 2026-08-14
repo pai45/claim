@@ -51,6 +51,7 @@ describe("contextual quick chats", () => {
       { label: "Check Meal Wallet balance", intentId: "view_dashboard" },
       { label: "Show Meal Wallet claims", intentId: "claim_history" },
       { label: "Choose another policy", intentId: "view_policy" },
+      { label: "New claim", intentId: "upload_bill" },
     ]);
   });
 
@@ -69,12 +70,13 @@ describe("contextual quick chats", () => {
         intentId: "claim_history",
       },
       { label: "Choose another policy", intentId: "view_policy" },
+      { label: "New claim", intentId: "upload_bill" },
     ]);
   });
 
   it("suggests generic claim follow-ups for the overall dashboard", () => {
     expect(simplifiedActions(appDataMessage({ kind: "dashboard" }))).toEqual([
-      { label: "Show pending claims", intentId: "claim_history" },
+      { label: "Pending claims", intentId: "claim_history" },
       { label: "View claim history", intentId: "claim_history" },
       { label: "Check a policy", intentId: "view_policy" },
     ]);
@@ -97,9 +99,10 @@ describe("contextual quick chats", () => {
 
   it("suggests the first two status filters for unfiltered claim history", () => {
     expect(simplifiedActions(appDataMessage({ kind: "claims" }))).toEqual([
-      { label: "Show pending claims", intentId: "claim_history" },
-      { label: "Show approved claims", intentId: "claim_history" },
+      { label: "Pending", intentId: "claim_history" },
+      { label: "Approved", intentId: "claim_history" },
       { label: "View dashboard", intentId: "view_dashboard" },
+      { label: "New claim", intentId: "upload_bill" },
     ]);
   });
 
@@ -113,25 +116,23 @@ describe("contextual quick chats", () => {
         }),
       ),
     ).toEqual([
-      {
-        label: "Show approved Books & Periodicals claims",
-        intentId: "claim_history",
-      },
-      {
-        label: "Show rejected Books & Periodicals claims",
-        intentId: "claim_history",
-      },
+      { label: "Approved", intentId: "claim_history" },
+      { label: "Rejected", intentId: "claim_history" },
       { label: "View dashboard", intentId: "view_dashboard" },
+      { label: "New claim", intentId: "upload_bill" },
     ]);
   });
 
   it("suggests informational follow-ups for an individual claim", () => {
     expect(
-      simplifiedActions(appDataMessage({ kind: "claims", claimId: "CLM-43872" })),
+      simplifiedActions(
+        appDataMessage({ kind: "claims", claimId: "CLM-43872" }),
+      ),
     ).toEqual([
       { label: "View claim history", intentId: "claim_history" },
       { label: "View dashboard", intentId: "view_dashboard" },
       { label: "Check a policy", intentId: "view_policy" },
+      { label: "New claim", intentId: "upload_bill" },
     ]);
   });
 
@@ -161,10 +162,8 @@ describe("contextual quick chats", () => {
       JSON.stringify(appDataMessage({ kind: "dashboard", categoryId: "meal" })),
     ) as ChatMessage;
 
-    expect(getContextualQuickChats(restored).map((item) => item.label)).toEqual([
-      "Show Meal Wallet claims",
-      "Review Meal Wallet policy",
-      "Upload a bill",
-    ]);
+    expect(getContextualQuickChats(restored).map((item) => item.label)).toEqual(
+      ["Show Meal Wallet claims", "Review Meal Wallet policy", "Upload a bill"],
+    );
   });
 });

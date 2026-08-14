@@ -8,15 +8,22 @@ import { ScanPayFlow } from "@/components/scan-pay/ScanPayFlow";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { EbHomeWalkthrough } from "@/components/walkthrough/EbHomeWalkthrough";
 import { ProductSwitcherWalkthrough } from "@/components/walkthrough/ProductSwitcherWalkthrough";
+import { RohanEbPlusSetupWalkthrough } from "@/components/walkthrough/RohanEbPlusSetupWalkthrough";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import {
   resolveScanPayMerchantSelection,
   resolveScanPayScenario,
 } from "@/features/scan-pay/fixtures";
 import type {
+  ScanPayLaunch,
   ScanPayMerchantType,
   ScanPayScenario,
+  ScanPayTransaction,
 } from "@/features/scan-pay/types";
+import {
+  clearCompletedPaymentReturn,
+  readCompletedPaymentReturn,
+} from "@/features/scan-pay/paymentReturn";
 import {
   WALLET_FILTER_OPTIONS,
   getWalletBalance,
@@ -28,6 +35,7 @@ import {
   resolveTransactionMode,
   type TransactionProductMode,
 } from "@/features/transactions/mode";
+import { buildTransactionDetailsHref } from "@/features/transactions/navigation";
 import type { EmployeeBenefitsPersonaPayload } from "@/features/persona/types";
 import { withBasePath } from "@/lib/basePath";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
@@ -37,6 +45,7 @@ const CLAIMS_HASH = "#claims";
 const SCAN_PAY_HASH = "#scan-pay";
 const SCAN_PAY_SCENARIO_QUERY = "scanPayScenario";
 const SCAN_PAY_MERCHANT_QUERY = "scanPayMerchant";
+const RESUME_PAYMENT_QUERY = "resumePayment";
 const OPEN_TRANSACTIONS_MESSAGE = "employee-benefits:open-transactions";
 const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
@@ -83,6 +92,7 @@ export function EmployeeBenefitsHost() {
   const bodyObserverRef = useRef<MutationObserver | null>(null);
   const scanPayMerchantRotationRef = useRef(0);
   const scanPayLocationRef = useRef<string | null>(null);
+  const resumedPaymentRef = useRef<ScanPayTransaction | null>(null);
   const [claimsOpen, setClaimsOpen] = useState(
     () =>
       typeof window !== "undefined" &&
@@ -94,6 +104,9 @@ export function EmployeeBenefitsHost() {
     useState<ScanPayScenario>("success");
   const [scanPayMerchantType, setScanPayMerchantType] =
     useState<Exclude<ScanPayMerchantType, "unclassified">>("meal");
+  const [scanPayLaunch, setScanPayLaunch] = useState<ScanPayLaunch>({
+    kind: "scanner",
+  });
   /**
    * Read once, before the frame exists: Manage Limit and Manage Tokens are
    * full-screen screens of their own, so their Back button comes home through a
@@ -131,6 +144,24 @@ export function EmployeeBenefitsHost() {
     );
     scanPayMerchantRotationRef.current = merchantSelection.nextRotationIndex;
     setScanPayMerchantType(merchantSelection.merchantType);
+    const resumePaymentId = searchParams.get(RESUME_PAYMENT_QUERY);
+    const cachedPayment =
+      resumedPaymentRef.current?.transactionId === resumePaymentId
+        ? resumedPaymentRef.current
+        : null;
+    const resumedPayment =
+      cachedPayment ??
+      (resumePaymentId
+        ? readCompletedPaymentReturn(resumePaymentId)
+        : null);
+    if (resumedPayment) {
+      resumedPaymentRef.current = resumedPayment;
+      setScanPayLaunch({ kind: "completed", transaction: resumedPayment });
+      clearCompletedPaymentReturn(resumedPayment.transactionId);
+      return;
+    }
+    resumedPaymentRef.current = null;
+    setScanPayLaunch({ kind: "scanner" });
   }, []);
 
   const replyToEmployeeBenefits = useCallback(
@@ -204,7 +235,11 @@ export function EmployeeBenefitsHost() {
       }
       window.location.assign(
         withBasePath(
-          `/transaction-details/?id=${encodeURIComponent(transactionId)}&mode=benefits`,
+          buildTransactionDetailsHref({
+            transactionId,
+            mode: "benefits",
+            returnTo: "/?mode=benefits",
+          }),
         ),
       );
     },
@@ -285,12 +320,20 @@ export function EmployeeBenefitsHost() {
 
   const closeScanPay = useCallback(() => {
     setScanPayOpen(false);
+    setScanPayLaunch({ kind: "scanner" });
+    resumedPaymentRef.current = null;
     scanPayLocationRef.current = null;
-    if (window.location.hash.toLowerCase() === SCAN_PAY_HASH) {
+    if (
+      window.location.hash.toLowerCase() === SCAN_PAY_HASH ||
+      new URLSearchParams(window.location.search).has(RESUME_PAYMENT_QUERY)
+    ) {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.delete(RESUME_PAYMENT_QUERY);
+      const search = searchParams.toString();
       window.history.replaceState(
         null,
         "",
-        `${window.location.pathname}${window.location.search}`,
+        `${window.location.pathname}${search ? `?${search}` : ""}`,
       );
     }
   }, []);
@@ -310,7 +353,7 @@ export function EmployeeBenefitsHost() {
   }, []);
 
   const completeEbPlusSetup = useCallback(() => {
-    setPlusPayMode(false);
+    setPlusPayMode(true);
     setEbPlusSetupOpen(false);
   }, []);
 
@@ -608,11 +651,27 @@ export function EmployeeBenefitsHost() {
         hasBenefitsUpiId={persona.hasBenefitsUpiId}
       />
 
+      <RohanEbPlusSetupWalkthrough
+        frameRef={frameRef}
+        ready={frameReady}
+        enabled={
+          persona.id === "pluspay_only" &&
+          !persona.access.products.ebPlus &&
+          persona.access.products.plusPay &&
+          plusPayMode &&
+          !claimsOpen &&
+          !scanPayOpen &&
+          !sourceOverlayOpen &&
+          !ebPlusSetupOpen &&
+          !cardMpinIntent
+        }
+      />
+
       <ProductSwitcherWalkthrough
         frameRef={frameRef}
         ready={frameReady}
         plusPayMode={plusPayMode}
-        startEnabled={!plusPayMode}
+        startEnabled={plusPayMode}
         enabled={
           persona.id === "pluspay_only" &&
           persona.access.products.ebPlus &&
@@ -641,6 +700,7 @@ export function EmployeeBenefitsHost() {
         scenario={scanPayScenario}
         mode={plusPayMode ? "pluspay" : "benefits"}
         merchantType={scanPayMerchantType}
+        launch={scanPayLaunch}
         onClose={closeScanPay}
       />
 
