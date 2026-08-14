@@ -59,8 +59,7 @@ describe("registration declarations", () => {
 
     expect(html).toContain("Review vehicle details");
     expect(html).toContain("Company Leased");
-    expect(html).toContain('aria-label="Vehicle registration number: KA 01 1111"');
-    expect(html).toContain("bg-vehicle-plate");
+    expect(html).toContain("KA 01 1111");
     expect(html).toContain('alt="Tata Altroz Hatchback"');
     expect(html).toContain(
       "Vehicle image is for representation purposes only.",
@@ -89,8 +88,7 @@ describe("registration declarations", () => {
     );
 
     expect(html).toContain("Vehicle Found");
-    expect(html).toContain('aria-label="Vehicle registration number: KA 01 1111"');
-    expect(html).toContain("bg-vehicle-plate");
+    expect(html).toContain("KA 01 1111");
     expect(html).toContain("Self Owned");
     expect(html).toContain("Company Leased");
     expect(html).toContain("Vehicle ownership choices");

@@ -7,12 +7,20 @@ type DriverSalaryFormCardProps = {
   disabled?: boolean;
 };
 
+export const DRIVER_SALARY_MONTHLY_LIMIT = 15_000;
+
+export function exceedsDriverSalaryMonthlyLimit(salary: string) {
+  const normalized = salary.replace(/[^\d.]/g, "");
+  return Number(normalized) > DRIVER_SALARY_MONTHLY_LIMIT;
+}
+
 export function DriverSalaryFormCard({
   onSubmit,
   disabled,
 }: DriverSalaryFormCardProps) {
   const [salary, setSalary] = useState("");
   const [startDate, setStartDate] = useState("");
+  const exceedsMonthlyLimit = exceedsDriverSalaryMonthlyLimit(salary);
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -48,9 +56,11 @@ export function DriverSalaryFormCard({
             className="min-h-11 min-w-0 flex-1 bg-transparent py-2.5 text-body-sm text-body outline-none placeholder:text-muted disabled:opacity-50"
           />
           </div>
-          <p className="rounded-control bg-warning-tint px-3 py-2 text-caption text-warning-ink">
+          {exceedsMonthlyLimit ? (
+            <p className="rounded-control bg-warning-tint px-3 py-2 text-caption text-warning-ink">
             Monthly driver salary limit is ₹15,000.
-          </p>
+            </p>
+          ) : null}
         </label>
         <label className="flex flex-col gap-1">
           <span className="type-field-label">Start date</span>
