@@ -2,7 +2,11 @@ import type { WalkthroughId } from "./types";
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
-export const WALKTHROUGH_IDS: WalkthroughId[] = ["eb-home", "benefits-assistant"];
+export const WALKTHROUGH_IDS: WalkthroughId[] = [
+  "eb-home",
+  "benefits-assistant",
+  "product-switcher",
+];
 
 /** Persistent — set once a walkthrough finishes, cleared by the demo reset. */
 export function seenKey(id: WalkthroughId): string {
@@ -96,7 +100,7 @@ export function clearPausedStep(
   }
 }
 
-/** Wipes both walkthroughs so a presenter gets a fresh auto-play. */
+/** Wipes every walkthrough so a presenter gets a fresh auto-play. */
 export function clearWalkthroughState(
   local: StorageLike = defaultLocal(),
   session: StorageLike = defaultSession(),

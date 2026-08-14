@@ -46,6 +46,15 @@ export type RtoLocation = {
 
 export type FuelType = "Petrol" | "Diesel" | "CNG" | "Electric" | "Hybrid";
 
+export type VehicleBodyType =
+  | "Hatchback"
+  | "Sedan"
+  | "Compact SUV"
+  | "SUV"
+  | "Micro SUV"
+  | "Off-roader"
+  | "MPV";
+
 export type VehicleOwnership = "self_owned" | "company_leased";
 
 /**
@@ -62,13 +71,7 @@ export type VehicleProfile = {
   /** Absent for EVs, which have no displacement. */
   engineCapacityCc?: number;
   fuel: FuelType;
-  bodyType: string;
-  /** Wikimedia Commons filename with no "File:" prefix; the URL is derived. */
-  commonsFile: string;
-  /** Every roster image is CC BY or CC BY-SA, so these must be rendered. */
-  imageAuthor: string;
-  imageLicense: string;
-  imageLicenseUrl: string;
+  bodyType: VehicleBodyType;
 };
 
 export type VehicleLookup = {

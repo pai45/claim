@@ -45,7 +45,7 @@ const QUICK_ACTIONS_STEP: WalkthroughStep = {
   key: "quick-actions",
   eyebrow: "Controls",
   title: "Manage it yourself",
-  body: "Set a PIN, order a physical card, or see where the money went — without leaving this screen.",
+  body: "Set a PIN, manage your card, or explore spend analytics — without leaving this screen.",
 };
 
 const BENEFITS_NAV_STEP: WalkthroughStep = {
@@ -103,6 +103,23 @@ export const BENEFITS_ASSISTANT_STEPS: WalkthroughStep[] = [
     eyebrow: "More",
     title: "Everything else",
     body: "Claims dashboard, policy details, and your full claim history live behind this menu.",
+  },
+];
+
+export const PRODUCT_SWITCHER_STEPS: WalkthroughStep[] = [
+  {
+    key: "product-switcher",
+    eyebrow: "Product switcher",
+    title: "Your PlusPay is still here",
+    body: "Tap the highlighted switch to move from your new EB+ account to PlusPay.",
+    advanceOn: "target",
+  },
+  {
+    key: "product-switcher",
+    eyebrow: "Product switcher",
+    title: "Return to EB+",
+    body: "Use the same switch anytime. Tap it again to return to your EB+ benefits.",
+    advanceOn: "target",
   },
 ];
 

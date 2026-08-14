@@ -173,24 +173,13 @@ export function CardEmbossmentStep({
       <main className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#f4f4f4] px-5 py-5">
         <section className="rounded-card bg-white p-3 shadow-card">
           <div className="flex flex-col gap-4">
-            <TextField
-              label="First Name"
-              value={firstName}
-              readOnly
-            />
-            <TextField
-              label="Last Name"
-              value={lastName}
-              readOnly
-            />
+            <TextField label="First Name" value={firstName} readOnly />
+            <TextField label="Last Name" value={lastName} readOnly />
           </div>
           <CardEmbossmentPreview cardholder={cardholder || "YOUR NAME"} />
         </section>
       </main>
-      <PrimaryFooter
-        label="Proceed"
-        onClick={() => setSuccessOpen(true)}
-      />
+      <PrimaryFooter label="Proceed" onClick={() => setSuccessOpen(true)} />
       <CenterModal
         open={successOpen}
         title="Success"
@@ -270,7 +259,7 @@ function CardEmbossmentPreview({ cardholder }: { cardholder: string }) {
         <p className="text-[10px] font-normal text-[#bdd2d0]">CARD NUMBER</p>
         <div className="mt-1">
           <p className="whitespace-nowrap text-[15px] tracking-[0.22em]">
-            •••• •••• •••• ••••
+            **** **** **** ••••
           </p>
         </div>
       </div>

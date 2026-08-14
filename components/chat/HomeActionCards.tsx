@@ -28,18 +28,6 @@ function CardCorner({ children, isSplit }: CardCornerProps) {
     <span
       className={`absolute inset-y-0 right-0 flex shrink-0 items-center justify-end pr-card ${isSplit ? "w-20" : "w-24"}`}
     >
-      <span
-        aria-hidden
-        className="absolute inset-y-0 right-0 w-9 bg-success-tint"
-      />
-      <span
-        aria-hidden
-        className="absolute -right-5 -top-7 h-20 w-24 rounded-pill bg-success-tint transition-transform duration-300 group-hover:-translate-x-1"
-      />
-      <span
-        aria-hidden
-        className="absolute -bottom-7 -right-5 h-20 w-24 rounded-pill bg-success-tint transition-transform duration-300 group-hover:-translate-x-1"
-      />
       <span className="relative z-10">{children}</span>
     </span>
   );

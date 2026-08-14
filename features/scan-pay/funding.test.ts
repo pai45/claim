@@ -83,8 +83,12 @@ describe("scan pay funding", () => {
         merchantType: "meal",
         balances,
         fallback,
-      }).status,
-    ).toBe("insufficient");
+      }),
+    ).toMatchObject({
+      status: "insufficient",
+      message:
+        "Meal Wallet and Reimbursement Wallet do not have enough combined balance. (Reimbursement wallet balance : ₹200)",
+    });
   });
 
   it("does not expose benefit funding for PlusPay or ineligible wallets", () => {

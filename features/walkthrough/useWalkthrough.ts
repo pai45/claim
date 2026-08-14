@@ -20,6 +20,11 @@ type UseWalkthroughOptions = {
   steps: WalkthroughStep[];
   /** Persona and surface gate. Turning this off mid-run pauses the walkthrough. */
   enabled: boolean;
+  /**
+   * Optional stricter gate for a brand-new run. Once running, only `enabled`
+   * controls pausing so a target action can legitimately change this value.
+   */
+  startEnabled?: boolean;
   /** The surface has settled enough for `getBoundingClientRect` to be truthful. */
   ready: boolean;
   /**
@@ -49,6 +54,7 @@ export type WalkthroughController = {
 type WalkthroughStartGate = {
   phase: WalkthroughPhase;
   enabled: boolean;
+  startEnabled: boolean;
   ready: boolean;
   stepCount: number;
   resumeArmed: boolean;
@@ -57,12 +63,13 @@ type WalkthroughStartGate = {
 export function canStartWalkthrough({
   phase,
   enabled,
+  startEnabled,
   ready,
   stepCount,
   resumeArmed,
 }: WalkthroughStartGate): boolean {
   if (!enabled || !ready || stepCount === 0) return false;
-  if (phase === "idle") return true;
+  if (phase === "idle") return startEnabled;
   return phase === "paused" && resumeArmed;
 }
 
@@ -70,6 +77,7 @@ export function useWalkthrough({
   id,
   steps,
   enabled,
+  startEnabled = enabled,
   ready,
   measure,
   onEnd,
@@ -121,6 +129,7 @@ export function useWalkthrough({
       !canStartWalkthrough({
         phase,
         enabled,
+        startEnabled,
         ready,
         stepCount: steps.length,
         resumeArmed: resumeArmedRef.current,
@@ -139,7 +148,7 @@ export function useWalkthrough({
       setPhase("running");
     };
     start();
-  }, [enabled, id, phase, ready, steps.length]);
+  }, [enabled, id, phase, ready, startEnabled, steps.length]);
 
   // Losing the surface mid-run (nav away, product switch) is a pause, not a
   // stop. A target tap may already have paused the controller, so arm both

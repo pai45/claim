@@ -54,6 +54,8 @@ describe("ScanPayConfirm payment source", () => {
     expect(markup).toContain("wallet-bg-meal");
     expect(markup).toContain("Meal Wallet");
     expect(markup).toContain("Available balance ₹6,400");
+    expect(markup).toContain('aria-label="About wallet deductions"');
+    expect(markup).toContain('aria-expanded="false"');
     expect(markup).not.toContain("Choose your wallet");
   });
 
@@ -82,6 +84,7 @@ describe("ScanPayConfirm payment source", () => {
       expect(markup).toContain("wallet-bg-reimbursement");
       expect(markup).toContain("Reimbursement Wallet");
       expect(markup).toContain("Available balance ₹9,100");
+      expect(markup).not.toContain('aria-label="About wallet deductions"');
       expect(markup).not.toContain("Choose your wallet");
     }
 
@@ -108,6 +111,7 @@ describe("ScanPayConfirm payment source", () => {
     expect(markup).toContain("ANQ");
     expect(markup).toContain("PlusPay");
     expect(markup).not.toContain("Available balance");
+    expect(markup).not.toContain('aria-label="About wallet deductions"');
     expect(markup).not.toContain("Choose your wallet");
   });
 

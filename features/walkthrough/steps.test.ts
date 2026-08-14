@@ -4,6 +4,7 @@ import {
   BENEFITS_ASSISTANT_STEPS,
   EB_HOME_HOST_SELECTORS,
   EB_HOME_POST_UPI_STEP_INDEX,
+  PRODUCT_SWITCHER_STEPS,
   getEbHomeSteps,
 } from "./steps";
 
@@ -63,5 +64,26 @@ describe("BENEFITS_ASSISTANT_STEPS", () => {
     BENEFITS_ASSISTANT_STEPS.forEach((step) => {
       expect(BENEFITS_ASSISTANT_SELECTORS[step.key]).toBeTruthy();
     });
+  });
+});
+
+describe("PRODUCT_SWITCHER_STEPS", () => {
+  it("guides Rohan to PlusPay and back through the same target", () => {
+    expect(PRODUCT_SWITCHER_STEPS).toEqual([
+      {
+        key: "product-switcher",
+        eyebrow: "Product switcher",
+        title: "Your PlusPay is still here",
+        body: "Tap the highlighted switch to move from your new EB+ account to PlusPay.",
+        advanceOn: "target",
+      },
+      {
+        key: "product-switcher",
+        eyebrow: "Product switcher",
+        title: "Return to EB+",
+        body: "Use the same switch anytime. Tap it again to return to your EB+ benefits.",
+        advanceOn: "target",
+      },
+    ]);
   });
 });

@@ -24,4 +24,10 @@ describe("WalkthroughOverlay tooltip", () => {
     expect(styles).toContain("var(--color-pine-primary)");
     expect(styles).toContain("rgba(54, 204, 139");
   });
+
+  it("hides Back and Next for action-led steps", () => {
+    expect(component).toContain('const isTargetLed = step.advanceOn === "target"');
+    expect(component).not.toContain("Tap the highlighted switch");
+    expect(component).toMatch(/!isTargetLed \? \([\s\S]*?Back[\s\S]*?Next/);
+  });
 });

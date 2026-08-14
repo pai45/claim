@@ -201,6 +201,9 @@
       <symbol id="icon-chevron-right" viewBox="0 0 24 24">
         <path d="m9 5 7 7-7 7" />
       </symbol>
+      <symbol id="icon-back-chevron" viewBox="0 0 24 24">
+        <path d="M14.5 6.5 9 12l5.5 5.5" />
+      </symbol>
       <symbol id="icon-checks" viewBox="0 0 24 24">
         <path d="m2 13 4 4L16 7" />
         <path d="m11 17 2 2 9-10" />
@@ -327,7 +330,9 @@
         <path d="M0,0 L0.554,0 C0.554,0.34 0.470,0.66 0.470,1 L0,1 Z" />
       </clipPath>
       <clipPath id="switcher-seam-pluspay" clipPathUnits="objectBoundingBox">
-        <path d="M0.542,0 L1,0 L1,1 L0.458,1 C0.458,0.66 0.542,0.34 0.542,0 Z" />
+        <path
+          d="M0.542,0 L1,0 L1,1 L0.458,1 C0.458,0.66 0.542,0.34 0.542,0 Z"
+        />
       </clipPath>
     </svg>
 
@@ -349,6 +354,7 @@
               aria-pressed="false"
               aria-label="Switch between EB+ and PlusPay"
               data-pluspay-toggle
+              data-walkthrough="product-switcher"
             >
               <span
                 class="switcher-fill switcher-fill-lens"
@@ -611,7 +617,6 @@
       >
         <div class="eb-plus-setup-copy">
           <h2 id="eb-plus-setup-title">Complete Your EB+ Setup</h2>
-          <p>Finish in minutes to activate your EB+</p>
           <button
             class="eb-plus-setup-cta"
             type="button"
@@ -759,17 +764,23 @@
             </span>
             <strong>Manage<br />Card</strong>
           </button>
+          <button
+            class="utility-card"
+            type="button"
+            data-track-card-open
+            data-rohan-track-card-action
+            hidden
+          >
+            <span class="utility-icon" aria-hidden="true">
+              <img src="./assets/icons/track-card.svg" alt="" />
+            </span>
+            <strong>Track<br />Card</strong>
+          </button>
           <button class="utility-card" type="button" data-card-pin-open>
             <span class="utility-icon" aria-hidden="true">
               <img src="./assets/icons/UPI-PIN-Reset-home.svg" alt="" />
             </span>
             <strong>Set/ Reset PIN</strong>
-          </button>
-          <button class="utility-card" type="button">
-            <span class="utility-icon" aria-hidden="true">
-              <img src="./assets/icons/credit-card.svg" alt="" />
-            </span>
-            <strong>Get Physical<br />Card</strong>
           </button>
           <button class="utility-card" type="button" data-spend-analytics-open>
             <span class="utility-icon" aria-hidden="true">
@@ -1103,12 +1114,12 @@
       <section class="wallet-overlay-panel" aria-label="Wallet details">
         <header class="wallet-overlay-header">
           <button
-            class="wallet-overlay-back"
+            class="wallet-overlay-back app-back-navigation"
             type="button"
             aria-label="Close wallet details"
             data-wallet-overlay-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <div class="wallet-overlay-title-group">
             <span class="wallet-overlay-eyebrow">Wallet details</span>
@@ -1222,12 +1233,12 @@
       <section class="merchant-directory-panel" aria-label="Merchant directory">
         <header class="merchant-directory-header">
           <button
-            class="merchant-directory-back"
+            class="merchant-directory-back app-back-navigation"
             type="button"
             aria-label="Back to wallet details"
             data-merchant-directory-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <div class="merchant-directory-title-group">
             <span class="merchant-directory-eyebrow">Merchant Directory</span>
@@ -1309,12 +1320,12 @@
       <section class="manage-cards-panel" aria-label="Manage Card">
         <header class="manage-cards-header">
           <button
-            class="manage-cards-back"
+            class="manage-cards-back app-back-navigation"
             type="button"
             aria-label="Close Manage Card"
             data-manage-cards-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <div class="manage-cards-title-group">
             <h2>Manage Cards</h2>
@@ -1353,7 +1364,7 @@
                         class="manage-card-number"
                         data-manage-preview-number
                         data-card-sensitive="number"
-                        >•••• •••• •••• 7845</span
+                        >**** **** **** 7845</span
                       >
                       <div class="manage-card-number-actions">
                         <button
@@ -1499,12 +1510,12 @@
       <section class="fallback-panel" aria-label="Fallback Control">
         <header class="fallback-header">
           <button
-            class="fallback-back"
+            class="fallback-back app-back-navigation"
             type="button"
             aria-label="Back to Manage Card"
             data-fallback-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <h2>Fallback Control</h2>
         </header>
@@ -1569,17 +1580,14 @@
                   data-fallback-toggle="meal"
                 ></button>
               </div>
-              <div
-                class="fallback-warning-box"
-                data-fallback-warning="meal"
-              >
+              <div class="fallback-warning-box" data-fallback-warning="meal">
                 <span class="fallback-warning-icon" aria-hidden="true">
                   <svg><use href="#icon-warning-circle" /></svg>
                 </span>
                 <p class="fallback-warning-text">
                   Fallback is on for Meal Wallet. Its available balance will be
-                  used first and only the remaining amount will be deducted
-                  from Reimbursement Wallet.
+                  used first and only the remaining amount will be deducted from
+                  Reimbursement Wallet.
                 </p>
               </div>
             </li>
@@ -1600,17 +1608,14 @@
                   data-fallback-toggle="fuel"
                 ></button>
               </div>
-              <div
-                class="fallback-warning-box"
-                data-fallback-warning="fuel"
-              >
+              <div class="fallback-warning-box" data-fallback-warning="fuel">
                 <span class="fallback-warning-icon" aria-hidden="true">
                   <svg><use href="#icon-warning-circle" /></svg>
                 </span>
                 <p class="fallback-warning-text">
                   Fallback is on for Fuel Wallet. Its available balance will be
-                  used first and only the remaining amount will be deducted
-                  from Reimbursement Wallet.
+                  used first and only the remaining amount will be deducted from
+                  Reimbursement Wallet.
                 </p>
               </div>
             </li>
@@ -1623,12 +1628,12 @@
       <section class="track-card-panel" aria-label="Track Card">
         <header class="track-card-header">
           <button
-            class="track-card-back"
+            class="track-card-back app-back-navigation"
             type="button"
             aria-label="Back to Manage Cards"
             data-track-card-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <h2>Track Card</h2>
         </header>
@@ -1740,7 +1745,7 @@
             <img src="./assets/icons/rupay-logo.svg" alt="RuPay" />
             <div class="track-activation-number">
               <span>CARD NUMBER</span>
-              <strong>•••• •••• •••• 7845</strong>
+              <strong>**** **** **** 7845</strong>
             </div>
             <div class="track-activation-holder">
               <strong>VISHAL SHARMA</strong>
@@ -1793,12 +1798,12 @@
       <section class="card-pin-panel" aria-labelledby="card-pin-title">
         <header class="card-pin-header">
           <button
-            class="card-pin-back"
+            class="card-pin-back app-back-navigation"
             type="button"
             aria-label="Close Set Benefits Card PIN"
             data-card-pin-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <h2 id="card-pin-title">Set Benefits Card PIN</h2>
         </header>
@@ -2182,12 +2187,12 @@
         </div>
         <header class="claims-header wallet-overlay-header">
           <button
-            class="claims-back wallet-overlay-back"
+            class="claims-back wallet-overlay-back app-back-navigation"
             type="button"
             aria-label="Close Benefits assistant"
             data-claims-close
           >
-            <svg aria-hidden="true"><use href="#icon-arrow-right" /></svg>
+            <svg aria-hidden="true"><use href="#icon-back-chevron" /></svg>
           </button>
           <div class="claims-title-group wallet-overlay-title-group">
             <span class="wallet-overlay-eyebrow">Reimbursement Wallet</span>

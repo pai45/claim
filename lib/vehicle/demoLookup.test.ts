@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { buildVehicleLookup } from "./demoLookup";
-import { VEHICLE_ROSTER, vehicleDisplayName } from "./roster";
+import {
+  VEHICLE_ROSTER,
+  vehicleDisplayName,
+  vehicleImageUrl,
+} from "./roster";
 
 const OWNER = "Vishal Sharma";
 
@@ -210,12 +214,11 @@ describe("roster data", () => {
     expect(ids.size).toBe(VEHICLE_ROSTER.length);
   });
 
-  it("carries the attribution every Commons licence requires", () => {
+  it("maps every configured body type to bundled artwork", () => {
     for (const vehicle of VEHICLE_ROSTER) {
-      expect(vehicle.imageAuthor, vehicle.id).toBeTruthy();
-      expect(vehicle.imageLicense, vehicle.id).toBeTruthy();
-      expect(vehicle.imageLicenseUrl, vehicle.id).toMatch(/^https:\/\//);
-      expect(vehicle.commonsFile, vehicle.id).not.toMatch(/^File:/);
+      expect(vehicleImageUrl(vehicle), vehicle.id).toMatch(
+        /^\/assets\/vehicles\/[a-z_]+\.webp$/,
+      );
     }
   });
 

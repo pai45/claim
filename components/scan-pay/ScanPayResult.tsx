@@ -5,6 +5,7 @@ import type { ChangeEvent, Dispatch } from "react";
 import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   formatScanPayINR,
@@ -222,14 +223,10 @@ export function ScanPayReceiptCapture({
       />
       <div className="absolute inset-0 bg-pine-dark/35" aria-hidden="true" />
       <header className="relative z-10 flex items-center justify-between px-page pt-4">
-        <button
-          type="button"
+        <BackNavigationButton
           onClick={() => dispatch({ type: "BACK" })}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-pill bg-white/90 text-pine shadow-soft"
-          aria-label="Back to payment details"
-        >
-          <ScanPayIcon name="arrow" className="rotate-180" />
-        </button>
+          ariaLabel="Back to payment details"
+        />
         <label className="flex min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-pill bg-white/90 text-pine shadow-soft" aria-label="Choose receipt from gallery">
           <ScanPayIcon name="gallery" />
           <input type="file" accept="image/*" className="sr-only" onChange={onFile} />

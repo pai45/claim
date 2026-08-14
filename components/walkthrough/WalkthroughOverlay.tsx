@@ -162,6 +162,7 @@ export function WalkthroughOverlay({
   }, []);
 
   const isLast = stepIndex >= stepCount - 1;
+  const isTargetLed = step.advanceOn === "target";
 
   return (
     <div
@@ -255,24 +256,26 @@ export function WalkthroughOverlay({
               <span className="rounded-pill border border-input-border bg-white/95 px-3 py-1 text-caption font-bold text-pine">
                 {stepIndex + 1} / {stepCount}
               </span>
-              <div className="flex items-center gap-2">
-                {stepIndex > 0 ? (
+              {!isTargetLed ? (
+                <div className="flex items-center gap-2">
+                  {stepIndex > 0 ? (
+                    <button
+                      type="button"
+                      onClick={onBack}
+                      className="min-h-11 rounded-control px-3 text-body-sm font-bold text-pine-primary"
+                    >
+                      Back
+                    </button>
+                  ) : null}
                   <button
                     type="button"
-                    onClick={onBack}
-                    className="min-h-11 rounded-control px-3 text-body-sm font-bold text-pine-primary"
+                    onClick={onNext}
+                    className="btn-primary h-auto min-h-11 px-5 py-2.5 text-body-sm"
                   >
-                    Back
+                    {isLast ? "Done" : "Next"}
                   </button>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={onNext}
-                  className="btn-primary h-auto min-h-11 px-5 py-2.5 text-body-sm"
-                >
-                  {isLast ? "Done" : "Next"}
-                </button>
-              </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>

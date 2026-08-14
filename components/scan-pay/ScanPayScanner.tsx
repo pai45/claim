@@ -5,6 +5,7 @@ import { ScanPayDrawer } from "@/components/scan-pay/ScanPayDrawer";
 import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { AppShell } from "@/components/shared/AppShell";
+import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import {
   BANK_TRANSFER_FAQS,
@@ -69,14 +70,10 @@ export function ScanPayScanner({
       </div>
 
       <header className="relative z-10 flex shrink-0 items-center justify-between px-page pb-3 pt-6 text-white">
-        <button
-          type="button"
+        <BackNavigationButton
           onClick={onClose}
-          className="flex min-h-11 min-w-11 items-center justify-center rounded-pill bg-transparent text-white"
-          aria-label="Close Scan & Pay"
-        >
-          <ScanPayIcon name="arrow" className="rotate-180" />
-        </button>
+          ariaLabel="Close Scan & Pay"
+        />
         <div className="flex gap-2">
           <button
             type="button"

@@ -3,6 +3,7 @@ import { canStartWalkthrough } from "./useWalkthrough";
 
 const readyGate = {
   enabled: true,
+  startEnabled: true,
   ready: true,
   stepCount: 5,
 };
@@ -58,5 +59,24 @@ describe("canStartWalkthrough", () => {
         resumeArmed: true,
       }),
     ).toBe(false);
+  });
+
+  it("can wait for a stricter initial state without blocking a paused resume", () => {
+    expect(
+      canStartWalkthrough({
+        ...readyGate,
+        startEnabled: false,
+        phase: "idle",
+        resumeArmed: false,
+      }),
+    ).toBe(false);
+    expect(
+      canStartWalkthrough({
+        ...readyGate,
+        startEnabled: false,
+        phase: "paused",
+        resumeArmed: true,
+      }),
+    ).toBe(true);
   });
 });

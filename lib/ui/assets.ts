@@ -1,3 +1,5 @@
+import type { VehicleBodyType } from "@/lib/vehicle/types";
+
 export const BRAND_ASSETS = {
   logo: "/assets/benefits-logo-v2.gif",
   pineLabs: "/assets/pine-labs-logo.svg",
@@ -47,6 +49,17 @@ export const CHAT_ASSETS = {
   vehicleRegistration: "/assets/vehicle-registration-cta.png",
   driverRegistration: "/assets/driver-registration-cta.png",
 } as const;
+
+/** Supplied transparent vehicle artwork, selected by the roster body type. */
+export const VEHICLE_BODY_TYPE_ASSETS = {
+  Hatchback: "/assets/vehicles/hatchback.webp",
+  Sedan: "/assets/vehicles/sedan.webp",
+  "Compact SUV": "/assets/vehicles/compact_suv.webp",
+  SUV: "/assets/vehicles/suv.webp",
+  "Micro SUV": "/assets/vehicles/micro_suv.webp",
+  "Off-roader": "/assets/vehicles/off_roader.webp",
+  MPV: "/assets/vehicles/mpv.webp",
+} as const satisfies Record<VehicleBodyType, string>;
 
 /** Supplied full-screen Lottie used by the pre-registration product intro. */
 export const PRODUCT_INTRO_ASSETS = {

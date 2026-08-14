@@ -86,13 +86,24 @@ export function VehicleDetailsScreen() {
             <VehiclePhoto
               profile={vehicle.lookup.profile}
               className="aspect-16/10 rounded-card"
-              width={800}
               priority
             />
 
-            <span className="w-fit rounded-pill bg-surface-tint-strong px-3 py-1.5 text-body-sm font-bold tracking-wider text-pine">
-              {vehicle.lookup.regNumber.formatted}
-            </span>
+            <div className="flex justify-center py-1">
+              <div className="inline-flex min-h-11 overflow-hidden rounded-control border-2 border-border-tab bg-white">
+                <span className="flex w-12 shrink-0 flex-col items-center justify-center gap-0.5 bg-pine-primary px-2 py-1.5 text-white">
+                  <span aria-hidden="true" className="text-caption leading-none">
+                    ✦
+                  </span>
+                  <span className="text-caption font-bold leading-none tracking-wide">
+                    IND
+                  </span>
+                </span>
+                <span className="flex items-center px-4 py-2 font-sans text-title font-bold tracking-wider text-ink">
+                  {vehicle.lookup.regNumber.formatted}
+                </span>
+              </div>
+            </div>
 
             <section className="divide-y divide-border-soft rounded-card border border-border-line bg-white px-card py-1 shadow-card">
               <VehicleDetailRow

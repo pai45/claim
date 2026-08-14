@@ -12,10 +12,7 @@ type VehicleSummaryCardProps = {
   lookup: VehicleLookup;
 };
 
-/**
- * The registered vehicle in one row. Uses the supplied vehicle icon rather
- * than the roster photo, so this card carries no Commons attribution obligation.
- */
+/** The registered vehicle in one compact dashboard row. */
 export function VehicleSummaryCard({ lookup }: VehicleSummaryCardProps) {
   return (
     <section

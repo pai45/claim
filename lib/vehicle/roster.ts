@@ -1,3 +1,5 @@
+import { withBasePath } from "@/lib/basePath";
+import { VEHICLE_BODY_TYPE_ASSETS } from "@/lib/ui/assets";
 import type { VehicleProfile } from "./types";
 
 /**
@@ -12,10 +14,8 @@ import type { VehicleProfile } from "./types";
  * changes which vehicle an existing number resolves to. Bookmarked demo plates
  * and screenshots will stop matching.
  *
- * Images are hotlinked from Wikimedia Commons. Every one is CC BY or CC BY-SA,
- * so `VehicleImageCredit` must stay rendered on the card — attribution is a
- * licence condition, not a nicety. Author and licence below were read from each
- * file's `extmetadata` on Commons.
+ * Vehicle artwork is bundled by body type so the demo is deterministic and
+ * does not depend on a remote image host.
  */
 export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
   {
@@ -26,10 +26,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 796,
     fuel: "Petrol",
     bodyType: "Hatchback",
-    commonsFile: "Maruti Suzuki - Alto 800 LXi.JPG",
-    imageAuthor: "Biswarup Ganguly",
-    imageLicense: "CC BY 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/3.0",
   },
   {
     id: "maruti-swift",
@@ -39,10 +35,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1197,
     fuel: "Petrol",
     bodyType: "Hatchback",
-    commonsFile: "Maruti Suzuki Swift 4456.JPG",
-    imageAuthor: "Premnath Kudva",
-    imageLicense: "CC BY-SA 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
   },
   {
     id: "maruti-baleno",
@@ -52,10 +44,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1197,
     fuel: "Petrol",
     bodyType: "Hatchback",
-    commonsFile: "2022 Maruti Suzuki Baleno Alpha (India) front view.jpg",
-    imageAuthor: "Milind Kwatra",
-    imageLicense: "CC BY 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/3.0",
   },
   {
     id: "maruti-dzire",
@@ -65,10 +53,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1197,
     fuel: "Petrol",
     bodyType: "Sedan",
-    commonsFile: "Maruti Suzuki Dzire VXi VVT (front).JPG",
-    imageAuthor: "Biswarup Ganguly",
-    imageLicense: "CC BY 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/3.0",
   },
   {
     id: "maruti-brezza",
@@ -78,11 +62,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1462,
     fuel: "Petrol",
     bodyType: "Compact SUV",
-    commonsFile:
-      "2022 Maruti Suzuki Vitara Brezza 1.5 ZXi+ (India) front view.png",
-    imageAuthor: "DriveSpark",
-    imageLicense: "CC BY 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/3.0",
   },
   {
     id: "maruti-celerio",
@@ -92,11 +71,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 998,
     fuel: "Petrol",
     bodyType: "Hatchback",
-    commonsFile:
-      "Maruti Suzuki - Celerio VXi - WB 06 P 2535 - Kolkata 20170915133436.jpg",
-    imageAuthor: "Biswarup Ganguly",
-    imageLicense: "CC BY 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/3.0",
   },
   {
     id: "hyundai-creta",
@@ -106,10 +80,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1497,
     fuel: "Petrol",
     bodyType: "SUV",
-    commonsFile: "2025 Hyundai Creta N Line.jpg",
-    imageAuthor: "Chanokchon",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "hyundai-venue",
@@ -119,10 +89,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 998,
     fuel: "Petrol",
     bodyType: "Compact SUV",
-    commonsFile: "Hyundai Venue (Front).png",
-    imageAuthor: "carwale.com",
-    imageLicense: "CC BY 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/4.0",
   },
   {
     id: "hyundai-verna",
@@ -132,10 +98,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1497,
     fuel: "Petrol",
     bodyType: "Sedan",
-    commonsFile: "Hyundai Verna 2019.jpg",
-    imageAuthor: "Nitesh Gosalia",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "tata-nexon",
@@ -145,10 +107,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1199,
     fuel: "Petrol",
     bodyType: "Compact SUV",
-    commonsFile: "2023 Tata Nexon XZA+ front view.jpg",
-    imageAuthor: "Dairokkan9",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "tata-punch",
@@ -158,10 +116,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1199,
     fuel: "Petrol",
     bodyType: "Micro SUV",
-    commonsFile: "2021 Tata Punch Creative (India) front view 01.png",
-    imageAuthor: "Athira Murali",
-    imageLicense: "CC BY 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by/3.0",
   },
   {
     id: "tata-tiago",
@@ -171,10 +125,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1199,
     fuel: "Petrol",
     bodyType: "Hatchback",
-    commonsFile: "2022 Tata Tiago XZA+ front 20230512.jpg",
-    imageAuthor: "Dairokkan9",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "tata-altroz",
@@ -184,10 +134,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1199,
     fuel: "Petrol",
     bodyType: "Hatchback",
-    commonsFile: "Tata Altroz front 20230617.jpg",
-    imageAuthor: "Dairokkan9",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "tata-harrier",
@@ -197,10 +143,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1956,
     fuel: "Diesel",
     bodyType: "SUV",
-    commonsFile: "4th International Auto Show, Bangalore (2025) 110.jpg",
-    imageAuthor: "Gpkp",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "mahindra-thar",
@@ -210,10 +152,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 2184,
     fuel: "Diesel",
     bodyType: "Off-roader",
-    commonsFile: "Mahindra Thar 2.5 CRDe 2011.jpg",
-    imageAuthor: "raul (cropped by uploader)",
-    imageLicense: "CC BY-SA 2.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/2.0",
   },
   {
     id: "mahindra-scorpio",
@@ -223,10 +161,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 2184,
     fuel: "Diesel",
     bodyType: "SUV",
-    commonsFile: "2024 Mahindra Scorpio Z8L front.jpg",
-    imageAuthor: "LuvsMG481",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "mahindra-xuv700",
@@ -236,10 +170,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1997,
     fuel: "Petrol",
     bodyType: "SUV",
-    commonsFile: "2023 Mahindra XUV700 AX7L front.jpg",
-    imageAuthor: "LuvsMG481",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "mahindra-bolero",
@@ -249,10 +179,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1493,
     fuel: "Diesel",
     bodyType: "SUV",
-    commonsFile: "Mahindra Bolero ZLX.jpg",
-    imageAuthor: "RaNK001",
-    imageLicense: "CC BY-SA 3.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/3.0",
   },
   {
     id: "honda-city",
@@ -262,10 +188,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 1498,
     fuel: "Petrol",
     bodyType: "Sedan",
-    commonsFile: "2022 Honda City ZX i-VTEC (India) front view.jpg",
-    imageAuthor: "Dairokkan9",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
   {
     id: "toyota-innova-crysta",
@@ -275,10 +197,6 @@ export const VEHICLE_ROSTER: readonly VehicleProfile[] = [
     engineCapacityCc: 2393,
     fuel: "Diesel",
     bodyType: "MPV",
-    commonsFile: "Toyota Innova Crysta 2.4 Z front right.jpg",
-    imageAuthor: "Premnath Kudva",
-    imageLicense: "CC BY-SA 4.0",
-    imageLicenseUrl: "https://creativecommons.org/licenses/by-sa/4.0",
   },
 ];
 
@@ -287,18 +205,7 @@ export function vehicleDisplayName(profile: VehicleProfile): string {
   return `${profile.maker} ${profile.model}`;
 }
 
-/**
- * Commons serves the file via a redirect, so the width is a request for a
- * thumbnail rather than a promise of one; very small originals come back at
- * their native size.
- */
-export function vehicleImageUrl(profile: VehicleProfile, width = 640): string {
-  const file = encodeURIComponent(profile.commonsFile.replace(/ /g, "_"));
-  return `https://commons.wikimedia.org/wiki/Special:FilePath/${file}?width=${width}`;
-}
-
-/** The file's description page, which the licence requires us to credit back to. */
-export function vehicleImagePageUrl(profile: VehicleProfile): string {
-  const file = encodeURIComponent(profile.commonsFile.replace(/ /g, "_"));
-  return `https://commons.wikimedia.org/wiki/File:${file}`;
+/** Resolve the bundled artwork for a vehicle's configured body type. */
+export function vehicleImageUrl(profile: VehicleProfile): string {
+  return withBasePath(VEHICLE_BODY_TYPE_ASSETS[profile.bodyType]);
 }

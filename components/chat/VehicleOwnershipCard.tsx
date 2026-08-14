@@ -29,7 +29,7 @@ export function VehicleOwnershipCard({
             aria-pressed={isSelected}
             disabled={disabled || Boolean(selected)}
             onClick={() => onSelect(option.id)}
-            className={`w-full ${
+            className={`w-fit ${
               isSelected
                 ? "border-pine-primary bg-surface-tint-strong"
                 : ""

@@ -14,18 +14,16 @@ import {
   EB_HOME_POST_UPI_STEP_INDEX,
   getEbHomeSteps,
 } from "@/features/walkthrough/steps";
-import type { WalkthroughRect } from "@/features/walkthrough/types";
 import { useWalkthrough } from "@/features/walkthrough/useWalkthrough";
+import {
+  endIframeWalkthrough,
+  measureIframeWalkthroughTarget,
+  WALKTHROUGH_TAPPED_MESSAGE,
+} from "./iframeWalkthroughBridge";
 import { WalkthroughOverlay } from "./WalkthroughOverlay";
 
-const MEASURE_MESSAGE = "employee-benefits:walkthrough-measure";
-const RECT_MESSAGE = "employee-benefits:walkthrough-rect";
-const TAPPED_MESSAGE = "employee-benefits:walkthrough-tapped";
 const UPI_CREATED_MESSAGE = "employee-benefits:upi-created";
 const UPI_CREATED_EVENT = "employee-benefits:upi-created-local";
-const END_MESSAGE = "employee-benefits:walkthrough-end";
-/** The iframe answers on the next frame; anything slower is a missing target. */
-const MEASURE_TIMEOUT_MS = 600;
 
 function subscribeToUpiCreated(listener: () => void): () => void {
   window.addEventListener("storage", listener);
@@ -76,10 +74,7 @@ export function EbHomeWalkthrough({
       if (hostSelector) {
         // The previous target lived in the iframe. Release its scroll lock
         // before moving the spotlight onto the React-owned bottom navigation.
-        frameRef.current?.contentWindow?.postMessage(
-          { type: END_MESSAGE },
-          window.location.origin,
-        );
+        endIframeWalkthrough(frameRef);
         const target = document.querySelector<HTMLElement>(hostSelector);
         if (!target || target.offsetParent === null) {
           return Promise.resolve(null);
@@ -88,61 +83,15 @@ export function EbHomeWalkthrough({
         return Promise.resolve({ top, left, width, height });
       }
 
-      return new Promise<WalkthroughRect | null>((resolve) => {
-        const frame = frameRef.current;
-        const frameWindow = frame?.contentWindow;
-        if (!frame || !frameWindow) {
-          resolve(null);
-          return;
-        }
-
-        const cleanup = () => {
-          window.clearTimeout(timeout);
-          window.removeEventListener("message", onMessage);
-        };
-
-        const onMessage = (event: MessageEvent) => {
-          if (event.origin !== window.location.origin) return;
-          if (event.source !== frameWindow) return;
-          if (event.data?.type !== RECT_MESSAGE || event.data.key !== key) return;
-          cleanup();
-          if (!event.data.found) {
-            resolve(null);
-            return;
-          }
-          // The iframe measures against its own viewport; shift into host
-          // coordinates so the overlay and the target agree.
-          const offset = frame.getBoundingClientRect();
-          const rect = event.data.rect as WalkthroughRect;
-          resolve({
-            top: rect.top + offset.top,
-            left: rect.left + offset.left,
-            width: rect.width,
-            height: rect.height,
-          });
-        };
-
-        const timeout = window.setTimeout(() => {
-          cleanup();
-          resolve(null);
-        }, MEASURE_TIMEOUT_MS);
-
-        window.addEventListener("message", onMessage);
-        frameWindow.postMessage(
-          { type: MEASURE_MESSAGE, key },
-          window.location.origin,
-        );
-      });
+      return measureIframeWalkthroughTarget(frameRef, key);
     },
     [frameRef],
   );
 
-  const onEnd = useCallback(() => {
-    frameRef.current?.contentWindow?.postMessage(
-      { type: END_MESSAGE },
-      window.location.origin,
-    );
-  }, [frameRef]);
+  const onEnd = useCallback(
+    () => endIframeWalkthrough(frameRef),
+    [frameRef],
+  );
 
   const controller = useWalkthrough({
     id: "eb-home",
@@ -157,17 +106,25 @@ export function EbHomeWalkthrough({
   // has to be reported across the bridge.
   const pauseRef = useRef(controller.pause);
   const queueResumeAtRef = useRef(controller.queueResumeAt);
+  const phaseRef = useRef(controller.phase);
+  const activeStepKeyRef = useRef(controller.step?.key ?? null);
 
   useEffect(() => {
     pauseRef.current = controller.pause;
     queueResumeAtRef.current = controller.queueResumeAt;
+    phaseRef.current = controller.phase;
+    activeStepKeyRef.current = controller.step?.key ?? null;
   });
 
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) return;
       if (event.source !== frameRef.current?.contentWindow) return;
-      if (event.data?.type === TAPPED_MESSAGE) {
+      if (
+        event.data?.type === WALKTHROUGH_TAPPED_MESSAGE &&
+        phaseRef.current === "running" &&
+        event.data.key === activeStepKeyRef.current
+      ) {
         pauseRef.current();
         return;
       }

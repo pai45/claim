@@ -69,7 +69,7 @@ export function VehicleDetailsCard({
           </p>
         </div>
 
-        {isReviewStep ? <VehiclePhoto profile={profile} /> : null}
+        <VehiclePhoto profile={profile} />
 
         <div className="flex flex-col gap-0.5">
           <p className="text-body font-bold text-pine">{name}</p>

@@ -7,6 +7,7 @@ type BackNavigationButtonProps = {
   href?: string;
   onClick?: () => void;
   ariaLabel?: string;
+  className?: string;
 };
 
 function BackChevronIcon() {
@@ -36,10 +37,13 @@ export function BackNavigationButton({
   href,
   onClick,
   ariaLabel = "Go back",
+  className = "",
 }: BackNavigationButtonProps) {
+  const classes = `${buttonClassName} ${className}`.trim();
+
   if (href) {
     return (
-      <Link href={href} aria-label={ariaLabel} className={buttonClassName}>
+      <Link href={href} aria-label={ariaLabel} className={classes}>
         <BackChevronIcon />
       </Link>
     );
@@ -50,7 +54,7 @@ export function BackNavigationButton({
       type="button"
       aria-label={ariaLabel}
       onClick={onClick}
-      className={buttonClassName}
+      className={classes}
     >
       <BackChevronIcon />
     </button>

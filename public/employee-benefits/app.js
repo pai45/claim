@@ -149,7 +149,12 @@ const manageCurrentBalance = document.querySelector(
   "[data-manage-current-balance]",
 );
 const manageWalletType = document.querySelector("[data-manage-wallet-type]");
-const trackCardOpenButtons = document.querySelectorAll("[data-track-card-open]");
+const trackCardOpenButtons = document.querySelectorAll(
+  "[data-track-card-open]",
+);
+const rohanTrackCardQuickAction = document.querySelector(
+  "[data-rohan-track-card-action]",
+);
 const trackCardOverlay = document.querySelector("[data-track-card-overlay]");
 const trackCardPanel = document.querySelector(".track-card-panel");
 const trackCardCloseButtons = document.querySelectorAll(
@@ -157,7 +162,9 @@ const trackCardCloseButtons = document.querySelectorAll(
 );
 const trackAwbCopyButton = document.querySelector("[data-track-awb-copy]");
 const trackAwb = document.querySelector("[data-track-awb]");
-const trackStatusButton = document.querySelector(".track-status-button[data-toast]");
+const trackStatusButton = document.querySelector(
+  ".track-status-button[data-toast]",
+);
 const trackActivationOverlay = document.querySelector(
   "[data-track-activation-overlay]",
 );
@@ -177,7 +184,9 @@ const trackActivationCvvToggle = document.querySelector(
 const trackConfirmActivateButton = document.querySelector(
   "[data-track-confirm-activate]",
 );
-const trackActivateLabel = document.querySelector("[data-track-activate-label]");
+const trackActivateLabel = document.querySelector(
+  "[data-track-activate-label]",
+);
 const cardPinOpenButtons = document.querySelectorAll("[data-card-pin-open]");
 const cardPinOverlay = document.querySelector("[data-card-pin-overlay]");
 const cardPinPanel = document.querySelector(".card-pin-panel");
@@ -191,7 +200,9 @@ const cardPinVisibilityButtons = document.querySelectorAll(
 );
 const cardPinError = document.querySelector("[data-card-pin-error]");
 const cardPinSubmitButton = document.querySelector("[data-card-pin-submit]");
-const cardSuccessOverlay = document.querySelector("[data-card-success-overlay]");
+const cardSuccessOverlay = document.querySelector(
+  "[data-card-success-overlay]",
+);
 const cardSuccessSheet = document.querySelector("[data-card-success-sheet]");
 const cardSuccessActivation = document.querySelector(
   "[data-card-success-activation]",
@@ -218,8 +229,12 @@ const cardSuccessSetPinButton = document.querySelector(
 const cardLockOverlay = document.querySelector("[data-card-lock-overlay]");
 const cardLockSheet = document.querySelector(".card-lock-sheet");
 const cardLockOpenButtons = document.querySelectorAll("[data-card-lock-open]");
-const cardLockCloseButtons = document.querySelectorAll("[data-card-lock-close]");
-const cardLockConfirmButton = document.querySelector("[data-card-lock-confirm]");
+const cardLockCloseButtons = document.querySelectorAll(
+  "[data-card-lock-close]",
+);
+const cardLockConfirmButton = document.querySelector(
+  "[data-card-lock-confirm]",
+);
 const cardLockBanner = document.querySelector("[data-card-lock-banner]");
 const cardLockTileLabel = document.querySelector("[data-card-lock-tile-label]");
 const cardUnlockOpenButtons = document.querySelectorAll(
@@ -1145,7 +1160,7 @@ function applyUpiCreatedState(
   upiIdValues.forEach((value) => {
     if (isCreated) {
       const upiId = isPluspay
-        ? (value.dataset.pluspayText || CREATED_UPI_ID)
+        ? value.dataset.pluspayText || CREATED_UPI_ID
         : CREATED_UPI_ID;
       value.textContent = upiId;
       value.dataset.ebPlusText = CREATED_UPI_ID;
@@ -1154,8 +1169,8 @@ function applyUpiCreatedState(
 
   upiIdCards.forEach((card) => {
     const upiId = isPluspay
-      ? (card.querySelector("[data-upi-id-value]")?.dataset.pluspayText ||
-        CREATED_UPI_ID)
+      ? card.querySelector("[data-upi-id-value]")?.dataset.pluspayText ||
+        CREATED_UPI_ID
       : CREATED_UPI_ID;
     card.setAttribute(
       "aria-label",
@@ -1246,13 +1261,15 @@ function scheduleUpiSetupStep() {
 
 function bindUpiSetupActions() {
   if (!upiSetupFlow) return;
-  upiSetupFlow.querySelectorAll("[data-upi-setup-action]").forEach((control) => {
-    control.addEventListener("click", () => {
-      const action = control.dataset.upiSetupAction;
-      if (action === "close") closeUpiSetupFlow();
-      if (action === "complete") completeUpiSetupFlow();
+  upiSetupFlow
+    .querySelectorAll("[data-upi-setup-action]")
+    .forEach((control) => {
+      control.addEventListener("click", () => {
+        const action = control.dataset.upiSetupAction;
+        if (action === "close") closeUpiSetupFlow();
+        if (action === "complete") completeUpiSetupFlow();
+      });
     });
-  });
 }
 
 function openUpiSetupFlow() {
@@ -4157,7 +4174,10 @@ function createHistoryItem(item) {
     </span>
   `;
   if (item.id) {
-    article.setAttribute("aria-label", `Open ${item.merchant} transaction details`);
+    article.setAttribute(
+      "aria-label",
+      `Open ${item.merchant} transaction details`,
+    );
     article.addEventListener("click", () => {
       window.parent.postMessage(
         {
@@ -4182,19 +4202,20 @@ function renderWalletHistory() {
   if (!walletOverlayHistory) return;
 
   walletOverlayHistory.replaceChildren();
-  const history = activeWalletTone === "mobile"
-    ? []
-    : Array.isArray(syncedWalletTransactions[activeWalletTone])
-    ? syncedWalletTransactions[activeWalletTone]
-    : syncedTransactionItems
-        .filter((item) => item.wallet === activeWalletTone)
-        .sort((left, right) => {
-          const dateOrder = right.postedOn.localeCompare(left.postedOn);
-          return dateOrder === 0
-            ? left.id.localeCompare(right.id)
-            : dateOrder;
-        })
-        .slice(0, 10);
+  const history =
+    activeWalletTone === "mobile"
+      ? []
+      : Array.isArray(syncedWalletTransactions[activeWalletTone])
+        ? syncedWalletTransactions[activeWalletTone]
+        : syncedTransactionItems
+            .filter((item) => item.wallet === activeWalletTone)
+            .sort((left, right) => {
+              const dateOrder = right.postedOn.localeCompare(left.postedOn);
+              return dateOrder === 0
+                ? left.id.localeCompare(right.id)
+                : dateOrder;
+            })
+            .slice(0, 10);
   if (history.length === 0) {
     walletOverlayHistory.append(
       createEmptyTransactionState("No transactions yet for this wallet."),
@@ -4219,7 +4240,9 @@ function renderSyncedTransactions(items, walletTransactions) {
     transactionList.replaceChildren();
     if (syncedTransactionItems.length === 0) {
       transactionList.append(
-        createEmptyTransactionState("No transactions yet for your new account."),
+        createEmptyTransactionState(
+          "No transactions yet for your new account.",
+        ),
       );
     } else {
       syncedTransactionItems
@@ -4230,12 +4253,14 @@ function renderSyncedTransactions(items, walletTransactions) {
 
   const activeFilter =
     document.querySelector("[data-filter].active")?.dataset.filter || "all";
-  document.querySelectorAll("[data-transaction-list] [data-wallet]").forEach((item) => {
-    item.classList.toggle(
-      "is-hidden",
-      activeFilter !== "all" && item.dataset.wallet !== activeFilter,
-    );
-  });
+  document
+    .querySelectorAll("[data-transaction-list] [data-wallet]")
+    .forEach((item) => {
+      item.classList.toggle(
+        "is-hidden",
+        activeFilter !== "all" && item.dataset.wallet !== activeFilter,
+      );
+    });
 
   const activeOverlayContent = walletOverlayContent[activeWalletTone];
   if (activeOverlayContent && walletOverlay?.classList.contains("is-open")) {
@@ -4302,7 +4327,7 @@ function renderManageWalletState() {
   if (managePreviewNumber)
     managePreviewNumber.textContent = state.reveal.number
       ? state.card.number
-      : `•••• •••• •••• ${state.card.last4}`;
+      : `**** **** **** ${state.card.last4}`;
   if (managePreviewHolder) managePreviewHolder.textContent = state.card.holder;
   if (managePreviewExpiry) managePreviewExpiry.textContent = state.card.expiry;
   manageSensitiveFields.forEach((field) => {
@@ -4310,7 +4335,7 @@ function renderManageWalletState() {
     if (key === "number")
       field.textContent = state.reveal.number
         ? state.card.number
-        : `•••• •••• •••• ${state.card.last4}`;
+        : `**** **** **** ${state.card.last4}`;
     if (key === "holder") field.textContent = state.card.holder;
     if (key === "expiry") field.textContent = state.card.expiry;
     if (key === "cvv")
@@ -4650,9 +4675,11 @@ function applyMode(isPluspay) {
     });
     lensFilterButton?.classList.add("active");
     lensFilterButton?.setAttribute("aria-selected", "true");
-    document.querySelectorAll("[data-transaction-list] [data-wallet]").forEach((transaction) => {
-      transaction.classList.remove("is-hidden");
-    });
+    document
+      .querySelectorAll("[data-transaction-list] [data-wallet]")
+      .forEach((transaction) => {
+        transaction.classList.remove("is-hidden");
+      });
   }
 }
 
@@ -4672,12 +4699,14 @@ filterButtons.forEach((button) => {
     button.classList.add("active");
     button.setAttribute("aria-selected", "true");
 
-    document.querySelectorAll("[data-transaction-list] [data-wallet]").forEach((transaction) => {
-      const shouldShow =
-        selectedWallet === "all" ||
-        transaction.dataset.wallet === selectedWallet;
-      transaction.classList.toggle("is-hidden", !shouldShow);
-    });
+    document
+      .querySelectorAll("[data-transaction-list] [data-wallet]")
+      .forEach((transaction) => {
+        const shouldShow =
+          selectedWallet === "all" ||
+          transaction.dataset.wallet === selectedWallet;
+        transaction.classList.toggle("is-hidden", !shouldShow);
+      });
   });
 });
 
@@ -5054,9 +5083,8 @@ function readFallbackState() {
     const stored = window.localStorage.getItem(FALLBACK_STORAGE_KEY);
     if (!stored) return;
     const parsed = JSON.parse(stored);
-    const wallets = parsed?.version === FALLBACK_STORAGE_VERSION
-      ? parsed.wallets
-      : parsed;
+    const wallets =
+      parsed?.version === FALLBACK_STORAGE_VERSION ? parsed.wallets : parsed;
     Object.keys(fallbackState).forEach((key) => {
       if (typeof wallets?.[key] === "boolean") {
         fallbackState[key] = wallets[key];
@@ -5314,8 +5342,7 @@ function openWalletOverlay(button) {
   if (walletOverlayMerchantTools)
     walletOverlayMerchantTools.hidden =
       walletTone === "misc" || walletTone === "fuel" || walletTone === "mobile";
-  if (reimbursementActions)
-    reimbursementActions.hidden = walletTone !== "misc";
+  if (reimbursementActions) reimbursementActions.hidden = walletTone !== "misc";
   if (walletOverlayDirectoryCopy)
     walletOverlayDirectoryCopy.textContent = overlayContent.directoryCopy;
   if (walletOverlaySelectCopy)
@@ -5712,8 +5739,12 @@ window.addEventListener("keydown", (event) => {
 });
 
 function syncPersonaToApp(payload) {
-  const activePersona = window.localStorage.getItem("eb-claims:active-persona") || "returning";
-  const persona = payload || personaDefinitions[activePersona] || personaDefinitions.returning;
+  const activePersona =
+    window.localStorage.getItem("eb-claims:active-persona") || "returning";
+  const persona =
+    payload ||
+    personaDefinitions[activePersona] ||
+    personaDefinitions.returning;
   syncedPersona = persona;
   const isNewUser = !persona.hasTransactions;
   const access = persona.access;
@@ -5725,7 +5756,8 @@ function syncPersonaToApp(payload) {
       ? "new_user"
       : activePersona;
   const financialState =
-    personaFinancialState[benefitsStatePersona] || personaFinancialState.returning;
+    personaFinancialState[benefitsStatePersona] ||
+    personaFinancialState.returning;
   const name = persona.name;
   const upperName = name.toUpperCase();
   const initials = persona.initials;
@@ -5734,18 +5766,21 @@ function syncPersonaToApp(payload) {
   const isEbPlusSetupEligible =
     activePersona === "pluspay_only" && !access.products.ebPlus;
 
-  document.body.classList.toggle(
-    "is-product-locked",
-    isProductLocked,
-  );
+  document.body.classList.toggle("is-product-locked", isProductLocked);
   document.body.classList.toggle("is-brand-new-user", isNewUser);
   document.body.classList.toggle("is-no-upi", !access.upiEnabled);
   document.body.classList.toggle("is-lens-disabled", !access.products.ebPlus);
-  document.body.classList.toggle("is-pluspay-disabled", !access.products.plusPay);
+  document.body.classList.toggle(
+    "is-pluspay-disabled",
+    !access.products.plusPay,
+  );
   document.body.classList.toggle(
     "is-eb-plus-setup-eligible",
     isEbPlusSetupEligible,
   );
+  if (rohanTrackCardQuickAction) {
+    rohanTrackCardQuickAction.hidden = activePersona !== "pluspay_only";
+  }
   applyMode(access.defaultProduct === "pluspay");
 
   if (pluspayToggle) {
@@ -5753,7 +5788,9 @@ function syncPersonaToApp(payload) {
     pluspayToggle.setAttribute(
       "aria-label",
       isProductLocked
-        ? (access.products.plusPay ? "PlusPay" : "EB+")
+        ? access.products.plusPay
+          ? "PlusPay"
+          : "EB+"
         : "Switch between EB+ and PlusPay",
     );
   }
@@ -5785,15 +5822,28 @@ function syncPersonaToApp(payload) {
     .forEach((el) => {
       el.textContent = upperName;
     });
-  document.querySelectorAll(".card-details-meta strong, .card-details-row strong, .virtual-card-front strong, .virtual-card-back strong, .manage-cards-card strong").forEach((el) => {
-    if (el.textContent === "Vishal Sharma" || el.textContent === "Aarav Patel" || el.textContent === "VISHAL SHARMA" || el.textContent === "AARAV PATEL") {
-      el.textContent = el.textContent === el.textContent.toUpperCase() ? upperName : name;
-    }
-  });
+  document
+    .querySelectorAll(
+      ".card-details-meta strong, .card-details-row strong, .virtual-card-front strong, .virtual-card-back strong, .manage-cards-card strong",
+    )
+    .forEach((el) => {
+      if (
+        el.textContent === "Vishal Sharma" ||
+        el.textContent === "Aarav Patel" ||
+        el.textContent === "VISHAL SHARMA" ||
+        el.textContent === "AARAV PATEL"
+      ) {
+        el.textContent =
+          el.textContent === el.textContent.toUpperCase() ? upperName : name;
+      }
+    });
 
   // 3. PlusPay handle data attributes
   document.querySelectorAll("[data-pluspay-text]").forEach((node) => {
-    if (node.dataset.pluspayText && node.dataset.pluspayText.includes("@pluspay")) {
+    if (
+      node.dataset.pluspayText &&
+      node.dataset.pluspayText.includes("@pluspay")
+    ) {
       node.dataset.pluspayText = upiHandle;
       if (document.body.classList.contains("is-pluspay")) {
         node.textContent = upiHandle;
@@ -5811,7 +5861,8 @@ function syncPersonaToApp(payload) {
       manageWalletState[key].limitUsed = financialState.limitUsed;
     });
     if (!access.upiEnabled && manageWalletState.misc) {
-      manageWalletState.misc.accessCopy = "Claims, Card Payments, Approved Vendors";
+      manageWalletState.misc.accessCopy =
+        "Claims, Card Payments, Approved Vendors";
     }
   }
 
@@ -5829,14 +5880,18 @@ function syncPersonaToApp(payload) {
     0,
   );
   const totalBalanceDisplay = formatCurrency(totalBalance);
-  if (currentWalletBalance) currentWalletBalance.textContent = totalBalanceDisplay;
-  if (manageCurrentBalance) manageCurrentBalance.textContent = totalBalanceDisplay;
+  if (currentWalletBalance)
+    currentWalletBalance.textContent = totalBalanceDisplay;
+  if (manageCurrentBalance)
+    manageCurrentBalance.textContent = totalBalanceDisplay;
   renderManageWalletState();
 
   // 7. Transactions list visibility
   const txList = document.querySelector("[data-transaction-list]");
   if (txList) {
-    const transactionItems = txList.querySelectorAll(":scope > .transaction-item");
+    const transactionItems = txList.querySelectorAll(
+      ":scope > .transaction-item",
+    );
     let emptyNotice = txList.querySelector("[data-no-tx-notice]");
     if (isNewUser) {
       transactionItems.forEach((item) => {
@@ -5867,11 +5922,17 @@ function syncPersonaToApp(payload) {
 
 function syncWalletBalancesToApp(wallets) {
   if (!wallets || typeof wallets !== "object") return;
-  const activePersona = window.localStorage.getItem("eb-claims:active-persona") || "returning";
-  const financialState = personaFinancialState[activePersona] || personaFinancialState.returning;
+  const activePersona =
+    window.localStorage.getItem("eb-claims:active-persona") || "returning";
+  const financialState =
+    personaFinancialState[activePersona] || personaFinancialState.returning;
   Object.keys(financialState.wallets).forEach((key) => {
     const next = wallets[key];
-    if (!next || typeof next.amount !== "number" || typeof next.display !== "string") {
+    if (
+      !next ||
+      typeof next.amount !== "number" ||
+      typeof next.display !== "string"
+    ) {
       return;
     }
     financialState.wallets[key] = {
@@ -5894,8 +5955,10 @@ function syncWalletBalancesToApp(wallets) {
     0,
   );
   const totalBalanceDisplay = formatCurrency(totalBalance);
-  if (currentWalletBalance) currentWalletBalance.textContent = totalBalanceDisplay;
-  if (manageCurrentBalance) manageCurrentBalance.textContent = totalBalanceDisplay;
+  if (currentWalletBalance)
+    currentWalletBalance.textContent = totalBalanceDisplay;
+  if (manageCurrentBalance)
+    manageCurrentBalance.textContent = totalBalanceDisplay;
   renderManageWalletState();
 }
 
@@ -5963,10 +6026,7 @@ window.addEventListener("message", (e) => {
   }
   if (e.data?.type === "employee-benefits:sync-transactions") {
     syncWalletBalancesToApp(e.data.wallets);
-    renderSyncedTransactions(
-      e.data.transactions,
-      e.data.walletTransactions,
-    );
+    renderSyncedTransactions(e.data.transactions, e.data.walletTransactions);
   }
   if (e.data?.type === "employee-benefits:walkthrough-measure") {
     const key = e.data.key;

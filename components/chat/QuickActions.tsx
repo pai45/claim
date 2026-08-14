@@ -24,7 +24,7 @@ export function QuickActions({ onSelect, disabled }: QuickActionsProps) {
             disabled={disabled}
             onClick={() => onSelect(action)}
             style={{ animationDelay: `${START_MS + index * STEP_MS}ms` }}
-            className="animate-rise-in shrink-0 whitespace-nowrap"
+            className="animate-rise-in w-fit shrink-0 whitespace-nowrap"
           >
             {action.label}
           </ChatOptionButton>

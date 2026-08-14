@@ -126,7 +126,7 @@ export function calculateScanPayFunding({
       status: "insufficient",
       allocations: [],
       shortfall,
-      message: `${LABELS[selected]} and Reimbursement Wallet do not have enough combined balance.`,
+      message: `${LABELS[selected]} and Reimbursement Wallet do not have enough combined balance. (Reimbursement wallet balance : ${formatINR(balances.misc)})`,
     };
   }
 

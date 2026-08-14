@@ -25,7 +25,7 @@ export function ContextualQuickChats({
           key={action.id}
           disabled={disabled}
           onClick={() => onSelect(action)}
-          className="animate-rise-in text-left"
+          className="animate-rise-in w-fit text-left"
           style={staggerStyle(index)}
         >
           {action.label}

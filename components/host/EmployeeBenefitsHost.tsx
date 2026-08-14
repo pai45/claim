@@ -7,6 +7,7 @@ import { OnboardingShell } from "@/components/onboarding/OnboardingShell";
 import { ScanPayFlow } from "@/components/scan-pay/ScanPayFlow";
 import { EbBottomNav } from "@/components/shared/EbBottomNav";
 import { EbHomeWalkthrough } from "@/components/walkthrough/EbHomeWalkthrough";
+import { ProductSwitcherWalkthrough } from "@/components/walkthrough/ProductSwitcherWalkthrough";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import {
   resolveScanPayMerchantSelection,
@@ -605,6 +606,23 @@ export function EmployeeBenefitsHost() {
           !cardMpinIntent
         }
         hasBenefitsUpiId={persona.hasBenefitsUpiId}
+      />
+
+      <ProductSwitcherWalkthrough
+        frameRef={frameRef}
+        ready={frameReady}
+        plusPayMode={plusPayMode}
+        startEnabled={!plusPayMode}
+        enabled={
+          persona.id === "pluspay_only" &&
+          persona.access.products.ebPlus &&
+          persona.access.products.plusPay &&
+          !claimsOpen &&
+          !scanPayOpen &&
+          !sourceOverlayOpen &&
+          !ebPlusSetupOpen &&
+          !cardMpinIntent
+        }
       />
 
       {claimsOpen ? (

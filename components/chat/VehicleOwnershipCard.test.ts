@@ -14,6 +14,8 @@ describe("VehicleOwnershipCard", () => {
     expect(html).toContain("Self Owned");
     expect(html).toContain("Company Leased");
     expect(html.match(/<button/g)).toHaveLength(2);
+    expect(html.match(/w-fit/g)).toHaveLength(2);
+    expect(html.match(/px-4/g)).toHaveLength(2);
   });
 
   it("shows and locks the selected ownership", () => {

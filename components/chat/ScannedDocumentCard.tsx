@@ -129,7 +129,7 @@ export function ScannedDocumentCard({
           <p className="type-body-secondary">
             {isDl
               ? "Preparing the selected demo licence"
-              : "Extracting key details from the selected demo bill"}
+              : "Extracting key details from the bill"}
           </p>
         </div>
       </div>

@@ -37,7 +37,7 @@ export const MOCK_TOKENS: TokenItem[] = [
     device: "Iphone 16 Pro",
     status: "Active",
     category: "Wallets",
-    cardDetails: "•••• •••• •••• 7845",
+    cardDetails: "**** **** **** 7845",
     type: "Wallet Token",
   },
   {
@@ -50,7 +50,7 @@ export const MOCK_TOKENS: TokenItem[] = [
     device: "Pixel 8",
     status: "Suspended",
     category: "Wallets",
-    cardDetails: "•••• •••• •••• 1234",
+    cardDetails: "**** **** **** 1234",
     type: "Wallet Token",
   },
   {
@@ -63,7 +63,7 @@ export const MOCK_TOKENS: TokenItem[] = [
     device: "Web",
     status: "Active",
     category: "Merchants",
-    cardDetails: "•••• •••• •••• 5678",
+    cardDetails: "**** **** **** 5678",
     type: "Merchant Token",
   },
   {
@@ -76,7 +76,7 @@ export const MOCK_TOKENS: TokenItem[] = [
     device: "Smart TV",
     status: "Active",
     category: "Merchants",
-    cardDetails: "•••• •••• •••• 9012",
+    cardDetails: "**** **** **** 9012",
     type: "Merchant Token",
   },
   {
@@ -89,7 +89,7 @@ export const MOCK_TOKENS: TokenItem[] = [
     device: "Iphone 16 Pro",
     status: "Inactive",
     category: "Merchants",
-    cardDetails: "•••• •••• •••• 3456",
+    cardDetails: "**** **** **** 3456",
     type: "Merchant Token",
   },
 ];
@@ -99,8 +99,9 @@ const FILTERS = ["All", "Active", "Suspended", "Inactive"] as const;
 
 export function ManageTokensList() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<typeof TABS[number]>("All");
-  const [activeFilter, setActiveFilter] = useState<typeof FILTERS[number]>("All");
+  const [activeTab, setActiveTab] = useState<(typeof TABS)[number]>("All");
+  const [activeFilter, setActiveFilter] =
+    useState<(typeof FILTERS)[number]>("All");
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -178,10 +179,18 @@ export function ManageTokensList() {
                         }}
                         className="flex items-center justify-between rounded-control px-3 py-3 text-left text-body-sm transition-colors hover:bg-surface-muted"
                       >
-                        <span className={isSelected ? "text-pine font-bold" : "text-ink-secondary"}>
+                        <span
+                          className={
+                            isSelected
+                              ? "text-pine font-bold"
+                              : "text-ink-secondary"
+                          }
+                        >
                           {f}
                         </span>
-                        {isSelected && <CheckIcon className="h-5 w-5 text-pine" />}
+                        {isSelected && (
+                          <CheckIcon className="h-5 w-5 text-pine" />
+                        )}
                       </button>
                     );
                   })}
@@ -244,8 +253,12 @@ function TokenCard({
       <TokenIcon brand={token.brand} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between">
-          <h3 className="truncate type-body font-bold text-pine">{token.name}</h3>
-          <span className={`rounded-pill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusClass}`}>
+          <h3 className="truncate type-body font-bold text-pine">
+            {token.name}
+          </h3>
+          <span
+            className={`rounded-pill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${statusClass}`}
+          >
             {token.status}
           </span>
         </div>

@@ -1,4 +1,7 @@
-export type WalkthroughId = "eb-home" | "benefits-assistant";
+export type WalkthroughId =
+  | "eb-home"
+  | "benefits-assistant"
+  | "product-switcher";
 
 export type WalkthroughPhase = "idle" | "running" | "paused" | "done";
 
@@ -11,6 +14,8 @@ export type WalkthroughStep = {
   eyebrow: string;
   title: string;
   body: string;
+  /** Target-led steps advance through the highlighted control, not card buttons. */
+  advanceOn?: "controls" | "target";
 };
 
 /** Viewport-relative box of a spotlit target, in host coordinates. */

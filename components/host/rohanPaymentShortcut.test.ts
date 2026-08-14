@@ -42,4 +42,13 @@ describe("Rohan EB+ payment actions", () => {
       /body\.is-pluspay\.is-eb-plus-setup-eligible \.eb-plus-setup-card[\s\S]*display: grid/,
     );
   });
+
+  it("shows Track Card in Quick Actions only for Rohan", () => {
+    expect(html).toMatch(
+      /class="utility-card"[\s\S]*data-track-card-open[\s\S]*data-rohan-track-card-action[\s\S]*<strong>Track<br \/>Card<\/strong>/,
+    );
+    expect(sourceApp).toContain(
+      'rohanTrackCardQuickAction.hidden = activePersona !== "pluspay_only"',
+    );
+  });
 });

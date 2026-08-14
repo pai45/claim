@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, type Dispatch } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type Dispatch,
+} from "react";
 import { NumericKeypad } from "@/components/mpin/NumericKeypad";
 import { ScanPayDrawer } from "@/components/scan-pay/ScanPayDrawer";
 import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
@@ -46,6 +53,8 @@ import {
 import { useFinancialStateVersion } from "@/features/transactions/useFinancialState";
 import { SCAN_PAY_ASSETS, UPI_SETTINGS_ASSETS } from "@/lib/ui/assets";
 
+const FUNDING_INFO_TIMEOUT_MS = 6_000;
+
 /**
  * Amounts stay at the display size while they fit beside the ₹ symbol; longer
  * ones step down so the whole figure keeps sitting inside the receipt.
@@ -80,6 +89,9 @@ export function ScanPayConfirm({
   onBack?: () => void;
 }) {
   const amountRef = useRef<HTMLInputElement>(null);
+  const fundingInfoRef = useRef<HTMLDivElement>(null);
+  const fundingInfoTriggerRef = useRef<HTMLButtonElement>(null);
+  const [fundingInfoOpen, setFundingInfoOpen] = useState(false);
   const { personaId } = useActivePersona();
   const fallback = useFallbackControlState();
   const financialVersion = useFinancialStateVersion();
@@ -114,6 +126,9 @@ export function ScanPayConfirm({
     selectedWallet.id,
     personaId,
   ).display;
+  const showFundingInfo =
+    state.mode === "benefits" &&
+    (selectedWallet.id === "meal" || selectedWallet.id === "fuel");
   const fundingPlan = useMemo(
     () =>
       calculateScanPayFunding({
@@ -206,6 +221,37 @@ export function ScanPayConfirm({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [appendAmount, removeAmountDigit]);
+
+  useEffect(() => {
+    if (!fundingInfoOpen) return;
+
+    const autoCloseTimer = window.setTimeout(() => {
+      setFundingInfoOpen(false);
+    }, FUNDING_INFO_TIMEOUT_MS);
+
+    function handleOutsideClick(event: PointerEvent) {
+      const target = event.target;
+      if (target instanceof Node && fundingInfoRef.current?.contains(target)) {
+        return;
+      }
+      setFundingInfoOpen(false);
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setFundingInfoOpen(false);
+      fundingInfoTriggerRef.current?.focus();
+    }
+
+    document.addEventListener("pointerdown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      window.clearTimeout(autoCloseTimer);
+      document.removeEventListener("pointerdown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [fundingInfoOpen]);
 
   return (
     <AppShell className="scan-pay-shell relative overflow-hidden bg-white">
@@ -431,12 +477,13 @@ export function ScanPayConfirm({
             className={`animate-rise-in mb-3 flex items-start gap-2 rounded-card border p-3 text-caption shadow-card ${
               fundingPlan.status === "split"
                 ? "border-warning-border bg-warning-soft text-warning-ink"
-                : "border-danger bg-danger-soft text-danger"
+                : fundingPlan.status === "insufficient"
+                  ? "border-danger/30 bg-danger-soft text-danger"
+                  : "border-danger bg-danger-soft text-danger"
             }`}
             role={fundingPlan.status === "split" ? "status" : "alert"}
             aria-live="polite"
           >
-            <ScanPayIcon name="warning" className="mt-0.5 shrink-0" size={18} />
             <span className="min-w-0 flex-1 font-bold">
               {fundingPlan.message}
               {fundingPlan.status === "fallback-disabled" ? (
@@ -452,7 +499,46 @@ export function ScanPayConfirm({
           </div>
         ) : null}
         <section aria-label="Payment source">
-          <p className="type-field-label">Will be deducted from</p>
+          <div
+            ref={fundingInfoRef}
+            className="relative flex min-h-11 items-center"
+          >
+            <p className="type-field-label">Will be deducted from</p>
+            {showFundingInfo ? (
+              <div className="relative">
+                <button
+                  ref={fundingInfoTriggerRef}
+                  type="button"
+                  aria-label="About wallet deductions"
+                  aria-controls="wallet-deduction-tooltip"
+                  aria-expanded={fundingInfoOpen}
+                  aria-describedby={
+                    fundingInfoOpen ? "wallet-deduction-tooltip" : undefined
+                  }
+                  onClick={() => setFundingInfoOpen((open) => !open)}
+                  className="flex min-h-11 min-w-11 items-center justify-center rounded-control text-ink-secondary transition-colors hover:bg-surface-muted hover:text-pine focus-visible:outline-2 focus-visible:outline-pine-primary"
+                >
+                  <ScanPayIcon name="info" size={18} />
+                </button>
+                {fundingInfoOpen ? (
+                  <span
+                    aria-hidden="true"
+                    className="absolute -bottom-1 left-1/2 z-40 h-2 w-2 -translate-x-1/2 rotate-45 border-l border-t border-border-line bg-surface-muted"
+                  />
+                ) : null}
+              </div>
+            ) : null}
+            {fundingInfoOpen && showFundingInfo ? (
+              <div
+                id="wallet-deduction-tooltip"
+                role="tooltip"
+                className="absolute inset-x-0 top-full z-30 rounded-control border border-border-line bg-surface-muted px-3 py-2.5 text-caption text-ink shadow-menu"
+              >
+                Any amount above this wallet&apos;s available balance will be
+                deducted from your Reimbursement Wallet.
+              </div>
+            ) : null}
+          </div>
           <div className="mt-2 flex min-h-16 items-center gap-3 rounded-card border border-border-line bg-input-soft p-card">
             {state.mode === "pluspay" ? (
               <>
