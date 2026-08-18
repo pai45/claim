@@ -5,6 +5,7 @@ import {
   saveMpin,
 } from "@/features/auth/mpinStorage";
 import { clearAuthSession } from "@/features/auth/session";
+import { BENEFITS_NUDGE_SHOWN_KEY } from "@/features/benefits-nudge/nudge";
 import { PENDING_INTENT_KEY } from "@/features/chat/pendingIntent";
 import { clearChatSession } from "@/features/chat/persistence";
 import {
@@ -63,6 +64,7 @@ const LOCAL_KEYS = [
 ];
 
 const SESSION_KEYS = [
+  BENEFITS_NUDGE_SHOWN_KEY,
   PENDING_INTENT_KEY,
   FINANCIAL_STATE_STORAGE_KEY,
   PLUSPAY_HISTORY_STORAGE_KEY,

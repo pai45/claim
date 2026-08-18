@@ -105,6 +105,7 @@ export type CategoryIconId = keyof typeof CATEGORY_ICONS;
 
 /** Clearly watermarked, fictional documents used by the upload demo. */
 export const DEMO_DOCUMENT_ASSETS = {
+  billDriverSalary: "/assets/demo-documents/bill-driver-salary.png",
   billMeal: "/assets/demo-documents/bill-meal.jpg",
   billMealMissing: "/assets/demo-documents/bill-meal-missing.jpg",
   billFuel: "/assets/demo-documents/bill-fuel.jpg",

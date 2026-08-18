@@ -8,6 +8,7 @@ import {
   buildBillExtractFromScenario,
   buildDlPayloadFromScenario,
   getBillUploadScenario,
+  getBillUploadScenariosForSource,
   getDemoPrecheckDate,
 } from "./demoUploadScenarios";
 import type { BillUploadScenarioId } from "./types";
@@ -36,8 +37,20 @@ describe("demo document upload scenarios", () => {
     }
   });
 
+  it("removes the missing meal bill from Camera while keeping other sources intact", () => {
+    expect(
+      getBillUploadScenariosForSource("camera").map(({ id }) => id),
+    ).not.toContain("meal_missing");
+    expect(
+      getBillUploadScenariosForSource("pdf").map(({ id }) => id),
+    ).toContain("meal_missing");
+    expect(
+      getBillUploadScenariosForSource("gallery").map(({ id }) => id),
+    ).toContain("meal_missing");
+  });
+
   it.each([
-    "meal",
+    "driver_salary",
     "fuel",
     "internet",
     "mobile",

@@ -15,7 +15,7 @@ export type DocumentProcessingStage =
 export type DocumentUploadKind = "bill" | "dl";
 
 export type BillUploadScenarioId =
-  | "meal"
+  | "driver_salary"
   | "meal_missing"
   | "fuel"
   | "fuel_exceeding"

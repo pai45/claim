@@ -131,7 +131,8 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "i want to register my driver",
       "i want to add a driver",
     ],
-    reply: "Let's register your driver. What's the driver's full name?",
+    reply:
+      "Let's register your driver. Please upload their driving licence so I can read the DL number.",
   },
   {
     id: "merchant_locator",

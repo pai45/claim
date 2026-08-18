@@ -15,6 +15,7 @@ export function DriverDlExtractCard({
   onConfirm,
   disabled,
 }: DriverDlExtractCardProps) {
+  const [driverName, setDriverName] = useState(payload.driverName || "");
   const [dlNumber, setDlNumber] = useState(payload.dlNumber || "");
   const confidence =
     typeof payload.dlConfidence === "number"
@@ -31,7 +32,7 @@ export function DriverDlExtractCard({
               ? "This document needs attention"
               : confidence !== null
                 ? `Demo confidence ${confidence}%`
-                : "Review or enter the DL number"}
+                : "Enter the driver name and review the DL number"}
           </p>
         </div>
 
@@ -63,6 +64,17 @@ export function DriverDlExtractCard({
         ) : null}
 
         <label className="flex flex-col gap-1.5">
+          <span className="type-field-label">Driver name</span>
+          <input
+            value={driverName}
+            onChange={(event) => setDriverName(event.target.value)}
+            disabled={disabled}
+            placeholder="e.g. Ramesh Kumar"
+            className="min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm font-bold text-pine outline-none transition-colors placeholder:font-normal placeholder:text-placeholder focus:border-pine disabled:opacity-50"
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5">
           <span className="type-field-label">DL number</span>
           <input
             value={dlNumber}
@@ -76,10 +88,11 @@ export function DriverDlExtractCard({
 
       <button
         type="button"
-        disabled={disabled || !dlNumber.trim()}
+        disabled={disabled || !driverName.trim() || !dlNumber.trim()}
         onClick={() =>
           onConfirm({
             ...payload,
+            driverName: driverName.trim(),
             dlNumber: dlNumber.trim(),
             dlError: undefined,
             dlWarning: undefined,

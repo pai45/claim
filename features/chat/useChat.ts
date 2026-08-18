@@ -645,9 +645,9 @@ export function useChat() {
             {
               id: createId(),
               role: "assistant",
-              content: "Driver name",
+              content: "Upload driving licence",
               createdAt: Date.now(),
-              kind: "driver_name_input",
+              kind: "driver_dl_upload",
               driverSalary: draft,
             },
           ]);
@@ -1513,16 +1513,17 @@ export function useChat() {
         {
           id: createId(),
           role: "assistant",
-          content: "Let's register your driver. What's the driver's full name?",
+          content:
+            "Let's register your driver. Please upload their driving licence so I can read the DL number.",
           createdAt: Date.now(),
           kind: "text",
         },
         {
           id: createId(),
           role: "assistant",
-          content: "Driver name",
+          content: "Upload driving licence",
           createdAt: Date.now(),
-          kind: "driver_name_input",
+          kind: "driver_dl_upload",
           driverSalary: draft,
         },
       ]);
@@ -1620,7 +1621,7 @@ export function useChat() {
               ? ocr.dlError
               : ocr.dlWarning
                 ? ocr.dlWarning
-                : "I found the DL number. Please confirm it before continuing.",
+                : "I found the DL number. Please enter the driver name and confirm the DL number before continuing.",
             createdAt: Date.now(),
             kind: "driver_dl_extract",
             driverSalary: draft,
@@ -1659,11 +1660,12 @@ export function useChat() {
   const confirmDriverDl = useCallback(
     (payload: DriverSalaryPayload) => {
       if (isLoading || isScanning || isLocating) return;
-      if (!payload.dlNumber?.trim()) return;
+      if (!payload.driverName?.trim() || !payload.dlNumber?.trim()) return;
 
       const draft: DriverSalaryPayload = {
         ...driverSalaryDraftRef.current,
         ...payload,
+        driverName: payload.driverName.trim(),
         dlNumber: payload.dlNumber.trim(),
         dlError: undefined,
       };

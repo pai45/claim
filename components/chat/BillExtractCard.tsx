@@ -366,7 +366,7 @@ export function BillExtractCard({
               ) : null}
             </div>
             <p className="truncate type-body-secondary">
-              {fields.vendor || "Review the selected demo bill"}
+              Confidence score : 95%
             </p>
           </div>
         </header>

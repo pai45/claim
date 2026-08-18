@@ -109,6 +109,6 @@ describe("PlusPay home hero", () => {
     expect(styles).toMatch(
       /body\.is-pluspay\.is-upi-created \.upi-card-id \.upi-copy small \{[\s\S]*font-size: var\(--text-12\);[\s\S]*font-weight: var\(--fw-semibold\)/,
     );
-    expect(host).toContain("?v=pluspay-hero-v12");
+    expect(host).toContain("?v=pluspay-hero-v13");
   });
 });

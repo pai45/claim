@@ -14,6 +14,8 @@ describe("EbBottomNav", () => {
 
     expect(markup).toContain('aria-label="Benefits"');
     expect(markup).toContain('data-walkthrough="benefits-nav"');
+    // The nudge's halo anchor: the circle, not the 139px-tall tab around it.
+    expect(markup).toContain("data-benefits-fab");
     expect(markup).toContain("/assets/benefits-logo-v2.gif");
     expect(markup).not.toContain('aria-label="Scan &amp; Pay"');
   });
@@ -25,6 +27,8 @@ describe("EbBottomNav", () => {
 
     expect(markup).toContain('aria-label="Scan &amp; Pay"');
     expect(markup).not.toContain('data-walkthrough="benefits-nav"');
+    // Nothing may point a Benefits nudge at Scan & Pay.
+    expect(markup).not.toContain("data-benefits-fab");
     expect(markup).toContain("/assets/scan.gif");
     expect(markup).toMatch(/<a[^>]+aria-label="Scan &amp; Pay"/);
     expect(markup).toContain("text-caption font-normal leading-[1.2]");

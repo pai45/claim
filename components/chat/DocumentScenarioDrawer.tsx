@@ -3,8 +3,8 @@
 import { useRef } from "react";
 import { AppIcon } from "@/components/shared/AppIcon";
 import {
-  BILL_UPLOAD_SCENARIOS,
   DL_UPLOAD_SCENARIOS,
+  getBillUploadScenariosForSource,
   type BillScenarioGroup,
 } from "@/features/chat/demoUploadScenarios";
 import type {
@@ -50,6 +50,7 @@ export function DocumentScenarioDrawer({
   useModalFocus(drawerRef, open, onClose);
 
   const billGroups: BillScenarioGroup[] = ["common", "exceptions"];
+  const billScenarios = getBillUploadScenariosForSource(source);
 
   return (
     <div
@@ -105,7 +106,7 @@ export function DocumentScenarioDrawer({
           {kind === "bill" ? (
             <div className="flex flex-col gap-section">
               {billGroups.map((group) => {
-                const scenarios = BILL_UPLOAD_SCENARIOS.filter(
+                const scenarios = billScenarios.filter(
                   (scenario) => scenario.group === group,
                 );
                 return (

@@ -77,7 +77,16 @@ export function EbBottomNav({
         the size of the other tabs' icons in its place.
       */}
       <span className="block h-[22px] w-[22px]" aria-hidden="true" />
-      <span className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_12px_rgba(0,86,86,0.1),0_0_10px_rgba(151,226,196,0.16)]">
+      {/*
+        `data-benefits-fab` marks the circle rather than the tab, because the
+        tab is 139px tall and mostly empty — a ring drawn around it would be a
+        tall rectangle instead of a halo on the button. Read by
+        `BenefitsCtaNudge`; absent from Scan & Pay so it can never point there.
+      */}
+      <span
+        data-benefits-fab
+        className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_12px_rgba(0,86,86,0.1),0_0_10px_rgba(151,226,196,0.16)]"
+      >
         <BenefitsLogo size={40} />
       </span>
       <span className="max-w-[82px] overflow-hidden text-ellipsis whitespace-nowrap">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BenefitsCtaNudge } from "@/components/benefits-nudge/BenefitsCtaNudge";
 import { ChatShell } from "@/components/chat/ChatShell";
 import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { OnboardingShell } from "@/components/onboarding/OnboardingShell";
@@ -609,7 +610,7 @@ export function EmployeeBenefitsHost() {
       <iframe
         ref={frameRef}
         className="employee-benefits-source"
-        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-hero-v12${
+        src={`${withBasePath("/employee-benefits/index.html")}?v=pluspay-hero-v13${
           returnsToManageCards ? MANAGE_CARDS_FRAME_HASH : ""
         }`}
         title="Employee Benefits"
@@ -676,6 +677,24 @@ export function EmployeeBenefitsHost() {
           persona.id === "pluspay_only" &&
           persona.access.products.ebPlus &&
           persona.access.products.plusPay &&
+          !claimsOpen &&
+          !scanPayOpen &&
+          !sourceOverlayOpen &&
+          !ebPlusSetupOpen &&
+          !cardMpinIntent
+        }
+      />
+
+      {/*
+        Vishal's counterpart to the walkthroughs above. He has none of them —
+        he logs in with one tap and lands here — so this is the only thing that
+        points him at the assistant, and unlike them it blocks nothing.
+      */}
+      <BenefitsCtaNudge
+        personaId={persona.id}
+        frameReady={frameReady}
+        plusPayMode={plusPayMode}
+        surfaceClear={
           !claimsOpen &&
           !scanPayOpen &&
           !sourceOverlayOpen &&

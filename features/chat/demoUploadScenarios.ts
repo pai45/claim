@@ -3,6 +3,7 @@ import type {
   BillUploadScenarioId,
   DlUploadScenarioId,
   DriverSalaryPayload,
+  UploadOptionId,
 } from "@/features/chat/types";
 import { DEMO_DOCUMENT_ASSETS } from "@/lib/ui/assets";
 
@@ -38,22 +39,22 @@ const DEMO_REFERENCE_NOW = "2026-08-07T12:00:00+05:30";
 
 export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
   {
-    id: "meal",
-    label: "Meal Bill",
-    description: "Complete meal receipt",
+    id: "driver_salary",
+    label: "Driver Salary",
+    description: "Monthly salary receipt",
     group: "common",
-    asset: DEMO_DOCUMENT_ASSETS.billMeal,
+    asset: DEMO_DOCUMENT_ASSETS.billDriverSalary,
     assistantMessage:
-      "I found an Urban Tiffin Co. bill. It is ready as a Meal Wallet claim.",
+      "I found a driver salary receipt. It is ready as a Driver Salary claim.",
     referenceNow: DEMO_REFERENCE_NOW,
     extract: {
-      fileName: "urban-tiffin-meal.jpg",
-      category: "Meal Wallet",
-      vendor: "Urban Tiffin Co.",
-      amount: "1240",
+      fileName: "driver-salary-august-2026.png",
+      category: "Driver Salary",
+      vendor: "Ramesh Kumar",
+      amount: "12000",
       billDate: "2026-08-02",
       billingMonth: "2026-08",
-      invoiceNo: "MEAL-0802",
+      invoiceNo: "DRV-0802",
       confidence: 100,
     },
   },
@@ -263,6 +264,15 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
   },
 ] as const;
 
+export function getBillUploadScenariosForSource(
+  source: UploadOptionId,
+): readonly BillUploadScenario[] {
+  if (source !== "camera") return BILL_UPLOAD_SCENARIOS;
+  return BILL_UPLOAD_SCENARIOS.filter(
+    (scenario) => scenario.id !== "meal_missing",
+  );
+}
+
 export const DL_UPLOAD_SCENARIOS: readonly DlUploadScenario[] = [
   {
     id: "dl_found",
@@ -270,7 +280,7 @@ export const DL_UPLOAD_SCENARIOS: readonly DlUploadScenario[] = [
     description: "Licence number is available",
     asset: DEMO_DOCUMENT_ASSETS.dlFound,
     assistantMessage:
-      "I found the DL number in this demo. Please confirm it before continuing.",
+      "I found the DL number in this demo. Please enter the driver name and confirm the DL number before continuing.",
     payload: {
       dlFileName: "demo-driver-licence.jpg",
       dlNumber: "DL-1420110012345",
@@ -283,7 +293,7 @@ export const DL_UPLOAD_SCENARIOS: readonly DlUploadScenario[] = [
     description: "Enter the licence number manually",
     asset: DEMO_DOCUMENT_ASSETS.dlNotFound,
     assistantMessage:
-      "I couldn't find a DL number in this demo. Enter it manually to continue.",
+      "I couldn't find a DL number in this demo. Enter the driver name and DL number manually to continue.",
     payload: {
       dlFileName: "demo-driver-licence-unreadable.jpg",
       dlWarning:

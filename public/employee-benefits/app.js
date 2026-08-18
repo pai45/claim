@@ -4655,7 +4655,7 @@ function applyMode(isPluspay) {
   if (homeScanCard) homeScanCard.hidden = isPluspay;
 
   if (pluspayLabel) {
-    pluspayLabel.textContent = isPluspay ? "EB+" : "PlusPay";
+    pluspayLabel.textContent = isPluspay ? "EB+" : "Expense";
   }
 
   swapTextNodes.forEach((node) => {
@@ -5789,9 +5789,9 @@ function syncPersonaToApp(payload) {
       "aria-label",
       isProductLocked
         ? access.products.plusPay
-          ? "PlusPay"
+          ? "Expense"
           : "EB+"
-        : "Switch between EB+ and PlusPay",
+        : "Switch between EB+ and Expense",
     );
   }
 
