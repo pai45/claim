@@ -4,8 +4,8 @@ import { hasReturningAccountState } from "@/features/persona/constants";
 export type NotificationAction =
   | {
       kind: "assistant";
-      intentId: "upload_bill";
-      label: "Upload bill";
+      intentId: "upload_bill" | "vehicle_registration" | "driver_registration";
+      label: "Upload bill" | "Start registration" | "Register driver";
     }
   | {
       kind: "claim";
@@ -22,6 +22,30 @@ export type BenefitsNotification = {
 };
 
 export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
+  {
+    id: "vehicle-registration-failed",
+    title: "Vehicle registration failed",
+    body: "We couldn't register your vehicle. Review the details and try again.",
+    dateLabel: "Today",
+    tone: "danger",
+    action: {
+      kind: "assistant",
+      intentId: "vehicle_registration",
+      label: "Start registration",
+    },
+  },
+  {
+    id: "driver-registration-failed",
+    title: "Driver registration failed",
+    body: "We couldn't register your driver. Review the details and try again.",
+    dateLabel: "Today",
+    tone: "danger",
+    action: {
+      kind: "assistant",
+      intentId: "driver_registration",
+      label: "Register driver",
+    },
+  },
   {
     id: "internet-bill-due",
     title: "Your internet bill is due",

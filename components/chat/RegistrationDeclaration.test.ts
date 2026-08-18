@@ -2,12 +2,13 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
+import { BillExtractCard } from "./BillExtractCard";
 import { DriverSalaryReviewCard } from "./DriverSalaryReviewCard";
 import { RegistrationDeclaration } from "./RegistrationDeclaration";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
 
 describe("registration declarations", () => {
-  it.each(["vehicle", "driver"] as const)(
+  it.each(["claim", "vehicle", "driver"] as const)(
     "renders the confirmed %s declaration",
     (subject) => {
       const html = renderToStaticMarkup(
@@ -24,6 +25,30 @@ describe("registration declarations", () => {
       expect(html).toContain("<svg");
     },
   );
+
+  it("requires a declaration before a claim can be submitted", () => {
+    const html = renderToStaticMarkup(
+      createElement(BillExtractCard, {
+        messageId: "claim-review",
+        extract: {
+          fileName: "internet-bill.pdf",
+          rawText: "Internet bill",
+          category: "Internet",
+          vendor: "Airtel",
+          amount: "1499",
+          billDate: "2026-08-01",
+          billingMonth: "2026-08",
+          invoiceNo: "INV-123",
+        },
+      }),
+    );
+
+    expect(html).toContain(
+      "I declare that the claim details provided are correct and valid.",
+    );
+    expect(html.indexOf("I declare")).toBeLessThan(html.indexOf(">Submit<"));
+    expect(html).toContain('disabled=""');
+  });
 
   it("includes the declaration in the driver review bubble", () => {
     const html = renderToStaticMarkup(
@@ -103,5 +128,12 @@ describe("registration declarations", () => {
       "Vehicle image is for representation purposes only.",
     );
     expect(html).not.toContain(">Ownership<");
+    expect(html).toContain(">Owner<");
+    expect(html).toContain(">Engine<");
+    expect(html).toContain(">Capacity<");
+    expect(html).not.toContain(">Fuel<");
+    expect(html).not.toContain(">Chassis<");
+    expect(html).not.toContain(">Engine no.<");
+    expect(html).not.toContain(">RTO<");
   });
 });

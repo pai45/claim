@@ -1,5 +1,5 @@
 type RegistrationDeclarationProps = {
-  subject: "vehicle" | "driver";
+  subject: "claim" | "vehicle" | "driver";
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   disabled?: boolean;

@@ -12,10 +12,11 @@ const sourceApp = readFileSync(
 );
 
 describe("EB+ wallet card identity", () => {
-  it("shows the active persona above the RuPay mark and masked number", () => {
-    expect(html).toMatch(
-      /data-hero-card-persona[\s\S]*assets\/icons\/rupay-logo\.svg[\s\S]*hero-card-divider[\s\S]*\*\*\*\* \*\*\*\* \*\*\*\* 1234/,
-    );
+  it("shows the active persona without RuPay or card-number details", () => {
+    expect(html).toContain("data-hero-card-persona");
+    expect(html).not.toContain("hero-card-rupay");
+    expect(html).not.toContain("hero-card-divider");
+    expect(html).not.toContain("**** **** **** 1234");
     expect(html).not.toContain('data-lens-text="Rupay Card"');
     expect(html).not.toContain("xxxx xxxx xxxx 1234");
   });

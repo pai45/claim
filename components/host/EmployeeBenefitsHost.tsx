@@ -52,6 +52,7 @@ const OPEN_WALLET_STATEMENT_MESSAGE = "employee-benefits:open-wallet-statement";
 const OPEN_MANAGE_LIMITS_MESSAGE = "employee-benefits:open-manage-limits";
 const OPEN_MANAGE_TOKENS_MESSAGE = "employee-benefits:open-manage-tokens";
 const OPEN_PROFILE_MESSAGE = "employee-benefits:open-profile";
+const OPEN_NOTIFICATIONS_MESSAGE = "employee-benefits:open-notifications";
 const OPEN_SPEND_ANALYTICS_MESSAGE = "employee-benefits:open-spend-analytics";
 const OPEN_TRANSACTION_DETAILS_MESSAGE = "employee-benefits:open-transaction-details";
 const OPEN_UPI_SETTINGS_MESSAGE = "employee-benefits:open-upi-settings";
@@ -257,6 +258,10 @@ export function EmployeeBenefitsHost() {
 
   const openProfile = useCallback(() => {
     window.location.assign(withBasePath("/profile/"));
+  }, []);
+
+  const openNotifications = useCallback(() => {
+    window.location.assign(withBasePath("/notifications/"));
   }, []);
 
   const openUpiSettings = useCallback((tab: "benefits" | "pluspay") => {
@@ -542,6 +547,10 @@ export function EmployeeBenefitsHost() {
         openProfile();
         return;
       }
+      if (event.data?.type === OPEN_NOTIFICATIONS_MESSAGE) {
+        openNotifications();
+        return;
+      }
       if (event.data?.type === OPEN_UPI_SETTINGS_MESSAGE) {
         openUpiSettings(
           event.data.tab === "pluspay" ? "pluspay" : "benefits",
@@ -592,6 +601,7 @@ export function EmployeeBenefitsHost() {
     openManageLimits,
     openManageTokens,
     openProfile,
+    openNotifications,
     openBankTransfer,
     openEbPlusSetup,
     openScanPay,

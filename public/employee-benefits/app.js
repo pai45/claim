@@ -4637,6 +4637,15 @@ claimsInput?.addEventListener("keydown", (event) => {
 
 claimsInput?.addEventListener("input", syncClaimsComposer);
 
+document
+  .querySelector("[data-notifications-open]")
+  ?.addEventListener("click", () => {
+    window.parent.postMessage(
+      { type: "employee-benefits:open-notifications" },
+      window.location.origin,
+    );
+  });
+
 walletOverlayViewAllHistory?.addEventListener("click", (event) => {
   event.preventDefault();
   window.parent.postMessage(
@@ -5964,6 +5973,14 @@ function syncWalletBalancesToApp(wallets) {
 
 applyMode(false);
 syncPersonaToApp();
+// Both calls above can flip the product mode, so the switcher's transitions
+// stay muted until they have settled. Two frames: the first lets the resolved
+// state paint, the second re-enables motion for real interaction.
+requestAnimationFrame(() => {
+  requestAnimationFrame(() => {
+    document.body.classList.remove("is-booting");
+  });
+});
 window.addEventListener("storage", (e) => {
   if (e.key === "eb-claims:active-persona" || e.key === null) {
     syncPersonaToApp();

@@ -681,6 +681,92 @@ textarea {
   animation: claim-scan-pulse 1.5s ease-in-out infinite;
 }
 
+/* Pending-registration callout on the assistant home screen.
+ *
+ * Same expanding-ring idiom as the Benefits nudge halo (`benefits-nudge-ping`)
+ * and `walkthrough-pulse`, recoloured amber so it reads as "waiting on you"
+ * rather than the mint "look here" the other two mean.
+ *
+ * The ring is painted by the card itself rather than an inner pseudo-element:
+ * the card is `overflow-hidden` for its corner art, which would clip a child's
+ * shadow away entirely. That means this animation owns `box-shadow` outright,
+ * so the card's own `--shadow-card` has to be repeated in every stop.
+ *
+ * `border-color` is animated rather than declared for a related reason —
+ * animation values outrank normal declarations, so the amber survives the
+ * card's `hover:border-input-border`, which would otherwise wash it out under
+ * the cursor. Repeating the entrance animation here is the cost of owning the
+ * `animation` shorthand; without it the card's `animate-rise-in` is lost.
+ */
+@keyframes registration-pending-pulse {
+  0% {
+    border-color: rgba(226, 165, 18, 0.9);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 0 rgba(245, 190, 45, 0.5);
+  }
+  70% {
+    border-color: rgba(226, 165, 18, 0.35);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 10px rgba(245, 190, 45, 0);
+  }
+  100% {
+    border-color: rgba(226, 165, 18, 0.9);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 0 rgba(245, 190, 45, 0);
+  }
+}
+
+/* Typed with the element so it beats `.animate-rise-in` on specificity rather
+   than on source order. */
+button.registration-pending-card {
+  animation:
+    rise-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+    registration-pending-pulse 2s ease-out infinite;
+}
+
+/* Rejected registration callout.
+ *
+ * The same expanding ring as `registration-pending-pulse`, recoloured red so a
+ * rejection reads as "this came back to you" rather than the amber "waiting on
+ * you". Both structural constraints above apply here too: the card is
+ * `overflow-hidden`, so the ring is painted by the card itself and every stop
+ * has to repeat `--shadow-card`; and `border-color` rides the animation so it
+ * outranks the card's `hover:border-input-border`.
+ *
+ * The red is a brighter sibling of `--color-danger` for the same reason the
+ * amber is brighter than `--color-warning`: the text token is tuned for
+ * contrast against a tint, and washes out as a glow.
+ */
+@keyframes registration-rejected-pulse {
+  0% {
+    border-color: rgba(178, 60, 45, 0.9);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 0 rgba(200, 78, 62, 0.5);
+  }
+  70% {
+    border-color: rgba(178, 60, 45, 0.35);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 10px rgba(200, 78, 62, 0);
+  }
+  100% {
+    border-color: rgba(178, 60, 45, 0.9);
+    box-shadow:
+      var(--shadow-card),
+      0 0 0 0 rgba(200, 78, 62, 0);
+  }
+}
+
+button.registration-rejected-card {
+  animation:
+    rise-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both,
+    registration-rejected-pulse 2s ease-out infinite;
+}
+
 /* Magic text: char/word reveal + mint flash */
 @keyframes magic-unit-in {
   from {
@@ -775,6 +861,21 @@ textarea {
 
   .claim-scan-pulse {
     animation: none;
+  }
+
+  /* Keeps the amber outline the pulse was drawing the eye to, minus the
+     motion. Hover is matched too, for the same reason the animation had to
+     carry `border-color` in the first place. */
+  button.registration-pending-card,
+  button.registration-pending-card:hover {
+    animation: none;
+    border-color: rgba(226, 165, 18, 0.9);
+  }
+
+  button.registration-rejected-card,
+  button.registration-rejected-card:hover {
+    animation: none;
+    border-color: rgba(178, 60, 45, 0.9);
   }
 
   .magic-text-unit,

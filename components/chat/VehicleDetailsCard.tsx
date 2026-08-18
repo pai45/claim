@@ -106,19 +106,26 @@ export function VehicleDetailsCard({
                 : undefined
             }
           />
-          <VehicleDetailRow label="Fuel" value={profile.fuel} />
-          <VehicleDetailRow label="Chassis" value={lookup.chassisNumber} />
-          <VehicleDetailRow label="Engine no." value={lookup.engineNumber} />
-          <VehicleDetailRow
-            label="RTO"
-            value={
-              location
-                ? location.officeKnown
-                  ? `${location.office}, ${location.stateName}`
-                  : location.stateName
-                : undefined
-            }
-          />
+          {isReviewStep ? (
+            <>
+              <VehicleDetailRow label="Fuel" value={profile.fuel} />
+              <VehicleDetailRow label="Chassis" value={lookup.chassisNumber} />
+              <VehicleDetailRow
+                label="Engine no."
+                value={lookup.engineNumber}
+              />
+              <VehicleDetailRow
+                label="RTO"
+                value={
+                  location
+                    ? location.officeKnown
+                      ? `${location.office}, ${location.stateName}`
+                      : location.stateName
+                    : undefined
+                }
+              />
+            </>
+          ) : null}
         </div>
 
         {isReviewStep ? (

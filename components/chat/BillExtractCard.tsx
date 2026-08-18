@@ -5,6 +5,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { AppIcon } from "@/components/shared/AppIcon";
+import { RegistrationDeclaration } from "@/components/chat/RegistrationDeclaration";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import { getDemoPrecheckDate } from "@/features/chat/demoUploadScenarios";
 import {
@@ -201,6 +202,9 @@ export function BillExtractCard({
   const [acknowledged, setAcknowledged] = useState(
     Boolean(extract.warningAcknowledged),
   );
+  const [declarationAccepted, setDeclarationAccepted] = useState(
+    Boolean(extract.submitted),
+  );
   const categoryRef = useRef<HTMLSelectElement>(null);
   const previewDialogRef = useRef<HTMLDivElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -240,7 +244,8 @@ export function BillExtractCard({
   const submitDisabled =
     Boolean(extract.submitted) ||
     precheck.status === "blocked" ||
-    (precheck.requiresAcknowledgement && !acknowledged);
+    (precheck.requiresAcknowledgement && !acknowledged) ||
+    !declarationAccepted;
   const reviewItems = precheck.checks.filter((check) => check.status !== "pass");
   const currentDraftFingerprint = billDraftFingerprint(workingExtract);
   const draftIsCurrent = Boolean(
@@ -542,6 +547,13 @@ export function BillExtractCard({
             I reviewed the flagged details and confirm they are correct.
           </label>
         ) : null}
+
+        <RegistrationDeclaration
+          subject="claim"
+          checked={declarationAccepted}
+          onChange={setDeclarationAccepted}
+          disabled={Boolean(extract.submitted)}
+        />
       </article>
 
       <div

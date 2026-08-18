@@ -3,13 +3,16 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AppIcon } from "@/components/shared/AppIcon";
-import type { RegistrationActionKind } from "@/features/chat/homeActionCards";
+import type {
+  RegistrationAction,
+  RegistrationActionStatus,
+} from "@/features/chat/homeActionCards";
 import { CHAT_ASSETS, UI_ICONS } from "@/lib/ui/assets";
 
 type HomeActionCardsProps = {
   notificationCount: number;
   showNotifications: boolean;
-  registration: RegistrationActionKind;
+  registration: RegistrationAction | null;
   onVehicleStart: () => void;
   onDriverStart: () => void;
   disabled?: boolean;
@@ -33,6 +36,37 @@ function CardCorner({ children, isSplit }: CardCornerProps) {
   );
 }
 
+/* Amber matches the pending glow the card animates; the rejected pairing is the
+   same one claims history uses for a rejected claim, so one status reads the
+   same wherever it surfaces. */
+const STATUS_CHIP: Record<
+  RegistrationActionStatus,
+  { label: string; className: string; dotClassName: string }
+> = {
+  pending: {
+    label: "Pending",
+    className: "border-warning-border bg-warning-tint text-warning",
+    dotClassName: "bg-warning",
+  },
+  rejected: {
+    label: "Rejected",
+    className: "border-transparent bg-danger-soft text-danger",
+    dotClassName: "bg-danger",
+  },
+};
+
+function StatusChip({ status }: { status: RegistrationActionStatus }) {
+  const chip = STATUS_CHIP[status];
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1 rounded-pill border px-2 py-0.5 text-caption font-bold ${chip.className}`}
+    >
+      <span aria-hidden className={`size-1.5 rounded-pill ${chip.dotClassName}`} />
+      {chip.label}
+    </span>
+  );
+}
+
 export function HomeActionCards({
   notificationCount,
   showNotifications,
@@ -45,16 +79,19 @@ export function HomeActionCards({
   if (cardCount === 0) return null;
 
   const isSplit = cardCount === 2;
-  const registrationTitle =
-    registration === "driver" ? "Driver Registration" : "Vehicle Registration";
-  const registrationCopy =
-    registration === "driver"
+  const isDriver = registration?.kind === "driver";
+  const isRejected = registration?.status === "rejected";
+  const registrationTitle = isDriver
+    ? "Driver Registration"
+    : "Vehicle Registration";
+  const registrationCopy = isRejected
+    ? "Vehicle registration was rejected."
+    : isDriver
       ? "Register your driver for tax benefits."
       : "Register your vehicle for tax benefits.";
-  const registrationAsset =
-    registration === "driver"
-      ? CHAT_ASSETS.driverRegistration
-      : CHAT_ASSETS.vehicleRegistration;
+  const registrationAsset = isDriver
+    ? CHAT_ASSETS.driverRegistration
+    : CHAT_ASSETS.vehicleRegistration;
 
   return (
     <section
@@ -92,15 +129,22 @@ export function HomeActionCards({
         <button
           type="button"
           disabled={disabled}
-          onClick={registration === "driver" ? onDriverStart : onVehicleStart}
-          className={`${CARD_CLASS} disabled:opacity-60`}
+          onClick={isDriver ? onDriverStart : onVehicleStart}
+          className={`${CARD_CLASS} ${
+            isRejected ? "registration-rejected-card" : "registration-pending-card"
+          } disabled:opacity-60`}
           style={{ animationDelay: showNotifications ? "280ms" : "220ms" }}
         >
-          <p
-            className={`relative z-10 type-body font-bold text-ink ${isSplit ? "max-w-24" : "min-w-0 flex-1 whitespace-nowrap"}`}
+          <span
+            className={`relative z-10 flex flex-col items-start gap-1.5 ${isSplit ? "max-w-24" : "min-w-0 flex-1"}`}
           >
-            {isSplit ? registrationTitle : registrationCopy}
-          </p>
+            <StatusChip status={registration.status} />
+            <span
+              className={`type-body font-bold text-ink ${isSplit ? "" : "whitespace-nowrap"}`}
+            >
+              {isSplit ? registrationTitle : registrationCopy}
+            </span>
+          </span>
           <CardCorner isSplit={isSplit}>
             <span className="flex h-12 w-12 items-center justify-center rounded-control border border-white bg-white/80 shadow-soft">
               <AppIcon
