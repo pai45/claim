@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CategoryIcon } from "@/components/claims-history/CategoryIcon";
+import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { AppShell } from "@/components/shared/AppShell";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
@@ -11,9 +12,11 @@ import {
   DRIVER_REGISTRATION_LABEL,
 } from "@/features/chat/constants";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
+import { useRegistrationStatus } from "@/features/chat/useRegistrationStatus";
+import { DRIVER_REJECTION_REASON } from "@/features/driver/rejection";
 import { useRegisteredDriver } from "@/features/driver/useRegisteredDriver";
 
-function formatStartDate(value?: string): string | undefined {
+function formatDate(value?: string): string | undefined {
   if (!value) return undefined;
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -24,12 +27,25 @@ function formatStartDate(value?: string): string | undefined {
   });
 }
 
-function DriverDetailRow({ label, value }: { label: string; value?: string }) {
+function DriverDetailRow({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value?: string;
+  /** "danger" marks a value HR took issue with, e.g. an unverified licence. */
+  tone?: "default" | "danger";
+}) {
   if (!value) return null;
   return (
     <div className="flex items-baseline justify-between gap-3 py-1.5">
       <span className="type-field-label shrink-0">{label}</span>
-      <span className="truncate text-right text-body-sm font-bold text-pine">
+      <span
+        className={`truncate text-right text-body-sm font-bold ${
+          tone === "danger" ? "text-danger" : "text-pine"
+        }`}
+      >
         {value}
       </span>
     </div>
@@ -39,6 +55,7 @@ function DriverDetailRow({ label, value }: { label: string; value?: string }) {
 export function DriverDetailsScreen() {
   const router = useRouter();
   const { driver, isHydrated } = useRegisteredDriver();
+  const { isDriverRejected } = useRegistrationStatus();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   function startRegistration() {
@@ -89,6 +106,23 @@ export function DriverDetailsScreen() {
           </section>
         ) : (
           <>
+            {/* Same alert card the vehicle screen raises for a rejected
+                registration — one status reads the same wherever it surfaces. */}
+            {isDriverRejected ? (
+              <div
+                role="alert"
+                className="animate-rise-in flex items-start gap-3 rounded-card border border-danger bg-danger-soft p-card text-danger shadow-card"
+              >
+                <ScanPayIcon name="warning" className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-body-sm font-bold">
+                    Driver registration rejected
+                  </p>
+                  <p className="mt-0.5 text-caption">{DRIVER_REJECTION_REASON}</p>
+                </div>
+              </div>
+            ) : null}
+
             <section className="flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-3">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface-tint-strong">
@@ -96,28 +130,50 @@ export function DriverDetailsScreen() {
                 </span>
                 <h2 className="type-section-title truncate">{driver.driverName}</h2>
               </div>
+              {/* A rejection is something to fix, not a replacement to warn
+                  about, so resubmitting skips the confirm dialog. */}
               <button
                 type="button"
-                onClick={() => setConfirmOpen(true)}
-                className="min-h-11 shrink-0 rounded-pill border border-pine-primary px-3.5 py-2 text-caption font-bold text-pine-primary"
+                onClick={
+                  isDriverRejected ? startRegistration : () => setConfirmOpen(true)
+                }
+                className={`min-h-11 shrink-0 rounded-pill border px-3.5 py-2 text-caption font-bold ${
+                  isDriverRejected
+                    ? "border-danger text-danger"
+                    : "border-pine-primary text-pine-primary"
+                }`}
               >
-                Change Driver
+                {isDriverRejected ? "Resubmit Driver" : "Change Driver"}
               </button>
             </section>
 
             {driver.dlNumber ? (
-              <span className="w-fit rounded-pill bg-surface-tint-strong px-3 py-1.5 text-body-sm font-bold tracking-wider text-pine">
+              <span
+                className={`w-fit rounded-pill px-3 py-1.5 text-body-sm font-bold tracking-wider ${
+                  isDriverRejected
+                    ? "bg-danger-soft text-danger"
+                    : "bg-surface-tint-strong text-pine"
+                }`}
+              >
                 {driver.dlNumber}
               </span>
             ) : null}
 
             <section className="divide-y divide-border-soft rounded-card border border-border-line bg-white px-card py-1 shadow-card">
               <DriverDetailRow label="Driver name" value={driver.driverName} />
-              <DriverDetailRow label="DL number" value={driver.dlNumber} />
+              <DriverDetailRow
+                label="DL number"
+                value={driver.dlNumber}
+                tone={isDriverRejected ? "danger" : "default"}
+              />
+              <DriverDetailRow
+                label="DL validity"
+                value={formatDate(driver.dlValidity)}
+              />
               <DriverDetailRow label="Monthly salary" value={driver.salary} />
               <DriverDetailRow
                 label="Start date"
-                value={formatStartDate(driver.startDate)}
+                value={formatDate(driver.startDate)}
               />
             </section>
           </>

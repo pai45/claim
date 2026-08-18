@@ -280,10 +280,12 @@ export const DL_UPLOAD_SCENARIOS: readonly DlUploadScenario[] = [
     description: "Licence number is available",
     asset: DEMO_DOCUMENT_ASSETS.dlFound,
     assistantMessage:
-      "I found the DL number in this demo. Please enter the driver name and confirm the DL number before continuing.",
+      "I read the driving licence in this demo. Please review the driver name, DL number, and validity before continuing.",
     payload: {
       dlFileName: "demo-driver-licence.jpg",
+      driverName: "Ramesh Kumar",
       dlNumber: "DL-1420110012345",
+      dlValidity: "2032-11-14",
       dlConfidence: 100,
     },
   },
@@ -293,11 +295,11 @@ export const DL_UPLOAD_SCENARIOS: readonly DlUploadScenario[] = [
     description: "Enter the licence number manually",
     asset: DEMO_DOCUMENT_ASSETS.dlNotFound,
     assistantMessage:
-      "I couldn't find a DL number in this demo. Enter the driver name and DL number manually to continue.",
+      "I couldn't read this licence in this demo. Enter the driver name, DL number, and validity manually to continue.",
     payload: {
       dlFileName: "demo-driver-licence-unreadable.jpg",
       dlWarning:
-        "The licence number is not available in this demo document. Enter it manually.",
+        "The licence details are not readable in this demo document. Enter them manually.",
     },
   },
 ] as const;

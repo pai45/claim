@@ -761,7 +761,7 @@ button.registration-pending-card {
   }
 }
 
-button.registration-rejected-card {
+.registration-rejected-card {
   animation:
     rise-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both,
     registration-rejected-pulse 2s ease-out infinite;
@@ -872,8 +872,8 @@ button.registration-rejected-card {
     border-color: rgba(226, 165, 18, 0.9);
   }
 
-  button.registration-rejected-card,
-  button.registration-rejected-card:hover {
+  .registration-rejected-card,
+  .registration-rejected-card:hover {
     animation: none;
     border-color: rgba(178, 60, 45, 0.9);
   }

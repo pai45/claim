@@ -10,6 +10,11 @@ export type NotificationAction =
   | {
       kind: "claim";
       claimId: string;
+    }
+  | {
+      /** Opens a full-page screen instead of handing an intent to the assistant. */
+      kind: "route";
+      href: string;
     };
 
 export type BenefitsNotification = {
@@ -28,11 +33,9 @@ export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
     body: "We couldn't register your vehicle. Review the details and try again.",
     dateLabel: "Today",
     tone: "danger",
-    action: {
-      kind: "assistant",
-      intentId: "vehicle_registration",
-      label: "Start registration",
-    },
+    // The vehicle screen explains why it failed; restarting the wizard from here
+    // would drop the user into a form with no idea what to change.
+    action: { kind: "route", href: "/vehicle/" },
   },
   {
     id: "driver-registration-failed",

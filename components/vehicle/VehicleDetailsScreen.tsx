@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AppShell } from "@/components/shared/AppShell";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ScanPayIcon } from "@/components/scan-pay/ScanPayIcons";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { VehicleDetailRow } from "@/components/vehicle/VehicleDetailRow";
 import { CarIcon, VehiclePhoto } from "@/components/vehicle/VehiclePhoto";
@@ -12,6 +13,12 @@ import {
   VEHICLE_REGISTRATION_LABEL,
 } from "@/features/chat/constants";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
+import { useRegistrationStatus } from "@/features/chat/useRegistrationStatus";
+import { useActivePersona } from "@/features/persona/useActivePersona";
+import {
+  rejectedOwnerName,
+  VEHICLE_REJECTION_REASON,
+} from "@/features/vehicle/rejection";
 import { useRegisteredVehicle } from "@/features/vehicle/useRegisteredVehicle";
 import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 import { vehicleDisplayName } from "@/lib/vehicle/roster";
@@ -19,7 +26,11 @@ import { vehicleDisplayName } from "@/lib/vehicle/roster";
 export function VehicleDetailsScreen() {
   const router = useRouter();
   const { vehicle, isHydrated } = useRegisteredVehicle();
+  const { isVehicleRejected } = useRegistrationStatus();
+  const { persona } = useActivePersona();
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const profileName = persona.profile.name;
 
   function startRegistration() {
     setPendingChatIntent({
@@ -70,16 +81,46 @@ export function VehicleDetailsScreen() {
           </section>
         ) : (
           <>
+            {/* Same alert card Scan & Pay raises when the wallet cannot cover
+                the amount — a blocking problem the user has to act on reads the
+                same wherever it surfaces. */}
+            {isVehicleRejected ? (
+              <div
+                role="alert"
+                className="animate-rise-in flex items-start gap-3 rounded-card border border-danger bg-danger-soft p-card text-danger shadow-card"
+              >
+                <ScanPayIcon name="warning" className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-body-sm font-bold">
+                    Vehicle registration rejected
+                  </p>
+                  <p className="mt-0.5 text-caption">
+                    {VEHICLE_REJECTION_REASON}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
             <section className="flex items-center justify-between gap-3">
               <h2 className="type-section-title truncate">
                 {vehicleDisplayName(vehicle.lookup.profile)}
               </h2>
+              {/* A rejection is something to fix, not a replacement to warn
+                  about, so resubmitting skips the confirm dialog. */}
               <button
                 type="button"
-                onClick={() => setConfirmOpen(true)}
-                className="min-h-11 shrink-0 rounded-pill border border-pine-primary px-3.5 py-2 text-caption font-bold text-pine-primary"
+                onClick={
+                  isVehicleRejected
+                    ? startRegistration
+                    : () => setConfirmOpen(true)
+                }
+                className={`min-h-11 shrink-0 rounded-pill border px-3.5 py-2 text-caption font-bold ${
+                  isVehicleRejected
+                    ? "border-danger text-danger"
+                    : "border-pine-primary text-pine-primary"
+                }`}
               >
-                Change Vehicle
+                {isVehicleRejected ? "Resubmit Vehicle" : "Change Vehicle"}
               </button>
             </section>
 
@@ -112,7 +153,15 @@ export function VehicleDetailsScreen() {
               />
               <VehicleDetailRow
                 label="Vehicle Owner"
-                value={vehicle.lookup.ownerName}
+                value={
+                  isVehicleRejected
+                    ? rejectedOwnerName(profileName)
+                    : vehicle.lookup.ownerName
+                }
+                tone={isVehicleRejected ? "danger" : "default"}
+                note={
+                  isVehicleRejected ? `Your profile: ${profileName}` : undefined
+                }
               />
               <VehicleDetailRow
                 label="Engine CC"

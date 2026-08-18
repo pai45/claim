@@ -52,7 +52,46 @@ describe("registered vehicle store", () => {
       ownerName: "Vishal Sharma",
       ownership: "company_leased",
       registeredAt: expect.any(Number),
+      submissions: 1,
     });
+  });
+
+  it("counts a resubmission of the same registration", () => {
+    const storage = fakeStorage();
+    const lookup = lookupOrThrow("KA05RS1035");
+
+    saveRegisteredVehicle(lookup, "self_owned", storage, 1000);
+    expect(loadRegisteredVehicle(storage)?.submissions).toBe(1);
+
+    saveRegisteredVehicle(lookup, "self_owned", storage, 2000);
+    expect(loadRegisteredVehicle(storage)?.submissions).toBe(2);
+  });
+
+  it("restarts the count after the vehicle is cleared", () => {
+    const storage = fakeStorage();
+    const lookup = lookupOrThrow("KA05RS1035");
+
+    saveRegisteredVehicle(lookup, "self_owned", storage, 1000);
+    clearRegisteredVehicle(storage);
+    saveRegisteredVehicle(lookup, "self_owned", storage, 2000);
+
+    expect(loadRegisteredVehicle(storage)?.submissions).toBe(1);
+  });
+
+  it("reads a record written before submissions existed as one submission", () => {
+    const storage = fakeStorage();
+    storage.setItem(
+      VEHICLE_STORAGE_KEY,
+      JSON.stringify({
+        version: 2,
+        regNumber: "KA05RS1035",
+        ownerName: "Vishal Sharma",
+        ownership: "self_owned",
+        registeredAt: 1,
+      }),
+    );
+
+    expect(loadRegisteredVehicle(storage)?.submissions).toBe(1);
   });
 
   it("returns null without a stored vehicle", () => {

@@ -47,7 +47,7 @@ export function VehicleDetailsCard({
   const { lookup } = payload;
   if (!lookup) return null;
 
-  const { profile, location } = lookup;
+  const { profile } = lookup;
   const name = vehicleDisplayName(profile);
   const isReviewStep =
     payload.stage === "review" ||
@@ -106,26 +106,6 @@ export function VehicleDetailsCard({
                 : undefined
             }
           />
-          {isReviewStep ? (
-            <>
-              <VehicleDetailRow label="Fuel" value={profile.fuel} />
-              <VehicleDetailRow label="Chassis" value={lookup.chassisNumber} />
-              <VehicleDetailRow
-                label="Engine no."
-                value={lookup.engineNumber}
-              />
-              <VehicleDetailRow
-                label="RTO"
-                value={
-                  location
-                    ? location.officeKnown
-                      ? `${location.office}, ${location.stateName}`
-                      : location.stateName
-                    : undefined
-                }
-              />
-            </>
-          ) : null}
         </div>
 
         {isReviewStep ? (

@@ -63,7 +63,7 @@ function formatSubmittedAt(timestamp: number) {
   });
 }
 
-function formatStartDate(value?: string) {
+function formatDate(value?: string) {
   if (!value) return "";
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -79,7 +79,8 @@ export function DriverSalaryReceiptCard({
   payload,
   submittedAt,
 }: DriverSalaryReceiptCardProps) {
-  const startDate = formatStartDate(payload.startDate);
+  const startDate = formatDate(payload.startDate);
+  const dlValidity = formatDate(payload.dlValidity);
 
   return (
     <div className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
@@ -124,6 +125,9 @@ export function DriverSalaryReceiptCard({
           ) : null}
           {payload.dlNumber ? (
             <ReceiptRow label="DL number" value={payload.dlNumber} />
+          ) : null}
+          {dlValidity ? (
+            <ReceiptRow label="DL validity" value={dlValidity} />
           ) : null}
           {startDate ? (
             <ReceiptRow label="Start date" value={startDate} />

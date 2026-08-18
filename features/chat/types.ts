@@ -82,6 +82,7 @@ export type DriverSalaryPayload = {
   driverName?: string;
   dlFileName?: string;
   dlNumber?: string;
+  dlValidity?: string;
   dlRawText?: string;
   dlConfidence?: number;
   dlError?: string;

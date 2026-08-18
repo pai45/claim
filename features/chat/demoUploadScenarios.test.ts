@@ -102,10 +102,14 @@ describe("demo document upload scenarios", () => {
   it("models DL found and DL data not found as actionable states", () => {
     const found = buildDlPayloadFromScenario("dl_found");
     const notFound = buildDlPayloadFromScenario("dl_not_found");
+    expect(found.driverName).toBe("Ramesh Kumar");
     expect(found.dlNumber).toBe("DL-1420110012345");
+    expect(found.dlValidity).toBe("2032-11-14");
     expect(found.dlPreviewAsset).toBeTruthy();
+    expect(notFound.driverName).toBeUndefined();
     expect(notFound.dlNumber).toBeUndefined();
-    expect(notFound.dlWarning).toContain("Enter it manually");
+    expect(notFound.dlValidity).toBeUndefined();
+    expect(notFound.dlWarning).toContain("Enter them manually");
     expect(notFound.dlError).toBeUndefined();
   });
 });

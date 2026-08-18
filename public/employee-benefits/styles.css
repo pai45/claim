@@ -9489,6 +9489,10 @@ body:not(.is-pluspay) .hero-panel {
 .topbar {
   background: transparent;
   box-shadow: none;
+  /* The base block's `padding: 0 16px` zeroes the top. The hero gradient
+     runs behind the status bar, so the avatar and bell need their own
+     breathing room off the top edge rather than sitting flush against it. */
+  padding-top: var(--space-16);
 }
 
 /* Avatar, wordmark, bell — one symmetric three-up row. The switcher used to
@@ -9500,7 +9504,9 @@ body:not(.is-pluspay) .hero-panel {
   --topbar-gap: 10px;
   --topbar-elevation: 0 6px 16px rgba(0, 42, 25, 0.1);
   grid-template-columns: 44px minmax(0, 1fr) 44px;
-  min-height: 56px;
+  /* Snug to the 44px controls. Slack here would land above the avatar and
+     read as extra top padding on top of `.topbar`'s own 16px. */
+  min-height: 44px;
   column-gap: var(--topbar-gap);
 }
 
@@ -9558,7 +9564,11 @@ body:not(.is-pluspay) .hero-panel {
   outline-offset: 2px;
 }
 
+/* 16 / 44 / 12 / 44 / 12 down the bar: the gap to the switcher is deliberately
+   tighter than the clearance above the icons, so the two rows read as one
+   header rather than two stacked bars. */
 .topbar-switch-row {
+  padding-top: var(--space-12);
   padding-bottom: var(--space-12);
 }
 
@@ -9596,25 +9606,29 @@ body.is-pluspay .topbar-brand {
 
 /* 40px track inside a 44px button: the 2px band above and below is what lifts
    the visual pill to the tap target without a half-pixel. */
+/* The track is a recessed well and only the pill floats. It used to carry
+   `--topbar-elevation` too, which put both on the same plane and left the
+   control looking like a flat sticker.
+
+   No `overflow: hidden`: the pill is a 999px pill inset 2px inside a 999px
+   track, so its corner radius already matches the track's inner curve exactly
+   and it cannot escape. Clipping only ever amputated the pill's shadow, which
+   is what made it read flat against the fill. */
 .product-switcher-track {
   position: relative;
   display: flex;
   width: 100%;
   height: 40px;
   padding: 2px;
-  border: 1px solid rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 60, 45, 0.06);
   border-radius: 999px;
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--brand-500) 8%, #ffffff) 0%,
-    color-mix(in srgb, var(--brand-500) 22%, #ffffff) 100%
-  );
+  /* A translucent tint rather than a fixed mint: it darkens whatever slice of
+     the hero gradient sits behind it, so the well stays legible across the
+     whole gradient instead of only where the two happen to match. */
+  background: rgba(0, 74, 56, 0.09);
   box-shadow:
-    var(--topbar-elevation),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  /* Keeps the growing pill's corners inside the track's own curve while it
-     travels, so the two never disagree at the ends. */
-  overflow: hidden;
+    inset 0 1px 3px rgba(0, 48, 36, 0.13),
+    0 1px 0 rgba(255, 255, 255, 0.5);
   transition:
     background 220ms ease,
     border-color 220ms ease,
@@ -9666,21 +9680,28 @@ body.is-pluspay .product-switcher:focus-visible {
 body:not(.is-pluspay) .product-segment-lens,
 body.is-pluspay .product-segment-pluspay {
   flex-grow: 1.85;
+  /* Two shadows, not one: the tight contact shadow anchors the pill to the
+     well, the wider one gives it the lift. A single blur reads as a smudge. */
   box-shadow:
-    0 2px 6px rgba(0, 42, 25, 0.14),
-    0 1px 0 rgba(255, 255, 255, 0.9);
+    0 1px 1px rgba(0, 42, 25, 0.05),
+    0 3px 8px rgba(0, 42, 25, 0.16);
 }
 
+/* Flat white. The old white-to-mint gradient graded *into* the track's own
+   mint at the top-left corner, so the pill's edge dissolved exactly where it
+   most needed to be read. */
 body:not(.is-pluspay) .product-segment-lens {
-  background: linear-gradient(160deg, #ffffff 0%, var(--mint-soft) 100%);
+  background: #ffffff;
 }
 
 .product-segment-lens {
   color: var(--brand-900);
 }
 
+/* Deepened off `--muted`: that was tuned against the old near-white fill and
+   goes soft on the darker well. */
 .product-segment-pluspay {
-  color: var(--muted);
+  color: color-mix(in srgb, var(--muted) 76%, var(--brand-900));
 }
 
 /* Collapses to nothing on the inactive side rather than disappearing, so the
@@ -9691,7 +9712,9 @@ body:not(.is-pluspay) .product-segment-lens {
   flex: 0 0 auto;
   margin-inline-start: -6px;
   border-radius: 50%;
-  background: currentColor;
+  /* Brand green rather than `currentColor`: on the white pill the label's own
+     near-black teal made the dot read as a stray full stop. */
+  background: var(--brand-500);
   opacity: 0;
   transition:
     width 320ms cubic-bezier(0.22, 0.61, 0.36, 1),
@@ -9706,16 +9729,15 @@ body.is-pluspay .product-segment-pluspay .product-segment-dot {
   opacity: 1;
 }
 
+/* Same well, read the other way round: on the dark hero the recess is a
+   deeper pool of the same ink, and the bright hairline that used to ring the
+   whole track is dropped so it no longer competes with the green pill. */
 body.is-pluspay .product-switcher-track {
-  border-color: rgba(76, 222, 155, 0.5);
-  background: linear-gradient(
-    135deg,
-    rgba(6, 40, 32, 0.92) 0%,
-    rgba(12, 58, 46, 0.92) 100%
-  );
+  border-color: rgba(76, 222, 155, 0.14);
+  background: rgba(0, 22, 16, 0.32);
   box-shadow:
-    0 10px 24px rgba(0, 18, 12, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    inset 0 1px 3px rgba(0, 14, 9, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 body.is-pluspay .product-segment-pluspay {
@@ -9725,9 +9747,15 @@ body.is-pluspay .product-segment-pluspay {
     var(--brand-500) 100%
   );
   box-shadow:
-    0 2px 6px rgba(0, 30, 18, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.5);
+    0 1px 1px rgba(0, 22, 13, 0.22),
+    0 3px 10px rgba(0, 22, 13, 0.42);
   color: var(--brand-900);
+}
+
+/* On the green pill the brand-green dot would vanish; the label's own dark
+   teal is the readable one here. */
+body.is-pluspay .product-segment-pluspay .product-segment-dot {
+  background: currentColor;
 }
 
 body.is-pluspay .product-segment-lens {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { isDriverRegistrationRejected } from "@/features/driver/rejection";
 import {
   loadRegisteredDriver,
   subscribeToRegisteredDriver,
@@ -9,10 +10,15 @@ import {
   loadRegisteredVehicle,
   subscribeToRegisteredVehicle,
 } from "@/features/vehicle/registration";
+import { isVehicleRegistrationRejected } from "@/features/vehicle/rejection";
 
 export type RegistrationStatus = {
   isVehicleRegistered: boolean;
   isDriverRegistered: boolean;
+  /** The registered vehicle came back rejected and needs resubmitting. */
+  isVehicleRejected: boolean;
+  /** The registered driver came back rejected and needs resubmitting. */
+  isDriverRejected: boolean;
 };
 
 /**
@@ -26,13 +32,21 @@ export function useRegistrationStatus(): RegistrationStatus {
   const [status, setStatus] = useState<RegistrationStatus>({
     isVehicleRegistered: false,
     isDriverRegistered: false,
+    isVehicleRejected: false,
+    isDriverRejected: false,
   });
 
   useEffect(() => {
     function update() {
+      // Both records are kept rather than collapsed to booleans: the rejection
+      // rules compare their registration timestamps.
+      const vehicle = loadRegisteredVehicle();
+      const driver = loadRegisteredDriver();
       setStatus({
-        isVehicleRegistered: Boolean(loadRegisteredVehicle()),
-        isDriverRegistered: Boolean(loadRegisteredDriver()),
+        isVehicleRegistered: Boolean(vehicle),
+        isDriverRegistered: Boolean(driver),
+        isVehicleRejected: isVehicleRegistrationRejected(vehicle, driver),
+        isDriverRejected: isDriverRegistrationRejected(vehicle, driver),
       });
     }
 

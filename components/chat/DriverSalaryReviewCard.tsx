@@ -19,7 +19,7 @@ function Row({ label, value }: { label: string; value?: string }) {
   );
 }
 
-function formatStartDate(value?: string) {
+function formatDate(value?: string) {
   if (!value) return undefined;
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return value;
@@ -50,8 +50,9 @@ export function DriverSalaryReviewCard({
         <div className="divide-y divide-border-soft rounded-control border border-border-soft px-3 py-1">
           <Row label="Driver" value={payload.driverName} />
           <Row label="DL number" value={payload.dlNumber} />
+          <Row label="DL validity" value={formatDate(payload.dlValidity)} />
           <Row label="Salary" value={payload.salary} />
-          <Row label="Start date" value={formatStartDate(payload.startDate)} />
+          <Row label="Start date" value={formatDate(payload.startDate)} />
           <Row label="Vehicle registration" value={payload.vehicleClaimId} />
         </div>
 

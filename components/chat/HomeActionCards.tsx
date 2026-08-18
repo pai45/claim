@@ -3,10 +3,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AppIcon } from "@/components/shared/AppIcon";
-import type {
-  RegistrationAction,
-  RegistrationActionStatus,
-} from "@/features/chat/homeActionCards";
+import { RegistrationStatusChip } from "@/components/shared/RegistrationStatusChip";
+import type { RegistrationAction } from "@/features/chat/homeActionCards";
 import { CHAT_ASSETS, UI_ICONS } from "@/lib/ui/assets";
 
 type HomeActionCardsProps = {
@@ -36,37 +34,6 @@ function CardCorner({ children, isSplit }: CardCornerProps) {
   );
 }
 
-/* Amber matches the pending glow the card animates; the rejected pairing is the
-   same one claims history uses for a rejected claim, so one status reads the
-   same wherever it surfaces. */
-const STATUS_CHIP: Record<
-  RegistrationActionStatus,
-  { label: string; className: string; dotClassName: string }
-> = {
-  pending: {
-    label: "Pending",
-    className: "border-warning-border bg-warning-tint text-warning",
-    dotClassName: "bg-warning",
-  },
-  rejected: {
-    label: "Rejected",
-    className: "border-transparent bg-danger-soft text-danger",
-    dotClassName: "bg-danger",
-  },
-};
-
-function StatusChip({ status }: { status: RegistrationActionStatus }) {
-  const chip = STATUS_CHIP[status];
-  return (
-    <span
-      className={`inline-flex shrink-0 items-center gap-1 rounded-pill border px-2 py-0.5 text-caption font-bold ${chip.className}`}
-    >
-      <span aria-hidden className={`size-1.5 rounded-pill ${chip.dotClassName}`} />
-      {chip.label}
-    </span>
-  );
-}
-
 export function HomeActionCards({
   notificationCount,
   showNotifications,
@@ -85,13 +52,49 @@ export function HomeActionCards({
     ? "Driver Registration"
     : "Vehicle Registration";
   const registrationCopy = isRejected
-    ? "Vehicle registration was rejected."
+    ? isDriver
+      ? "Driver registration was rejected."
+      : "Vehicle registration was rejected."
     : isDriver
       ? "Register your driver for tax benefits."
       : "Register your vehicle for tax benefits.";
   const registrationAsset = isDriver
     ? CHAT_ASSETS.driverRegistration
     : CHAT_ASSETS.vehicleRegistration;
+
+  const registrationHref = isRejected ? (isDriver ? "/driver/" : "/vehicle/") : null;
+  const registrationClass = `${CARD_CLASS} ${
+    isRejected ? "registration-rejected-card" : "registration-pending-card"
+  }`;
+  const registrationStyle = {
+    animationDelay: showNotifications ? "280ms" : "220ms",
+  };
+  const registrationBody = registration ? (
+    <>
+      <span
+        className={`relative z-10 flex flex-col items-start gap-1.5 ${isSplit ? "max-w-24" : "min-w-0 flex-1"}`}
+      >
+        <RegistrationStatusChip status={registration.status} />
+        <span
+          className={`type-body font-bold text-ink ${isSplit ? "" : "whitespace-nowrap"}`}
+        >
+          {isSplit ? registrationTitle : registrationCopy}
+        </span>
+      </span>
+      <CardCorner isSplit={isSplit}>
+        <span className="flex h-12 w-12 items-center justify-center rounded-control border border-white bg-white/80 shadow-soft">
+          <AppIcon
+            src={registrationAsset}
+            alt=""
+            width={42}
+            height={42}
+            className="h-10 w-10 object-contain"
+            priority
+          />
+        </span>
+      </CardCorner>
+    </>
+  ) : null;
 
   return (
     <section
@@ -126,38 +129,28 @@ export function HomeActionCards({
       ) : null}
 
       {registration ? (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={isDriver ? onDriverStart : onVehicleStart}
-          className={`${CARD_CLASS} ${
-            isRejected ? "registration-rejected-card" : "registration-pending-card"
-          } disabled:opacity-60`}
-          style={{ animationDelay: showNotifications ? "280ms" : "220ms" }}
-        >
-          <span
-            className={`relative z-10 flex flex-col items-start gap-1.5 ${isSplit ? "max-w-24" : "min-w-0 flex-1"}`}
+        registrationHref ? (
+          /* A rejected registration has something to explain, so it opens the
+             details screen that spells out why; a pending one has nothing to
+             show yet and goes straight into the assistant. */
+          <Link
+            href={registrationHref}
+            className={registrationClass}
+            style={registrationStyle}
           >
-            <StatusChip status={registration.status} />
-            <span
-              className={`type-body font-bold text-ink ${isSplit ? "" : "whitespace-nowrap"}`}
-            >
-              {isSplit ? registrationTitle : registrationCopy}
-            </span>
-          </span>
-          <CardCorner isSplit={isSplit}>
-            <span className="flex h-12 w-12 items-center justify-center rounded-control border border-white bg-white/80 shadow-soft">
-              <AppIcon
-                src={registrationAsset}
-                alt=""
-                width={42}
-                height={42}
-                className="h-10 w-10 object-contain"
-                priority
-              />
-            </span>
-          </CardCorner>
-        </button>
+            {registrationBody}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={isDriver ? onDriverStart : onVehicleStart}
+            className={`${registrationClass} disabled:opacity-60`}
+            style={registrationStyle}
+          >
+            {registrationBody}
+          </button>
+        )
       ) : null}
     </section>
   );

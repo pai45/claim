@@ -11,6 +11,7 @@ export type PersistedDriverRegistration = {
   version: typeof DRIVER_STORAGE_VERSION;
   driverName: string;
   dlNumber?: string;
+  dlValidity?: string;
   salary?: string;
   startDate?: string;
   registeredAt: number;
@@ -19,6 +20,7 @@ export type PersistedDriverRegistration = {
 export type RegisteredDriver = {
   driverName: string;
   dlNumber?: string;
+  dlValidity?: string;
   salary?: string;
   startDate?: string;
   registeredAt: number;
@@ -39,6 +41,7 @@ export function saveRegisteredDriver(
     version: DRIVER_STORAGE_VERSION,
     driverName,
     dlNumber: payload.dlNumber?.trim() || undefined,
+    dlValidity: payload.dlValidity?.trim() || undefined,
     salary: payload.salary?.trim() || undefined,
     startDate: payload.startDate?.trim() || undefined,
     registeredAt: now,
@@ -74,6 +77,8 @@ export function loadRegisteredDriver(
     return {
       driverName: parsed.driverName,
       dlNumber: typeof parsed.dlNumber === "string" ? parsed.dlNumber : undefined,
+      dlValidity:
+        typeof parsed.dlValidity === "string" ? parsed.dlValidity : undefined,
       salary: typeof parsed.salary === "string" ? parsed.salary : undefined,
       startDate: typeof parsed.startDate === "string" ? parsed.startDate : undefined,
       registeredAt: parsed.registeredAt,

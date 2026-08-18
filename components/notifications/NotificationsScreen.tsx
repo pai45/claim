@@ -87,11 +87,18 @@ export function NotificationsScreen() {
                 </>
               );
 
-              if (notification.action.kind === "claim") {
+              const href =
+                notification.action.kind === "claim"
+                  ? `/claim-details/?id=${encodeURIComponent(notification.action.claimId)}&from=notifications`
+                  : notification.action.kind === "route"
+                    ? notification.action.href
+                    : null;
+
+              if (href) {
                 return (
                   <Link
                     key={notification.id}
-                    href={`/claim-details/?id=${encodeURIComponent(notification.action.claimId)}&from=notifications`}
+                    href={href}
                     className={ROW_CLASS}
                     style={staggerStyle(index)}
                   >

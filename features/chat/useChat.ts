@@ -1073,9 +1073,12 @@ export function useChat() {
         setDocumentProcessingStage("checking");
         await new Promise((resolve) => window.setTimeout(resolve, 1000));
 
+        const scanned = buildDlPayloadFromScenario(scenarioId);
         const draft: DriverSalaryPayload = {
           ...draftBase,
-          ...buildDlPayloadFromScenario(scenarioId),
+          ...scanned,
+          // A name the employee already gave outranks the demo extract.
+          driverName: draftBase.driverName || scanned.driverName,
         };
         driverSalaryDraftRef.current = draft;
 
@@ -1660,13 +1663,19 @@ export function useChat() {
   const confirmDriverDl = useCallback(
     (payload: DriverSalaryPayload) => {
       if (isLoading || isScanning || isLocating) return;
-      if (!payload.driverName?.trim() || !payload.dlNumber?.trim()) return;
+      if (
+        !payload.driverName?.trim() ||
+        !payload.dlNumber?.trim() ||
+        !payload.dlValidity?.trim()
+      )
+        return;
 
       const draft: DriverSalaryPayload = {
         ...driverSalaryDraftRef.current,
         ...payload,
         driverName: payload.driverName.trim(),
         dlNumber: payload.dlNumber.trim(),
+        dlValidity: payload.dlValidity.trim(),
         dlError: undefined,
       };
       driverSalaryDraftRef.current = draft;

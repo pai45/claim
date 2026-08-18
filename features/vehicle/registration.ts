@@ -26,13 +26,39 @@ export type PersistedVehicleRegistration = {
   ownerName: string;
   ownership: VehicleOwnership;
   registeredAt: number;
+  /** How many times this registration has been submitted, resubmissions included. */
+  submissions: number;
 };
 
 export type RegisteredVehicle = {
   lookup: VehicleLookup;
   ownership: VehicleOwnership;
   registeredAt: number;
+  submissions: number;
 };
+
+/**
+ * Submissions survive a rewrite so the demo can tell a first registration from a
+ * resubmission — both rejection rules key off it. Records written before the
+ * count existed are read as the one submission that wrote them.
+ */
+function readSubmissions(raw: Partial<PersistedVehicleRegistration>): number {
+  return typeof raw.submissions === "number" && raw.submissions > 0
+    ? raw.submissions
+    : 1;
+}
+
+function countPreviousSubmissions(storage: StorageLike): number {
+  try {
+    const raw = storage.getItem(VEHICLE_STORAGE_KEY);
+    if (!raw) return 0;
+    const parsed = JSON.parse(raw) as Partial<PersistedVehicleRegistration>;
+    if (parsed.version !== VEHICLE_STORAGE_VERSION) return 0;
+    return readSubmissions(parsed);
+  } catch {
+    return 0;
+  }
+}
 
 function notify(): void {
   // The store is imported by node-environment tests, where there is no window.
@@ -52,6 +78,7 @@ export function saveRegisteredVehicle(
     ownerName: lookup.ownerName,
     ownership,
     registeredAt: now,
+    submissions: countPreviousSubmissions(storage) + 1,
   };
 
   try {
@@ -98,6 +125,7 @@ export function loadRegisteredVehicle(
       lookup: result.lookup,
       ownership: parsed.ownership,
       registeredAt: parsed.registeredAt,
+      submissions: readSubmissions(parsed),
     };
   } catch {
     try {

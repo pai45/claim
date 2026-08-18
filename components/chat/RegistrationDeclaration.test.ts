@@ -95,6 +95,10 @@ describe("registration declarations", () => {
     );
     expect(html.indexOf("I declare")).toBeLessThan(html.indexOf("Submit to Admin"));
     expect(html).toContain('disabled=""');
+    expect(html).not.toContain(">Fuel<");
+    expect(html).not.toContain(">Chassis<");
+    expect(html).not.toContain(">Engine no.<");
+    expect(html).not.toContain(">RTO<");
   });
 
   it("keeps the found vehicle card separate from the review card", () => {
