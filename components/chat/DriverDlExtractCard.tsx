@@ -96,12 +96,16 @@ export function DriverDlExtractCard({
             className="min-h-11 w-full rounded-control border border-input-border bg-input-soft px-3 py-2.5 text-body-sm font-bold text-pine outline-none transition-colors focus:border-pine disabled:opacity-50"
           />
         </label>
+
       </article>
 
       <button
         type="button"
         disabled={
-          disabled || !driverName.trim() || !dlNumber.trim() || !dlValidity
+          disabled ||
+          !driverName.trim() ||
+          !dlNumber.trim() ||
+          !dlValidity
         }
         onClick={() =>
           onConfirm({

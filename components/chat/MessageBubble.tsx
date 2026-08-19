@@ -38,7 +38,6 @@ import { UploadOptionsCard } from "./UploadOptionsCard";
 import { VehicleClaimReceiptCard } from "./VehicleClaimReceiptCard";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
 import { VehicleNumberInputCard } from "./VehicleNumberInputCard";
-import { VehicleOwnershipCard } from "./VehicleOwnershipCard";
 import { useRevealText } from "./useRevealText";
 
 const pillClass =
@@ -102,10 +101,8 @@ type MessageBubbleProps = {
     benefitType?: BenefitType,
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
-  onSubmitVehicleNumber?: (regNumber: string) => void;
-  onSelectVehicleOwnership?: (
-    messageId: string,
-    lookup: VehicleLookup,
+  onSubmitVehicleNumber?: (
+    regNumber: string,
     ownership: VehicleOwnership,
   ) => void;
   onSubmitVehicleToHr?: (
@@ -139,7 +136,6 @@ export function MessageBubble({
   onSelectMerchantSearchMode,
   onSearchMerchantByName,
   onSubmitVehicleNumber,
-  onSelectVehicleOwnership,
   onSubmitVehicleToHr,
   onStartDriverSalary,
   onSubmitDriverName,
@@ -239,32 +235,8 @@ export function MessageBubble({
     return (
       <div className="flex w-full justify-start">
         <VehicleNumberInputCard
-          onSubmit={(regNumber) => onSubmitVehicleNumber?.(regNumber)}
-          disabled={uploadDisabled}
-        />
-      </div>
-    );
-  }
-
-  if (
-    message.kind === "vehicle_ownership" &&
-    message.vehicleLookup?.lookup
-  ) {
-    return (
-      <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText
-          content={message.content}
-          createdAt={message.createdAt}
-          showAvatar={showAssistantAvatar}
-        />
-        <VehicleOwnershipCard
-          selected={message.vehicleLookup.ownership}
-          onSelect={(ownership) =>
-            onSelectVehicleOwnership?.(
-              message.id,
-              message.vehicleLookup!.lookup!,
-              ownership,
-            )
+          onSubmit={(regNumber, ownership) =>
+            onSubmitVehicleNumber?.(regNumber, ownership)
           }
           disabled={uploadDisabled}
         />
@@ -285,15 +257,6 @@ export function MessageBubble({
         <VehicleDetailsCard
           messageId={message.id}
           payload={message.vehicleLookup}
-          onSelectOwnership={(ownership) => {
-            if (message.vehicleLookup?.lookup) {
-              onSelectVehicleOwnership?.(
-                message.id,
-                message.vehicleLookup.lookup,
-                ownership,
-              );
-            }
-          }}
           onSubmitToHr={onSubmitVehicleToHr}
           disabled={uploadDisabled}
           showAvatar={
@@ -393,11 +356,13 @@ export function MessageBubble({
   if (message.kind === "driver_salary_review" && message.driverSalary) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        <AssistantText
-          content={message.content}
-          createdAt={message.createdAt}
-          showAvatar={showAssistantAvatar}
-        />
+        {message.content ? (
+          <AssistantText
+            content={message.content}
+            createdAt={message.createdAt}
+            showAvatar={showAssistantAvatar}
+          />
+        ) : null}
         <DriverSalaryReviewCard
           payload={message.driverSalary}
           onSubmit={(payload) => onSubmitDriverSalaryClaim?.(payload)}

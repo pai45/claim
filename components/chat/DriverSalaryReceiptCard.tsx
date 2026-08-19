@@ -84,7 +84,7 @@ export function DriverSalaryReceiptCard({
 
   return (
     <div className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
-      <div className="flex items-center justify-between gap-3 bg-success-soft px-4 py-3">
+      <div className="flex items-center gap-3 bg-success-soft px-4 py-3">
         <div className="flex min-w-0 items-center gap-2">
           <CheckIcon />
           <div className="flex min-w-0 flex-col">
@@ -96,9 +96,6 @@ export function DriverSalaryReceiptCard({
             </span>
           </div>
         </div>
-        <span className="shrink-0 rounded-pill border border-success-border bg-white px-2 py-0.5 text-caption text-success">
-          Admin
-        </span>
       </div>
 
       <div className="flex flex-col gap-3 px-4 py-4">

@@ -74,7 +74,6 @@ import type {
   PolicyModelStatus,
   VehicleLookupPayload,
 } from "./types";
-import { vehicleOwnershipLabel } from "@/lib/vehicle/ownership";
 import type { VehicleOwnership } from "@/lib/vehicle/types";
 import {
   buildBillExtractFromScenario,
@@ -1375,7 +1374,7 @@ export function useChat() {
   );
 
   const submitVehicleNumber = useCallback(
-    (regNumber: string) => {
+    (regNumber: string, ownership: VehicleOwnership) => {
       // The lookup itself is synchronous, but a bill OCR or geolocation call
       // may be mid-flight and about to append — don't interleave with it.
       if (isLoading || isScanning || isLocating) return;
@@ -1398,7 +1397,7 @@ export function useChat() {
               content: "",
               createdAt: Date.now(),
               kind: "vehicle_details",
-              vehicleLookup: { lookup: result.lookup, stage: "found" },
+              vehicleLookup: { lookup: result.lookup, ownership },
             }
           : {
               id: createId(),
@@ -1411,39 +1410,6 @@ export function useChat() {
       ]);
     },
     [isLoading, isLocating, isScanning],
-  );
-
-  const selectVehicleOwnership = useCallback(
-    (
-      messageId: string,
-      lookup: VehicleLookup,
-      ownership: VehicleOwnership,
-    ) => {
-      if (isLoading || isScanning || isLocating) return;
-
-      // Keep the original "Vehicle Found" card as a completed ownership
-      // prompt. The selected ownership belongs only to the review card below.
-      patchVehicleLookup(messageId, { ownershipSelected: true });
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: createId(),
-          role: "user",
-          content: vehicleOwnershipLabel(ownership),
-          createdAt: Date.now(),
-          kind: "text",
-        },
-        {
-          id: createId(),
-          role: "assistant",
-          content: "Here's a summary. Submit when everything looks right.",
-          createdAt: Date.now(),
-          kind: "vehicle_details",
-          vehicleLookup: { lookup, ownership, stage: "review" },
-        },
-      ]);
-    },
-    [isLoading, isLocating, isScanning, patchVehicleLookup],
   );
 
   const submitVehicleToHr = useCallback(
@@ -1685,24 +1651,16 @@ export function useChat() {
         {
           id: createId(),
           role: "user",
-          content: "Continue with this driving licence",
+          content: "Continue with these driver details",
           createdAt: Date.now(),
           kind: "text",
         },
         {
           id: createId(),
           role: "assistant",
-          content:
-            "Got it. What's the monthly driver salary and employment start date?",
+          content: "",
           createdAt: Date.now(),
-          kind: "text",
-        },
-        {
-          id: createId(),
-          role: "assistant",
-          content: "Salary details",
-          createdAt: Date.now(),
-          kind: "driver_salary_input",
+          kind: "driver_salary_review",
           driverSalary: draft,
         },
       ]);
@@ -1820,7 +1778,6 @@ export function useChat() {
     selectMerchantSearchMode,
     searchMerchantByName,
     submitVehicleNumber,
-    selectVehicleOwnership,
     submitVehicleToHr,
     startDriverSalary,
     submitDriverName,

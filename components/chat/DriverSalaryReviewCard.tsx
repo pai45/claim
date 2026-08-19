@@ -51,8 +51,6 @@ export function DriverSalaryReviewCard({
           <Row label="Driver" value={payload.driverName} />
           <Row label="DL number" value={payload.dlNumber} />
           <Row label="DL validity" value={formatDate(payload.dlValidity)} />
-          <Row label="Salary" value={payload.salary} />
-          <Row label="Start date" value={formatDate(payload.startDate)} />
           <Row label="Vehicle registration" value={payload.vehicleClaimId} />
         </div>
 

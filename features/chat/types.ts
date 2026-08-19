@@ -149,10 +149,6 @@ export type MerchantLocatorPayload = {
 export type VehicleLookupPayload = {
   lookup?: VehicleLookup;
   ownership?: VehicleOwnership;
-  /** Keeps the lookup/ownership prompt distinct from the later review card. */
-  stage?: "found" | "review";
-  /** Locks the ownership controls without adding ownership to the found card. */
-  ownershipSelected?: boolean;
   /** Set when the plate couldn't be parsed. */
   error?: string;
   /** Mirrors BillExtract.submitted — hides the action once sent to HR. */

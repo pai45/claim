@@ -105,23 +105,6 @@ export function VehicleDetailsScreen() {
               <h2 className="type-section-title truncate">
                 {vehicleDisplayName(vehicle.lookup.profile)}
               </h2>
-              {/* A rejection is something to fix, not a replacement to warn
-                  about, so resubmitting skips the confirm dialog. */}
-              <button
-                type="button"
-                onClick={
-                  isVehicleRejected
-                    ? startRegistration
-                    : () => setConfirmOpen(true)
-                }
-                className={`min-h-11 shrink-0 rounded-pill border px-3.5 py-2 text-caption font-bold ${
-                  isVehicleRejected
-                    ? "border-danger text-danger"
-                    : "border-pine-primary text-pine-primary"
-                }`}
-              >
-                {isVehicleRejected ? "Resubmit Vehicle" : "Change Vehicle"}
-              </button>
             </section>
 
             <VehiclePhoto
@@ -181,6 +164,26 @@ export function VehicleDetailsScreen() {
                 value={vehicle.lookup.engineNumber}
               />
             </section>
+
+            <div className="flex justify-end">
+              {/* A rejection is something to fix, not a replacement to warn
+                  about, so resubmitting skips the confirm dialog. */}
+              <button
+                type="button"
+                onClick={
+                  isVehicleRejected
+                    ? startRegistration
+                    : () => setConfirmOpen(true)
+                }
+                className={`min-h-11 shrink-0 rounded-pill border px-3.5 py-2 text-caption font-bold ${
+                  isVehicleRejected
+                    ? "border-danger text-danger"
+                    : "border-pine-primary text-pine-primary"
+                }`}
+              >
+                {isVehicleRejected ? "Resubmit Vehicle" : "Change Vehicle"}
+              </button>
+            </div>
           </>
         )}
       </main>

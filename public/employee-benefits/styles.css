@@ -477,7 +477,7 @@ svg {
 }
 
 .hero-card-name {
-  color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
   font-family: "PP Telegraf", "Times New Roman", serif;
   font-size: var(--text-14);
   font-weight: var(--fw-bold);
@@ -543,6 +543,7 @@ svg {
   grid-template-columns: minmax(0, 1fr);
   gap: 0;
   align-items: start;
+  transform: translateY(12px);
 }
 
 .balance-copy p {

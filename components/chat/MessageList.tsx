@@ -66,10 +66,8 @@ type MessageListProps = {
     benefitType?: BenefitType,
   ) => void;
   onSearchMerchantByName?: (query: string, benefitType?: BenefitType) => void;
-  onSubmitVehicleNumber?: (regNumber: string) => void;
-  onSelectVehicleOwnership?: (
-    messageId: string,
-    lookup: VehicleLookup,
+  onSubmitVehicleNumber?: (
+    regNumber: string,
     ownership: VehicleOwnership,
   ) => void;
   onSubmitVehicleToHr?: (
@@ -136,7 +134,6 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       onSelectMerchantSearchMode,
       onSearchMerchantByName,
       onSubmitVehicleNumber,
-      onSelectVehicleOwnership,
       onSubmitVehicleToHr,
       onStartDriverSalary,
       onSubmitDriverName,
@@ -352,7 +349,6 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onSelectMerchantSearchMode={onSelectMerchantSearchMode}
                 onSearchMerchantByName={onSearchMerchantByName}
                 onSubmitVehicleNumber={onSubmitVehicleNumber}
-                onSelectVehicleOwnership={onSelectVehicleOwnership}
                 onSubmitVehicleToHr={onSubmitVehicleToHr}
                 onStartDriverSalary={onStartDriverSalary}
                 onSubmitDriverName={onSubmitDriverName}

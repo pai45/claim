@@ -127,21 +127,6 @@ export function DriverDetailsScreen() {
               <div className="min-w-0">
                 <h2 className="type-section-title truncate">{driver.driverName}</h2>
               </div>
-              {/* A rejection is something to fix, not a replacement to warn
-                  about, so resubmitting skips the confirm dialog. */}
-              <button
-                type="button"
-                onClick={
-                  isDriverRejected ? startRegistration : () => setConfirmOpen(true)
-                }
-                className={`min-h-11 shrink-0 rounded-pill border px-3.5 py-2 text-caption font-bold ${
-                  isDriverRejected
-                    ? "border-danger text-danger"
-                    : "border-pine-primary text-pine-primary"
-                }`}
-              >
-                {isDriverRejected ? "Resubmit Driver" : "Change Driver"}
-              </button>
             </section>
 
             {!isDriverRejected && driver.dlNumber ? (
@@ -173,6 +158,24 @@ export function DriverDetailsScreen() {
                 value={formatDate(driver.startDate)}
               />
             </section>
+
+            <div className="flex justify-end">
+              {/* A rejection is something to fix, not a replacement to warn
+                  about, so resubmitting skips the confirm dialog. */}
+              <button
+                type="button"
+                onClick={
+                  isDriverRejected ? startRegistration : () => setConfirmOpen(true)
+                }
+                className={`min-h-11 shrink-0 rounded-pill border px-3.5 py-2 text-caption font-bold ${
+                  isDriverRejected
+                    ? "border-danger text-danger"
+                    : "border-pine-primary text-pine-primary"
+                }`}
+              >
+                {isDriverRejected ? "Resubmit Driver" : "Change Driver"}
+              </button>
+            </div>
           </>
         )}
       </main>
