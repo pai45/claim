@@ -624,6 +624,24 @@ textarea {
   animation: sheet-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Auto-approval verdict on the confidence bubble. Held back by an inline
+   `animation-delay` so the ring finishes sweeping before the answer lands —
+   `both` keeps it invisible through that delay rather than flashing first. */
+@keyframes confidence-verdict-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-confidence-verdict {
+  animation: confidence-verdict-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Rejection cue for the MPIN boxes. Short travel and an odd number of swings so
    the row settles back on centre. */
 @keyframes shake {
@@ -856,6 +874,10 @@ button.registration-pending-card {
   }
 
   .animate-sheet-rise {
+    animation: none;
+  }
+
+  .animate-confidence-verdict {
     animation: none;
   }
 

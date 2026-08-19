@@ -57,6 +57,7 @@ import {
 } from "@/lib/merchants/demoNearby";
 import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runBillOcr } from "@/lib/ocr/runOcr";
+import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import { saveRegisteredVehicle } from "@/features/vehicle/registration";
 import { saveRegisteredDriver } from "@/features/driver/registration";
@@ -114,6 +115,10 @@ export function useChat() {
   const nearbyMerchantTimerRef = useRef<number | null>(null);
   const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
   const previewUrlsRef = useRef(new Map<string, string>());
+  // `isScanning` is cleared early in a bill scan so the live progress card can
+  // give way to the confidence bubble, which would otherwise leave the upload
+  // buttons re-armed during the beat before the claim card lands.
+  const billScanLockRef = useRef(false);
   // Lets sendMessage read the transcript for prompt history without taking
   // `messages` as a dependency, which would change its identity every append.
   const messagesRef = useRef<ChatMessage[]>([]);
@@ -214,30 +219,20 @@ export function useChat() {
     clearChatSession();
   }, []);
 
-  const saveBillDraft = useCallback(
-    async (
-      messageId: string,
-      extract: BillExtract,
-    ): Promise<BillDraftOperationResult> => {
+  const autoSaveBillExtract = useCallback(
+    async (extract: BillExtract): Promise<BillExtract> => {
+      if (!isBillDraftEligible(extract)) return extract;
+
       try {
         const [draft] = await billDraftStore.save([extract]);
+        if (!draft) return extract;
         const restored = restoreBillExtract(draft);
-        setMessages((previous) =>
-          previous.map((message) =>
-            message.id === messageId
-              ? {
-                  ...message,
-                  billExtract: {
-                    ...message.billExtract,
-                    ...restored,
-                    previewUrl: extract.previewUrl,
-                    fileBlob: extract.fileBlob ?? restored.fileBlob,
-                  },
-                }
-              : message,
-          ),
-        );
-        return { ok: true };
+        return {
+          ...extract,
+          ...restored,
+          previewUrl: extract.previewUrl,
+          fileBlob: extract.fileBlob ?? restored.fileBlob,
+        };
       } catch (caught) {
         const error =
           caught instanceof BillDraftError
@@ -246,7 +241,8 @@ export function useChat() {
                 "storage-unavailable",
                 "The bill draft could not be saved. Please try again.",
               );
-        return { ok: false, code: error.code, message: error.message };
+        setError(error.message);
+        return extract;
       }
     },
     [],
@@ -439,6 +435,9 @@ export function useChat() {
         invoiceNo: claim.invoiceNo,
         confidence: 100,
         warningAcknowledged: true,
+        // A submitted claim being corrected is a human-driven change, never a
+        // straight-through one, so it must not advertise auto approval.
+        autoApprovalWaived: true,
         editClaimId: claim.id,
       };
       const messageId = createId();
@@ -967,10 +966,14 @@ export function useChat() {
       scenarioId: BillUploadScenarioId,
       replaceMessageId?: string,
     ) => {
-      if (isScanning || isLoading || isLocating) return;
+      if (isScanning || isLoading || isLocating || billScanLockRef.current) {
+        return;
+      }
 
       const scenario = getBillUploadScenario(scenarioId);
       const billMessageId = replaceMessageId ?? createId();
+      const chatVersion = chatVersionRef.current;
+      billScanLockRef.current = true;
       setIsScanning(true);
       setDocumentProcessingKind("bill");
       setDocumentProcessingStage("preparing");
@@ -996,51 +999,75 @@ export function useChat() {
         await new Promise((resolve) => window.setTimeout(resolve, 750));
 
         const nextExtract = buildBillExtractFromScenario(scenarioId);
-        setMessages((prev) => {
-          const previousExtract = replaceMessageId
-            ? prev.find((message) => message.id === replaceMessageId)
-                ?.billExtract
-            : undefined;
-          const nextMessage: ChatMessage = {
-            id: billMessageId,
-            role: "assistant",
-            content: scenario.assistantMessage,
-            createdAt: Date.now(),
-            kind: "bill_extract",
-            billExtract: {
-              ...nextExtract,
-              editClaimId: previousExtract?.editClaimId,
-              draftId: previousExtract?.draftId,
-              draftSavedAt: previousExtract?.draftSavedAt,
-              draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
-              warningAcknowledged: false,
-            },
-          };
-
-          if (replaceMessageId) {
-            return prev.map((message) =>
-              message.id === replaceMessageId ? nextMessage : message,
-            );
-          }
-
-          return [
-            ...prev,
-            {
-              id: `${billMessageId}-scan`,
-              role: "assistant",
-              content: "Bill scanned",
-              createdAt: Date.now(),
-              kind: "document_scan",
-            },
-            nextMessage,
-          ];
+        const previousExtract = replaceMessageId
+          ? messagesRef.current.find((message) => message.id === replaceMessageId)
+              ?.billExtract
+          : undefined;
+        const savedExtract = await autoSaveBillExtract({
+          ...nextExtract,
+          editClaimId: previousExtract?.editClaimId,
+          draftId: previousExtract?.draftId,
+          draftSavedAt: previousExtract?.draftSavedAt,
+          draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
+          warningAcknowledged: false,
         });
+        const buildBillMessage = (): ChatMessage => ({
+          id: billMessageId,
+          role: "assistant",
+          content: scenario.assistantMessage,
+          createdAt: Date.now(),
+          kind: "bill_extract",
+          billExtract: savedExtract,
+        });
+
+        // Replacing a bill swaps the existing card in place, so it keeps the
+        // confidence bubble the original scan already posted above it.
+        if (replaceMessageId) {
+          setMessages((prev) =>
+            prev.map((message) =>
+              message.id === replaceMessageId ? buildBillMessage() : message,
+            ),
+          );
+          return;
+        }
+
+        const verdict = evaluateAutoApproval(
+          savedExtract,
+          evaluateClaimPrecheck(savedExtract, getDemoPrecheckDate(savedExtract)),
+        );
+
+        // Drop the live scanning status before the completed card lands, so the
+        // two never overlap across the pause below.
+        setIsScanning(false);
+        setDocumentProcessingStage(null);
+
+        // The scan result and its confidence score share one bubble, so this
+        // single message carries both halves.
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `${billMessageId}-confidence`,
+            role: "assistant",
+            content: "Bill scanned",
+            createdAt: Date.now(),
+            kind: "confidence_score",
+            confidenceScore: verdict,
+          },
+        ]);
+
+        // Long enough for the ring sweep and count-up to be read before the
+        // claim card takes over the viewport.
+        await new Promise((resolve) => window.setTimeout(resolve, 1100));
+        if (chatVersionRef.current !== chatVersion) return;
+
+        setMessages((prev) => [...prev, buildBillMessage()]);
       } finally {
+        billScanLockRef.current = false;
         setIsScanning(false);
         setDocumentProcessingStage(null);
       }
     },
-    [isLoading, isLocating, isScanning],
+    [autoSaveBillExtract, isLoading, isLocating, isScanning],
   );
 
   const processDlScenario = useCallback(
@@ -1150,12 +1177,21 @@ export function useChat() {
           await new Promise((resolve) => window.setTimeout(resolve, remaining));
         }
 
+        const previousExtract = replaceMessageId
+          ? messagesRef.current.find((message) => message.id === replaceMessageId)
+              ?.billExtract
+          : undefined;
+        const savedExtract = await autoSaveBillExtract({
+          ...nextExtract,
+          editClaimId: previousExtract?.editClaimId,
+          draftId: previousExtract?.draftId,
+          draftSavedAt: previousExtract?.draftSavedAt,
+          draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
+          warningAcknowledged: previousExtract?.warningAcknowledged,
+        });
         setMessages((prev) => {
           const vendor = nextExtract.vendor || nextExtract.merchant || "";
           const category = nextExtract.category || "benefits";
-          const previousExtract = replaceMessageId
-            ? prev.find((message) => message.id === replaceMessageId)?.billExtract
-            : undefined;
           const nextMessage: ChatMessage = {
             id: billMessageId,
             role: "assistant",
@@ -1168,14 +1204,7 @@ export function useChat() {
                   : `I found the bill. It looks like ${articleFor(category)} ${category} claim.`,
             createdAt: Date.now(),
             kind: "bill_extract",
-            billExtract: {
-              ...nextExtract,
-              editClaimId: previousExtract?.editClaimId,
-              draftId: previousExtract?.draftId,
-              draftSavedAt: previousExtract?.draftSavedAt,
-              draftSavedFingerprint: previousExtract?.draftSavedFingerprint,
-              warningAcknowledged: previousExtract?.warningAcknowledged,
-            },
+            billExtract: savedExtract,
           };
           if (replaceMessageId) {
             return prev.map((message) =>
@@ -1234,7 +1263,7 @@ export function useChat() {
         setDocumentProcessingStage(null);
       }
     },
-    [isLoading, isLocating, isScanning],
+    [autoSaveBillExtract, isLoading, isLocating, isScanning],
   );
 
   const replaceBillFile = useCallback(
@@ -1768,7 +1797,6 @@ export function useChat() {
     processDlScenario,
     openUploadOptions,
     updateBillExtract,
-    saveBillDraft,
     saveEligibleBillDrafts,
     openBillDraft,
     submitBillClaim,

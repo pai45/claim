@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { buildBillExtractFromScenario } from "@/features/chat/demoUploadScenarios";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import { ClaimReceiptCard } from "./ClaimReceiptCard";
 import { DriverSalaryReceiptCard } from "./DriverSalaryReceiptCard";
@@ -52,8 +53,36 @@ describe("registration receipt cards", () => {
     );
 
     expect(html).toContain("Claim submitted");
+    expect(html).toContain("Category");
+    expect(html).toContain("Internet");
+    expect(html.indexOf("Category")).toBeLessThan(html.indexOf("Amount"));
+    expect(html).not.toContain("Typical demo review");
+    expect(html).not.toContain("local demo record");
     expect(html).not.toContain(
       "rounded-pill border border-success-border bg-white",
     );
+  });
+
+  it("labels clean bills for auto review and edited bills for manual review", () => {
+    const cleanHtml = renderToStaticMarkup(
+      createElement(ClaimReceiptCard, {
+        claimId: "CLM-87551",
+        extract: buildBillExtractFromScenario("fuel"),
+        submittedAt: 0,
+      }),
+    );
+    const editedHtml = renderToStaticMarkup(
+      createElement(ClaimReceiptCard, {
+        claimId: "CLM-87552",
+        extract: {
+          ...buildBillExtractFromScenario("fuel"),
+          autoApprovalWaived: true,
+        },
+        submittedAt: 0,
+      }),
+    );
+
+    expect(cleanHtml).toContain("Auto Review");
+    expect(editedHtml).toContain("Manual Review");
   });
 });

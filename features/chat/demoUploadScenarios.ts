@@ -55,7 +55,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-02",
       billingMonth: "2026-08",
       invoiceNo: "DRV-0802",
-      confidence: 100,
+      confidence: 94,
     },
   },
   {
@@ -99,7 +99,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-03",
       billingMonth: "2026-08",
       invoiceNo: "FUEL-0803",
-      confidence: 100,
+      confidence: 96,
     },
   },
   {
@@ -119,7 +119,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-03",
       billingMonth: "2026-08",
       invoiceNo: "FUEL-0803-X",
-      confidence: 100,
+      confidence: 95,
     },
   },
   {
@@ -139,7 +139,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-01",
       billingMonth: "2026-08",
       invoiceNo: "NET-0801",
-      confidence: 100,
+      confidence: 97,
     },
   },
   {
@@ -159,7 +159,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-01",
       billingMonth: "2026-08",
       invoiceNo: "MOB-0801",
-      confidence: 100,
+      confidence: 93,
     },
   },
   {
@@ -179,7 +179,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-04",
       billingMonth: "2026-08",
       invoiceNo: "BOOK-0804",
-      confidence: 100,
+      confidence: 92,
     },
   },
   {
@@ -199,7 +199,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-03",
       billingMonth: "2026-08",
       invoiceNo: "PRO-0803",
-      confidence: 100,
+      confidence: 95,
     },
   },
   {
@@ -219,7 +219,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-05-03",
       billingMonth: "2026-05",
       invoiceNo: "CR-0503-7999",
-      confidence: 100,
+      confidence: 94,
     },
   },
   {
@@ -239,7 +239,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-07-15",
       billingMonth: "2026-07",
       invoiceNo: "FUEL-0715",
-      confidence: 100,
+      confidence: 96,
     },
   },
   {
@@ -259,7 +259,7 @@ export const BILL_UPLOAD_SCENARIOS: readonly BillUploadScenario[] = [
       billDate: "2026-08-02",
       billingMonth: "2026-08",
       invoiceNo: "OTHER-0802",
-      confidence: 100,
+      confidence: 91,
     },
   },
 ] as const;

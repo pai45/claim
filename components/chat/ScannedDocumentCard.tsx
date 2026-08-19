@@ -7,6 +7,12 @@ type ScannedDocumentCardProps = {
   stage?: DocumentProcessingStage | null;
   documentKind?: DocumentUploadKind;
   complete?: boolean;
+  /**
+   * Drops the card chrome and the status role so a host card can own the
+   * surface — used when the scan result shares a bubble with the confidence
+   * score.
+   */
+  embedded?: boolean;
 };
 
 const BILL_STEPS = [
@@ -86,16 +92,22 @@ export function ScannedDocumentCard({
   stage,
   documentKind = "bill",
   complete = false,
+  embedded = false,
 }: ScannedDocumentCardProps) {
   const isDl = documentKind === "dl";
   const steps = isDl ? DL_STEPS : BILL_STEPS;
   const done = completedSteps(steps.length, stage, complete);
+  const Wrapper = embedded ? "div" : "article";
 
   return (
-    <article
-      className="relative w-full overflow-hidden rounded-card border border-border-line bg-white p-card shadow-card"
-      role="status"
-      aria-live="polite"
+    <Wrapper
+      className={
+        embedded
+          ? "relative w-full"
+          : "relative w-full overflow-hidden rounded-card border border-border-line bg-white p-card shadow-card"
+      }
+      role={embedded ? undefined : "status"}
+      aria-live={embedded ? undefined : "polite"}
     >
       {!complete && (
         <div className="absolute left-0 right-0 top-0 h-1 bg-surface-tint overflow-hidden">
@@ -127,9 +139,13 @@ export function ScannedDocumentCard({
                 : "Scanning bill..."}
           </h3>
           <p className="type-body-secondary">
-            {isDl
-              ? "Preparing the selected demo licence"
-              : "Extracting key details from the bill"}
+            {complete
+              ? isDl
+                ? "The selected demo licence is ready"
+                : "Key details were read from the bill"
+              : isDl
+                ? "Preparing the selected demo licence"
+                : "Extracting key details from the bill"}
           </p>
         </div>
       </div>
@@ -155,6 +171,6 @@ export function ScannedDocumentCard({
           );
         })}
       </ul>
-    </article>
+    </Wrapper>
   );
 }

@@ -3,6 +3,7 @@ import { getClaimDetails } from "@/features/claims/constants";
 import {
   RETURNING_NOTIFICATION_COUNT,
   RETURNING_NOTIFICATIONS,
+  getDraftClaimsNotification,
   getNotificationsForPersona,
 } from "./constants";
 
@@ -46,5 +47,16 @@ describe("notification catalog", () => {
     expect(claimIds.map((claimId) => getClaimDetails(claimId).id)).toEqual(
       claimIds,
     );
+  });
+
+  it("creates a singular or plural alert for saved claim drafts", () => {
+    expect(getDraftClaimsNotification(0)).toBeNull();
+    expect(getDraftClaimsNotification(1)).toMatchObject({
+      title: "1 claim in draft",
+      action: { kind: "route", href: "/chat-drafts" },
+    });
+    expect(getDraftClaimsNotification(3)).toMatchObject({
+      title: "3 claims in draft",
+    });
   });
 });

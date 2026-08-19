@@ -89,6 +89,22 @@ export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
 
 export const RETURNING_NOTIFICATION_COUNT = RETURNING_NOTIFICATIONS.length;
 
+export function getDraftClaimsNotification(
+  draftCount: number,
+): BenefitsNotification | null {
+  if (draftCount <= 0) return null;
+  const claimLabel = draftCount === 1 ? "claim" : "claims";
+
+  return {
+    id: "claims-in-draft",
+    title: `${draftCount} ${claimLabel} in draft`,
+    body: "Review your saved claim details and submit when you’re ready.",
+    dateLabel: "Now",
+    tone: "default",
+    action: { kind: "route", href: "/chat-drafts" },
+  };
+}
+
 export function getNotificationsForPersona(
   personaId: PersonaId,
 ): BenefitsNotification[] {

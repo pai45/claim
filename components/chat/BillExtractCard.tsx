@@ -3,18 +3,15 @@
 /* eslint-disable @next/next/no-img-element -- previews can be transient blob/data URLs */
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
 import { AppIcon } from "@/components/shared/AppIcon";
+import { AutoApprovalEditSheet } from "@/components/chat/AutoApprovalEditSheet";
 import { RegistrationDeclaration } from "@/components/chat/RegistrationDeclaration";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import { getDemoPrecheckDate } from "@/features/chat/demoUploadScenarios";
-import {
-  billDraftFingerprint,
-  isBillDraftEligible,
-  type BillDraftOperationResult,
-} from "@/features/chat/drafts";
+import { billDraftFingerprint } from "@/features/chat/drafts";
 import type { BillExtract } from "@/features/chat/types";
 import { formatINR } from "@/features/dashboard/constants";
+import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
 import {
   evaluateClaimPrecheck,
   parseClaimAmount,
@@ -28,10 +25,6 @@ type BillExtractCardProps = {
   onSubmitted?: (messageId: string, extract: BillExtract) => void;
   onReplace?: (messageId: string) => void;
   onNewClaim?: () => void;
-  onSaveDraft?: (
-    messageId: string,
-    extract: BillExtract,
-  ) => Promise<BillDraftOperationResult>;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
@@ -47,6 +40,15 @@ type EditableFields = {
   billingMonth: string;
   invoiceNo: string;
 };
+
+const EDITABLE_FIELD_KEYS: ReadonlyArray<keyof EditableFields> = [
+  "category",
+  "vendor",
+  "amount",
+  "billDate",
+  "billingMonth",
+  "invoiceNo",
+];
 
 function toDateInput(value?: string): string {
   if (!value) return "";
@@ -192,7 +194,6 @@ export function BillExtractCard({
   onUpdate,
   onSubmitted,
   onNewClaim,
-  onSaveDraft,
   onSaveClaimEdit,
 }: BillExtractCardProps) {
   const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
@@ -208,11 +209,12 @@ export function BillExtractCard({
   const categoryRef = useRef<HTMLSelectElement>(null);
   const previewDialogRef = useRef<HTMLDivElement>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [savingDraft, setSavingDraft] = useState(false);
-  const [draftError, setDraftError] = useState<BillDraftOperationResult | null>(
-    null,
-  );
+  const [editWarningOpen, setEditWarningOpen] = useState(false);
   const isClaimEdit = Boolean(extract.editClaimId);
+  const sourceFields = useMemo(() => toFields(extract), [extract]);
+  const hasFieldChanges = EDITABLE_FIELD_KEYS.some(
+    (key) => fields[key] !== sourceFields[key],
+  );
 
   useModalFocus(previewDialogRef, previewOpen, () => setPreviewOpen(false));
 
@@ -228,13 +230,23 @@ export function BillExtractCard({
       ...fields,
       error: editing ? undefined : extract.error,
       warningAcknowledged: acknowledged,
+      autoApprovalWaived: Boolean(
+        extract.autoApprovalWaived || hasFieldChanges,
+      ),
     }),
-    [acknowledged, editing, extract, fields],
+    [acknowledged, editing, extract, fields, hasFieldChanges],
   );
   const precheck = useMemo(
     () => evaluateClaimPrecheck(workingExtract, getDemoPrecheckDate(workingExtract)),
     [workingExtract],
   );
+  const autoApproval = evaluateAutoApproval(workingExtract, precheck);
+  const autoApprovalLabel =
+    autoApproval.reason === "edited"
+      ? "Manual review — edited after scan"
+      : `Confidence ${autoApproval.score}% · ${
+          autoApproval.eligible ? "Eligible for auto approval" : "Manual review"
+        }`;
   const amount = parseClaimAmount(fields.amount);
   const legacyPreviewUrl =
     extract.previewUrl ||
@@ -252,7 +264,6 @@ export function BillExtractCard({
     extract.draftId &&
       extract.draftSavedFingerprint === currentDraftFingerprint,
   );
-  const canSaveDraft = isBillDraftEligible(workingExtract) && Boolean(onSaveDraft);
 
   function issueFor(
     field: keyof EditableFields,
@@ -283,25 +294,29 @@ export function BillExtractCard({
     setEditing(false);
   }
 
+  /**
+   * Editing a scanned field forfeits straight-through processing, so warn while
+   * there is still something to lose. Claims that already need a human — low
+   * confidence, failed checks, a prior edit — go straight into edit mode.
+   */
+  function requestEdit() {
+    if (autoApproval.eligible) {
+      setEditWarningOpen(true);
+      return;
+    }
+    setEditing(true);
+  }
+
+  function confirmEdit() {
+    setEditWarningOpen(false);
+    setEditing(true);
+  }
+
   function handleSubmit() {
     if (submitDisabled) return;
     onUpdate?.(messageId, workingExtract);
     setEditing(false);
     onSubmitted?.(messageId, workingExtract);
-  }
-
-  async function handleSaveDraft() {
-    if (!canSaveDraft || savingDraft || !onSaveDraft) return;
-    const nextExtract = { ...workingExtract, manualReview: false };
-    setSavingDraft(true);
-    setDraftError(null);
-    const result = await onSaveDraft(messageId, nextExtract);
-    setSavingDraft(false);
-    if (!result.ok) {
-      setDraftError(result);
-      return;
-    }
-    setEditing(false);
   }
 
   if (extract.error && !editing) {
@@ -314,22 +329,6 @@ export function BillExtractCard({
           <button type="button" onClick={() => setEditing(true)} className={actionClass}>
             Enter details
           </button>
-          {canSaveDraft ? (
-            <button
-              type="button"
-              onClick={() => void handleSaveDraft()}
-              disabled={savingDraft || draftIsCurrent}
-              className={actionClass}
-            >
-              {savingDraft
-                ? "Saving…"
-                : draftIsCurrent
-                  ? "Draft saved"
-                  : extract.draftId
-                    ? "Update draft"
-                    : "Draft"}
-            </button>
-          ) : null}
           {!isClaimEdit ? (
             <button
               type="button"
@@ -340,16 +339,6 @@ export function BillExtractCard({
             </button>
           ) : null}
         </div>
-        {draftError && !draftError.ok ? (
-          <p role="alert" className="mt-2 text-caption text-danger">
-            {draftError.message}{" "}
-            {draftError.code === "limit" ? (
-              <Link href="/chat-drafts" className="font-bold underline">
-                Manage drafts
-              </Link>
-            ) : null}
-          </p>
-        ) : null}
       </div>
     );
   }
@@ -361,18 +350,16 @@ export function BillExtractCard({
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-surface-tint text-pine-primary">
             <CardIcon />
           </span>
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
               <h3 className="type-section-title text-pine">Claim details ready</h3>
               {extract.draftId ? (
-                <span className="rounded-pill border border-success-border bg-success-soft px-2 py-0.5 text-caption font-bold text-success">
+                <span className="ml-auto shrink-0 rounded-pill border border-success-border bg-success-soft px-2 py-0.5 text-caption font-bold text-success">
                   {draftIsCurrent ? "Draft saved" : "Draft changed"}
                 </span>
               ) : null}
             </div>
-            <p className="truncate type-body-secondary">
-              Confidence score : 95%
-            </p>
+            <p className="truncate type-body-secondary">{autoApprovalLabel}</p>
           </div>
         </header>
 
@@ -574,22 +561,6 @@ export function BillExtractCard({
             <button type="button" onClick={cancelEdits} className={actionClass}>
               Cancel
             </button>
-            {canSaveDraft ? (
-              <button
-                type="button"
-                onClick={() => void handleSaveDraft()}
-                disabled={savingDraft || draftIsCurrent}
-                className={actionClass}
-              >
-                {savingDraft
-                  ? "Saving…"
-                  : draftIsCurrent
-                    ? "Draft saved"
-                    : extract.draftId
-                      ? "Update draft"
-                      : "Draft"}
-              </button>
-            ) : null}
             {!isClaimEdit ? (
               <button
                 type="button"
@@ -612,25 +583,9 @@ export function BillExtractCard({
                 {extract.submitted ? "Submitted" : "Submit"}
               </button>
             )}
-            <button type="button" onClick={() => setEditing(true)} className={actionClass}>
+            <button type="button" onClick={requestEdit} className={actionClass}>
               Edit
             </button>
-            {canSaveDraft ? (
-              <button
-                type="button"
-                onClick={() => void handleSaveDraft()}
-                disabled={savingDraft || draftIsCurrent}
-                className={actionClass}
-              >
-                {savingDraft
-                  ? "Saving…"
-                  : draftIsCurrent
-                    ? "Draft saved"
-                    : extract.draftId
-                      ? "Update draft"
-                      : "Draft"}
-              </button>
-            ) : null}
             {!isClaimEdit ? (
               <button
                 type="button"
@@ -644,16 +599,12 @@ export function BillExtractCard({
         )}
       </div>
 
-      {draftError && !draftError.ok ? (
-        <p role="alert" className="mt-2 px-1 text-caption text-danger">
-          {draftError.message}{" "}
-          {draftError.code === "limit" ? (
-            <Link href="/chat-drafts" className="font-bold underline">
-              Manage drafts
-            </Link>
-          ) : null}
-        </p>
-      ) : null}
+      <AutoApprovalEditSheet
+        open={editWarningOpen}
+        score={autoApproval.score}
+        onConfirm={confirmEdit}
+        onClose={() => setEditWarningOpen(false)}
+      />
 
       <div
         ref={previewDialogRef}

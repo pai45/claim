@@ -55,10 +55,24 @@ export type ClaimPrecheck = {
   requiresAcknowledgement: boolean;
 };
 
+export type AutoApprovalReason =
+  | "eligible"
+  | "low_confidence"
+  | "checks_failed"
+  | "edited";
+
+export type AutoApprovalVerdict = {
+  /** Rounded 0-100 extraction confidence. */
+  score: number;
+  eligible: boolean;
+  reason: AutoApprovalReason;
+};
+
 export type MessageKind =
   | "text"
   | "upload_options"
   | "document_scan"
+  | "confidence_score"
   | "bill_extract"
   | "claim_cta"
   | "policy_answer"
@@ -111,9 +125,9 @@ export type BillExtract = {
   fileBlob?: Blob;
   /** Static, base-path-safe preview used by deterministic demo scenarios. */
   previewAsset?: string;
-  /** Links this bill card to its browser-local draft, when explicitly saved. */
+  /** Links this bill card to its automatically saved browser-local draft. */
   draftId?: string;
-  /** Timestamp of the most recent explicit draft save/update. */
+  /** Timestamp of the most recent automatic draft save/update. */
   draftSavedAt?: number;
   /** Fingerprint used to distinguish a saved snapshot from later field edits. */
   draftSavedFingerprint?: string;
@@ -128,6 +142,8 @@ export type BillExtract = {
     >
   >;
   warningAcknowledged?: boolean;
+  /** Set when the user edits a scanned field, forfeiting straight-through auto approval. */
+  autoApprovalWaived?: boolean;
   submitted?: boolean;
   /** Present when the card edits an existing claim instead of creating one. */
   editClaimId?: string;
@@ -139,6 +155,13 @@ export type BillExtract = {
   /** @deprecated use billDate */
   date?: string;
 };
+
+/**
+ * Frozen verdict for the confidence bubble. Stored on the message rather than
+ * recomputed so a rehydrated transcript still shows what the scan concluded,
+ * even after the claim card's own fields have since been edited.
+ */
+export type ConfidenceScorePayload = AutoApprovalVerdict;
 
 export type MerchantLocatorPayload = {
   benefitType?: BenefitType;
@@ -189,6 +212,7 @@ export type ChatMessage = {
   createdAt: number;
   kind?: MessageKind;
   billExtract?: BillExtract;
+  confidenceScore?: ConfidenceScorePayload;
   claimId?: string;
   claimAction?: "submitted" | "updated";
   policyAnswer?: PolicyAnswerPayload;

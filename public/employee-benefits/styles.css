@@ -41,9 +41,10 @@
   --text-24: 24px;
   --text-32: 32px;
   /* Type weight scale — backed by the three real PP Telegraf faces.
-     Regular for body/meta, SemiBold for labels/sub-headings/UI,
+     Regular for body/meta, Medium and SemiBold for labels/sub-headings/UI,
      Bold for primary headings and key figures. */
   --fw-regular: 400;
+  --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
   --bg: #f1f1f1;
@@ -547,10 +548,10 @@ svg {
 }
 
 .balance-copy p {
-  margin: 0 0 9px;
+  margin: 0 0 12px;
   color: rgba(255, 255, 255, 0.6);
   font-size: var(--text-14);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-medium);
 }
 
 .balance-copy strong {

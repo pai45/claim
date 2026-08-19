@@ -94,7 +94,6 @@ export function ChatShell({ onClose }: ChatShellProps) {
     openUploadOptions,
     processDlScenario,
     updateBillExtract,
-    saveBillDraft,
     saveEligibleBillDrafts,
     openBillDraft,
     submitBillClaim,
@@ -161,7 +160,7 @@ export function ChatShell({ onClose }: ChatShellProps) {
   // }, [messages]);
 
   const { personaId } = useActivePersona();
-  const { count: notificationCount } = useNotifications();
+  const { count: notificationCount, draftCount } = useNotifications();
   const registrationStatus = useRegistrationStatus();
   const homeActionCardState = useMemo(
     () =>
@@ -359,7 +358,6 @@ export function ChatShell({ onClose }: ChatShellProps) {
               onBillSourceSelected={openBillScenarioPicker}
               onDlSourceSelected={openDlScenarioPicker}
               onUpdateBillExtract={updateBillExtract}
-              onSaveBillDraft={saveBillDraft}
               onSubmitBillClaim={submitBillClaim}
               onSaveClaimEdit={saveClaimEdit}
               onReplaceBill={handleReplaceBill}
@@ -413,7 +411,12 @@ export function ChatShell({ onClose }: ChatShellProps) {
           ) : null}
           {showEmptyState ? (
             <div className="pb-1 pt-2" data-walkthrough="quick-chats">
-              <QuickActions onSelect={handleQuickAction} disabled={busy} />
+              <QuickActions
+                onSelect={handleQuickAction}
+                onOpenDrafts={() => router.push("/chat-drafts")}
+                draftCount={draftCount}
+                disabled={busy}
+              />
             </div>
           ) : null}
           <div

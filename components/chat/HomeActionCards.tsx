@@ -45,6 +45,7 @@ export function HomeActionCards({
   const cardCount = Number(showNotifications) + Number(Boolean(registration));
   if (cardCount === 0) return null;
 
+  const alertLabel = notificationCount === 1 ? "alert" : "alerts";
   const isSplit = cardCount === 2;
   const isDriver = registration?.kind === "driver";
   const isRejected = registration?.status === "rejected";
@@ -113,7 +114,7 @@ export function HomeActionCards({
           >
             <span className="block">You have</span>
             <span className="block">
-              <span className="text-warning">{notificationCount}</span> new alert
+              <span className="text-warning">{notificationCount}</span> new {alertLabel}
             </span>
           </p>
           <CardCorner isSplit={isSplit}>

@@ -6,12 +6,12 @@ type RegistrationDeclarationProps = {
 };
 
 export function RegistrationDeclaration({
-  subject,
   checked = true,
   onChange,
   disabled,
 }: RegistrationDeclarationProps) {
-  const text = `I declare that the ${subject} details provided are correct and valid.`;
+  const text =
+    "I declare that the information provided by me is valid and true and as per the company policy";
 
   if (onChange) {
     return (

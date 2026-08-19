@@ -10,7 +10,6 @@ import type {
   UploadOptionId,
 } from "@/features/chat/types";
 import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
-import type { BillDraftOperationResult } from "@/features/chat/drafts";
 import { DASHBOARD_CATEGORIES } from "@/features/dashboard/constants";
 import {
   getPolicyCategory,
@@ -20,6 +19,7 @@ import { AssistantMarkdown } from "./AssistantMarkdown";
 import { BillExtractCard } from "./BillExtractCard";
 import { ChatAvatar } from "./ChatAvatar";
 import { ClaimReceiptCard } from "./ClaimReceiptCard";
+import { ConfidenceScoreCard } from "./ConfidenceScoreCard";
 import { DriverDlExtractCard } from "./DriverDlExtractCard";
 import { DriverNameInputCard } from "./DriverNameInputCard";
 import { DriverSalaryFormCard } from "./DriverSalaryFormCard";
@@ -82,10 +82,6 @@ type MessageBubbleProps = {
   onDlSourceSelected?: (source: UploadOptionId) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
-  onSaveBillDraft?: (
-    messageId: string,
-    extract: BillExtract,
-  ) => Promise<BillDraftOperationResult>;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
@@ -126,7 +122,6 @@ export function MessageBubble({
   onDlSourceSelected,
   onUpdateBillExtract,
   onSubmitBillClaim,
-  onSaveBillDraft,
   onSaveClaimEdit,
   onReplaceBill,
   onNewClaim,
@@ -272,6 +267,15 @@ export function MessageBubble({
     return <ScannedDocumentCard complete />;
   }
 
+  if (message.kind === "confidence_score" && message.confidenceScore) {
+    return (
+      <ConfidenceScoreCard
+        payload={message.confidenceScore}
+        createdAt={message.createdAt}
+      />
+    );
+  }
+
   if (message.kind === "bill_extract" && message.billExtract) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
@@ -288,7 +292,6 @@ export function MessageBubble({
           extract={message.billExtract}
           onUpdate={onUpdateBillExtract}
           onSubmitted={onSubmitBillClaim}
-          onSaveDraft={onSaveBillDraft}
           onReplace={onReplaceBill}
           onNewClaim={onNewClaim}
           onSaveClaimEdit={onSaveClaimEdit}

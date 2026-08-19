@@ -6,10 +6,23 @@ export const BILL_DRAFT_RETENTION_MS =
   BILL_DRAFT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
 export const BILL_DRAFT_DELETE_HINT_KEY =
   "eb-claims:chat-drafts-delete-hint-seen";
+export const BILL_DRAFTS_CHANGED_EVENT = "eb-claims:bill-drafts-changed";
 
 const DATABASE_NAME = "eb-claims";
 const DATABASE_VERSION = 1;
 const STORE_NAME = "bill-drafts";
+
+function notifyBillDraftsChanged(): void {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(BILL_DRAFTS_CHANGED_EVENT));
+  }
+}
+
+export function subscribeToBillDrafts(listener: () => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  window.addEventListener(BILL_DRAFTS_CHANGED_EVENT, listener);
+  return () => window.removeEventListener(BILL_DRAFTS_CHANGED_EVENT, listener);
+}
 
 export type BillDraft = {
   version: 1;
@@ -291,11 +304,13 @@ export function createBillDraftStore(
       );
 
       await backend.putMany(prepared);
+      notifyBillDraftsChanged();
       return prepared.sort((left, right) => right.updatedAt - left.updatedAt);
     },
 
     async delete(id: string): Promise<void> {
       await backend.deleteMany([id]);
+      notifyBillDraftsChanged();
     },
 
     async prune(): Promise<number> {
@@ -306,6 +321,7 @@ export function createBillDraftStore(
 
     async clear(): Promise<void> {
       await backend.clear();
+      notifyBillDraftsChanged();
     },
   };
 }

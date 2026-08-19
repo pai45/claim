@@ -16,7 +16,7 @@ describe("registration declarations", () => {
       );
 
       expect(html).toContain(
-        `I declare that the ${subject} details provided are correct and valid.`,
+        "I declare that the information provided by me is valid and true and as per the company policy",
       );
       expect(html).toContain("bg-pine-primary");
       expect(html).toContain("h-5 w-5");

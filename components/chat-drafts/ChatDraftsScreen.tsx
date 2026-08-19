@@ -322,7 +322,7 @@ export function ChatDraftsScreen() {
             </span>
             <h2 className="mt-4 type-section-title text-pine">No bill drafts yet</h2>
             <p className="mt-2 max-w-card type-body-secondary">
-              Scan a bill in Benefits assistant and choose Save draft to keep it for later.
+              Scan a bill in Benefits assistant and it will be saved here automatically.
             </p>
             <button
               type="button"

@@ -1,8 +1,9 @@
 import type { BillExtract } from "@/features/chat/types";
+import { getDemoPrecheckDate } from "@/features/chat/demoUploadScenarios";
 import { colors } from "@/lib/ui/colors";
-import { EMPLOYER_BENEFITS_CATALOG } from "@/features/policy/constants";
 import { formatINR } from "@/features/dashboard/constants";
-import { parseClaimAmount } from "@/lib/claims/precheck";
+import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
+import { evaluateClaimPrecheck, parseClaimAmount } from "@/lib/claims/precheck";
 
 type ClaimReceiptCardProps = {
   claimId: string;
@@ -76,6 +77,11 @@ export function ClaimReceiptCard({
   const billDate = extract.billDate || extract.date || "";
   const billingMonth = extract.billingMonth || "";
   const invoiceNo = extract.invoiceNo || "";
+  const autoApproval = evaluateAutoApproval(
+    extract,
+    evaluateClaimPrecheck(extract, getDemoPrecheckDate(extract)),
+  );
+  const reviewLabel = autoApproval.eligible ? "Auto Review" : "Manual Review";
 
   return (
     <div role="status" aria-live="polite" className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
@@ -91,15 +97,21 @@ export function ClaimReceiptCard({
             </span>
           </div>
         </div>
+        <span
+          className={`ml-auto shrink-0 rounded-pill px-2.5 py-1 text-caption font-bold ${
+            autoApproval.eligible
+              ? "bg-success-tint text-success"
+              : "bg-warning-tint text-warning-ink"
+          }`}
+        >
+          {reviewLabel}
+        </span>
       </div>
 
       <div className="flex flex-col gap-3 px-4 py-4">
-        <div className="flex flex-col gap-0.5">
+        <div>
           <p className="truncate text-body font-bold text-pine">
             {vendor}
-          </p>
-          <p className="truncate type-body-secondary">
-            {category}
           </p>
         </div>
 
@@ -112,6 +124,7 @@ export function ClaimReceiptCard({
         />
 
         <div className="flex flex-col">
+          <ReceiptRow label="Category" value={category} />
           <ReceiptRow label="Amount" value={amount} emphasize />
           {billDate ? <ReceiptRow label="Bill date" value={billDate} /> : null}
           {billingMonth ? (
@@ -124,12 +137,6 @@ export function ClaimReceiptCard({
             label={action === "updated" ? "Updated" : "Submitted"}
             value={formatSubmittedAt(submittedAt)}
           />
-        </div>
-
-        <div className="rounded-control bg-surface-tint px-3 py-2 text-caption leading-4 text-ink-secondary">
-          {action === "updated"
-            ? "Your changes were saved to this claim in the local demo."
-            : `Typical demo review: ${EMPLOYER_BENEFITS_CATALOG.reviewSla}. This local demo record is not sent to HR or your employer.`}
         </div>
       </div>
     </div>

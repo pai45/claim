@@ -22,7 +22,6 @@ import type {
 import { trailingContextualQuickChats } from "@/features/chat/contextualQuickChats";
 import type { PolicyTabId } from "@/features/policy/constants";
 import type { VehicleLookup, VehicleOwnership } from "@/lib/vehicle/types";
-import type { BillDraftOperationResult } from "@/features/chat/drafts";
 import { ChatAvatar } from "./ChatAvatar";
 import { ChatStatusBubble } from "./ChatStatusBubble";
 import { ContextualQuickChats } from "./ContextualQuickChats";
@@ -45,10 +44,6 @@ type MessageListProps = {
   onDlSourceSelected?: (source: UploadOptionId) => void;
   onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
   onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
-  onSaveBillDraft?: (
-    messageId: string,
-    extract: BillExtract,
-  ) => Promise<BillDraftOperationResult>;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
@@ -122,7 +117,6 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       onDlSourceSelected,
       onUpdateBillExtract,
       onSubmitBillClaim,
-      onSaveBillDraft,
       onSaveClaimEdit,
       onReplaceBill,
       onNewClaim,
@@ -339,7 +333,6 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                 onDlSourceSelected={onDlSourceSelected}
                 onUpdateBillExtract={onUpdateBillExtract}
                 onSubmitBillClaim={onSubmitBillClaim}
-                onSaveBillDraft={onSaveBillDraft}
                 onSaveClaimEdit={onSaveClaimEdit}
                 onReplaceBill={onReplaceBill}
                 onNewClaim={onNewClaim}
