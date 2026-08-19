@@ -1,11 +1,11 @@
 import { getEmployerBenefit } from "@/features/policy/constants";
 
-export type ParsedBillFields = {
+export type ParsedClaimFields = {
   category?: string;
   vendor?: string;
   amount?: string;
-  billDate?: string;
-  billingMonth?: string;
+  claimDate?: string;
+  claimMonth?: string;
   invoiceNo?: string;
 };
 
@@ -226,14 +226,14 @@ function isSaneDate(date: Date): boolean {
   return year >= 2000 && year <= now.getFullYear() + 1;
 }
 
-function formatBillDate(raw?: string): string | undefined {
+function formatClaimDate(raw?: string): string | undefined {
   if (!raw) return undefined;
   const date = parseDateParts(raw);
   if (!date || !isSaneDate(date)) return raw;
   return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
 }
 
-function formatBillingMonth(raw?: string): string | undefined {
+function formatClaimMonth(raw?: string): string | undefined {
   if (!raw) return undefined;
   const date = parseDateParts(raw);
   if (!date || !isSaneDate(date)) return undefined;
@@ -356,7 +356,7 @@ function pickBest<T>(items: Scored<T>[]): T | undefined {
 
 function collectLabeledFields(lines: string[]): {
   amount?: string;
-  billDate?: string;
+  claimDate?: string;
   invoiceNo?: string;
 } {
   const amounts: Scored<string>[] = [];
@@ -414,7 +414,7 @@ function collectLabeledFields(lines: string[]): {
 
   return {
     amount: pickBest(amounts),
-    billDate: pickBest(dates),
+    claimDate: pickBest(dates),
     invoiceNo: pickBest(invoices),
   };
 }
@@ -528,22 +528,22 @@ function pickCategory(text: string, vendor?: string): string {
  */
 function assignFields(input: {
   amount?: string;
-  billDate?: string;
+  claimDate?: string;
   invoiceNo?: string;
 }): {
   amount?: string;
-  billDate?: string;
+  claimDate?: string;
   invoiceNo?: string;
 } {
-  let { amount, billDate, invoiceNo } = input;
+  let { amount, claimDate, invoiceNo } = input;
 
   if (amount && !looksLikeMoney(amount)) amount = undefined;
-  if (billDate && !looksLikeDate(billDate)) billDate = undefined;
+  if (claimDate && !looksLikeDate(claimDate)) claimDate = undefined;
   if (invoiceNo && !looksLikeInvoice(invoiceNo)) invoiceNo = undefined;
 
-  // If a date landed in Invoice No, move it to Bill Date
+  // If a date landed in Invoice No, move it to Claim Date
   if (invoiceNo && looksLikeDate(invoiceNo)) {
-    if (!billDate) billDate = invoiceNo;
+    if (!claimDate) claimDate = invoiceNo;
     invoiceNo = undefined;
   }
 
@@ -553,10 +553,10 @@ function assignFields(input: {
     invoiceNo = undefined;
   }
 
-  return { amount, billDate, invoiceNo };
+  return { amount, claimDate, invoiceNo };
 }
 
-export function parseBill(rawText: string): ParsedBillFields {
+export function parseClaim(rawText: string): ParsedClaimFields {
   const text = normalizeOcrText(rawText);
   const lines = text
     .split(/\n/)
@@ -566,7 +566,7 @@ export function parseBill(rawText: string): ParsedBillFields {
   const labeled = collectLabeledFields(lines);
   const assigned = assignFields({
     amount: labeled.amount ?? fallbackAmount(text, lines),
-    billDate: labeled.billDate ?? fallbackDate(text),
+    claimDate: labeled.claimDate ?? fallbackDate(text),
     invoiceNo: labeled.invoiceNo ?? fallbackInvoice(text),
   });
 
@@ -576,8 +576,8 @@ export function parseBill(rawText: string): ParsedBillFields {
   return {
     vendor,
     amount,
-    billDate: formatBillDate(assigned.billDate),
-    billingMonth: formatBillingMonth(assigned.billDate),
+    claimDate: formatClaimDate(assigned.claimDate),
+    claimMonth: formatClaimMonth(assigned.claimDate),
     invoiceNo: assigned.invoiceNo,
     category: pickCategory(text, vendor),
   };

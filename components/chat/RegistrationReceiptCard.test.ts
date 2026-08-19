@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { buildBillExtractFromScenario } from "@/features/chat/demoUploadScenarios";
+import { buildClaimExtractFromScenario } from "@/features/chat/demoUploadScenarios";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
 import { ClaimReceiptCard } from "./ClaimReceiptCard";
 import { DriverSalaryReceiptCard } from "./DriverSalaryReceiptCard";
@@ -37,7 +37,7 @@ describe("registration receipt cards", () => {
     expect(html).not.toContain(">Admin<");
   });
 
-  it("does not render a status tag on bill upload submissions", () => {
+  it("does not render a status tag on claim upload submissions", () => {
     const html = renderToStaticMarkup(
       createElement(ClaimReceiptCard, {
         claimId: "CLM-87550",
@@ -63,11 +63,11 @@ describe("registration receipt cards", () => {
     );
   });
 
-  it("labels clean bills for auto review and edited bills for manual review", () => {
+  it("labels clean claims for auto review and edited claims for manual review", () => {
     const cleanHtml = renderToStaticMarkup(
       createElement(ClaimReceiptCard, {
         claimId: "CLM-87551",
-        extract: buildBillExtractFromScenario("fuel"),
+        extract: buildClaimExtractFromScenario("fuel"),
         submittedAt: 0,
       }),
     );
@@ -75,7 +75,7 @@ describe("registration receipt cards", () => {
       createElement(ClaimReceiptCard, {
         claimId: "CLM-87552",
         extract: {
-          ...buildBillExtractFromScenario("fuel"),
+          ...buildClaimExtractFromScenario("fuel"),
           autoApprovalWaived: true,
         },
         submittedAt: 0,

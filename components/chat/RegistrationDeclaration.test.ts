@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { buildVehicleLookup } from "@/lib/vehicle/demoLookup";
-import { BillExtractCard } from "./BillExtractCard";
+import { ClaimExtractCard } from "./ClaimExtractCard";
 import { DriverSalaryReviewCard } from "./DriverSalaryReviewCard";
 import { RegistrationDeclaration } from "./RegistrationDeclaration";
 import { VehicleDetailsCard } from "./VehicleDetailsCard";
@@ -28,7 +28,7 @@ describe("registration declarations", () => {
 
   it("requires a declaration before a claim can be submitted", () => {
     const html = renderToStaticMarkup(
-      createElement(BillExtractCard, {
+      createElement(ClaimExtractCard, {
         messageId: "claim-review",
         extract: {
           fileName: "internet-bill.pdf",
@@ -36,8 +36,8 @@ describe("registration declarations", () => {
           category: "Internet",
           vendor: "Airtel",
           amount: "1499",
-          billDate: "2026-08-01",
-          billingMonth: "2026-08",
+          claimDate: "2026-08-01",
+          claimMonth: "2026-08",
           invoiceNo: "INV-123",
         },
       }),

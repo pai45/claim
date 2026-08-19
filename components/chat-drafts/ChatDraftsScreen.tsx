@@ -10,11 +10,11 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ScreenHeader } from "@/components/shared/ScreenHeader";
 import { markInAppClaimsEntry } from "@/features/auth/directClaimsEntry";
 import {
-  BILL_DRAFT_DELETE_HINT_KEY,
-  BILL_DRAFT_LIMIT,
-  BILL_DRAFT_RETENTION_DAYS,
-  billDraftStore,
-  type BillDraft,
+  CLAIM_DRAFT_DELETE_HINT_KEY,
+  CLAIM_DRAFT_LIMIT,
+  CLAIM_DRAFT_RETENTION_DAYS,
+  claimDraftStore,
+  type ClaimDraft,
 } from "@/features/chat/drafts";
 import { setPendingChatIntent } from "@/features/chat/pendingIntent";
 import { formatINR } from "@/features/dashboard/constants";
@@ -59,7 +59,7 @@ function amountLabel(value?: string): string {
 }
 
 type DraftRowProps = {
-  draft: BillDraft;
+  draft: ClaimDraft;
   index: number;
   showDeleteHint: boolean;
   onOpen: () => void;
@@ -95,7 +95,7 @@ function DraftRow({
     if (!showDeleteHint) return;
 
     try {
-      window.localStorage.setItem(BILL_DRAFT_DELETE_HINT_KEY, "true");
+      window.localStorage.setItem(CLAIM_DRAFT_DELETE_HINT_KEY, "true");
     } catch {
       // The hint remains harmless when browser storage is blocked.
     }
@@ -228,15 +228,15 @@ function DraftRow({
 
 export function ChatDraftsScreen() {
   const router = useRouter();
-  const [drafts, setDrafts] = useState<BillDraft[]>([]);
+  const [drafts, setDrafts] = useState<ClaimDraft[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<BillDraft | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<ClaimDraft | null>(null);
   const [deleteHintDraftId, setDeleteHintDraftId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    void billDraftStore
+    void claimDraftStore
       .list()
       .then((records) => {
         if (!active) return;
@@ -244,7 +244,7 @@ export function ChatDraftsScreen() {
         if (records.length > 0) {
           try {
             if (
-              window.localStorage.getItem(BILL_DRAFT_DELETE_HINT_KEY) !== "true"
+              window.localStorage.getItem(CLAIM_DRAFT_DELETE_HINT_KEY) !== "true"
             ) {
               setDeleteHintDraftId(records[0].id);
             }
@@ -270,7 +270,7 @@ export function ChatDraftsScreen() {
   }
 
   function openDraft(draftId: string) {
-    setPendingChatIntent({ kind: "bill_draft", draftId });
+    setPendingChatIntent({ kind: "claim_draft", draftId });
     returnToClaims();
   }
 
@@ -279,7 +279,7 @@ export function ChatDraftsScreen() {
     const id = deleteTarget.id;
     setDeleteTarget(null);
     try {
-      await billDraftStore.delete(id);
+      await claimDraftStore.delete(id);
       setDrafts((current) => current.filter((draft) => draft.id !== id));
     } catch {
       setError("That draft could not be deleted. Please try again.");
@@ -294,14 +294,14 @@ export function ChatDraftsScreen() {
         <section className="rounded-control border border-input-border bg-surface-tint px-3 py-3">
           <div className="flex items-center justify-between gap-3">
             <p className="type-body font-bold text-pine">
-              Save up to {BILL_DRAFT_LIMIT} bills for up to {BILL_DRAFT_RETENTION_DAYS} days.
+              Save up to {CLAIM_DRAFT_LIMIT} claims for up to {CLAIM_DRAFT_RETENTION_DAYS} days.
             </p>
             <span className="shrink-0 rounded-pill bg-white px-2.5 py-1 text-caption font-bold text-pine shadow-soft">
-              {drafts.length}/{BILL_DRAFT_LIMIT}
+              {drafts.length}/{CLAIM_DRAFT_LIMIT}
             </span>
           </div>
           <p className="mt-1 type-body-secondary">
-            Drafts stay only in this browser. Swipe a bill left to delete it.
+            Drafts stay only in this browser. Swipe a claim left to delete it.
           </p>
         </section>
 
@@ -320,20 +320,20 @@ export function ChatDraftsScreen() {
             <span className="flex h-16 w-16 items-center justify-center rounded-card bg-surface-tint text-pine-primary shadow-icon">
               <AppIcon src={UI_ICONS.chatDrafts} size={32} alt="" />
             </span>
-            <h2 className="mt-4 type-section-title text-pine">No bill drafts yet</h2>
+            <h2 className="mt-4 type-section-title text-pine">No claim drafts yet</h2>
             <p className="mt-2 max-w-card type-body-secondary">
-              Scan a bill in Benefits assistant and it will be saved here automatically.
+              Scan a claim in Benefits assistant and it will be saved here automatically.
             </p>
             <button
               type="button"
               onClick={returnToClaims}
               className="btn-primary mt-5 w-full max-w-card"
             >
-              Upload a bill
+              Upload a claim
             </button>
           </section>
         ) : (
-          <section className="mt-4 flex flex-col gap-3" aria-label="Saved bill drafts">
+          <section className="mt-4 flex flex-col gap-3" aria-label="Saved claim drafts">
             {drafts.map((draft, index) => (
               <DraftRow
                 key={draft.id}
@@ -351,7 +351,7 @@ export function ChatDraftsScreen() {
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete this draft?"
-        description={`This removes ${deleteTarget?.extract.vendor || deleteTarget?.extract.fileName || "the selected bill"} and its saved bill file from this browser.`}
+        description={`This removes ${deleteTarget?.extract.vendor || deleteTarget?.extract.fileName || "the selected claim"} and its saved claim file from this browser.`}
         confirmLabel="Delete draft"
         cancelLabel="Keep draft"
         onConfirm={() => void deleteDraft()}

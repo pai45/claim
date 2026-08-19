@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BenefitsCtaNudge } from "@/components/benefits-nudge/BenefitsCtaNudge";
+// Disabled for now — see the commented mount below.
+// import { BenefitsCtaNudge } from "@/components/benefits-nudge/BenefitsCtaNudge";
 import { ChatShell } from "@/components/chat/ChatShell";
 import { MpinLockScreen } from "@/components/mpin/MpinLockScreen";
 import { OnboardingShell } from "@/components/onboarding/OnboardingShell";
@@ -696,11 +697,11 @@ export function EmployeeBenefitsHost() {
       />
 
       {/*
-        Vishal's counterpart to the walkthroughs above. He has none of them —
-        he logs in with one tap and lands here — so this is the only thing that
-        points him at the assistant, and unlike them it blocks nothing.
+        Vishal's counterpart to the walkthroughs above — points a returning
+        user at the Benefits button if they haven't tapped it. Disabled for
+        now; the component, styles, and tests are still in the tree.
       */}
-      <BenefitsCtaNudge
+      {/* <BenefitsCtaNudge
         personaId={persona.id}
         frameReady={frameReady}
         plusPayMode={plusPayMode}
@@ -711,7 +712,7 @@ export function EmployeeBenefitsHost() {
           !ebPlusSetupOpen &&
           !cardMpinIntent
         }
-      />
+      /> */}
 
       {claimsOpen ? (
         <section

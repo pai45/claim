@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { BillExtract, ClaimPrecheck } from "@/features/chat/types";
+import type { ClaimExtract, ClaimPrecheck } from "@/features/chat/types";
 import {
   AUTO_APPROVAL_CONFIDENCE_THRESHOLD,
   evaluateAutoApproval,
@@ -9,12 +9,12 @@ function precheckWith(status: ClaimPrecheck["status"]): ClaimPrecheck {
   return { status, checks: [], requiresAcknowledgement: status === "warning" };
 }
 
-function extractWith(overrides: Partial<BillExtract> = {}): BillExtract {
-  return { fileName: "bill.jpg", rawText: "", confidence: 96, ...overrides };
+function extractWith(overrides: Partial<ClaimExtract> = {}): ClaimExtract {
+  return { fileName: "claim.jpg", rawText: "", confidence: 96, ...overrides };
 }
 
 describe("evaluateAutoApproval", () => {
-  it("clears a confident bill whose checks all pass", () => {
+  it("clears a confident claim whose checks all pass", () => {
     expect(evaluateAutoApproval(extractWith(), precheckWith("pass"))).toEqual({
       score: 96,
       eligible: true,
@@ -22,7 +22,7 @@ describe("evaluateAutoApproval", () => {
     });
   });
 
-  it("holds back a bill below the confidence threshold", () => {
+  it("holds back a claim below the confidence threshold", () => {
     const verdict = evaluateAutoApproval(
       extractWith({ confidence: AUTO_APPROVAL_CONFIDENCE_THRESHOLD - 1 }),
       precheckWith("pass"),
@@ -30,7 +30,7 @@ describe("evaluateAutoApproval", () => {
     expect(verdict).toEqual({ score: 89, eligible: false, reason: "low_confidence" });
   });
 
-  it("accepts a bill sitting exactly on the threshold", () => {
+  it("accepts a claim sitting exactly on the threshold", () => {
     const verdict = evaluateAutoApproval(
       extractWith({ confidence: AUTO_APPROVAL_CONFIDENCE_THRESHOLD }),
       precheckWith("pass"),
@@ -38,7 +38,7 @@ describe("evaluateAutoApproval", () => {
     expect(verdict.eligible).toBe(true);
   });
 
-  it("holds back a confident bill whose policy checks did not pass", () => {
+  it("holds back a confident claim whose policy checks did not pass", () => {
     for (const status of ["warning", "blocked"] as const) {
       expect(evaluateAutoApproval(extractWith(), precheckWith(status))).toEqual({
         score: 96,

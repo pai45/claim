@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AppIcon } from "@/components/shared/AppIcon";
 import { BackNavigationButton } from "@/components/shared/BackNavigationButton";
+import { useNotifications } from "@/features/notifications/useNotifications";
 import { UI_ICONS } from "@/lib/ui/assets";
 import { HeaderMenu } from "./HeaderMenu";
 
@@ -16,6 +17,7 @@ type ChatHeaderProps = {
 export function ChatHeader({ onNewChat, onBack }: ChatHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const router = useRouter();
+  const { count: notificationCount } = useNotifications();
 
   return (
     <>
@@ -38,13 +40,27 @@ export function ChatHeader({ onNewChat, onBack }: ChatHeaderProps) {
         <button
           type="button"
           id="chat-header-menu-trigger"
-          aria-label="Open menu"
+          aria-label={
+            notificationCount > 0
+              ? `Open menu, ${notificationCount} unread ${notificationCount === 1 ? "notification" : "notifications"}`
+              : "Open menu"
+          }
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen(true)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-pine"
+          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-pine"
         >
           <AppIcon src={UI_ICONS.menu} size={24} alt="" />
+          {/* Notifications live inside the menu, so the unread state has to
+              surface on the trigger or it stays invisible. Same dot as the
+              home screen's alerts card. The count itself is spelled out in
+              `aria-label` above, since the dot is decorative. */}
+          {notificationCount > 0 ? (
+            <span
+              aria-hidden
+              className="absolute right-2 top-2 h-2.5 w-2.5 rounded-pill border-2 border-white bg-notify"
+            />
+          ) : null}
         </button>
       </header>
 

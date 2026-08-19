@@ -5,7 +5,7 @@ import {
   type EmployerBenefit,
 } from "@/features/policy/constants";
 import type {
-  BillExtract,
+  ClaimExtract,
   ClaimCheckStatus,
   ClaimFieldName,
   ClaimFieldReviewState,
@@ -50,10 +50,10 @@ function worstStatus(statuses: ClaimCheckStatus[]): ClaimCheckStatus {
   return "pass";
 }
 
-function isPossibleDuplicate(extract: BillExtract, amount: number | null): boolean {
+function isPossibleDuplicate(extract: ClaimExtract, amount: number | null): boolean {
   if (extract.editClaimId) return false;
-  if (!amount || !extract.vendor || !extract.billDate) return false;
-  const date = parseClaimDate(extract.billDate);
+  if (!amount || !extract.vendor || !extract.claimDate) return false;
+  const date = parseClaimDate(extract.claimDate);
   return CLAIM_HISTORY_ITEMS.some((claim) => {
     const claimDate = parseClaimDate(claim.date);
     return (
@@ -73,17 +73,17 @@ function formatINR(amount: number): string {
 }
 
 export function evaluateClaimPrecheck(
-  extract: BillExtract,
+  extract: ClaimExtract,
   now = new Date(),
 ): ClaimPrecheck {
   const benefit = findBenefitForClaim(extract.category);
   const amount = parseClaimAmount(extract.amount);
-  const billDate = parseClaimDate(extract.billDate);
+  const claimDate = parseClaimDate(extract.claimDate);
   const requiredFields = benefit?.claimRules.requiredFields ?? [
     "category",
     "vendor",
     "amount",
-    "billDate",
+    "claimDate",
   ];
   const missing = requiredFields.filter((field) => !extract[field]?.trim());
   const checks: ClaimPrecheck["checks"] = [
@@ -103,12 +103,12 @@ export function evaluateClaimPrecheck(
       status: amount ? "pass" : "blocked",
     },
     {
-      id: "bill-date",
-      label: "Bill date",
-      detail: billDate
-        ? "The bill date is valid."
-        : "Enter a valid bill date.",
-      status: billDate ? "pass" : "blocked",
+      id: "claim-date",
+      label: "Claim date",
+      detail: claimDate
+        ? "The claim date is valid."
+        : "Enter a valid claim date.",
+      status: claimDate ? "pass" : "blocked",
     },
     {
       id: "policy",
@@ -137,8 +137,8 @@ export function evaluateClaimPrecheck(
     id: "proof",
     label: "Proof",
     detail: extract.fileName
-      ? benefit?.claimRules.proofRequired ?? "A bill is attached for HR review."
-      : "Attach a bill before submitting.",
+      ? benefit?.claimRules.proofRequired ?? "A claim is attached for HR review."
+      : "Attach a claim before submitting.",
     status: extract.fileName ? "pass" : "blocked",
   });
 
@@ -152,17 +152,17 @@ export function evaluateClaimPrecheck(
     status: duplicate ? "warning" : "pass",
   });
 
-  if (extract.editClaimId && billDate) {
+  if (extract.editClaimId && claimDate) {
     checks.push({
       id: "deadline",
       label: "Submission deadline",
       detail: "This is an existing claim, so corrections remain available after submission.",
       status: "pass",
     });
-  } else if (benefit?.claimRules.submissionDeadlineDay && billDate) {
+  } else if (benefit?.claimRules.submissionDeadlineDay && claimDate) {
     const deadline = new Date(
-      billDate.getFullYear(),
-      billDate.getMonth() + 1,
+      claimDate.getFullYear(),
+      claimDate.getMonth() + 1,
       benefit.claimRules.submissionDeadlineDay,
       23,
       59,
@@ -198,7 +198,7 @@ export function evaluateClaimPrecheck(
 
 export function claimFieldReviewState(
   field: ClaimFieldName,
-  extract: BillExtract,
+  extract: ClaimExtract,
 ): ClaimFieldReviewState {
   if (!extract[field]?.trim()) return "missing";
   if ((extract.confidence ?? 0) < 60) return "review";

@@ -23,7 +23,7 @@ export function VehicleRegistrationPrompt({
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h2 className="type-section-title">Register your vehicle</h2>
           <p className="type-body-secondary">
-            Add your vehicle once to claim fuel and maintenance bills against
+            Add your vehicle once to submit fuel and maintenance claims against
             this limit.
           </p>
         </div>

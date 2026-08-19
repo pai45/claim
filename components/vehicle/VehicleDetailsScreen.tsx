@@ -67,7 +67,7 @@ export function VehicleDetailsScreen() {
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <h2 className="type-section-title">No vehicle registered</h2>
                 <p className="type-body-secondary">
-                  Register your vehicle to claim fuel and maintenance bills.
+                  Register your vehicle to submit fuel and maintenance claims.
                 </p>
               </div>
             </div>

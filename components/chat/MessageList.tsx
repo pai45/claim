@@ -10,7 +10,7 @@ import {
 } from "react";
 import type { BenefitType } from "@/lib/merchants/types";
 import type {
-  BillExtract,
+  ClaimExtract,
   ChatMessage,
   DocumentProcessingStage,
   DocumentUploadKind,
@@ -40,18 +40,18 @@ type MessageListProps = {
   policyModelStatus?: PolicyModelStatus | null;
   onAwayFromBottomChange?: (away: boolean) => void;
   onQuickChatSelected?: (action: QuickAction) => void;
-  onBillSourceSelected?: (source: UploadOptionId) => void;
+  onClaimSourceSelected?: (source: UploadOptionId) => void;
   onDlSourceSelected?: (source: UploadOptionId) => void;
-  onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
-  onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onUpdateClaimExtract?: (messageId: string, next: ClaimExtract) => void;
+  onSubmitClaim?: (messageId: string, extract: ClaimExtract) => void;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
-    extract: BillExtract,
+    extract: ClaimExtract,
   ) => void;
-  onReplaceBill?: (messageId: string) => void;
+  onReplaceClaim?: (messageId: string) => void;
   onNewClaim?: () => void;
-  onStartAnotherBill?: () => void;
+  onStartAnotherClaim?: () => void;
   documentProcessingStage?: DocumentProcessingStage | null;
   documentProcessingKind?: DocumentUploadKind;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
@@ -113,14 +113,14 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
       policyModelStatus,
       onAwayFromBottomChange,
       onQuickChatSelected,
-      onBillSourceSelected,
+      onClaimSourceSelected,
       onDlSourceSelected,
-      onUpdateBillExtract,
-      onSubmitBillClaim,
+      onUpdateClaimExtract,
+      onSubmitClaim,
       onSaveClaimEdit,
-      onReplaceBill,
+      onReplaceClaim,
       onNewClaim,
-      onStartAnotherBill,
+      onStartAnotherClaim,
       documentProcessingStage,
       documentProcessingKind,
       onSelectPolicyCategory,
@@ -329,14 +329,14 @@ export const MessageList = forwardRef<MessageListHandle, MessageListProps>(
                   message.role === "assistant" &&
                   Date.now() - message.createdAt < 4000
                 }
-                onBillSourceSelected={onBillSourceSelected}
+                onClaimSourceSelected={onClaimSourceSelected}
                 onDlSourceSelected={onDlSourceSelected}
-                onUpdateBillExtract={onUpdateBillExtract}
-                onSubmitBillClaim={onSubmitBillClaim}
+                onUpdateClaimExtract={onUpdateClaimExtract}
+                onSubmitClaim={onSubmitClaim}
                 onSaveClaimEdit={onSaveClaimEdit}
-                onReplaceBill={onReplaceBill}
+                onReplaceClaim={onReplaceClaim}
                 onNewClaim={onNewClaim}
-                onStartAnotherBill={onStartAnotherBill}
+                onStartAnotherClaim={onStartAnotherClaim}
                 onSelectPolicyCategory={onSelectPolicyCategory}
                 onSelectMerchantBenefitType={onSelectMerchantBenefitType}
                 onSelectMerchantSearchMode={onSelectMerchantSearchMode}

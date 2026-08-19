@@ -169,7 +169,7 @@ export default function App() {
           javaScriptEnabled
           // Keeps localStorage (chat history) working on Android.
           domStorageEnabled
-          // Camera and gallery pickers for bill and licence capture.
+          // Camera and gallery pickers for claim and licence capture.
           allowFileAccess
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction={false}

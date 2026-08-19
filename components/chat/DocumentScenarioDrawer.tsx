@@ -4,11 +4,11 @@ import { useRef } from "react";
 import { AppIcon } from "@/components/shared/AppIcon";
 import {
   DL_UPLOAD_SCENARIOS,
-  getBillUploadScenariosForSource,
-  type BillScenarioGroup,
+  getClaimUploadScenariosForSource,
+  type ClaimScenarioGroup,
 } from "@/features/chat/demoUploadScenarios";
 import type {
-  BillUploadScenarioId,
+  ClaimUploadScenarioId,
   DlUploadScenarioId,
   DocumentUploadKind,
   UploadOptionId,
@@ -17,7 +17,7 @@ import { staggerStyle } from "@/lib/ui/staggerStyle";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
 
 export type DocumentScenarioSelection =
-  | { kind: "bill"; scenarioId: BillUploadScenarioId }
+  | { kind: "claim"; scenarioId: ClaimUploadScenarioId }
   | { kind: "dl"; scenarioId: DlUploadScenarioId };
 
 type DocumentScenarioDrawerProps = {
@@ -34,8 +34,8 @@ const SOURCE_LABELS: Record<UploadOptionId, string> = {
   gallery: "Gallery",
 };
 
-const GROUP_LABELS: Record<BillScenarioGroup, string> = {
-  common: "Common bills",
+const GROUP_LABELS: Record<ClaimScenarioGroup, string> = {
+  common: "Common claims",
   exceptions: "Exceptions",
 };
 
@@ -49,8 +49,8 @@ export function DocumentScenarioDrawer({
   const drawerRef = useRef<HTMLDivElement>(null);
   useModalFocus(drawerRef, open, onClose);
 
-  const billGroups: BillScenarioGroup[] = ["common", "exceptions"];
-  const billScenarios = getBillUploadScenariosForSource(source);
+  const claimGroups: ClaimScenarioGroup[] = ["common", "exceptions"];
+  const claimScenarios = getClaimUploadScenariosForSource(source);
 
   return (
     <div
@@ -86,7 +86,7 @@ export function DocumentScenarioDrawer({
               {SOURCE_LABELS[source]} demo
             </p>
             <h2 id="document-scenario-title" className="type-section-title text-pine">
-              {kind === "bill" ? "Choose a bill scenario" : "Choose a DL outcome"}
+              {kind === "claim" ? "Choose a claim scenario" : "Choose a DL outcome"}
             </h2>
             <p className="mt-1 type-body-secondary">
               Select an image to run the mock upload flow.
@@ -103,10 +103,10 @@ export function DocumentScenarioDrawer({
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-page pb-8">
-          {kind === "bill" ? (
+          {kind === "claim" ? (
             <div className="flex flex-col gap-section">
-              {billGroups.map((group) => {
-                const scenarios = billScenarios.filter(
+              {claimGroups.map((group) => {
+                const scenarios = claimScenarios.filter(
                   (scenario) => scenario.group === group,
                 );
                 return (
@@ -123,7 +123,7 @@ export function DocumentScenarioDrawer({
                           key={scenario.id}
                           type="button"
                           onClick={() =>
-                            onSelect({ kind: "bill", scenarioId: scenario.id })
+                            onSelect({ kind: "claim", scenarioId: scenario.id })
                           }
                           style={staggerStyle(index)}
                           className="animate-rise-in min-h-11 overflow-hidden rounded-card border border-border-line bg-white text-left shadow-card transition-colors hover:border-pine-primary focus-visible:outline-2 focus-visible:outline-pine-primary"

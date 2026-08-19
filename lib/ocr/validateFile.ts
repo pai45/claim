@@ -22,7 +22,7 @@ export function isHeic(file: File) {
   return /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
 }
 
-/** `noun` is used in the error copy, e.g. "bill" -> "Please upload a bill…". */
+/** `noun` is used in the error copy, e.g. "claim" -> "Please upload a claim…". */
 export function validateDocumentFile(file: File, noun = "document"): string | null {
   if (file.size > MAX_BYTES) {
     return "File is too large. Please upload a file up to 10 MB.";

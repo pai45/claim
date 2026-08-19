@@ -14,7 +14,7 @@ function configurePdfWorker(pdfjs: {
 
 /**
  * Rebuild readable line-oriented text from pdf.js text items using Y positions.
- * Digital invoices become near-perfect input for parseBill — no OCR needed.
+ * Digital invoices become near-perfect input for parseClaim — no OCR needed.
  */
 function reconstructPageText(items: TextItem[]): string {
   const rows: { y: number; parts: { x: number; text: string }[] }[] = [];
@@ -76,7 +76,7 @@ export async function extractPdfText(file: File): Promise<string | null> {
   // Scanned PDFs often have empty/tiny text layers
   if (compact.length < 40) return null;
 
-  // Prefer text that looks like a bill (has digits + a few letters)
+  // Prefer text that looks like a claim document (has digits + a few letters)
   const digitCount = (compact.match(/\d/g) ?? []).length;
   const letterCount = (compact.match(/[a-zA-Z]/g) ?? []).length;
   if (digitCount < 4 || letterCount < 8) return null;

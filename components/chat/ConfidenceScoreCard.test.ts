@@ -19,7 +19,7 @@ describe("ConfidenceScoreCard", () => {
     const html = render({ score: 96, eligible: true, reason: "eligible" });
 
     // The scan result and the score share one bubble.
-    expect(html).toContain("Bill scanned");
+    expect(html).toContain("Claim scanned");
     expect(html).toContain("Vendor detected");
     expect(html).toContain("Confidence score");
     expect(html).toContain("96%");

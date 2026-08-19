@@ -60,6 +60,11 @@
   --color-warning-ink: #7a5a00;
   --color-danger: #7a2e24;
   --color-danger-soft: #f4e8e6;
+  /* Unread-notification dot only. `--color-danger` is tuned to stay readable
+     as text on `--color-danger-soft`, which leaves it too brown to read as
+     "red" at 10px on white. This is the EB+ host bell's red, so the dot is the
+     same colour on the host home and inside the assistant. */
+  --color-notify: #d32f2f;
   --color-driver-salary: #745c53;
   --color-cta-ink: #1e4e45;
 

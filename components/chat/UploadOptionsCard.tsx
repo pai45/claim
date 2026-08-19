@@ -68,7 +68,7 @@ export function UploadOptionsCard({
   onSourceSelected,
   disabled,
   title = "Upload options",
-  subtitle = "Choose a source of your bill.",
+  subtitle = "Choose a source of your claim.",
 }: UploadOptionsCardProps) {
   function handlePick(optionId: UploadOptionId) {
     if (disabled) return;

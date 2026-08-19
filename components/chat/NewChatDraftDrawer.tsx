@@ -5,7 +5,7 @@ import { useModalFocus } from "@/lib/ui/useModalFocus";
 
 type NewChatDraftDrawerProps = {
   open: boolean;
-  mode?: "new-chat" | "new-bill";
+  mode?: "new-chat" | "new-claim";
   onKeepDraft: () => void;
   onStartWithoutSaving: () => void;
   onClose: () => void;
@@ -20,7 +20,7 @@ export function NewChatDraftDrawer({
 }: NewChatDraftDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
   useModalFocus(drawerRef, open, onClose);
-  const isNewBill = mode === "new-bill";
+  const isNewClaim = mode === "new-claim";
 
   return (
     <div
@@ -54,15 +54,15 @@ export function NewChatDraftDrawer({
         <header className="flex items-start justify-between gap-3">
           <div>
             <h2 id="new-chat-drawer-title" className="type-section-title text-pine">
-              {isNewBill ? "Keep the previous bill in draft?" : "Start a new chat?"}
+              {isNewClaim ? "Keep the previous claim in draft?" : "Start a new chat?"}
             </h2>
             <p
               id="new-chat-drawer-description"
               className="mt-1 type-body-secondary"
             >
-              {isNewBill
-                ? "Save the previous bill as a draft before continuing with the new bill."
-                : "Keep each unsubmitted bill as a draft, or start again without saving it."}
+              {isNewClaim
+                ? "Save the previous claim as a draft before continuing with the new claim."
+                : "Keep each unsubmitted claim as a draft, or start again without saving it."}
             </p>
           </div>
           <button
@@ -77,7 +77,7 @@ export function NewChatDraftDrawer({
 
         <div className="mt-5 flex flex-col gap-2">
           <button type="button" onClick={onKeepDraft} className="btn-primary w-full">
-            {isNewBill ? "Keep in draft" : "Keep my draft"}
+            {isNewClaim ? "Keep in draft" : "Keep my draft"}
           </button>
           <button
             type="button"

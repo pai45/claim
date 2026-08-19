@@ -9,9 +9,9 @@ export const USER_DISPLAY_NAME = "Vishal Sharma";
  */
 export const QUICK_ACTIONS: QuickAction[] = [
   {
-    id: "upload-bill",
+    id: "upload-claim",
     label: "Upload claim",
-    intentId: "upload_bill",
+    intentId: "upload_claim",
     featured: true,
   },
   {

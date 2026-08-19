@@ -37,9 +37,9 @@ function sanitizeDriverSalary(
 export function sanitizeChatMessage(message: ChatMessage): ChatMessage {
   return {
     ...message,
-    billExtract: message.billExtract
+    claimExtract: message.claimExtract
       ? {
-          ...message.billExtract,
+          ...message.claimExtract,
           rawText: "",
           previewUrl: undefined,
           previewType: undefined,

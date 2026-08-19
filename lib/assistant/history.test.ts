@@ -47,13 +47,13 @@ describe("assistant prompt history", () => {
 
   it("skips card messages whose content is a placeholder label", () => {
     const history = buildAssistantHistory([
-      message("user", "Upload a bill"),
+      message("user", "Upload a claim"),
       message("assistant", "Upload options", "upload_options"),
-      message("assistant", "Bill scanned", "document_scan"),
+      message("assistant", "Claim scanned", "document_scan"),
       message("assistant", "Choose a benefit policy", "policy_options"),
     ]);
 
-    expect(history).toEqual([{ role: "user", content: "Upload a bill" }]);
+    expect(history).toEqual([{ role: "user", content: "Upload a claim" }]);
   });
 
   it("truncates a long turn rather than dropping it", () => {

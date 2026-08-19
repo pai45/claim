@@ -4,7 +4,7 @@ import Link from "next/link";
 import { colors } from "@/lib/ui/colors";
 import type { BenefitType } from "@/lib/merchants/types";
 import type {
-  BillExtract,
+  ClaimExtract,
   ChatMessage,
   DriverSalaryPayload,
   UploadOptionId,
@@ -16,7 +16,7 @@ import {
   type PolicyTabId,
 } from "@/features/policy/constants";
 import { AssistantMarkdown } from "./AssistantMarkdown";
-import { BillExtractCard } from "./BillExtractCard";
+import { ClaimExtractCard } from "./ClaimExtractCard";
 import { ChatAvatar } from "./ChatAvatar";
 import { ClaimReceiptCard } from "./ClaimReceiptCard";
 import { ConfidenceScoreCard } from "./ConfidenceScoreCard";
@@ -78,18 +78,18 @@ type MessageBubbleProps = {
   message: ChatMessage;
   reveal?: boolean;
   showAssistantAvatar?: boolean;
-  onBillSourceSelected?: (source: UploadOptionId) => void;
+  onClaimSourceSelected?: (source: UploadOptionId) => void;
   onDlSourceSelected?: (source: UploadOptionId) => void;
-  onUpdateBillExtract?: (messageId: string, next: BillExtract) => void;
-  onSubmitBillClaim?: (messageId: string, extract: BillExtract) => void;
+  onUpdateClaimExtract?: (messageId: string, next: ClaimExtract) => void;
+  onSubmitClaim?: (messageId: string, extract: ClaimExtract) => void;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
-    extract: BillExtract,
+    extract: ClaimExtract,
   ) => void;
-  onReplaceBill?: (messageId: string) => void;
+  onReplaceClaim?: (messageId: string) => void;
   onNewClaim?: () => void;
-  onStartAnotherBill?: () => void;
+  onStartAnotherClaim?: () => void;
   onSelectPolicyCategory?: (categoryId: PolicyTabId) => void;
   onSelectMerchantBenefitType?: (benefitType: BenefitType) => void;
   onSelectMerchantSearchMode?: (
@@ -118,14 +118,14 @@ export function MessageBubble({
   message,
   reveal = false,
   showAssistantAvatar = true,
-  onBillSourceSelected,
+  onClaimSourceSelected,
   onDlSourceSelected,
-  onUpdateBillExtract,
-  onSubmitBillClaim,
+  onUpdateClaimExtract,
+  onSubmitClaim,
   onSaveClaimEdit,
-  onReplaceBill,
+  onReplaceClaim,
   onNewClaim,
-  onStartAnotherBill,
+  onStartAnotherClaim,
   onSelectPolicyCategory,
   onSelectMerchantBenefitType,
   onSelectMerchantSearchMode,
@@ -149,7 +149,7 @@ export function MessageBubble({
     return (
       <div className="flex w-full justify-start">
         <UploadOptionsCard
-          onSourceSelected={(source) => onBillSourceSelected?.(source)}
+          onSourceSelected={(source) => onClaimSourceSelected?.(source)}
           disabled={uploadDisabled}
         />
       </div>
@@ -276,23 +276,23 @@ export function MessageBubble({
     );
   }
 
-  if (message.kind === "bill_extract" && message.billExtract) {
+  if (message.kind === "claim_extract" && message.claimExtract) {
     return (
       <div className="flex w-full flex-col items-start gap-2">
-        {!message.billExtract.error ? (
+        {!message.claimExtract.error ? (
           <AssistantText
             content={message.content}
             createdAt={message.createdAt}
             showAvatar={showAssistantAvatar}
           />
         ) : null}
-        <BillExtractCard
-          key={`${message.id}-${message.billExtract.fileName}-${message.billExtract.previewAsset ?? message.billExtract.previewUrl ?? "saved"}`}
+        <ClaimExtractCard
+          key={`${message.id}-${message.claimExtract.fileName}-${message.claimExtract.previewAsset ?? message.claimExtract.previewUrl ?? "saved"}`}
           messageId={message.id}
-          extract={message.billExtract}
-          onUpdate={onUpdateBillExtract}
-          onSubmitted={onSubmitBillClaim}
-          onReplace={onReplaceBill}
+          extract={message.claimExtract}
+          onUpdate={onUpdateClaimExtract}
+          onSubmitted={onSubmitClaim}
+          onReplace={onReplaceClaim}
           onNewClaim={onNewClaim}
           onSaveClaimEdit={onSaveClaimEdit}
         />
@@ -376,12 +376,12 @@ export function MessageBubble({
   }
 
   if (message.kind === "claim_cta" && message.claimId) {
-    if (message.billExtract) {
+    if (message.claimExtract) {
       return (
       <div className="flex w-full flex-col items-start gap-2">
         <ClaimReceiptCard
           claimId={message.claimId}
-          extract={message.billExtract}
+          extract={message.claimExtract}
           submittedAt={message.createdAt}
           action={message.claimAction}
         />
@@ -395,10 +395,10 @@ export function MessageBubble({
           {message.claimAction !== "updated" ? (
             <button
               type="button"
-              onClick={onStartAnotherBill}
+              onClick={onStartAnotherClaim}
               className={`${pillClass} whitespace-nowrap`}
             >
-              New bill
+              New claim
             </button>
           ) : null}
         </div>
@@ -414,7 +414,7 @@ export function MessageBubble({
             payload={message.driverSalary}
             submittedAt={message.createdAt}
           />
-          {/* Registering a driver files no bill, so there is no claim to
+          {/* Registering a driver files no claim, so there is nothing to
               open — the registered driver on the dashboard is what the user wants to see. */}
           <div className="flex flex-wrap content-start gap-2">
             <Link href="/driver/" className={pillClass}>
@@ -442,7 +442,7 @@ export function MessageBubble({
             submittedAt={message.createdAt}
           />
           <div className="flex flex-wrap content-start gap-2">
-            {/* Registering a vehicle files no bill, so there is no claim to
+            {/* Registering a vehicle files no claim, so there is nothing to
                 open — the vehicle it created is what the user wants to see. */}
             <Link href="/vehicle/" className={pillClass}>
               View vehicle details

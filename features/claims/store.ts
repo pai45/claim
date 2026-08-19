@@ -14,8 +14,8 @@ export type ClaimOverride = {
   vendor?: string;
   category?: string;
   amount?: number;
-  billDate?: string;
-  billingMonth?: string;
+  claimDate?: string;
+  claimMonth?: string;
   invoiceNo?: string;
   fileName?: string;
   status?: ClaimDisplayStatus;
@@ -64,8 +64,8 @@ function isClaimOverride(value: unknown): value is ClaimOverride {
   return [
     candidate.vendor,
     candidate.category,
-    candidate.billDate,
-    candidate.billingMonth,
+    candidate.claimDate,
+    candidate.claimMonth,
     candidate.invoiceNo,
     candidate.fileName,
   ].every((field) => field === undefined || typeof field === "string");

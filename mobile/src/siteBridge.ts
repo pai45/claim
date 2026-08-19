@@ -87,7 +87,7 @@ true;
 /** True for URLs the WebView should load itself rather than hand to the OS. */
 export function isInternalUrl(url: string): boolean {
   if (url.startsWith(SITE_URL_PREFIX)) return true;
-  // Bill and licence previews are created in-page with URL.createObjectURL.
+  // Claim and licence previews are created in-page with URL.createObjectURL.
   return (
     url.startsWith("blob:") || url.startsWith("data:") || url === "about:blank"
   );

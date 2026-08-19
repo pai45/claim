@@ -15,10 +15,10 @@ type ScannedDocumentCardProps = {
   embedded?: boolean;
 };
 
-const BILL_STEPS = [
+const CLAIM_STEPS = [
   "Vendor detected",
   "Amount detected",
-  "Bill date detected",
+  "Claim date detected",
   "Checking policy",
 ] as const;
 
@@ -90,12 +90,12 @@ function CheckIcon({
 
 export function ScannedDocumentCard({
   stage,
-  documentKind = "bill",
+  documentKind = "claim",
   complete = false,
   embedded = false,
 }: ScannedDocumentCardProps) {
   const isDl = documentKind === "dl";
-  const steps = isDl ? DL_STEPS : BILL_STEPS;
+  const steps = isDl ? DL_STEPS : CLAIM_STEPS;
   const done = completedSteps(steps.length, stage, complete);
   const Wrapper = embedded ? "div" : "article";
 
@@ -133,19 +133,19 @@ export function ScannedDocumentCard({
             {complete
               ? isDl
                 ? "Licence checked"
-                : "Bill scanned"
+                : "Claim scanned"
               : isDl
                 ? "Checking licence..."
-                : "Scanning bill..."}
+                : "Scanning claim..."}
           </h3>
           <p className="type-body-secondary">
             {complete
               ? isDl
                 ? "The selected demo licence is ready"
-                : "Key details were read from the bill"
+                : "Key details were read from the claim"
               : isDl
                 ? "Preparing the selected demo licence"
-                : "Extracting key details from the bill"}
+                : "Extracting key details from the claim"}
           </p>
         </div>
       </div>

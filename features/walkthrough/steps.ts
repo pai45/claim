@@ -52,7 +52,7 @@ const BENEFITS_NAV_STEP: WalkthroughStep = {
   key: "benefits-nav",
   eyebrow: "Benefits",
   title: "Meet your Benefits Assistant",
-  body: "Tap Benefits to ask questions, upload bills, track claims, and find where each wallet can be used.",
+  body: "Tap Benefits to ask questions, upload and track claims, and find where each wallet can be used.",
 };
 
 /**
@@ -84,7 +84,7 @@ export const BENEFITS_ASSISTANT_STEPS: WalkthroughStep[] = [
     key: "composer",
     eyebrow: "Ask",
     title: "Just type it",
-    body: "Ask in plain English. Upload a bill, chase a claim, or find somewhere to spend your meal wallet.",
+    body: "Ask in plain English. Upload a claim, check its status, or find somewhere to spend your meal wallet.",
   },
   {
     key: "quick-chats",

@@ -25,8 +25,8 @@ export type ClaimDetails = {
   currentStatus: string;
   notifyNote: string;
   progress: ClaimProgressStep[];
-  billDate: string;
-  billingMonth: string;
+  claimDate: string;
+  claimMonth: string;
   invoiceNo: string;
   fileName: string;
   revokedAt?: number;
@@ -42,10 +42,10 @@ export const SAMPLE_CLAIMS: Record<string, ClaimDetails> = {
     submittedAt: "12 May 2026, 10:30 AM",
     currentStatus: "Under review",
     notifyNote: "I'll notify you once it's approved.",
-    billDate: "2026-05-12",
-    billingMonth: "2026-05",
+    claimDate: "2026-05-12",
+    claimMonth: "2026-05",
     invoiceNo: "INV-43872",
-    fileName: "claim-43872-bill.pdf",
+    fileName: "claim-43872.pdf",
     progress: [
       {
         id: "submitted",
@@ -143,13 +143,13 @@ function toDateInput(value: string): string {
   return parsed.toISOString().slice(0, 10);
 }
 
-function defaultBillFields(claimId: string, date: string) {
-  const billDate = toDateInput(date);
+function defaultClaimFields(claimId: string, date: string) {
+  const claimDate = toDateInput(date);
   return {
-    billDate,
-    billingMonth: billDate.slice(0, 7),
+    claimDate,
+    claimMonth: claimDate.slice(0, 7),
     invoiceNo: `INV-${claimId.replace(/\D/g, "").slice(-6)}`,
-    fileName: `${claimId.toLowerCase()}-bill.pdf`,
+    fileName: `${claimId.toLowerCase()}.pdf`,
   };
 }
 
@@ -159,8 +159,8 @@ function applyOverride(
 ): ClaimDetails {
   if (!override) return claim;
   const status = override.status ?? claim.status;
-  const submittedDate = override.billDate
-    ? new Date(`${override.billDate}T00:00:00`).toLocaleDateString("en-IN", {
+  const submittedDate = override.claimDate
+    ? new Date(`${override.claimDate}T00:00:00`).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -197,8 +197,8 @@ function applyOverride(
     currentStatus: status,
     notifyNote: notifyNoteForStatus(status),
     progress,
-    billDate: override.billDate ?? claim.billDate,
-    billingMonth: override.billingMonth ?? claim.billingMonth,
+    claimDate: override.claimDate ?? claim.claimDate,
+    claimMonth: override.claimMonth ?? claim.claimMonth,
     invoiceNo: override.invoiceNo ?? claim.invoiceNo,
     fileName: override.fileName ?? claim.fileName,
     revokedAt: override.revokedAt,
@@ -228,7 +228,7 @@ export function getClaimDetails(
       currentStatus: status,
       notifyNote: notifyNoteForStatus(status),
       progress: buildProgress(fromHistory.date, status),
-      ...defaultBillFields(fromHistory.id, fromHistory.date),
+      ...defaultClaimFields(fromHistory.id, fromHistory.date),
     }, override);
   }
 
@@ -248,7 +248,7 @@ export function getClaimDetails(
       currentStatus: status,
       notifyNote: notifyNoteForStatus(status),
       progress: buildProgress(fromBenefit.date, fromBenefit.status),
-      ...defaultBillFields(fromBenefit.id, fromBenefit.date),
+      ...defaultClaimFields(fromBenefit.id, fromBenefit.date),
     }, override);
   }
 

@@ -1,62 +1,62 @@
-import type { BillExtract } from "@/features/chat/types";
+import type { ClaimExtract } from "@/features/chat/types";
 
-export const BILL_DRAFT_LIMIT = 10;
-export const BILL_DRAFT_RETENTION_DAYS = 7;
-export const BILL_DRAFT_RETENTION_MS =
-  BILL_DRAFT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
-export const BILL_DRAFT_DELETE_HINT_KEY =
+export const CLAIM_DRAFT_LIMIT = 10;
+export const CLAIM_DRAFT_RETENTION_DAYS = 7;
+export const CLAIM_DRAFT_RETENTION_MS =
+  CLAIM_DRAFT_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+export const CLAIM_DRAFT_DELETE_HINT_KEY =
   "eb-claims:chat-drafts-delete-hint-seen";
-export const BILL_DRAFTS_CHANGED_EVENT = "eb-claims:bill-drafts-changed";
+export const CLAIM_DRAFTS_CHANGED_EVENT = "eb-claims:claim-drafts-changed";
 
 const DATABASE_NAME = "eb-claims";
 const DATABASE_VERSION = 1;
-const STORE_NAME = "bill-drafts";
+const STORE_NAME = "claim-drafts";
 
-function notifyBillDraftsChanged(): void {
+function notifyClaimDraftsChanged(): void {
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new Event(BILL_DRAFTS_CHANGED_EVENT));
+    window.dispatchEvent(new Event(CLAIM_DRAFTS_CHANGED_EVENT));
   }
 }
 
-export function subscribeToBillDrafts(listener: () => void): () => void {
+export function subscribeToClaimDrafts(listener: () => void): () => void {
   if (typeof window === "undefined") return () => undefined;
-  window.addEventListener(BILL_DRAFTS_CHANGED_EVENT, listener);
-  return () => window.removeEventListener(BILL_DRAFTS_CHANGED_EVENT, listener);
+  window.addEventListener(CLAIM_DRAFTS_CHANGED_EVENT, listener);
+  return () => window.removeEventListener(CLAIM_DRAFTS_CHANGED_EVENT, listener);
 }
 
-export type BillDraft = {
+export type ClaimDraft = {
   version: 1;
   id: string;
   createdAt: number;
   updatedAt: number;
   expiresAt: number;
-  extract: BillExtract;
+  extract: ClaimExtract;
   fileBlob?: Blob;
   previewAsset?: string;
 };
 
-export type BillDraftErrorCode =
+export type ClaimDraftErrorCode =
   | "limit"
   | "missing-file"
   | "storage-unavailable";
 
-export class BillDraftError extends Error {
+export class ClaimDraftError extends Error {
   constructor(
-    public readonly code: BillDraftErrorCode,
+    public readonly code: ClaimDraftErrorCode,
     message: string,
   ) {
     super(message);
-    this.name = "BillDraftError";
+    this.name = "ClaimDraftError";
   }
 }
 
-export type BillDraftOperationResult =
+export type ClaimDraftOperationResult =
   | { ok: true }
-  | { ok: false; code: BillDraftErrorCode; message: string };
+  | { ok: false; code: ClaimDraftErrorCode; message: string };
 
-export interface BillDraftBackend {
-  getAll(): Promise<BillDraft[]>;
-  putMany(records: BillDraft[]): Promise<void>;
+export interface ClaimDraftBackend {
+  getAll(): Promise<ClaimDraft[]>;
+  putMany(records: ClaimDraft[]): Promise<void>;
   deleteMany(ids: string[]): Promise<void>;
   clear(): Promise<void>;
 }
@@ -78,7 +78,7 @@ function transactionDone(transaction: IDBTransaction): Promise<void> {
 
 async function openDatabase(): Promise<IDBDatabase> {
   if (typeof indexedDB === "undefined") {
-    throw new BillDraftError(
+    throw new ClaimDraftError(
       "storage-unavailable",
       "Draft storage is unavailable in this browser.",
     );
@@ -94,20 +94,20 @@ async function openDatabase(): Promise<IDBDatabase> {
   return requestResult(request);
 }
 
-class IndexedDbBillDraftBackend implements BillDraftBackend {
-  async getAll(): Promise<BillDraft[]> {
+class IndexedDbClaimDraftBackend implements ClaimDraftBackend {
+  async getAll(): Promise<ClaimDraft[]> {
     const database = await openDatabase();
     try {
       const transaction = database.transaction(STORE_NAME, "readonly");
       return await requestResult(
-        transaction.objectStore(STORE_NAME).getAll() as IDBRequest<BillDraft[]>,
+        transaction.objectStore(STORE_NAME).getAll() as IDBRequest<ClaimDraft[]>,
       );
     } finally {
       database.close();
     }
   }
 
-  async putMany(records: BillDraft[]): Promise<void> {
+  async putMany(records: ClaimDraft[]): Promise<void> {
     const database = await openDatabase();
     try {
       const transaction = database.transaction(STORE_NAME, "readwrite");
@@ -151,7 +151,7 @@ function createDraftId(): string {
   return `draft-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export function billDraftFingerprint(extract: BillExtract): string {
+export function claimDraftFingerprint(extract: ClaimExtract): string {
   return JSON.stringify({
     fileName: extract.fileName,
     previewAsset: extract.previewAsset,
@@ -159,34 +159,34 @@ export function billDraftFingerprint(extract: BillExtract): string {
     category: extract.category ?? "",
     vendor: extract.vendor || extract.merchant || "",
     amount: extract.amount ?? "",
-    billDate: extract.billDate || extract.date || "",
-    billingMonth: extract.billingMonth ?? "",
+    claimDate: extract.claimDate || extract.date || "",
+    claimMonth: extract.claimMonth ?? "",
     invoiceNo: extract.invoiceNo ?? "",
     warningAcknowledged: Boolean(extract.warningAcknowledged),
   });
 }
 
-export function isBillDraftEligible(extract?: BillExtract): extract is BillExtract {
+export function isClaimDraftEligible(extract?: ClaimExtract): extract is ClaimExtract {
   return Boolean(extract && !extract.submitted && !extract.editClaimId);
 }
 
 /**
- * True only when leaving the chat would lose bill work. A bill whose current
+ * True only when leaving the chat would lose claim work. A claim whose current
  * fingerprint matches its saved snapshot is already safe in Chat drafts.
  */
-export function isBillDraftUnsaved(extract?: BillExtract): extract is BillExtract {
+export function isClaimDraftUnsaved(extract?: ClaimExtract): extract is ClaimExtract {
   return Boolean(
-    isBillDraftEligible(extract) &&
+    isClaimDraftEligible(extract) &&
       (!extract.draftId ||
-        extract.draftSavedFingerprint !== billDraftFingerprint(extract)),
+        extract.draftSavedFingerprint !== claimDraftFingerprint(extract)),
   );
 }
 
 function sanitizeExtract(
-  extract: BillExtract,
+  extract: ClaimExtract,
   id: string,
   savedAt: number,
-): BillExtract {
+): ClaimExtract {
   const safeExtract = { ...extract };
   delete safeExtract.fileBlob;
   delete safeExtract.previewUrl;
@@ -198,12 +198,12 @@ function sanitizeExtract(
   };
   return {
     ...next,
-    draftSavedFingerprint: billDraftFingerprint(next),
+    draftSavedFingerprint: claimDraftFingerprint(next),
   };
 }
 
 async function resolveFileBlob(
-  extract: BillExtract,
+  extract: ClaimExtract,
 ): Promise<Blob | undefined> {
   if (typeof Blob !== "undefined" && extract.fileBlob instanceof Blob) {
     return extract.fileBlob;
@@ -219,12 +219,12 @@ async function resolveFileBlob(
   return undefined;
 }
 
-export function createBillDraftStore(
-  backend: BillDraftBackend,
+export function createClaimDraftStore(
+  backend: ClaimDraftBackend,
   now: () => number = Date.now,
   createId: () => string = createDraftId,
 ) {
-  async function liveDrafts(): Promise<BillDraft[]> {
+  async function liveDrafts(): Promise<ClaimDraft[]> {
     const currentTime = now();
     const records = await backend.getAll();
     const expired = records
@@ -237,11 +237,11 @@ export function createBillDraftStore(
   }
 
   return {
-    async list(): Promise<BillDraft[]> {
+    async list(): Promise<ClaimDraft[]> {
       return liveDrafts();
     },
 
-    async get(id: string): Promise<BillDraft | null> {
+    async get(id: string): Promise<ClaimDraft | null> {
       const records = await liveDrafts();
       return records.find((record) => record.id === id) ?? null;
     },
@@ -250,8 +250,8 @@ export function createBillDraftStore(
       return (await liveDrafts()).length;
     },
 
-    async save(extracts: BillExtract[]): Promise<BillDraft[]> {
-      const eligible = extracts.filter(isBillDraftEligible);
+    async save(extracts: ClaimExtract[]): Promise<ClaimDraft[]> {
+      const eligible = extracts.filter(isClaimDraftEligible);
       if (eligible.length === 0) return [];
 
       const records = await liveDrafts();
@@ -259,10 +259,10 @@ export function createBillDraftStore(
       const newDraftCount = eligible.filter(
         (extract) => !extract.draftId || !existingById.has(extract.draftId),
       ).length;
-      if (records.length + newDraftCount > BILL_DRAFT_LIMIT) {
-        throw new BillDraftError(
+      if (records.length + newDraftCount > CLAIM_DRAFT_LIMIT) {
+        throw new ClaimDraftError(
           "limit",
-          `You can save up to ${BILL_DRAFT_LIMIT} bill drafts. Delete or submit one before saving another.`,
+          `You can save up to ${CLAIM_DRAFT_LIMIT} claim drafts. Delete or submit one before saving another.`,
         );
       }
 
@@ -285,9 +285,9 @@ export function createBillDraftStore(
               ? undefined
               : existing?.previewAsset;
           if (!fileBlob && !previewAsset) {
-            throw new BillDraftError(
+            throw new ClaimDraftError(
               "missing-file",
-              "This bill file is no longer available. Replace the bill before saving it as a draft.",
+              "This claim file is no longer available. Replace the claim before saving it as a draft.",
             );
           }
           return {
@@ -295,7 +295,7 @@ export function createBillDraftStore(
             id,
             createdAt: existing?.createdAt ?? savedAt,
             updatedAt: savedAt,
-            expiresAt: savedAt + BILL_DRAFT_RETENTION_MS,
+            expiresAt: savedAt + CLAIM_DRAFT_RETENTION_MS,
             extract: sanitizeExtract(extract, id, savedAt),
             fileBlob,
             previewAsset,
@@ -304,13 +304,13 @@ export function createBillDraftStore(
       );
 
       await backend.putMany(prepared);
-      notifyBillDraftsChanged();
+      notifyClaimDraftsChanged();
       return prepared.sort((left, right) => right.updatedAt - left.updatedAt);
     },
 
     async delete(id: string): Promise<void> {
       await backend.deleteMany([id]);
-      notifyBillDraftsChanged();
+      notifyClaimDraftsChanged();
     },
 
     async prune(): Promise<number> {
@@ -321,23 +321,23 @@ export function createBillDraftStore(
 
     async clear(): Promise<void> {
       await backend.clear();
-      notifyBillDraftsChanged();
+      notifyClaimDraftsChanged();
     },
   };
 }
 
-export const billDraftStore = createBillDraftStore(
-  new IndexedDbBillDraftBackend(),
+export const claimDraftStore = createClaimDraftStore(
+  new IndexedDbClaimDraftBackend(),
 );
 
-export function clearBillDraftsBestEffort(): void {
+export function clearClaimDraftsBestEffort(): void {
   if (typeof indexedDB === "undefined") return;
-  void billDraftStore.clear().catch(() => {
+  void claimDraftStore.clear().catch(() => {
     // Demo reset remains usable when browser storage is blocked.
   });
 }
 
-export function restoreBillExtract(draft: BillDraft): BillExtract {
+export function restoreClaimExtract(draft: ClaimDraft): ClaimExtract {
   return {
     ...draft.extract,
     rawText: "",
@@ -346,6 +346,6 @@ export function restoreBillExtract(draft: BillDraft): BillExtract {
     fileBlob: draft.fileBlob,
     draftId: draft.id,
     draftSavedAt: draft.updatedAt,
-    draftSavedFingerprint: billDraftFingerprint(draft.extract),
+    draftSavedFingerprint: claimDraftFingerprint(draft.extract),
   };
 }

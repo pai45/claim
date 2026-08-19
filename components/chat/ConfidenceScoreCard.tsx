@@ -177,7 +177,7 @@ export function ConfidenceScoreCard({
         <div className="min-w-0">
           <h3 className="text-body-sm font-bold text-pine">Confidence score</h3>
           <p className="type-body-secondary">
-            How clearly the bill details were read
+            How clearly the claim details were read
           </p>
         </div>
       </div>

@@ -27,9 +27,9 @@ describe("chat persistence", () => {
             role: "assistant",
             content: "review",
             createdAt: 1,
-            kind: "bill_extract",
-            billExtract: {
-              fileName: "bill.png",
+            kind: "claim_extract",
+            claimExtract: {
+              fileName: "claim.png",
               rawText: "sensitive raw text",
               previewUrl: "blob:secret",
               vendor: "Merchant",
@@ -43,8 +43,8 @@ describe("chat persistence", () => {
       },
       1000,
     );
-    expect(session.messages[0].billExtract?.rawText).toBe("");
-    expect(session.messages[0].billExtract?.previewUrl).toBeUndefined();
+    expect(session.messages[0].claimExtract?.rawText).toBe("");
+    expect(session.messages[0].claimExtract?.previewUrl).toBeUndefined();
     expect(session.driverSalaryDraft.dlRawText).toBeUndefined();
   });
 

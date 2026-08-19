@@ -122,7 +122,7 @@ export function HomeActionCards({
               <AppIcon src={UI_ICONS.notification} size={24} alt="" />
               <span
                 aria-hidden
-                className="absolute right-0 top-0 h-2.5 w-2.5 rounded-pill border-2 border-white bg-danger"
+                className="absolute right-0 top-0 h-2.5 w-2.5 rounded-pill border-2 border-white bg-notify"
               />
             </span>
           </CardCorner>

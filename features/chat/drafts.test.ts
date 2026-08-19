@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
-import type { BillExtract } from "./types";
+import type { ClaimExtract } from "./types";
 import {
-  BILL_DRAFT_LIMIT,
-  BILL_DRAFT_RETENTION_MS,
-  billDraftFingerprint,
-  createBillDraftStore,
-  isBillDraftEligible,
-  isBillDraftUnsaved,
-  restoreBillExtract,
-  type BillDraft,
-  type BillDraftBackend,
+  CLAIM_DRAFT_LIMIT,
+  CLAIM_DRAFT_RETENTION_MS,
+  claimDraftFingerprint,
+  createClaimDraftStore,
+  isClaimDraftEligible,
+  isClaimDraftUnsaved,
+  restoreClaimExtract,
+  type ClaimDraft,
+  type ClaimDraftBackend,
 } from "./drafts";
 
-class MemoryBackend implements BillDraftBackend {
-  records = new Map<string, BillDraft>();
+class MemoryBackend implements ClaimDraftBackend {
+  records = new Map<string, ClaimDraft>();
 
   async getAll() {
     return [...this.records.values()];
   }
 
-  async putMany(records: BillDraft[]) {
+  async putMany(records: ClaimDraft[]) {
     records.forEach((record) => this.records.set(record.id, record));
   }
 
@@ -32,31 +32,31 @@ class MemoryBackend implements BillDraftBackend {
   }
 }
 
-function extract(index = 1): BillExtract {
+function extract(index = 1): ClaimExtract {
   return {
-    fileName: `bill-${index}.png`,
+    fileName: `claim-${index}.png`,
     rawText: "sensitive OCR",
     previewType: "image/png",
-    fileBlob: new Blob([`bill-${index}`], { type: "image/png" }),
+    fileBlob: new Blob([`claim-${index}`], { type: "image/png" }),
     vendor: `Merchant ${index}`,
     category: "Meal Wallet",
     amount: String(index * 100),
-    billDate: "2026-08-13",
+    claimDate: "2026-08-13",
   };
 }
 
-describe("bill draft store", () => {
-  it("saves files and fields without raw OCR, then restores the editable bill", async () => {
+describe("claim draft store", () => {
+  it("saves files and fields without raw OCR, then restores the editable claim", async () => {
     const backend = new MemoryBackend();
-    const store = createBillDraftStore(backend, () => 1_000, () => "draft-1");
+    const store = createClaimDraftStore(backend, () => 1_000, () => "draft-1");
 
     const [saved] = await store.save([extract()]);
     expect(saved.extract.rawText).toBe("");
     expect(saved.extract.fileBlob).toBeUndefined();
     expect(saved.fileBlob?.size).toBeGreaterThan(0);
-    expect(saved.expiresAt).toBe(1_000 + BILL_DRAFT_RETENTION_MS);
+    expect(saved.expiresAt).toBe(1_000 + CLAIM_DRAFT_RETENTION_MS);
 
-    const restored = restoreBillExtract(saved);
+    const restored = restoreClaimExtract(saved);
     expect(restored.draftId).toBe("draft-1");
     expect(restored.vendor).toBe("Merchant 1");
     expect(restored.fileBlob).toBe(saved.fileBlob);
@@ -65,12 +65,12 @@ describe("bill draft store", () => {
   it("updates an existing draft, refreshes expiry, and does not create a duplicate", async () => {
     const backend = new MemoryBackend();
     let clock = 1_000;
-    const store = createBillDraftStore(backend, () => clock, () => "draft-1");
+    const store = createClaimDraftStore(backend, () => clock, () => "draft-1");
     const [first] = await store.save([extract()]);
 
     clock = 2_000;
     const changed = {
-      ...restoreBillExtract(first),
+      ...restoreClaimExtract(first),
       amount: "999",
       fileBlob: undefined,
     };
@@ -79,10 +79,10 @@ describe("bill draft store", () => {
     expect(await store.count()).toBe(1);
     expect(updated.createdAt).toBe(1_000);
     expect(updated.updatedAt).toBe(2_000);
-    expect(updated.expiresAt).toBe(2_000 + BILL_DRAFT_RETENTION_MS);
+    expect(updated.expiresAt).toBe(2_000 + CLAIM_DRAFT_RETENTION_MS);
     expect(updated.fileBlob).toBe(first.fileBlob);
     expect(updated.extract.draftSavedFingerprint).toBe(
-      billDraftFingerprint(updated.extract),
+      claimDraftFingerprint(updated.extract),
     );
   });
 
@@ -90,7 +90,7 @@ describe("bill draft store", () => {
     const backend = new MemoryBackend();
     let clock = 100;
     let id = 0;
-    const store = createBillDraftStore(
+    const store = createClaimDraftStore(
       backend,
       () => clock,
       () => `draft-${++id}`,
@@ -103,7 +103,7 @@ describe("bill draft store", () => {
       "draft-1",
     ]);
 
-    clock = 100 + BILL_DRAFT_RETENTION_MS;
+    clock = 100 + CLAIM_DRAFT_RETENTION_MS;
     expect((await store.list()).map((draft) => draft.id)).toEqual(["draft-2"]);
     expect(backend.records.has("draft-1")).toBe(false);
   });
@@ -111,64 +111,64 @@ describe("bill draft store", () => {
   it("blocks an over-capacity batch without partially writing", async () => {
     const backend = new MemoryBackend();
     let id = 0;
-    const store = createBillDraftStore(
+    const store = createClaimDraftStore(
       backend,
       () => 1_000,
       () => `draft-${++id}`,
     );
     await store.save(
-      Array.from({ length: BILL_DRAFT_LIMIT }, (_, index) => extract(index + 1)),
+      Array.from({ length: CLAIM_DRAFT_LIMIT }, (_, index) => extract(index + 1)),
     );
 
     await expect(store.save([extract(11)])).rejects.toMatchObject({
       code: "limit",
     });
-    expect(await store.count()).toBe(BILL_DRAFT_LIMIT);
+    expect(await store.count()).toBe(CLAIM_DRAFT_LIMIT);
   });
 
   it("still updates an existing draft when all ten slots are occupied", async () => {
     const backend = new MemoryBackend();
     let id = 0;
-    const store = createBillDraftStore(
+    const store = createClaimDraftStore(
       backend,
       () => 1_000,
       () => `draft-${++id}`,
     );
     const saved = await store.save(
-      Array.from({ length: BILL_DRAFT_LIMIT }, (_, index) => extract(index + 1)),
+      Array.from({ length: CLAIM_DRAFT_LIMIT }, (_, index) => extract(index + 1)),
     );
-    const updated = { ...restoreBillExtract(saved[0]), amount: "777" };
+    const updated = { ...restoreClaimExtract(saved[0]), amount: "777" };
 
     await expect(store.save([updated])).resolves.toHaveLength(1);
-    expect(await store.count()).toBe(BILL_DRAFT_LIMIT);
+    expect(await store.count()).toBe(CLAIM_DRAFT_LIMIT);
   });
 
-  it("only treats new unsubmitted bill extracts as draft eligible", () => {
-    expect(isBillDraftEligible(extract())).toBe(true);
-    expect(isBillDraftEligible({ ...extract(), submitted: true })).toBe(false);
-    expect(isBillDraftEligible({ ...extract(), editClaimId: "CLM-1" })).toBe(false);
-    expect(isBillDraftEligible(undefined)).toBe(false);
+  it("only treats new unsubmitted claim extracts as draft eligible", () => {
+    expect(isClaimDraftEligible(extract())).toBe(true);
+    expect(isClaimDraftEligible({ ...extract(), submitted: true })).toBe(false);
+    expect(isClaimDraftEligible({ ...extract(), editClaimId: "CLM-1" })).toBe(false);
+    expect(isClaimDraftEligible(undefined)).toBe(false);
   });
 
-  it("only treats bill work without a current saved snapshot as unsaved", async () => {
+  it("only treats claim work without a current saved snapshot as unsaved", async () => {
     const current = extract();
-    expect(isBillDraftUnsaved(current)).toBe(true);
+    expect(isClaimDraftUnsaved(current)).toBe(true);
 
-    const store = createBillDraftStore(
+    const store = createClaimDraftStore(
       new MemoryBackend(),
       () => 1_000,
       () => "draft-1",
     );
     const [saved] = await store.save([current]);
-    const restored = restoreBillExtract(saved);
+    const restored = restoreClaimExtract(saved);
 
-    expect(isBillDraftUnsaved(restored)).toBe(false);
-    expect(isBillDraftUnsaved({ ...restored, amount: "999" })).toBe(true);
-    expect(isBillDraftUnsaved({ ...restored, submitted: true })).toBe(false);
+    expect(isClaimDraftUnsaved(restored)).toBe(false);
+    expect(isClaimDraftUnsaved({ ...restored, amount: "999" })).toBe(true);
+    expect(isClaimDraftUnsaved({ ...restored, submitted: true })).toBe(false);
   });
 
   it("rejects a new draft whose original file is no longer available", async () => {
-    const store = createBillDraftStore(
+    const store = createClaimDraftStore(
       new MemoryBackend(),
       () => 1_000,
       () => "draft-1",
@@ -184,7 +184,7 @@ describe("bill draft store", () => {
   it("deletes one draft and clears all drafts", async () => {
     const backend = new MemoryBackend();
     let id = 0;
-    const store = createBillDraftStore(
+    const store = createClaimDraftStore(
       backend,
       () => 1_000,
       () => `draft-${++id}`,

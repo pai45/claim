@@ -1,24 +1,24 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { buildBillExtractFromScenario } from "@/features/chat/demoUploadScenarios";
-import { billDraftFingerprint } from "@/features/chat/drafts";
+import { buildClaimExtractFromScenario } from "@/features/chat/demoUploadScenarios";
+import { claimDraftFingerprint } from "@/features/chat/drafts";
 import { AutoApprovalEditSheet } from "./AutoApprovalEditSheet";
-import { BillExtractCard } from "./BillExtractCard";
+import { ClaimExtractCard } from "./ClaimExtractCard";
 
-describe("BillExtractCard", () => {
+describe("ClaimExtractCard", () => {
   it("shows an automatically saved draft as a right-aligned status, not an action", () => {
-    const scanned = buildBillExtractFromScenario("fuel");
+    const scanned = buildClaimExtractFromScenario("fuel");
     const extract = {
       ...scanned,
       draftId: "draft-1",
       draftSavedAt: 1,
-      draftSavedFingerprint: billDraftFingerprint(scanned),
+      draftSavedFingerprint: claimDraftFingerprint(scanned),
     };
 
     const html = renderToStaticMarkup(
-      createElement(BillExtractCard, {
-        messageId: "bill-1",
+      createElement(ClaimExtractCard, {
+        messageId: "claim-1",
         extract,
       }),
     );
@@ -33,9 +33,9 @@ describe("BillExtractCard", () => {
 
   it("credits a confident, clean scan as eligible for auto approval", () => {
     const html = renderToStaticMarkup(
-      createElement(BillExtractCard, {
-        messageId: "bill-1",
-        extract: buildBillExtractFromScenario("fuel"),
+      createElement(ClaimExtractCard, {
+        messageId: "claim-1",
+        extract: buildClaimExtractFromScenario("fuel"),
       }),
     );
 
@@ -44,10 +44,10 @@ describe("BillExtractCard", () => {
 
   it("downgrades the header once the scanned details have been edited", () => {
     const html = renderToStaticMarkup(
-      createElement(BillExtractCard, {
-        messageId: "bill-1",
+      createElement(ClaimExtractCard, {
+        messageId: "claim-1",
         extract: {
-          ...buildBillExtractFromScenario("fuel"),
+          ...buildClaimExtractFromScenario("fuel"),
           autoApprovalWaived: true,
         },
       }),
@@ -59,9 +59,9 @@ describe("BillExtractCard", () => {
 
   it("withholds auto approval when a policy check fails despite a high score", () => {
     const html = renderToStaticMarkup(
-      createElement(BillExtractCard, {
-        messageId: "bill-1",
-        extract: buildBillExtractFromScenario("fuel_exceeding"),
+      createElement(ClaimExtractCard, {
+        messageId: "claim-1",
+        extract: buildClaimExtractFromScenario("fuel_exceeding"),
       }),
     );
 
@@ -71,9 +71,9 @@ describe("BillExtractCard", () => {
 
   it("does not leave the edit warning mounted inside the claim card", () => {
     const html = renderToStaticMarkup(
-      createElement(BillExtractCard, {
-        messageId: "bill-1",
-        extract: buildBillExtractFromScenario("fuel"),
+      createElement(ClaimExtractCard, {
+        messageId: "claim-1",
+        extract: buildClaimExtractFromScenario("fuel"),
       }),
     );
 

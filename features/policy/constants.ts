@@ -62,7 +62,7 @@ export type BenefitClaimRules = {
   proofRequired: string;
   submissionDeadlineDay?: number;
   requiredFields: Array<
-    "category" | "vendor" | "amount" | "billDate" | "invoiceNo"
+    "category" | "vendor" | "amount" | "claimDate" | "invoiceNo"
   >;
 };
 
@@ -153,7 +153,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
       },
       {
         title: "Submit Monthly Claims",
-        detail: "Upload bills on the portal before the monthly deadline.",
+        detail: "Upload claims on the portal before the monthly deadline.",
       },
       {
         title: "Payroll Review",
@@ -226,7 +226,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
       },
       {
         title: "Submit Monthly Claims",
-        detail: "Upload bills on the portal before monthly deadline.",
+        detail: "Upload claims on the portal before monthly deadline.",
       },
       {
         title: "Payroll Review",
@@ -301,7 +301,7 @@ export const POLICY_CATEGORIES: PolicyCategory[] = [
       },
       {
         title: "Submit Claim",
-        detail: "Upload the bill before the monthly reimbursement cutoff.",
+        detail: "Upload the claim before the monthly reimbursement cutoff.",
       },
       {
         title: "Payroll Review",
@@ -536,7 +536,7 @@ const BENEFIT_CONFIGURATION: Record<
     claimRules: {
       proofRequired: "GST food or restaurant invoice",
       submissionDeadlineDay: 5,
-      requiredFields: ["category", "vendor", "amount", "billDate"],
+      requiredFields: ["category", "vendor", "amount", "claimDate"],
     },
   },
   fuel: {
@@ -552,7 +552,7 @@ const BENEFIT_CONFIGURATION: Record<
     claimRules: {
       proofRequired: "Original GST fuel or maintenance invoice",
       submissionDeadlineDay: 5,
-      requiredFields: ["category", "vendor", "amount", "billDate"],
+      requiredFields: ["category", "vendor", "amount", "claimDate"],
     },
   },
   mobile: {
@@ -568,7 +568,7 @@ const BENEFIT_CONFIGURATION: Record<
     claimRules: {
       proofRequired: "Postpaid mobile or broadband GST invoice",
       submissionDeadlineDay: 5,
-      requiredFields: ["category", "vendor", "amount", "billDate"],
+      requiredFields: ["category", "vendor", "amount", "claimDate"],
     },
   },
   driver: {
@@ -584,7 +584,7 @@ const BENEFIT_CONFIGURATION: Record<
     claimRules: {
       proofRequired: "Monthly salary receipt and driver licence",
       submissionDeadlineDay: 5,
-      requiredFields: ["category", "vendor", "amount", "billDate"],
+      requiredFields: ["category", "vendor", "amount", "claimDate"],
     },
   },
   books: {
@@ -600,7 +600,7 @@ const BENEFIT_CONFIGURATION: Record<
     claimRules: {
       proofRequired: "Book or subscription invoice",
       submissionDeadlineDay: 5,
-      requiredFields: ["category", "vendor", "amount", "billDate"],
+      requiredFields: ["category", "vendor", "amount", "claimDate"],
     },
   },
   professional: {
@@ -615,7 +615,7 @@ const BENEFIT_CONFIGURATION: Record<
     balance: { allocation: 50000, utilized: 12000, available: 38000 },
     claimRules: {
       proofRequired: "Course or certification invoice",
-      requiredFields: ["category", "vendor", "amount", "billDate"],
+      requiredFields: ["category", "vendor", "amount", "claimDate"],
     },
   },
 };

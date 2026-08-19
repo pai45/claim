@@ -55,14 +55,14 @@ describe("MessageList assistant avatar", () => {
         id: "assistant-intro",
         role: "assistant",
         kind: "text",
-        content: "Sure. Upload a bill and I'll read it for you.",
+        content: "Sure. Upload a claim and I'll read it for you.",
         createdAt: 5,
       },
       {
         id: "assistant-options",
         role: "assistant",
         kind: "upload_options",
-        content: "Choose how to upload your bill.",
+        content: "Choose how to upload your claim.",
         createdAt: 6,
       },
     ];
@@ -74,9 +74,9 @@ describe("MessageList assistant avatar", () => {
     expect(html).toContain("Upload options");
     expect(benefitsLogoCount(html)).toBe(1);
     expect(html.indexOf("benefits-logo-v2.gif")).toBeLessThan(
-      html.indexOf("Sure. Upload a bill"),
+      html.indexOf("Sure. Upload a claim"),
     );
-    expect(html.indexOf("Sure. Upload a bill")).toBeLessThan(
+    expect(html.indexOf("Sure. Upload a claim")).toBeLessThan(
       html.indexOf("Upload options"),
     );
   });

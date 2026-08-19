@@ -103,7 +103,7 @@ describe("documented answers", () => {
     const reply = answer("What makes a claim fail?");
 
     expect(reply).toContain(
-      "Every claim is checked for required fields, a valid amount and bill date, available balance, attached proof, duplicates, and the submission deadline.",
+      "Every claim is checked for required fields, a valid amount and claim date, available balance, attached proof, duplicates, and the submission deadline.",
     );
     expect(reply).toContain(
       "- **Meal Wallet:** GST food or restaurant invoice, submit by the 5th of the next month",

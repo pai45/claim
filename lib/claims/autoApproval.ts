@@ -1,17 +1,17 @@
 import type {
   AutoApprovalVerdict,
-  BillExtract,
+  ClaimExtract,
   ClaimPrecheck,
 } from "@/features/chat/types";
 
 /**
  * Demo threshold from the workflow blueprint: at or above this the extraction is
- * trusted without a human re-reading the bill. Below it sits the manual band.
+ * trusted without a human re-reading the claim. Below it sits the manual band.
  */
 export const AUTO_APPROVAL_CONFIDENCE_THRESHOLD = 90;
 
 /**
- * Confidence alone never authorizes reimbursement. A bill can be read perfectly
+ * Confidence alone never authorizes reimbursement. A claim can be read perfectly
  * and still be a duplicate, past its deadline, or over the remaining allowance,
  * so the precheck verdict gates auto approval alongside the score.
  *
@@ -19,7 +19,7 @@ export const AUTO_APPROVAL_CONFIDENCE_THRESHOLD = 90;
  * would also have failed a check, because that is the change the user just made.
  */
 export function evaluateAutoApproval(
-  extract: BillExtract,
+  extract: ClaimExtract,
   precheck: ClaimPrecheck,
 ): AutoApprovalVerdict {
   const score = Math.round(Math.max(0, Math.min(100, extract.confidence ?? 0)));

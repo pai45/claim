@@ -1,25 +1,25 @@
-import { parseBill, type ParsedBillFields } from "./parseBill";
+import { parseClaim, type ParsedClaimFields } from "./parseClaim";
 import { isPdf, validateDocumentFile } from "./validateFile";
-import type { BillExtract } from "@/features/chat/types";
+import type { ClaimExtract } from "@/features/chat/types";
 
-export function validateBillFile(file: File): string | null {
-  return validateDocumentFile(file, "bill");
+export function validateClaimFile(file: File): string | null {
+  return validateDocumentFile(file, "claim");
 }
 
-function filledFieldCount(fields: ParsedBillFields): number {
-  return [fields.amount, fields.vendor, fields.billDate, fields.invoiceNo].filter(
+function filledFieldCount(fields: ParsedClaimFields): number {
+  return [fields.amount, fields.vendor, fields.claimDate, fields.invoiceNo].filter(
     Boolean,
   ).length;
 }
 
-function hasUsefulFields(fields: ParsedBillFields): boolean {
+function hasUsefulFields(fields: ParsedClaimFields): boolean {
   return filledFieldCount(fields) > 0;
 }
 
 function scoreOcrPass(
   text: string,
   confidence: number,
-  fields: ParsedBillFields,
+  fields: ParsedClaimFields,
 ): number {
   const fieldsFilled = filledFieldCount(fields);
   return (
@@ -33,7 +33,7 @@ function scoreOcrPass(
 type OcrPass = {
   rawText: string;
   confidence: number;
-  fields: ParsedBillFields;
+  fields: ParsedClaimFields;
   score: number;
 };
 
@@ -60,7 +60,7 @@ async function recognizeOnce(
 
   const result = await worker.recognize(source);
   const rawText = result.data.text?.trim() ?? "";
-  const fields = parseBill(rawText);
+  const fields = parseClaim(rawText);
   const confidence =
     typeof result.data.confidence === "number" ? result.data.confidence : 0;
 
@@ -117,8 +117,8 @@ async function recognizeBest(sourceBlob: Blob): Promise<OcrPass> {
   return best;
 }
 
-export async function runBillOcr(file: File): Promise<BillExtract> {
-  const validationError = validateBillFile(file);
+export async function runClaimOcr(file: File): Promise<ClaimExtract> {
+  const validationError = validateClaimFile(file);
   if (validationError) {
     return {
       fileName: file.name,
@@ -133,7 +133,7 @@ export async function runBillOcr(file: File): Promise<BillExtract> {
       const { extractPdfText } = await import("./pdfExtractText");
       const pdfText = await extractPdfText(file);
       if (pdfText) {
-        const fields = parseBill(pdfText);
+        const fields = parseClaim(pdfText);
         return {
           fileName: file.name,
           rawText: pdfText,
@@ -166,7 +166,7 @@ export async function runBillOcr(file: File): Promise<BillExtract> {
       rawText: "",
       confidence: pass.confidence,
       error:
-        "Could not read any text from this bill. Try a clearer, well-lit photo.",
+        "Could not read any text from this claim. Try a clearer, well-lit photo.",
     };
   }
 
@@ -179,7 +179,7 @@ export async function runBillOcr(file: File): Promise<BillExtract> {
       ? {}
       : {
           warning:
-            "I could read the bill but couldn't pick out every detail. Please review and edit before submitting.",
+            "I could read the claim but couldn't pick out every detail. Please review and edit before submitting.",
         }),
   };
 }

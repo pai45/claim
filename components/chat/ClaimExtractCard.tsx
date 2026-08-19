@@ -8,8 +8,8 @@ import { AutoApprovalEditSheet } from "@/components/chat/AutoApprovalEditSheet";
 import { RegistrationDeclaration } from "@/components/chat/RegistrationDeclaration";
 import { CLAIM_CATEGORIES } from "@/features/chat/constants";
 import { getDemoPrecheckDate } from "@/features/chat/demoUploadScenarios";
-import { billDraftFingerprint } from "@/features/chat/drafts";
-import type { BillExtract } from "@/features/chat/types";
+import { claimDraftFingerprint } from "@/features/chat/drafts";
+import type { ClaimExtract } from "@/features/chat/types";
 import { formatINR } from "@/features/dashboard/constants";
 import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
 import {
@@ -18,17 +18,17 @@ import {
 } from "@/lib/claims/precheck";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
 
-type BillExtractCardProps = {
+type ClaimExtractCardProps = {
   messageId: string;
-  extract: BillExtract;
-  onUpdate?: (messageId: string, next: BillExtract) => void;
-  onSubmitted?: (messageId: string, extract: BillExtract) => void;
+  extract: ClaimExtract;
+  onUpdate?: (messageId: string, next: ClaimExtract) => void;
+  onSubmitted?: (messageId: string, extract: ClaimExtract) => void;
   onReplace?: (messageId: string) => void;
   onNewClaim?: () => void;
   onSaveClaimEdit?: (
     messageId: string,
     claimId: string,
-    extract: BillExtract,
+    extract: ClaimExtract,
   ) => void;
 };
 
@@ -36,8 +36,8 @@ type EditableFields = {
   category: string;
   vendor: string;
   amount: string;
-  billDate: string;
-  billingMonth: string;
+  claimDate: string;
+  claimMonth: string;
   invoiceNo: string;
 };
 
@@ -45,8 +45,8 @@ const EDITABLE_FIELD_KEYS: ReadonlyArray<keyof EditableFields> = [
   "category",
   "vendor",
   "amount",
-  "billDate",
-  "billingMonth",
+  "claimDate",
+  "claimMonth",
   "invoiceNo",
 ];
 
@@ -66,13 +66,13 @@ function toMonthInput(value?: string): string {
   return parsed.toISOString().slice(0, 7);
 }
 
-function toFields(extract: BillExtract): EditableFields {
+function toFields(extract: ClaimExtract): EditableFields {
   return {
     category: extract.category ?? "",
     vendor: extract.vendor || extract.merchant || "",
     amount: sanitizeAmountInput(extract.amount ?? ""),
-    billDate: toDateInput(extract.billDate || extract.date),
-    billingMonth: toMonthInput(extract.billingMonth),
+    claimDate: toDateInput(extract.claimDate || extract.date),
+    claimMonth: toMonthInput(extract.claimMonth),
     invoiceNo: extract.invoiceNo ?? "",
   };
 }
@@ -111,13 +111,13 @@ function escapeXml(value: string): string {
   });
 }
 
-function demoBillPreview(fields: EditableFields, claimId: string): string {
+function demoClaimPreview(fields: EditableFields, claimId: string): string {
   const vendor = escapeXml(fields.vendor || "Merchant");
   const category = escapeXml(fields.category || "Employee benefit");
   const amount = escapeXml(fields.amount || "—");
-  const date = escapeXml(formatDate(fields.billDate));
+  const date = escapeXml(formatDate(fields.claimDate));
   const invoice = escapeXml(fields.invoiceNo || claimId);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420"><rect width="720" height="420" rx="24" fill="#fff"/><rect x="24" y="24" width="672" height="372" rx="16" fill="#f8fbf9" stroke="#dfe8e1" stroke-width="2"/><text x="58" y="78" font-family="sans-serif" font-size="28" font-weight="700" fill="#123f36">${vendor}</text><text x="58" y="111" font-family="sans-serif" font-size="16" fill="#60756e">${category}</text><line x1="58" y1="142" x2="662" y2="142" stroke="#dfe8e1" stroke-width="2"/><text x="58" y="190" font-family="sans-serif" font-size="14" font-weight="700" fill="#7d8b87">BILL DATE</text><text x="58" y="220" font-family="sans-serif" font-size="20" font-weight="700" fill="#123f36">${date}</text><text x="390" y="190" font-family="sans-serif" font-size="14" font-weight="700" fill="#7d8b87">INVOICE NO.</text><text x="390" y="220" font-family="sans-serif" font-size="20" font-weight="700" fill="#123f36">${invoice}</text><rect x="58" y="274" width="604" height="76" rx="12" fill="#e9faf1"/><text x="82" y="305" font-family="sans-serif" font-size="14" font-weight="700" fill="#60756e">TOTAL</text><text x="82" y="337" font-family="sans-serif" font-size="28" font-weight="700" fill="#17664f">INR ${amount}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="420" viewBox="0 0 720 420"><rect width="720" height="420" rx="24" fill="#fff"/><rect x="24" y="24" width="672" height="372" rx="16" fill="#f8fbf9" stroke="#dfe8e1" stroke-width="2"/><text x="58" y="78" font-family="sans-serif" font-size="28" font-weight="700" fill="#123f36">${vendor}</text><text x="58" y="111" font-family="sans-serif" font-size="16" fill="#60756e">${category}</text><line x1="58" y1="142" x2="662" y2="142" stroke="#dfe8e1" stroke-width="2"/><text x="58" y="190" font-family="sans-serif" font-size="14" font-weight="700" fill="#7d8b87">CLAIM DATE</text><text x="58" y="220" font-family="sans-serif" font-size="20" font-weight="700" fill="#123f36">${date}</text><text x="390" y="190" font-family="sans-serif" font-size="14" font-weight="700" fill="#7d8b87">INVOICE NO.</text><text x="390" y="220" font-family="sans-serif" font-size="20" font-weight="700" fill="#123f36">${invoice}</text><rect x="58" y="274" width="604" height="76" rx="12" fill="#e9faf1"/><text x="82" y="305" font-family="sans-serif" font-size="14" font-weight="700" fill="#60756e">TOTAL</text><text x="82" y="337" font-family="sans-serif" font-size="28" font-weight="700" fill="#17664f">INR ${amount}</text></svg>`;
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
@@ -188,14 +188,14 @@ function sanitizeAmountInput(value: string): string {
   return `${whole || "0"}.${decimal}`;
 }
 
-export function BillExtractCard({
+export function ClaimExtractCard({
   messageId,
   extract,
   onUpdate,
   onSubmitted,
   onNewClaim,
   onSaveClaimEdit,
-}: BillExtractCardProps) {
+}: ClaimExtractCardProps) {
   const [fields, setFields] = useState<EditableFields>(() => toFields(extract));
   const [editing, setEditing] = useState(
     Boolean(extract.editClaimId || extract.manualReview),
@@ -224,7 +224,7 @@ export function BillExtractCard({
     return () => window.cancelAnimationFrame(frame);
   }, [editing]);
 
-  const workingExtract = useMemo<BillExtract>(
+  const workingExtract = useMemo<ClaimExtract>(
     () => ({
       ...extract,
       ...fields,
@@ -251,7 +251,7 @@ export function BillExtractCard({
   const legacyPreviewUrl =
     extract.previewUrl ||
     (extract.editClaimId
-      ? demoBillPreview(fields, extract.editClaimId)
+      ? demoClaimPreview(fields, extract.editClaimId)
       : undefined);
   const submitDisabled =
     Boolean(extract.submitted) ||
@@ -259,7 +259,7 @@ export function BillExtractCard({
     (precheck.requiresAcknowledgement && !acknowledged) ||
     !declarationAccepted;
   const reviewItems = precheck.checks.filter((check) => check.status !== "pass");
-  const currentDraftFingerprint = billDraftFingerprint(workingExtract);
+  const currentDraftFingerprint = claimDraftFingerprint(workingExtract);
   const draftIsCurrent = Boolean(
     extract.draftId &&
       extract.draftSavedFingerprint === currentDraftFingerprint,
@@ -274,7 +274,7 @@ export function BillExtractCard({
   }
 
   const amountIssue = issueFor("amount", fields.amount);
-  const billDateIssue = issueFor("billDate", fields.billDate);
+  const claimDateIssue = issueFor("claimDate", fields.claimDate);
 
   function updateField(key: keyof EditableFields, value: string) {
     setFields((current) => ({ ...current, [key]: value }));
@@ -371,14 +371,14 @@ export function BillExtractCard({
                 <strong className="max-w-full truncate text-body-sm text-pine">
                   {extract.fileName}
                 </strong>
-                <span className="text-caption text-ink-secondary">PDF bill attached</span>
+                <span className="text-caption text-ink-secondary">PDF claim attached</span>
               </div>
             ) : (
               <button
                 type="button"
                 onClick={() => setPreviewOpen(true)}
                 className="group relative block h-25 w-full overflow-hidden bg-surface-tint focus-visible:outline-2 focus-visible:outline-pine-primary"
-                aria-label={`Open full bill image for ${fields.vendor || "claim"}`}
+                aria-label={`Open full claim image for ${fields.vendor || "claim"}`}
               >
                 {extract.previewAsset ? (
                   <AppIcon
@@ -461,29 +461,29 @@ export function BillExtractCard({
             ) : undefined}
           </DetailTile>
           <DetailTile
-            label="Bill date"
-            value={formatDate(fields.billDate)}
-            issue={billDateIssue}
+            label="Claim date"
+            value={formatDate(fields.claimDate)}
+            issue={claimDateIssue}
           >
             {editing ? (
               <input
                 type="date"
-                value={fields.billDate}
-                onChange={(event) => updateField("billDate", event.target.value)}
+                value={fields.claimDate}
+                onChange={(event) => updateField("claimDate", event.target.value)}
                 className={editorClass}
-                aria-label="Bill date"
-                aria-invalid={Boolean(billDateIssue)}
+                aria-label="Claim date"
+                aria-invalid={Boolean(claimDateIssue)}
               />
             ) : undefined}
           </DetailTile>
-          <DetailTile label="Billing month" value={formatMonth(fields.billingMonth)}>
+          <DetailTile label="Claim month" value={formatMonth(fields.claimMonth)}>
             {editing ? (
               <input
                 type="month"
-                value={fields.billingMonth}
-                onChange={(event) => updateField("billingMonth", event.target.value)}
+                value={fields.claimMonth}
+                onChange={(event) => updateField("claimMonth", event.target.value)}
                 className={editorClass}
-                aria-label="Billing month"
+                aria-label="Claim month"
               />
             ) : undefined}
           </DetailTile>
@@ -616,7 +616,7 @@ export function BillExtractCard({
         <button
           type="button"
           tabIndex={-1}
-          aria-label="Close bill preview"
+          aria-label="Close claim preview"
           onClick={() => setPreviewOpen(false)}
           className={`absolute inset-0 bg-pine-dark/60 transition-opacity duration-200 motion-reduce:transition-none ${
             previewOpen ? "opacity-100" : "opacity-0"
@@ -625,7 +625,7 @@ export function BillExtractCard({
         <section
           role="dialog"
           aria-modal="true"
-          aria-label="Full bill preview"
+          aria-label="Full claim preview"
           className={`absolute inset-x-page top-1/2 flex max-h-[calc(100%-32px)] -translate-y-1/2 flex-col overflow-hidden rounded-card border border-border-line bg-white p-3 shadow-menu transition-all duration-200 motion-reduce:transition-none ${
             previewOpen ? "scale-100 opacity-100" : "scale-95 opacity-0"
           }`}
@@ -636,7 +636,7 @@ export function BillExtractCard({
               type="button"
               onClick={() => setPreviewOpen(false)}
               className="flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-pill text-ink-secondary hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-pine-primary"
-              aria-label="Close bill preview"
+              aria-label="Close claim preview"
             >
               <span aria-hidden>×</span>
             </button>
@@ -644,7 +644,7 @@ export function BillExtractCard({
           {extract.previewAsset ? (
             <AppIcon
               src={extract.previewAsset}
-              alt={`Full bill image for ${fields.vendor || "claim"}`}
+              alt={`Full claim image for ${fields.vendor || "claim"}`}
               width={720}
               height={720}
               className="min-h-0 w-full flex-1 rounded-control bg-surface-tint object-contain"
@@ -652,7 +652,7 @@ export function BillExtractCard({
           ) : legacyPreviewUrl ? (
             <img
               src={legacyPreviewUrl}
-              alt={`Full bill image for ${fields.vendor || "claim"}`}
+              alt={`Full claim image for ${fields.vendor || "claim"}`}
               className="min-h-0 w-full flex-1 rounded-control bg-surface-tint object-contain"
             />
           ) : null}

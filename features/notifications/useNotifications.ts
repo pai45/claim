@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import {
-  billDraftStore,
-  subscribeToBillDrafts,
+  claimDraftStore,
+  subscribeToClaimDrafts,
 } from "@/features/chat/drafts";
 import { useActivePersona } from "@/features/persona/useActivePersona";
 import {
@@ -24,7 +24,7 @@ export function useNotifications() {
     () => false,
   );
   const refreshDraftCount = useCallback(() => {
-    void billDraftStore
+    void claimDraftStore
       .count()
       .then(setDraftCount)
       .catch(() => setDraftCount(0));
@@ -32,7 +32,7 @@ export function useNotifications() {
 
   useEffect(() => {
     refreshDraftCount();
-    return subscribeToBillDrafts(refreshDraftCount);
+    return subscribeToClaimDrafts(refreshDraftCount);
   }, [refreshDraftCount]);
 
   const allNotifications = useMemo(

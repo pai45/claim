@@ -419,7 +419,7 @@ export function createAppDataFallbackSummary(
           }`,
       )
       .join("\n");
-    return `**What a claim needs to pass**\n\nEvery claim is checked for required fields, a valid amount and bill date, available balance, attached proof, duplicates, and the submission deadline.\n\n${lines}`;
+    return `**What a claim needs to pass**\n\nEvery claim is checked for required fields, a valid amount and claim date, available balance, attached proof, duplicates, and the submission deadline.\n\n${lines}`;
   }
 
   if (resolution.kind === "merchants") {

@@ -120,7 +120,7 @@ describe("grounded sources beyond the dashboard", () => {
       status: "Rejected",
     }) as { claims: Array<{ id: string }>; summary: { totalCount: number } };
 
-    // Newest first: the internet bill the empty-state banner links to, then
+    // Newest first: the internet claim the empty-state banner links to, then
     // the fuel claim.
     expect(source.summary.totalCount).toBe(2);
     expect(source.claims.map((claim) => claim.id)).toEqual([

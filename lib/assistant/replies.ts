@@ -10,7 +10,7 @@ export type AssistantIntent = {
  */
 export const ASSISTANT_INTENTS: AssistantIntent[] = [
   {
-    id: "upload_bill",
+    id: "upload_claim",
     keywords: [
       "upload bill",
       "upload a bill",
@@ -37,7 +37,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
       "i want to upload",
       "i want to upload a bill",
     ],
-    reply: "Sure. Upload a bill and I'll read it for you.",
+    reply: "Sure. Upload a claim and I'll read it for you.",
   },
   {
     id: "view_dashboard",
@@ -153,7 +153,7 @@ export const ASSISTANT_INTENTS: AssistantIntent[] = [
     id: "greeting",
     keywords: ["hi", "hello", "hey", "good morning", "good evening", "help"],
     reply:
-      "**Hi!** I'm your Benefits Assistant.\n\nI can help with:\n\n- Uploading bills & receipts\n- Registering your vehicle\n- Registering your driver\n- Tracking claims\n- Policy details & wallet balances\n- Meals merchants\n\nWhat would you like to do?",
+      "**Hi!** I'm your Benefits Assistant.\n\nI can help with:\n\n- Uploading claims & receipts\n- Registering your vehicle\n- Registering your driver\n- Tracking claims\n- Policy details & wallet balances\n- Meals merchants\n\nWhat would you like to do?",
   },
 ];
 
@@ -161,5 +161,5 @@ export const FALLBACK_REPLY: AssistantIntent = {
   id: "fallback",
   keywords: [],
   reply:
-    "**How I can help**\n\n- Upload a bill or receipt\n- Register vehicle or driver\n- Check wallet balances & limits\n- Track existing claims\n- Policy coverage & allowed merchants\n\nTry asking **upload a bill**, **register my vehicle**, or **register driver**.",
+    "**How I can help**\n\n- Upload a claim or receipt\n- Register vehicle or driver\n- Check wallet balances & limits\n- Track existing claims\n- Policy coverage & allowed merchants\n\nTry asking **upload a claim**, **register my vehicle**, or **register driver**.",
 };

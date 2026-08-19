@@ -4,8 +4,8 @@ import { hasReturningAccountState } from "@/features/persona/constants";
 export type NotificationAction =
   | {
       kind: "assistant";
-      intentId: "upload_bill" | "vehicle_registration" | "driver_registration";
-      label: "Upload bill" | "Start registration" | "Register driver";
+      intentId: "upload_claim" | "vehicle_registration" | "driver_registration";
+      label: "Upload claim" | "Start registration" | "Register driver";
     }
   | {
       kind: "claim";
@@ -50,21 +50,21 @@ export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
     },
   },
   {
-    id: "internet-bill-due",
-    title: "Your internet bill is due",
-    body: "July's ₹899 bill isn't claimed yet. Submit it before the 5th.",
+    id: "internet-claim-due",
+    title: "Your internet claim is pending",
+    body: "July's ₹899 claim isn't submitted yet. Submit it before the 5th.",
     dateLabel: "Today",
     tone: "warning",
     action: {
       kind: "assistant",
-      intentId: "upload_bill",
-      label: "Upload bill",
+      intentId: "upload_claim",
+      label: "Upload claim",
     },
   },
   {
     id: "claim-clm-124-rejected",
-    title: "Your bill CLM-124 was rejected",
-    body: "Your July internet bill claim was rejected due to policy changes.",
+    title: "Your claim CLM-124 was rejected",
+    body: "Your July internet claim was rejected due to policy changes.",
     dateLabel: "05 Jul 2026",
     tone: "danger",
     action: { kind: "claim", claimId: "CLM-124" },

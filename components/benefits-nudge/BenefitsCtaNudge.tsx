@@ -276,7 +276,7 @@ export function BenefitsCtaNudge({
                       Still here to help
                     </h2>
                     <p className="mt-1.5 text-body-sm text-white/75">
-                      Track a claim, upload a bill, or find where your wallets
+                      Submit a claim, track one, or find where your wallets
                       work — one tap away.
                     </p>
                   </div>

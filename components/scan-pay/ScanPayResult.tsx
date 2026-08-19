@@ -215,7 +215,7 @@ export function ScanPayReceiptCapture({
   return (
     <AppShell className="scan-pay-shell relative overflow-hidden bg-pine-dark text-white">
       <AppIcon
-        src={DEMO_DOCUMENT_ASSETS.billMeal}
+        src={DEMO_DOCUMENT_ASSETS.claimMeal}
         alt="Receipt ready to capture"
         width={402}
         height={874}
@@ -241,7 +241,7 @@ export function ScanPayReceiptCapture({
           onClick={() =>
             dispatch({
               type: "CAPTURE_RECEIPT",
-              preview: DEMO_DOCUMENT_ASSETS.billMeal,
+              preview: DEMO_DOCUMENT_ASSETS.claimMeal,
             })
           }
           className="flex h-20 w-20 items-center justify-center rounded-pill border-4 border-white bg-white/30 shadow-icon"
@@ -263,7 +263,7 @@ export function ScanPayReceiptReview({
 }) {
   const source = state.receiptPreview?.startsWith("blob:")
     ? state.receiptPreview
-    : withBasePath(state.receiptPreview ?? DEMO_DOCUMENT_ASSETS.billMeal);
+    : withBasePath(state.receiptPreview ?? DEMO_DOCUMENT_ASSETS.claimMeal);
   return (
     <AppShell className="scan-pay-shell overflow-hidden bg-pine-dark">
       <main className="flex min-h-0 flex-1 items-center justify-center p-page">

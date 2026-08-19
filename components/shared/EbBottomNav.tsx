@@ -82,10 +82,14 @@ export function EbBottomNav({
         tab is 139px tall and mostly empty — a ring drawn around it would be a
         tall rectangle instead of a halo on the button. Read by
         `BenefitsCtaNudge`; absent from Scan & Pay so it can never point there.
+
+        The two mint layers of the shadow are a glow rather than elevation:
+        a tight halo on the rim and a wider bloom behind it, so the circle
+        reads as lit instead of merely raised off the white artwork.
       */}
       <span
         data-benefits-fab
-        className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_12px_rgba(0,86,86,0.1),0_0_10px_rgba(151,226,196,0.16)]"
+        className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_12px_rgba(0,86,86,0.1),0_0_8px_1px_rgba(54,204,139,0.21),0_0_20px_6px_rgba(54,204,139,0.15)]"
       >
         <BenefitsLogo size={40} />
       </span>

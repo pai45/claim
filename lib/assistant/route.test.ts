@@ -112,7 +112,7 @@ describe("route planning", () => {
   it("keeps guided flows on their deterministic intents", () => {
     expect(routePlanFor({ intent: "upload", categoryIds: [] })).toEqual({
       kind: "intent",
-      intentId: "upload_bill",
+      intentId: "upload_claim",
     });
     expect(routePlanFor({ intent: "vehicle", categoryIds: [] })).toEqual({
       kind: "intent",

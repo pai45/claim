@@ -24,15 +24,15 @@ export type ClaimEditPendingIntent = {
   claimId: string;
 };
 
-export type BillDraftPendingIntent = {
-  kind: "bill_draft";
+export type ClaimDraftPendingIntent = {
+  kind: "claim_draft";
   draftId: string;
 };
 
 export type PendingChatIntent =
   | AssistantPendingIntent
   | ClaimEditPendingIntent
-  | BillDraftPendingIntent;
+  | ClaimDraftPendingIntent;
 
 export function setPendingChatIntent(
   intent: PendingChatIntent,
@@ -65,11 +65,11 @@ export function takePendingChatIntent(
       }
       return { kind: "claim_edit", claimId: parsed.claimId.trim().toUpperCase() };
     }
-    if (parsed.kind === "bill_draft") {
+    if (parsed.kind === "claim_draft") {
       if (typeof parsed.draftId !== "string" || !parsed.draftId.trim()) {
         return null;
       }
-      return { kind: "bill_draft", draftId: parsed.draftId.trim() };
+      return { kind: "claim_draft", draftId: parsed.draftId.trim() };
     }
     if (typeof parsed.intentId !== "string" || typeof parsed.label !== "string") {
       return null;

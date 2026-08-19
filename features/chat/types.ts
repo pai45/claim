@@ -12,9 +12,9 @@ export type DocumentProcessingStage =
   | "extracting"
   | "checking";
 
-export type DocumentUploadKind = "bill" | "dl";
+export type DocumentUploadKind = "claim" | "dl";
 
-export type BillUploadScenarioId =
+export type ClaimUploadScenarioId =
   | "driver_salary"
   | "meal_missing"
   | "fuel"
@@ -33,8 +33,8 @@ export type ClaimFieldName =
   | "category"
   | "vendor"
   | "amount"
-  | "billDate"
-  | "billingMonth"
+  | "claimDate"
+  | "claimMonth"
   | "invoiceNo";
 
 export type ClaimFieldReviewState = "confirmed" | "review" | "missing";
@@ -73,7 +73,7 @@ export type MessageKind =
   | "upload_options"
   | "document_scan"
   | "confidence_score"
-  | "bill_extract"
+  | "claim_extract"
   | "claim_cta"
   | "policy_answer"
   | "policy_options"
@@ -108,36 +108,36 @@ export type DriverSalaryPayload = {
   submitted?: boolean;
 };
 
-export type BillExtract = {
+export type ClaimExtract = {
   fileName: string;
   rawText: string;
   category?: string;
   vendor?: string;
   amount?: string;
-  billDate?: string;
-  billingMonth?: string;
+  claimDate?: string;
+  claimMonth?: string;
   invoiceNo?: string;
   confidence?: number;
   /** Transient object URL. It is deliberately removed before persistence. */
   previewUrl?: string;
   previewType?: string;
-  /** Transient source file used only while saving a browser-local bill draft. */
+  /** Transient source file used only while saving a browser-local claim draft. */
   fileBlob?: Blob;
   /** Static, base-path-safe preview used by deterministic demo scenarios. */
   previewAsset?: string;
-  /** Links this bill card to its automatically saved browser-local draft. */
+  /** Links this claim card to its automatically saved browser-local draft. */
   draftId?: string;
   /** Timestamp of the most recent automatic draft save/update. */
   draftSavedAt?: number;
   /** Fingerprint used to distinguish a saved snapshot from later field edits. */
   draftSavedFingerprint?: string;
-  demoScenarioId?: BillUploadScenarioId;
+  demoScenarioId?: ClaimUploadScenarioId;
   /** Opens incomplete demo data directly in the editable review state. */
   manualReview?: boolean;
   /** Field-level extraction states, used to call out missing or unreliable details. */
   reviewFields?: Partial<
     Record<
-      "category" | "vendor" | "amount" | "billDate" | "billingMonth" | "invoiceNo",
+      "category" | "vendor" | "amount" | "claimDate" | "claimMonth" | "invoiceNo",
       "missing" | "review"
     >
   >;
@@ -152,7 +152,7 @@ export type BillExtract = {
   warning?: string;
   /** @deprecated use vendor */
   merchant?: string;
-  /** @deprecated use billDate */
+  /** @deprecated use claimDate */
   date?: string;
 };
 
@@ -174,7 +174,7 @@ export type VehicleLookupPayload = {
   ownership?: VehicleOwnership;
   /** Set when the plate couldn't be parsed. */
   error?: string;
-  /** Mirrors BillExtract.submitted — hides the action once sent to HR. */
+  /** Mirrors ClaimExtract.submitted — hides the action once sent to HR. */
   submitted?: boolean;
 };
 
@@ -211,7 +211,7 @@ export type ChatMessage = {
   content: string;
   createdAt: number;
   kind?: MessageKind;
-  billExtract?: BillExtract;
+  claimExtract?: ClaimExtract;
   confidenceScore?: ConfidenceScorePayload;
   claimId?: string;
   claimAction?: "submitted" | "updated";

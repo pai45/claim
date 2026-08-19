@@ -9539,6 +9539,8 @@ body:not(.is-pluspay) .hero-panel {
    elevation, so the two bookend the wordmark as a matched pair. */
 .topbar-notify {
   grid-column: 3;
+  /* Anchors the unread dot. */
+  position: relative;
   display: grid;
   width: 44px;
   height: 44px;
@@ -9564,6 +9566,22 @@ body:not(.is-pluspay) .hero-panel {
 .topbar-notify:focus-visible {
   outline: 2px solid var(--brand-700);
   outline-offset: 2px;
+}
+
+/* Unread notifications dot. It sits on the bell rather than on the 44px
+   circle's corner, so it reads as belonging to the icon and not as a stray
+   speck floating in the hero gradient. The ring is the button fill, which
+   differs per mode — see the PlusPay override below. */
+.topbar-notify::after {
+  content: "";
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border: 1.5px solid var(--notify-dot-ring, var(--surface-strong));
+  border-radius: 50%;
+  background: #d32f2f;
 }
 
 /* 16 / 44 / 12 / 44 / 12 down the bar: the gap to the switcher is deliberately
@@ -10331,6 +10349,9 @@ body.is-pluspay .hero-panel {
    a solid track. */
 body.is-pluspay .avatar-button,
 body.is-pluspay .topbar-notify {
+  /* Mid-point of the fill gradient below, so the dot ring disappears into the
+     button instead of flashing white against the dark chip. */
+  --notify-dot-ring: #0a3129;
   border-color: rgba(76, 222, 155, 0.5);
   background: linear-gradient(
     135deg,

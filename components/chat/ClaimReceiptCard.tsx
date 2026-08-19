@@ -1,4 +1,4 @@
-import type { BillExtract } from "@/features/chat/types";
+import type { ClaimExtract } from "@/features/chat/types";
 import { getDemoPrecheckDate } from "@/features/chat/demoUploadScenarios";
 import { colors } from "@/lib/ui/colors";
 import { formatINR } from "@/features/dashboard/constants";
@@ -7,7 +7,7 @@ import { evaluateClaimPrecheck, parseClaimAmount } from "@/lib/claims/precheck";
 
 type ClaimReceiptCardProps = {
   claimId: string;
-  extract: BillExtract;
+  extract: ClaimExtract;
   submittedAt: number;
   action?: "submitted" | "updated";
 };
@@ -74,8 +74,8 @@ export function ClaimReceiptCard({
   const category = extract.category || "—";
   const parsedAmount = parseClaimAmount(extract.amount);
   const amount = parsedAmount ? formatINR(parsedAmount) : extract.amount || "—";
-  const billDate = extract.billDate || extract.date || "";
-  const billingMonth = extract.billingMonth || "";
+  const claimDate = extract.claimDate || extract.date || "";
+  const claimMonth = extract.claimMonth || "";
   const invoiceNo = extract.invoiceNo || "";
   const autoApproval = evaluateAutoApproval(
     extract,
@@ -126,9 +126,9 @@ export function ClaimReceiptCard({
         <div className="flex flex-col">
           <ReceiptRow label="Category" value={category} />
           <ReceiptRow label="Amount" value={amount} emphasize />
-          {billDate ? <ReceiptRow label="Bill date" value={billDate} /> : null}
-          {billingMonth ? (
-            <ReceiptRow label="Billing month" value={billingMonth} />
+          {claimDate ? <ReceiptRow label="Claim date" value={claimDate} /> : null}
+          {claimMonth ? (
+            <ReceiptRow label="Claim month" value={claimMonth} />
           ) : null}
           {invoiceNo ? (
             <ReceiptRow label="Invoice no." value={invoiceNo} />

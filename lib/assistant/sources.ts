@@ -72,7 +72,7 @@ export function buildWalletOverview() {
 
 /**
  * The rules `evaluateClaimPrecheck` enforces at submission time, expressed
- * declaratively so the assistant can explain them before a bill is uploaded.
+ * declaratively so the assistant can explain them before a claim is uploaded.
  * Keep in sync with `lib/claims/precheck.ts`.
  */
 export function buildClaimRules(categoryId?: PolicyTabId) {
@@ -96,7 +96,7 @@ export function buildClaimRules(categoryId?: PolicyTabId) {
         rule: "The claim amount must be a number greater than zero.",
         blocking: true,
       },
-      { id: "bill-date", rule: "The bill date must be a valid date.", blocking: true },
+      { id: "claim-date", rule: "The claim date must be a valid date.", blocking: true },
       {
         id: "policy",
         rule: "The category must exist in the benefits catalog, otherwise it goes to HR review.",
@@ -109,12 +109,12 @@ export function buildClaimRules(categoryId?: PolicyTabId) {
       },
       {
         id: "proof",
-        rule: "A bill file must be attached, matching the category's proof requirement.",
+        rule: "A claim file must be attached, matching the category's proof requirement.",
         blocking: true,
       },
       {
         id: "duplicate",
-        rule: "A claim with the same vendor, amount, and bill date already on record is flagged for review.",
+        rule: "A claim with the same vendor, amount, and claim date already on record is flagged for review.",
         blocking: false,
       },
       {

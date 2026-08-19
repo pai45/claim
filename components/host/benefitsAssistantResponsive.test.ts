@@ -10,8 +10,8 @@ const drawer = readFileSync(
   join(process.cwd(), "components/chat/DocumentScenarioDrawer.tsx"),
   "utf8",
 );
-const billExtract = readFileSync(
-  join(process.cwd(), "components/chat/BillExtractCard.tsx"),
+const claimExtract = readFileSync(
+  join(process.cwd(), "components/chat/ClaimExtractCard.tsx"),
   "utf8",
 );
 const chatShell = readFileSync(
@@ -36,8 +36,8 @@ describe("Benefits Assistant desktop responsiveness", () => {
   it("sizes assistant overlays against the assistant frame", () => {
     expect(drawer).toContain("max-h-[88%]");
     expect(drawer).not.toContain("max-h-[88dvh]");
-    expect(billExtract).toContain("max-h-[calc(100%-32px)]");
-    expect(billExtract).not.toContain("max-h-[72dvh]");
+    expect(claimExtract).toContain("max-h-[calc(100%-32px)]");
+    expect(claimExtract).not.toContain("max-h-[72dvh]");
   });
 
   it("gives the chat flex layout a definite frame height", () => {

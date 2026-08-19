@@ -3,32 +3,32 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import {
-  BILL_UPLOAD_SCENARIOS,
+  CLAIM_UPLOAD_SCENARIOS,
   DL_UPLOAD_SCENARIOS,
-  buildBillExtractFromScenario,
+  buildClaimExtractFromScenario,
   buildDlPayloadFromScenario,
-  getBillUploadScenario,
-  getBillUploadScenariosForSource,
+  getClaimUploadScenario,
+  getClaimUploadScenariosForSource,
   getDemoPrecheckDate,
 } from "./demoUploadScenarios";
-import type { BillUploadScenarioId } from "./types";
+import type { ClaimUploadScenarioId } from "./types";
 
-function precheck(id: BillUploadScenarioId) {
-  const extract = buildBillExtractFromScenario(id);
+function precheck(id: ClaimUploadScenarioId) {
+  const extract = buildClaimExtractFromScenario(id);
   return evaluateClaimPrecheck(extract, getDemoPrecheckDate(extract));
 }
 
 describe("demo document upload scenarios", () => {
-  it("registers 11 unique bill scenarios and two unique DL scenarios", () => {
-    expect(BILL_UPLOAD_SCENARIOS).toHaveLength(11);
-    expect(new Set(BILL_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(11);
+  it("registers 11 unique claim scenarios and two unique DL scenarios", () => {
+    expect(CLAIM_UPLOAD_SCENARIOS).toHaveLength(11);
+    expect(new Set(CLAIM_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(11);
     expect(DL_UPLOAD_SCENARIOS).toHaveLength(2);
     expect(new Set(DL_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(2);
   });
 
   it("points every scenario at a project asset", () => {
     const assets = [
-      ...BILL_UPLOAD_SCENARIOS.map(({ asset }) => asset),
+      ...CLAIM_UPLOAD_SCENARIOS.map(({ asset }) => asset),
       ...DL_UPLOAD_SCENARIOS.map(({ asset }) => asset),
     ];
     expect(new Set(assets).size).toBe(13);
@@ -37,15 +37,15 @@ describe("demo document upload scenarios", () => {
     }
   });
 
-  it("removes the missing meal bill from Camera while keeping other sources intact", () => {
+  it("removes the missing meal claim from Camera while keeping other sources intact", () => {
     expect(
-      getBillUploadScenariosForSource("camera").map(({ id }) => id),
+      getClaimUploadScenariosForSource("camera").map(({ id }) => id),
     ).not.toContain("meal_missing");
     expect(
-      getBillUploadScenariosForSource("pdf").map(({ id }) => id),
+      getClaimUploadScenariosForSource("pdf").map(({ id }) => id),
     ).toContain("meal_missing");
     expect(
-      getBillUploadScenariosForSource("gallery").map(({ id }) => id),
+      getClaimUploadScenariosForSource("gallery").map(({ id }) => id),
     ).toContain("meal_missing");
   });
 
@@ -61,12 +61,12 @@ describe("demo document upload scenarios", () => {
   });
 
   it("blocks missing meal fields and opens manual review", () => {
-    const extract = buildBillExtractFromScenario("meal_missing");
+    const extract = buildClaimExtractFromScenario("meal_missing");
     expect(extract.manualReview).toBe(true);
     expect(precheck("meal_missing").status).toBe("blocked");
   });
 
-  it("blocks a fuel bill that exceeds the available balance", () => {
+  it("blocks a fuel claim that exceeds the available balance", () => {
     const result = precheck("fuel_exceeding");
     expect(result.status).toBe("blocked");
     expect(result.checks.find(({ id }) => id === "allowance")?.status).toBe(
@@ -83,8 +83,8 @@ describe("demo document upload scenarios", () => {
     expect(result.requiresAcknowledgement).toBe(true);
   });
 
-  it("blocks the late bill using the fixed demo clock", () => {
-    const scenario = getBillUploadScenario("late");
+  it("blocks the late claim using the fixed demo clock", () => {
+    const scenario = getClaimUploadScenario("late");
     expect(scenario.referenceNow).toContain("2026-08-07");
     const result = precheck("late");
     expect(result.status).toBe("blocked");

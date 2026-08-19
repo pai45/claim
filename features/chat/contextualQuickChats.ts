@@ -43,7 +43,7 @@ function policyActions(categoryId?: PolicyTabId): QuickAction[] {
       action("policy-dashboard", "View dashboard", "view_dashboard"),
       action("policy-history", "View claim history", "claim_history"),
       action("policy-another", "Choose another policy", "view_policy"),
-      action("policy-new-claim", "New claim", "upload_bill"),
+      action("policy-new-claim", "New claim", "upload_claim"),
     ];
   }
 
@@ -51,7 +51,7 @@ function policyActions(categoryId?: PolicyTabId): QuickAction[] {
     action("policy-balance", `Check ${benefit} balance`, "view_dashboard"),
     action("policy-claims", `Show ${benefit} claims`, "claim_history"),
     action("policy-another", "Choose another policy", "view_policy"),
-    action("policy-new-claim", "New claim", "upload_bill"),
+    action("policy-new-claim", "New claim", "upload_claim"),
   ];
 }
 
@@ -62,7 +62,7 @@ function categoryDashboardActions(categoryId?: PolicyTabId): QuickAction[] {
   return [
     action("dashboard-claims", `Show ${benefit} claims`, "claim_history"),
     action("dashboard-policy", `Review ${benefit} policy`),
-    action("dashboard-upload", "Upload a bill", "upload_bill"),
+    action("dashboard-upload", "Upload a claim", "upload_claim"),
   ];
 }
 
@@ -95,7 +95,7 @@ function claimsHistoryActions(message: ChatMessage): QuickAction[] {
   return [
     ...statusActions,
     action("history-dashboard", "View dashboard", "view_dashboard", 1),
-    action("history-new-claim", "New claim", "upload_bill", 1),
+    action("history-new-claim", "New claim", "upload_claim", 1),
   ];
 }
 
@@ -104,7 +104,7 @@ function individualClaimActions(): QuickAction[] {
     action("claim-history", "View claim history", "claim_history"),
     action("claim-dashboard", "View dashboard", "view_dashboard"),
     action("claim-policy", "Check a policy", "view_policy"),
-    action("claim-new-claim", "New claim", "upload_bill"),
+    action("claim-new-claim", "New claim", "upload_claim"),
   ];
 }
 

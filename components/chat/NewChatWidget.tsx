@@ -24,9 +24,9 @@ type NewChatWidgetProps = {
    * through the dialog again would ask the same question twice.
    */
   onClearChat: () => void;
-  /** Opens the shared bill-draft bottom sheet for an eligible conversation. */
+  /** Opens the shared claim-draft bottom sheet for an eligible conversation. */
   onRequestDraftDecision?: () => void;
-  hasEligibleBillDrafts?: boolean;
+  hasEligibleClaimDrafts?: boolean;
   /**
    * Id of the newest completed-claim turn, or null when the thread has none.
    * Every *change* to a non-null value pops the drawer open for {@link HOLD_MS}.
@@ -45,7 +45,7 @@ type NewChatWidgetProps = {
  *
  * - `handle`  a slim tab tucked against the wall, mostly hidden
  * - `cta`     the "New chat" pill, wiped in from the wall
- * - `options` "Clear chat" / "Keep chatting" for non-bill conversations
+ * - `options` "Clear chat" / "Keep chatting" for non-claim conversations
  */
 type Stage = "handle" | "cta" | "options";
 
@@ -118,7 +118,7 @@ function bandFor(layerHeight: number, boxHeight: number) {
 export function NewChatWidget({
   onClearChat,
   onRequestDraftDecision,
-  hasEligibleBillDrafts = false,
+  hasEligibleClaimDrafts = false,
   completedClaimKey,
   reduceMotion,
 }: NewChatWidgetProps) {
@@ -538,7 +538,7 @@ export function NewChatWidget({
               type="button"
               inert={stage !== "cta"}
               onClick={() => {
-                if (hasEligibleBillDrafts && onRequestDraftDecision) {
+                if (hasEligibleClaimDrafts && onRequestDraftDecision) {
                   setStage("handle");
                   onRequestDraftDecision();
                   return;

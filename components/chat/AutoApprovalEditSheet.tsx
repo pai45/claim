@@ -79,7 +79,7 @@ export function AutoApprovalEditSheet({
           id="auto-approval-edit-description"
           className="mt-3.5 type-body-secondary text-ink-secondary"
         >
-          This bill scored {score}% and is set to auto-approve. If you change any
+          This claim scored {score}% and is set to auto-approve. If you change any
           detail, it goes to HR for manual review instead, which takes longer.
         </p>
 

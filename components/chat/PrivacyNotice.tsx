@@ -11,8 +11,8 @@ export function PrivacyNotice({ onClearData, compact }: PrivacyNoticeProps) {
   return (
     <div className="rounded-control border border-input-border bg-surface-tint px-3 py-2.5 text-ink-secondary">
       <p className="text-caption leading-4">
-        <strong className="text-pine">Privacy:</strong> Your bill is processed
-        on this device. After scanning, the bill file and extracted details are
+        <strong className="text-pine">Privacy:</strong> Your claim is processed
+        on this device. After scanning, the claim file and extracted details are
         saved automatically in this browser for up to {privacy.retentionDays}
         days. Raw scanned text is never saved.
       </p>
@@ -26,14 +26,14 @@ export function PrivacyNotice({ onClearData, compact }: PrivacyNoticeProps) {
               Only people with access to this browser profile can see retained
               structured details.
             </li>
-            <li>No bill file leaves this device in the current demo.</li>
+            <li>No claim file leaves this device in the current demo.</li>
             <li>
               Submission creates a local demo record; nothing is sent to HR or
               your employer.
             </li>
             {!compact ? (
               <li>
-                Original bill files are saved automatically as a draft after a
+                Original claim files are saved automatically as a draft after a
                 successful scan. Raw OCR or DL text is never persisted.
               </li>
             ) : null}

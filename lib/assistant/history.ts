@@ -21,7 +21,7 @@ const CARD_KINDS = new Set([
   "driver_salary_input",
   "driver_salary_review",
   "document_scan",
-  "bill_extract",
+  "claim_extract",
 ]);
 
 /**

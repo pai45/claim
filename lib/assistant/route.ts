@@ -272,7 +272,7 @@ export function routePlanFor(route: AssistantRoute): RoutePlan | null {
       };
 
     case "upload":
-      return { kind: "intent", intentId: "upload_bill" };
+      return { kind: "intent", intentId: "upload_claim" };
     case "track":
       return { kind: "intent", intentId: "track_claim" };
     case "merchant_locator":

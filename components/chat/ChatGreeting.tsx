@@ -25,7 +25,7 @@ export function ChatGreeting() {
       />
       <MagicText
         as="p"
-        text="Ask me anything! I can help you upload bills, retrieve bill details, and find nearby merchants."
+        text="Ask me anything! I can help you upload claims, retrieve claim details, and find nearby merchants."
         mode="words"
         delayMs={120}
         stepMs={22}
