@@ -12,10 +12,7 @@ import { claimDraftFingerprint } from "@/features/chat/drafts";
 import type { ClaimExtract } from "@/features/chat/types";
 import { formatINR } from "@/features/dashboard/constants";
 import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
-import {
-  evaluateClaimPrecheck,
-  parseClaimAmount,
-} from "@/lib/claims/precheck";
+import { evaluateClaimPrecheck, parseClaimAmount } from "@/lib/claims/precheck";
 import { useModalFocus } from "@/lib/ui/useModalFocus";
 
 type ClaimExtractCardProps = {
@@ -166,7 +163,10 @@ function DetailTile({
         ) : null}
       </div>
       {children ?? (
-        <strong className="mt-1 block truncate text-body-sm font-bold text-pine" title={value}>
+        <strong
+          className="mt-1 block truncate text-body-sm font-bold text-pine"
+          title={value}
+        >
           {value || "—"}
         </strong>
       )}
@@ -220,7 +220,9 @@ export function ClaimExtractCard({
 
   useEffect(() => {
     if (!editing) return;
-    const frame = window.requestAnimationFrame(() => categoryRef.current?.focus());
+    const frame = window.requestAnimationFrame(() =>
+      categoryRef.current?.focus(),
+    );
     return () => window.cancelAnimationFrame(frame);
   }, [editing]);
 
@@ -237,16 +239,18 @@ export function ClaimExtractCard({
     [acknowledged, editing, extract, fields, hasFieldChanges],
   );
   const precheck = useMemo(
-    () => evaluateClaimPrecheck(workingExtract, getDemoPrecheckDate(workingExtract)),
+    () =>
+      evaluateClaimPrecheck(
+        workingExtract,
+        getDemoPrecheckDate(workingExtract),
+      ),
     [workingExtract],
   );
   const autoApproval = evaluateAutoApproval(workingExtract, precheck);
   const autoApprovalLabel =
     autoApproval.reason === "edited"
       ? "Manual review — edited after scan"
-      : `Confidence ${autoApproval.score}% · ${
-          autoApproval.eligible ? "Eligible for auto approval" : "Manual review"
-        }`;
+      : `Confidence ${autoApproval.score}%`;
   const amount = parseClaimAmount(fields.amount);
   const legacyPreviewUrl =
     extract.previewUrl ||
@@ -258,11 +262,13 @@ export function ClaimExtractCard({
     precheck.status === "blocked" ||
     (precheck.requiresAcknowledgement && !acknowledged) ||
     !declarationAccepted;
-  const reviewItems = precheck.checks.filter((check) => check.status !== "pass");
+  const reviewItems = precheck.checks.filter(
+    (check) => check.status !== "pass",
+  );
   const currentDraftFingerprint = claimDraftFingerprint(workingExtract);
   const draftIsCurrent = Boolean(
     extract.draftId &&
-      extract.draftSavedFingerprint === currentDraftFingerprint,
+    extract.draftSavedFingerprint === currentDraftFingerprint,
   );
 
   function issueFor(
@@ -326,7 +332,11 @@ export function ClaimExtractCard({
           {extract.error}
         </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => setEditing(true)} className={actionClass}>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className={actionClass}
+          >
             Enter details
           </button>
           {!isClaimEdit ? (
@@ -352,7 +362,9 @@ export function ClaimExtractCard({
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="type-section-title text-pine">Claim details ready</h3>
+              <h3 className="type-section-title text-pine">
+                Claim details ready
+              </h3>
               {extract.draftId ? (
                 <span className="ml-auto shrink-0 rounded-pill border border-success-border bg-success-soft px-2 py-0.5 text-caption font-bold text-success">
                   {draftIsCurrent ? "Draft saved" : "Draft changed"}
@@ -371,7 +383,9 @@ export function ClaimExtractCard({
                 <strong className="max-w-full truncate text-body-sm text-pine">
                   {extract.fileName}
                 </strong>
-                <span className="text-caption text-ink-secondary">PDF claim attached</span>
+                <span className="text-caption text-ink-secondary">
+                  PDF claim attached
+                </span>
               </div>
             ) : (
               <button
@@ -412,7 +426,9 @@ export function ClaimExtractCard({
               <select
                 ref={categoryRef}
                 value={fields.category}
-                onChange={(event) => updateField("category", event.target.value)}
+                onChange={(event) =>
+                  updateField("category", event.target.value)
+                }
                 className={editorClass}
                 aria-label="Category"
               >
@@ -449,13 +465,18 @@ export function ClaimExtractCard({
                   inputMode="decimal"
                   value={fields.amount}
                   onChange={(event) =>
-                    updateField("amount", sanitizeAmountInput(event.target.value))
+                    updateField(
+                      "amount",
+                      sanitizeAmountInput(event.target.value),
+                    )
                   }
                   className="min-h-11 min-w-0 flex-1 bg-transparent outline-none"
                   aria-label="Amount in rupees"
                   aria-invalid={Boolean(amountIssue)}
                   pattern="\\d+(\\.\\d{1,2})?"
-                  placeholder={amountIssue === "missing" ? "Enter amount" : undefined}
+                  placeholder={
+                    amountIssue === "missing" ? "Enter amount" : undefined
+                  }
                 />
               </div>
             ) : undefined}
@@ -469,19 +490,26 @@ export function ClaimExtractCard({
               <input
                 type="date"
                 value={fields.claimDate}
-                onChange={(event) => updateField("claimDate", event.target.value)}
+                onChange={(event) =>
+                  updateField("claimDate", event.target.value)
+                }
                 className={editorClass}
                 aria-label="Claim date"
                 aria-invalid={Boolean(claimDateIssue)}
               />
             ) : undefined}
           </DetailTile>
-          <DetailTile label="Claim month" value={formatMonth(fields.claimMonth)}>
+          <DetailTile
+            label="Claim month"
+            value={formatMonth(fields.claimMonth)}
+          >
             {editing ? (
               <input
                 type="month"
                 value={fields.claimMonth}
-                onChange={(event) => updateField("claimMonth", event.target.value)}
+                onChange={(event) =>
+                  updateField("claimMonth", event.target.value)
+                }
                 className={editorClass}
                 aria-label="Claim month"
               />
@@ -491,7 +519,9 @@ export function ClaimExtractCard({
             {editing ? (
               <input
                 value={fields.invoiceNo}
-                onChange={(event) => updateField("invoiceNo", event.target.value)}
+                onChange={(event) =>
+                  updateField("invoiceNo", event.target.value)
+                }
                 className={editorClass}
                 aria-label="Invoice number"
               />
@@ -506,7 +536,10 @@ export function ClaimExtractCard({
         ) : null}
 
         {reviewItems.length > 0 ? (
-          <div className="mt-3 flex flex-col gap-2" aria-label="Claim checks needing attention">
+          <div
+            className="mt-3 flex flex-col gap-2"
+            aria-label="Claim checks needing attention"
+          >
             {reviewItems.map((check) => (
               <div
                 key={check.id}
@@ -516,8 +549,12 @@ export function ClaimExtractCard({
                     : "bg-warning-tint text-warning-ink"
                 }`}
               >
-                <strong className="block text-body-sm font-bold">{check.label}</strong>
-                <span className="mt-0.5 block text-caption">{check.detail}</span>
+                <strong className="block text-body-sm font-bold">
+                  {check.label}
+                </strong>
+                <span className="mt-0.5 block text-caption">
+                  {check.detail}
+                </span>
               </div>
             ))}
           </div>
@@ -552,7 +589,9 @@ export function ClaimExtractCard({
           <>
             <button
               type="button"
-              disabled={isClaimEdit ? precheck.status === "blocked" : submitDisabled}
+              disabled={
+                isClaimEdit ? precheck.status === "blocked" : submitDisabled
+              }
               onClick={isClaimEdit ? saveEdits : handleSubmit}
               className={actionClass}
             >
@@ -631,7 +670,9 @@ export function ClaimExtractCard({
           }`}
         >
           <div className="mb-3 flex items-center justify-between gap-3">
-            <p className="min-w-0 truncate text-body-sm font-bold text-pine">{extract.fileName}</p>
+            <p className="min-w-0 truncate text-body-sm font-bold text-pine">
+              {extract.fileName}
+            </p>
             <button
               type="button"
               onClick={() => setPreviewOpen(false)}

@@ -39,7 +39,7 @@ describe("ClaimExtractCard", () => {
       }),
     );
 
-    expect(html).toContain("Confidence 96% · Eligible for auto approval");
+    expect(html).toContain("Confidence 96%");
   });
 
   it("downgrades the header once the scanned details have been edited", () => {
@@ -65,8 +65,26 @@ describe("ClaimExtractCard", () => {
       }),
     );
 
-    expect(html).toContain("Confidence 95% · Manual review");
+    expect(html).toContain("Confidence 95%");
     expect(html).not.toContain("Eligible for auto approval");
+  });
+
+  it("flags the fields behind a 70% read without emptying the card", () => {
+    const html = renderToStaticMarkup(
+      createElement(ClaimExtractCard, {
+        messageId: "claim-1",
+        extract: buildClaimExtractFromScenario("fuel_low_confidence"),
+      }),
+    );
+
+    expect(html).toContain("Confidence 70%");
+    expect(html).not.toContain("Eligible for auto approval");
+    // Two "Check" chips, on the amount and the claim date.
+    expect(html.match(/>Check</g)).toHaveLength(2);
+    expect(html).toContain("border-warning-border bg-warning-soft");
+    // The read succeeded, so the card opens settled rather than in edit mode.
+    expect(html).toContain(">₹2,800<");
+    expect(html).not.toContain('aria-label="Amount in rupees"');
   });
 
   it("does not leave the edit warning mounted inside the claim card", () => {

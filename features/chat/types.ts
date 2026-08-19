@@ -18,6 +18,7 @@ export type ClaimUploadScenarioId =
   | "driver_salary"
   | "meal_missing"
   | "fuel"
+  | "fuel_low_confidence"
   | "fuel_exceeding"
   | "internet"
   | "mobile"

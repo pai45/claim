@@ -103,6 +103,32 @@ export const CLAIM_UPLOAD_SCENARIOS: readonly ClaimUploadScenario[] = [
     },
   },
   {
+    id: "fuel_low_confidence",
+    label: "Fuel Claim — low confidence",
+    description: "Same receipt, read at 70%",
+    group: "common",
+    // Deliberately the same artwork as `fuel`: the demo contrast is the quality
+    // of the read, not a different document.
+    asset: DEMO_DOCUMENT_ASSETS.claimFuel,
+    assistantMessage:
+      "I read this Highway Fuel Point receipt at 70% confidence. Check the amount and claim date against the image before submitting — HR will verify this claim manually.",
+    referenceNow: DEMO_REFERENCE_NOW,
+    extract: {
+      fileName: "highway-fuel-blurred.jpg",
+      category: "Fuel & Maintenance",
+      vendor: "Highway Fuel Point",
+      amount: "2800",
+      claimDate: "2026-08-03",
+      claimMonth: "2026-08",
+      invoiceNo: "FUEL-0803",
+      confidence: 70,
+      reviewFields: {
+        amount: "review",
+        claimDate: "review",
+      },
+    },
+  },
+  {
     id: "fuel_exceeding",
     label: "Fuel Claim — exceeding balance",
     description: "₹45,000 exceeds ₹42,000 available",

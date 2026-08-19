@@ -9,7 +9,7 @@ export const CLAIM_DRAFT_DELETE_HINT_KEY =
 export const CLAIM_DRAFTS_CHANGED_EVENT = "eb-claims:claim-drafts-changed";
 
 const DATABASE_NAME = "eb-claims";
-const DATABASE_VERSION = 1;
+const DATABASE_VERSION = 2;
 const STORE_NAME = "claim-drafts";
 
 function notifyClaimDraftsChanged(): void {

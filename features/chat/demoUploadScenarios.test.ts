@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import {
   CLAIM_UPLOAD_SCENARIOS,
@@ -19,9 +20,9 @@ function precheck(id: ClaimUploadScenarioId) {
 }
 
 describe("demo document upload scenarios", () => {
-  it("registers 11 unique claim scenarios and two unique DL scenarios", () => {
-    expect(CLAIM_UPLOAD_SCENARIOS).toHaveLength(11);
-    expect(new Set(CLAIM_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(11);
+  it("registers 12 unique claim scenarios and two unique DL scenarios", () => {
+    expect(CLAIM_UPLOAD_SCENARIOS).toHaveLength(12);
+    expect(new Set(CLAIM_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(12);
     expect(DL_UPLOAD_SCENARIOS).toHaveLength(2);
     expect(new Set(DL_UPLOAD_SCENARIOS.map(({ id }) => id)).size).toBe(2);
   });
@@ -31,6 +32,9 @@ describe("demo document upload scenarios", () => {
       ...CLAIM_UPLOAD_SCENARIOS.map(({ asset }) => asset),
       ...DL_UPLOAD_SCENARIOS.map(({ asset }) => asset),
     ];
+    // One fewer unique file than scenarios: the two fuel reads deliberately
+    // share a single receipt image.
+    expect(assets).toHaveLength(14);
     expect(new Set(assets).size).toBe(13);
     for (const asset of assets) {
       expect(existsSync(join(process.cwd(), "public", asset))).toBe(true);
@@ -52,6 +56,7 @@ describe("demo document upload scenarios", () => {
   it.each([
     "driver_salary",
     "fuel",
+    "fuel_low_confidence",
     "internet",
     "mobile",
     "books",
@@ -64,6 +69,43 @@ describe("demo document upload scenarios", () => {
     const extract = buildClaimExtractFromScenario("meal_missing");
     expect(extract.manualReview).toBe(true);
     expect(precheck("meal_missing").status).toBe("blocked");
+  });
+
+  it("reads the shared fuel receipt at 70% and routes it to manual review", () => {
+    const confident = getClaimUploadScenario("fuel");
+    const low = getClaimUploadScenario("fuel_low_confidence");
+    expect(low.asset).toBe(confident.asset);
+    expect(low.extract.vendor).toBe(confident.extract.vendor);
+    expect(low.extract.amount).toBe(confident.extract.amount);
+    expect(low.extract.claimDate).toBe(confident.extract.claimDate);
+
+    const extract = buildClaimExtractFromScenario("fuel_low_confidence");
+    expect(extract.confidence).toBe(70);
+    // Fields are present and legal, so only the score withholds auto approval.
+    expect(extract.manualReview).toBeUndefined();
+    expect(extract.reviewFields).toEqual({
+      amount: "review",
+      claimDate: "review",
+    });
+
+    const verdict = evaluateAutoApproval(
+      extract,
+      evaluateClaimPrecheck(extract, getDemoPrecheckDate(extract)),
+    );
+    expect(verdict).toEqual({
+      score: 70,
+      eligible: false,
+      reason: "low_confidence",
+    });
+  });
+
+  it("keeps the confident fuel read eligible for auto approval", () => {
+    const extract = buildClaimExtractFromScenario("fuel");
+    const verdict = evaluateAutoApproval(
+      extract,
+      evaluateClaimPrecheck(extract, getDemoPrecheckDate(extract)),
+    );
+    expect(verdict.eligible).toBe(true);
   });
 
   it("blocks a fuel claim that exceeds the available balance", () => {
