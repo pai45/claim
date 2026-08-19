@@ -85,14 +85,6 @@ export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
     tone: "success",
     action: { kind: "claim", claimId: "CLM-45140" },
   },
-  {
-    id: "claim-clm-45201-under-review",
-    title: "Your claim is under review",
-    body: "Your ₹1,299 Airtel Broadband claim CLM-45201 is being reviewed.",
-    dateLabel: "12 May 2026",
-    tone: "default",
-    action: { kind: "claim", claimId: "CLM-45201" },
-  },
 ];
 
 export const RETURNING_NOTIFICATION_COUNT = RETURNING_NOTIFICATIONS.length;

@@ -159,9 +159,6 @@ export function VehicleDetailsScreen() {
                     : vehicle.lookup.ownerName
                 }
                 tone={isVehicleRejected ? "danger" : "default"}
-                note={
-                  isVehicleRejected ? `Your profile: ${profileName}` : undefined
-                }
               />
               <VehicleDetailRow
                 label="Engine CC"

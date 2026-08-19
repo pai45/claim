@@ -7,15 +7,16 @@ import {
 } from "./constants";
 
 describe("notification catalog", () => {
-  it("provides five actionable notifications for Vishal", () => {
+  it("provides six actionable notifications for Vishal", () => {
     const notifications = getNotificationsForPersona("returning");
 
-    expect(notifications).toHaveLength(5);
-    expect(RETURNING_NOTIFICATION_COUNT).toBe(5);
+    expect(notifications).toHaveLength(6);
+    expect(RETURNING_NOTIFICATION_COUNT).toBe(6);
     expect(notifications).toBe(RETURNING_NOTIFICATIONS);
     expect(notifications.map((item) => item.action.kind)).toEqual([
+      "route",
       "assistant",
-      "claim",
+      "assistant",
       "claim",
       "claim",
       "claim",
@@ -24,7 +25,7 @@ describe("notification catalog", () => {
 
   it("keeps the catalog persona-based instead of deleting hidden items", () => {
     expect(getNotificationsForPersona("new_user")).toEqual([]);
-    expect(getNotificationsForPersona("returning")).toHaveLength(5);
+    expect(getNotificationsForPersona("returning")).toHaveLength(6);
     expect(getNotificationsForPersona("rahul_onboarding")).toBe(
       RETURNING_NOTIFICATIONS,
     );
@@ -41,7 +42,6 @@ describe("notification catalog", () => {
       "CLM-124",
       "CLM-45188",
       "CLM-45140",
-      "CLM-45201",
     ]);
     expect(claimIds.map((claimId) => getClaimDetails(claimId).id)).toEqual(
       claimIds,

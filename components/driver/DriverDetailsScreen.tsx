@@ -124,10 +124,7 @@ export function DriverDetailsScreen() {
             ) : null}
 
             <section className="flex items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-control bg-surface-tint-strong">
-                  <CategoryIcon icon="driver" />
-                </span>
+              <div className="min-w-0">
                 <h2 className="type-section-title truncate">{driver.driverName}</h2>
               </div>
               {/* A rejection is something to fix, not a replacement to warn
@@ -147,7 +144,7 @@ export function DriverDetailsScreen() {
               </button>
             </section>
 
-            {driver.dlNumber ? (
+            {!isDriverRejected && driver.dlNumber ? (
               <span
                 className={`w-fit rounded-pill px-3 py-1.5 text-body-sm font-bold tracking-wider ${
                   isDriverRejected
