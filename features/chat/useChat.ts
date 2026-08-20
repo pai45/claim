@@ -57,7 +57,6 @@ import {
 } from "@/lib/merchants/demoNearby";
 import { runDlOcr } from "@/lib/ocr/runDlOcr";
 import { runClaimOcr } from "@/lib/ocr/runOcr";
-import { evaluateAutoApproval } from "@/lib/claims/autoApproval";
 import { evaluateClaimPrecheck } from "@/lib/claims/precheck";
 import { saveRegisteredVehicle } from "@/features/vehicle/registration";
 import { saveRegisteredDriver } from "@/features/driver/registration";
@@ -116,8 +115,8 @@ export function useChat() {
   const driverSalaryDraftRef = useRef<DriverSalaryPayload>({});
   const previewUrlsRef = useRef(new Map<string, string>());
   // `isScanning` is cleared early in a claim scan so the live progress card can
-  // give way to the confidence bubble, which would otherwise leave the upload
-  // buttons re-armed during the beat before the claim card lands.
+  // give way to the completed scan card without re-arming upload buttons before
+  // the claim card lands.
   const claimScanLockRef = useRef(false);
   // Lets sendMessage read the transcript for prompt history without taking
   // `messages` as a dependency, which would change its identity every append.
@@ -1021,7 +1020,7 @@ export function useChat() {
         });
 
         // Replacing a claim swaps the existing card in place, so it keeps the
-        // confidence bubble the original scan already posted above it.
+        // completed scan card the original upload already posted above it.
         if (replaceMessageId) {
           setMessages((prev) =>
             prev.map((message) =>
@@ -1031,18 +1030,13 @@ export function useChat() {
           return;
         }
 
-        const verdict = evaluateAutoApproval(
-          savedExtract,
-          evaluateClaimPrecheck(savedExtract, getDemoPrecheckDate(savedExtract)),
-        );
-
         // Drop the live scanning status before the completed card lands, so the
         // two never overlap across the pause below.
         setIsScanning(false);
         setDocumentProcessingStage(null);
 
-        // The scan result and its confidence score share one bubble, so this
-        // single message carries both halves.
+        // Keep the completion state lightweight; any claim-specific review
+        // guidance is shown with the editable claim details below.
         setMessages((prev) => [
           ...prev,
           {
@@ -1050,13 +1044,12 @@ export function useChat() {
             role: "assistant",
             content: "Claim scanned",
             createdAt: Date.now(),
-            kind: "confidence_score",
-            confidenceScore: verdict,
+            kind: "document_scan",
           },
         ]);
 
-        // Long enough for the ring sweep and count-up to be read before the
-        // claim card takes over the viewport.
+        // Keep the completion state visible briefly before the claim card takes
+        // over the viewport.
         await new Promise((resolve) => window.setTimeout(resolve, 1100));
         if (chatVersionRef.current !== chatVersion) return;
 

@@ -81,7 +81,10 @@ export function ClaimReceiptCard({
     extract,
     evaluateClaimPrecheck(extract, getDemoPrecheckDate(extract)),
   );
-  const reviewLabel = autoApproval.eligible ? "Auto Review" : "Manual Review";
+  const reviewLabel = autoApproval.eligible ? "Auto Approved" : "Manual Review";
+  const reviewCaption = autoApproval.eligible
+    ? "As per company policy"
+    : "Send to HR";
 
   return (
     <div role="status" aria-live="polite" className="w-full max-w-card overflow-hidden rounded-bubble rounded-tl border border-border-line bg-white">
@@ -97,15 +100,20 @@ export function ClaimReceiptCard({
             </span>
           </div>
         </div>
-        <span
-          className={`ml-auto shrink-0 rounded-pill px-2.5 py-1 text-caption font-bold ${
-            autoApproval.eligible
-              ? "bg-success-tint text-success"
-              : "bg-warning-tint text-warning-ink"
-          }`}
-        >
-          {reviewLabel}
-        </span>
+        <div className="ml-auto flex shrink-0 flex-col items-end gap-1">
+          <span
+            className={`rounded-pill px-2.5 py-1 text-caption font-bold ${
+              autoApproval.eligible
+                ? "bg-success-tint text-success"
+                : "bg-warning-tint text-warning-ink"
+            }`}
+          >
+            {reviewLabel}
+          </span>
+          <span className="whitespace-nowrap text-caption text-ink-secondary">
+            {reviewCaption}
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 px-4 py-4">

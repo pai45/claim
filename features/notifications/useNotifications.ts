@@ -10,6 +10,7 @@ import {
   getDraftClaimsNotification,
   getNotificationsForPersona,
 } from "./constants";
+import { useRegistrationStatus } from "@/features/chat/useRegistrationStatus";
 import {
   readNotificationsHidden,
   subscribeToNotificationsHidden,
@@ -17,6 +18,7 @@ import {
 
 export function useNotifications() {
   const { personaId } = useActivePersona();
+  const registrationStatus = useRegistrationStatus();
   const [draftCount, setDraftCount] = useState(0);
   const hidden = useSyncExternalStore(
     subscribeToNotificationsHidden,
@@ -38,11 +40,15 @@ export function useNotifications() {
   const allNotifications = useMemo(
     () => {
       const draftNotification = getDraftClaimsNotification(draftCount);
+      const personaNotifications = getNotificationsForPersona(
+        personaId,
+        registrationStatus,
+      );
       return draftNotification
-        ? [draftNotification, ...getNotificationsForPersona(personaId)]
-        : getNotificationsForPersona(personaId);
+        ? [draftNotification, ...personaNotifications]
+        : personaNotifications;
     },
-    [draftCount, personaId],
+    [draftCount, personaId, registrationStatus],
   );
   const notifications = hidden ? [] : allNotifications;
 

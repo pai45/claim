@@ -89,7 +89,7 @@ export function EbBottomNav({
       */}
       <span
         data-benefits-fab
-        className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_12px_rgba(0,86,86,0.1),0_0_8px_1px_rgba(54,204,139,0.21),0_0_20px_6px_rgba(54,204,139,0.15)]"
+        className="absolute left-1/2 top-[18px] grid h-[60px] w-[60px] -translate-x-1/2 place-items-center overflow-hidden rounded-full bg-white shadow-[0_5px_12px_rgba(0,86,86,0.1),0_0_8px_1px_rgba(54,204,139,0.25),0_0_20px_6px_rgba(54,204,139,0.18)]"
       >
         <BenefitsLogo size={40} />
       </span>

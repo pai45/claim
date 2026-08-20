@@ -94,7 +94,14 @@ export function loadChatSession(
       storage.removeItem(CHAT_STORAGE_KEY);
       return null;
     }
-    return parsed as PersistedChatSession;
+    return {
+      ...parsed,
+      messages: parsed.messages.map((message) =>
+        message.kind === "confidence_score"
+          ? { ...message, kind: "document_scan" }
+          : message,
+      ),
+    } as PersistedChatSession;
   } catch {
     storage.removeItem(CHAT_STORAGE_KEY);
     return null;

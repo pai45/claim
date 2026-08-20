@@ -63,7 +63,7 @@ describe("registration receipt cards", () => {
     );
   });
 
-  it("labels clean claims for auto review and edited claims for manual review", () => {
+  it("labels clean claims as auto approved and edited claims for manual review", () => {
     const cleanHtml = renderToStaticMarkup(
       createElement(ClaimReceiptCard, {
         claimId: "CLM-87551",
@@ -82,7 +82,9 @@ describe("registration receipt cards", () => {
       }),
     );
 
-    expect(cleanHtml).toContain("Auto Review");
+    expect(cleanHtml).toContain("Auto Approved");
+    expect(cleanHtml).toContain("As per company policy");
     expect(editedHtml).toContain("Manual Review");
+    expect(editedHtml).toContain("Send to HR");
   });
 });

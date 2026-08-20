@@ -7,16 +7,28 @@ import {
   getNotificationsForPersona,
 } from "./constants";
 
+const VEHICLE_REJECTED = {
+  isVehicleRegistered: true,
+  isDriverRegistered: true,
+  isVehicleRejected: true,
+  isDriverRejected: false,
+};
+
+const DRIVER_REJECTED = {
+  isVehicleRegistered: true,
+  isDriverRegistered: true,
+  isVehicleRejected: false,
+  isDriverRejected: true,
+};
+
 describe("notification catalog", () => {
-  it("provides six actionable notifications for Vishal", () => {
+  it("provides four regular actionable notifications for Vishal", () => {
     const notifications = getNotificationsForPersona("returning");
 
-    expect(notifications).toHaveLength(6);
-    expect(RETURNING_NOTIFICATION_COUNT).toBe(6);
+    expect(notifications).toHaveLength(4);
+    expect(RETURNING_NOTIFICATION_COUNT).toBe(4);
     expect(notifications).toBe(RETURNING_NOTIFICATIONS);
     expect(notifications.map((item) => item.action.kind)).toEqual([
-      "route",
-      "assistant",
       "assistant",
       "claim",
       "claim",
@@ -24,9 +36,36 @@ describe("notification catalog", () => {
     ]);
   });
 
-  it("keeps the catalog persona-based instead of deleting hidden items", () => {
+  it("adds only the matching registration failure after its home callout is rejected", () => {
+    const vehicleFailureNotifications = getNotificationsForPersona(
+      "returning",
+      VEHICLE_REJECTED,
+    );
+    const driverFailureNotifications = getNotificationsForPersona(
+      "returning",
+      DRIVER_REJECTED,
+    );
+
+    expect(vehicleFailureNotifications[0]).toMatchObject({
+      id: "vehicle-registration-failed",
+    });
+    expect(vehicleFailureNotifications.map((notification) => notification.id)).not.toContain(
+      "driver-registration-failed",
+    );
+    expect(driverFailureNotifications[0]).toMatchObject({
+      id: "driver-registration-failed",
+    });
+    expect(driverFailureNotifications.map((notification) => notification.id)).not.toContain(
+      "vehicle-registration-failed",
+    );
+    expect(getNotificationsForPersona("new_user", VEHICLE_REJECTED)).toEqual([
+      expect.objectContaining({ id: "vehicle-registration-failed" }),
+    ]);
+  });
+
+  it("keeps the regular catalog persona-based", () => {
     expect(getNotificationsForPersona("new_user")).toEqual([]);
-    expect(getNotificationsForPersona("returning")).toHaveLength(6);
+    expect(getNotificationsForPersona("returning")).toHaveLength(4);
     expect(getNotificationsForPersona("rahul_onboarding")).toBe(
       RETURNING_NOTIFICATIONS,
     );

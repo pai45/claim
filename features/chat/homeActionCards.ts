@@ -15,6 +15,25 @@ export type HomeActionCardState = {
   registration: RegistrationAction | null;
 };
 
+/**
+ * The one registration action currently surfaced on the Benefits Assistant
+ * home. Other surfaces (such as alerts) use this too so a failure can never be
+ * announced before its matching rejected callout is available to the user.
+ */
+export function getRegistrationAction(
+  registrationStatus: RegistrationStatus,
+): RegistrationAction | null {
+  return !registrationStatus.isVehicleRegistered
+    ? { kind: "vehicle", status: "pending" }
+    : !registrationStatus.isDriverRegistered
+      ? { kind: "driver", status: "pending" }
+      : registrationStatus.isVehicleRejected
+        ? { kind: "vehicle", status: "rejected" }
+        : registrationStatus.isDriverRejected
+          ? { kind: "driver", status: "rejected" }
+          : null;
+}
+
 export function getHomeActionCardState(
   personaId: PersonaId,
   notificationCount: number,
@@ -26,15 +45,7 @@ export function getHomeActionCardState(
   // this browser — no persona seeds them — so a rejection can never greet
   // someone who has not registered anything yet. Each resubmission clears its
   // own rejection, and after the driver's the cards run out.
-  const registration: RegistrationAction | null = !registrationStatus.isVehicleRegistered
-    ? { kind: "vehicle", status: "pending" }
-    : !registrationStatus.isDriverRegistered
-      ? { kind: "driver", status: "pending" }
-      : registrationStatus.isVehicleRejected
-        ? { kind: "vehicle", status: "rejected" }
-        : registrationStatus.isDriverRejected
-          ? { kind: "driver", status: "rejected" }
-          : null;
+  const registration = getRegistrationAction(registrationStatus);
 
   return {
     showNotifications:

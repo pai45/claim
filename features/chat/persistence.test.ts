@@ -107,4 +107,37 @@ describe("chat persistence", () => {
     );
     expect(restored?.messages[1].policyAnswer?.structured).toBeUndefined();
   });
+
+  it("restores legacy confidence messages as plain completed scans", () => {
+    const storage = fakeStorage();
+    const session = createPersistedChatSession(
+      {
+        messages: [
+          {
+            id: "legacy-confidence",
+            role: "assistant",
+            content: "Claim scanned",
+            createdAt: 1,
+            kind: "confidence_score",
+            confidenceScore: {
+              score: 42,
+              eligible: false,
+              reason: "low_confidence",
+            },
+          },
+        ],
+        driverSalaryDraft: {},
+        activeBenefitType: null,
+        activePolicyCategory: null,
+        activeAppDataContext: null,
+      },
+      1000,
+    );
+
+    saveChatSession(session, storage);
+
+    expect(loadChatSession(storage, 1001)?.messages[0].kind).toBe(
+      "document_scan",
+    );
+  });
 });

@@ -1,5 +1,7 @@
 import type { PersonaId } from "@/features/persona/types";
+import { getRegistrationAction } from "@/features/chat/homeActionCards";
 import { hasReturningAccountState } from "@/features/persona/constants";
+import type { RegistrationStatus } from "@/features/chat/useRegistrationStatus";
 
 export type NotificationAction =
   | {
@@ -26,29 +28,32 @@ export type BenefitsNotification = {
   action: NotificationAction;
 };
 
+const VEHICLE_REGISTRATION_FAILURE: BenefitsNotification = {
+  id: "vehicle-registration-failed",
+  title: "Vehicle registration failed",
+  body: "We couldn't register your vehicle. Review the details and try again.",
+  dateLabel: "Today",
+  tone: "danger",
+  // The vehicle screen explains why it failed; restarting the wizard from here
+  // would drop the user into a form with no idea what to change.
+  action: { kind: "route", href: "/vehicle/" },
+};
+
+const DRIVER_REGISTRATION_FAILURE: BenefitsNotification = {
+  id: "driver-registration-failed",
+  title: "Driver registration failed",
+  body: "We couldn't register your driver. Review the details and try again.",
+  dateLabel: "Today",
+  tone: "danger",
+  action: {
+    kind: "assistant",
+    intentId: "driver_registration",
+    label: "Register driver",
+  },
+};
+
+/** The regular alerts available to returning users. */
 export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
-  {
-    id: "vehicle-registration-failed",
-    title: "Vehicle registration failed",
-    body: "We couldn't register your vehicle. Review the details and try again.",
-    dateLabel: "Today",
-    tone: "danger",
-    // The vehicle screen explains why it failed; restarting the wizard from here
-    // would drop the user into a form with no idea what to change.
-    action: { kind: "route", href: "/vehicle/" },
-  },
-  {
-    id: "driver-registration-failed",
-    title: "Driver registration failed",
-    body: "We couldn't register your driver. Review the details and try again.",
-    dateLabel: "Today",
-    tone: "danger",
-    action: {
-      kind: "assistant",
-      intentId: "driver_registration",
-      label: "Register driver",
-    },
-  },
   {
     id: "internet-claim-due",
     title: "Your internet claim is pending",
@@ -89,6 +94,19 @@ export const RETURNING_NOTIFICATIONS: BenefitsNotification[] = [
 
 export const RETURNING_NOTIFICATION_COUNT = RETURNING_NOTIFICATIONS.length;
 
+function getRegistrationFailureNotification(
+  registrationStatus: RegistrationStatus | undefined,
+): BenefitsNotification | null {
+  const registration = registrationStatus
+    ? getRegistrationAction(registrationStatus)
+    : null;
+
+  if (registration?.status !== "rejected") return null;
+  return registration.kind === "vehicle"
+    ? VEHICLE_REGISTRATION_FAILURE
+    : DRIVER_REGISTRATION_FAILURE;
+}
+
 export function getDraftClaimsNotification(
   draftCount: number,
 ): BenefitsNotification | null {
@@ -107,7 +125,14 @@ export function getDraftClaimsNotification(
 
 export function getNotificationsForPersona(
   personaId: PersonaId,
+  registrationStatus?: RegistrationStatus,
 ): BenefitsNotification[] {
-  if (!hasReturningAccountState(personaId)) return [];
-  return RETURNING_NOTIFICATIONS;
+  const registrationFailure = getRegistrationFailureNotification(registrationStatus);
+  const returningNotifications = hasReturningAccountState(personaId)
+    ? RETURNING_NOTIFICATIONS
+    : [];
+
+  return registrationFailure
+    ? [registrationFailure, ...returningNotifications]
+    : returningNotifications;
 }

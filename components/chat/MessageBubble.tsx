@@ -19,7 +19,6 @@ import { AssistantMarkdown } from "./AssistantMarkdown";
 import { ClaimExtractCard } from "./ClaimExtractCard";
 import { ChatAvatar } from "./ChatAvatar";
 import { ClaimReceiptCard } from "./ClaimReceiptCard";
-import { ConfidenceScoreCard } from "./ConfidenceScoreCard";
 import { DriverDlExtractCard } from "./DriverDlExtractCard";
 import { DriverNameInputCard } from "./DriverNameInputCard";
 import { DriverSalaryFormCard } from "./DriverSalaryFormCard";
@@ -267,13 +266,9 @@ export function MessageBubble({
     return <ScannedDocumentCard complete />;
   }
 
-  if (message.kind === "confidence_score" && message.confidenceScore) {
-    return (
-      <ConfidenceScoreCard
-        payload={message.confidenceScore}
-        createdAt={message.createdAt}
-      />
-    );
+  if (message.kind === "confidence_score") {
+    // Sessions saved before the confidence panel was removed remain readable.
+    return <ScannedDocumentCard complete />;
   }
 
   if (message.kind === "claim_extract" && message.claimExtract) {
