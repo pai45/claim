@@ -176,7 +176,7 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
         <h1 className="type-screen-title flex-1 truncate">Claim details</h1>
       </header>
 
-      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-8 pt-4">
+      <main className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-page pb-6 pt-4">
         <section className="flex flex-col gap-4 rounded-bubble border border-border-line bg-white p-card">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
@@ -252,8 +252,10 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
             {feedback}
           </p>
         ) : null}
+      </main>
 
-        <section className="flex gap-3 pt-4">
+      <footer className="shrink-0 border-t border-border-soft bg-white px-page pb-[max(16px,env(safe-area-inset-bottom))] pt-3">
+        <div className="flex gap-3">
           <button type="button" className="btn-primary">
             Contact Support
           </button>
@@ -266,8 +268,8 @@ export function ClaimDetailsScreen({ claimId, backHref }: ClaimDetailsScreenProp
               Revoke Claim
             </button>
           ) : null}
-        </section>
-      </main>
+        </div>
+      </footer>
 
       <ConfirmDialog
         open={confirmRevokeOpen}

@@ -20,7 +20,7 @@ export function VehicleNumberInputCard({
 }: VehicleNumberInputCardProps) {
   const [value, setValue] = useState("");
   const [touched, setTouched] = useState(false);
-  const [ownership, setOwnership] = useState<VehicleOwnership>();
+  const [ownership, setOwnership] = useState<VehicleOwnership>("self_owned");
 
   const parsed = useMemo(() => parseRegNumber(value), [value]);
 
@@ -90,34 +90,43 @@ export function VehicleNumberInputCard({
           ) : null}
         </div>
 
-        <fieldset>
+        <fieldset className="border-t border-border-line pt-4">
           {/* A legend is not a flex item, so the fieldset's own gap would skip
               it — the spacing below it has to be its own margin. */}
-          <legend className="mb-2 type-body-secondary text-ink">
+          <legend className="mb-4 type-body text-subtle">
             Is this vehicle self owned or company leased?
           </legend>
-          <div
-            role="group"
-            aria-label="Vehicle ownership choices"
-            className="grid grid-cols-2 gap-2"
-          >
+          <div className="flex items-center justify-between gap-2">
             {VEHICLE_OWNERSHIP_OPTIONS.map((option) => {
               const isSelected = ownership === option.id;
               return (
-                <button
+                <label
                   key={option.id}
-                  type="button"
-                  aria-pressed={isSelected}
-                  disabled={disabled}
-                  onClick={() => setOwnership(option.id)}
-                  className={`min-h-11 rounded-control border px-2 py-2 text-caption font-bold transition-colors disabled:opacity-50 ${
-                    isSelected
-                      ? "border-pine-primary bg-surface-tint-strong text-pine"
-                      : "border-input-border bg-white text-ink-secondary"
-                  }`}
+                  className={`flex min-h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-control whitespace-nowrap text-body font-bold transition-colors focus-within:outline-2 focus-within:outline-pine-primary focus-within:outline-offset-2 ${
+                    disabled ? "cursor-not-allowed opacity-50" : ""
+                  } ${isSelected ? "text-ink" : "text-ink-secondary"}`}
                 >
-                  {option.label}
-                </button>
+                  <input
+                    type="radio"
+                    name="vehicle-ownership"
+                    value={option.id}
+                    checked={isSelected}
+                    disabled={disabled}
+                    onChange={() => setOwnership(option.id)}
+                    className="sr-only"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                      isSelected
+                        ? "border-pine-primary bg-pine-primary"
+                        : "border-border-tab bg-white"
+                    }`}
+                  >
+                    {isSelected ? <span className="h-2 w-2 rounded-full bg-white" /> : null}
+                  </span>
+                  <span>{option.label}</span>
+                </label>
               );
             })}
           </div>
